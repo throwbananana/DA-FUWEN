@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "encyclopedia_entries": [
+    {
+      "id": "ency_mist_moss_cave",
+      "category": "location",
+      "title": "雾苔窟",
+      "related_ids": {
+        "habitat_id": "mist_moss_cave"
+      },
+      "unlock_rule": {
+        "type": "visit_habitat",
+        "habitat_id": "mist_moss_cave"
+      },
+      "summary": "雾苔窟是项目早期最适合承接照料与育幼玩法的试做点。",
+      "sections": [
+        {
+          "heading": "地貌",
+          "body": "低温、湿润、可形成稳定保温角落，适合幼体与苔系偏好的生物。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "强调安静、保温、孵育与基础观察，是照料系统的上手区域。"
+        },
+        {
+          "heading": "关键设施",
+          "body": "保温窝与育幼角是此地的核心推进建筑。"
+        }
+      ],
+      "keywords": [
+        "cold_cave",
+        "moss",
+        "nursery"
+      ],
+      "related_entries": [
+        "ency_trust_and_commissions"
+      ]
+    },
+    {
+      "id": "ency_crystal_creek",
+      "category": "location",
+      "title": "晶溪滩",
+      "related_ids": {
+        "habitat_id": "crystal_creek"
+      },
+      "unlock_rule": {
+        "type": "visit_habitat",
+        "habitat_id": "crystal_creek"
+      },
+      "summary": "晶溪滩承接清洁、安顿与浅水观察，是水边照料的代表区域。",
+      "sections": [
+        {
+          "heading": "地貌",
+          "body": "清水、浅滩与可反光的石面让玩家更容易观察壳类与水团类行为。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "适合安排清洁、浅池建设与温和结缘。"
+        },
+        {
+          "heading": "关键设施",
+          "body": "浅池会把单纯观察转化为更细的护理判断。"
+        }
+      ],
+      "keywords": [
+        "waterside",
+        "care",
+        "cleaning"
+      ]
+    },
+    {
+      "id": "ency_sky_post",
+      "category": "location",
+      "title": "云升驿",
+      "related_ids": {
+        "habitat_id": "sky_post"
+      },
+      "unlock_rule": {
+        "type": "visit_habitat",
+        "habitat_id": "sky_post"
+      },
+      "summary": "云升驿承担休息、寄养、传闻与邮件，是多地点系统的枢纽。",
+      "sections": [
+        {
+          "heading": "功能",
+          "body": "玩家可在此休整、接委托、寄养同行生物，并处理跨点信息。"
+        },
+        {
+          "heading": "事件倾向",
+          "body": "恶劣天气与节庆都会提升驿站的人流与传闻密度。"
+        },
+        {
+          "heading": "关键设施",
+          "body": "茶棚、寄养栏与留信牌共同构成驿站循环。"
+        }
+      ],
+      "keywords": [
+        "rest",
+        "mail",
+        "boarding"
+      ],
+      "related_entries": [
+        "ency_boarding_and_mail",
+        "ency_trust_and_commissions"
+      ]
+    },
+    {
+      "id": "ency_ancient_platform",
+      "category": "location",
+      "title": "古械平台",
+      "related_ids": {
+        "habitat_id": "ancient_platform"
+      },
+      "unlock_rule": {
+        "type": "unlock_habitat",
+        "habitat_id": "ancient_platform"
+      },
+      "summary": "古械平台偏向探索、修复与夜间观察，是系统从照料转向研究的中层节点。",
+      "sections": [
+        {
+          "heading": "地貌",
+          "body": "遗迹机械与暴露构件构成了高辨识度的探索场。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "既能做修理委托，也能做稀有夜间事件与图鉴扩展。"
+        },
+        {
+          "heading": "关键设施",
+          "body": "观测台、修理间与回响室是主要推进目标。"
+        }
+      ],
+      "keywords": [
+        "ruin",
+        "machine",
+        "observation"
+      ],
+      "related_entries": [
+        "ency_resonance_record"
+      ]
+    },
+    {
+      "id": "ency_copper_hammer_bazaar",
+      "category": "location",
+      "title": "铜锤集",
+      "related_ids": {
+        "habitat_id": "copper_hammer_bazaar"
+      },
+      "unlock_rule": {
+        "type": "visit_habitat",
+        "habitat_id": "copper_hammer_bazaar"
+      },
+      "summary": "铜锤集侧重材料、手作、配件与装饰，是玩家把资源转成风格与效率的交易节点。",
+      "sections": [
+        {
+          "heading": "氛围",
+          "body": "这里更热闹，信息流经常通过摊位与交换行为扩散。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "适合放置制作、修理、装饰与材料互换型任务。"
+        },
+        {
+          "heading": "事件倾向",
+          "body": "节庆夜换会尤其适合追加世界观对白与百科条目。"
+        }
+      ],
+      "keywords": [
+        "market",
+        "craft",
+        "trade"
+      ]
+    },
+    {
+      "id": "ency_radiant_spire",
+      "category": "location",
+      "title": "裂辉尖塔",
+      "related_ids": {
+        "habitat_id": "radiant_spire"
+      },
+      "unlock_rule": {
+        "type": "unlock_habitat",
+        "habitat_id": "radiant_spire"
+      },
+      "summary": "裂辉尖塔是高风险异常区域，适合作为中后期救助与观察玩法的压力测试点。",
+      "sections": [
+        {
+          "heading": "风险",
+          "body": "异常越高，越强调标记安全点、选择撤离路线与节奏控制。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "主要承接救助、稳定化与高稀有度观察。"
+        },
+        {
+          "heading": "推进条件",
+          "body": "现有数据中它依赖一定的总信任与地点推进等级才会开放。"
+        }
+      ],
+      "keywords": [
+        "anomaly",
+        "rescue",
+        "high_risk"
+      ],
+      "related_entries": [
+        "ency_anomaly_stabilization"
+      ]
+    },
+    {
+      "id": "ency_boarding_and_mail",
+      "category": "system",
+      "title": "寄养与邮件",
+      "related_ids": {
+        "habitat_id": "sky_post"
+      },
+      "unlock_rule": {
+        "type": "build",
+        "building_id": "message_board",
+        "level": 1
+      },
+      "summary": "寄养与邮件让地点之间发生联系，把单点访问扩展为多点循环。",
+      "sections": [
+        {
+          "heading": "寄养",
+          "body": "寄养强调情绪稳定与短时托管，适合缓冲队伍轮换。"
+        },
+        {
+          "heading": "邮件",
+          "body": "邮件则负责跨点任务、传闻分发与剧情粘合。"
+        },
+        {
+          "heading": "设计价值",
+          "body": "它们共同承担“让世界持续在运作”的感受。"
+        }
+      ],
+      "keywords": [
+        "boarding",
+        "mail",
+        "logistics"
+      ]
+    },
+    {
+      "id": "ency_resonance_record",
+      "category": "system",
+      "title": "共鸣记录",
+      "related_ids": {
+        "habitat_id": "ancient_platform"
+      },
+      "unlock_rule": {
+        "type": "build",
+        "building_id": "echo_room",
+        "level": 1
+      },
+      "summary": "共鸣记录把稀有夜间现象转成图鉴、事件与修复玩法之间的桥梁。",
+      "sections": [
+        {
+          "heading": "作用",
+          "body": "它既能解释辉蛾等生物为何被吸引，也能提供遗迹为何“会说话”的世界观入口。"
+        },
+        {
+          "heading": "玩法价值",
+          "body": "适合触发观察事件、分支对话以及稀有研究奖励。"
+        },
+        {
+          "heading": "表现建议",
+          "body": "推荐配合低频音效、粒子轨迹与简洁的记录面板展示。"
+        }
+      ],
+      "keywords": [
+        "echo",
+        "record",
+        "night_event"
+      ]
+    },
+    {
+      "id": "ency_anomaly_stabilization",
+      "category": "system",
+      "title": "异常稳定化",
+      "related_ids": {
+        "habitat_id": "radiant_spire"
+      },
+      "unlock_rule": {
+        "type": "encounter_species",
+        "species_id": "rift_fawn",
+        "count": 1
+      },
+      "summary": "异常稳定化不是单纯压制危险，而是寻找可被利用的短暂安全窗口。",
+      "sections": [
+        {
+          "heading": "核心逻辑",
+          "body": "先判断窗口，再决定记录、救助或撤离。"
+        },
+        {
+          "heading": "体验目标",
+          "body": "让高风险区域依然保有节奏选择，而不是纯数值门槛。"
+        },
+        {
+          "heading": "后续扩展",
+          "body": "可继续接入安全节点、临时标记和稀有救助路线。"
+        }
+      ],
+      "keywords": [
+        "anomaly",
+        "stabilize",
+        "route"
+      ]
+    },
+    {
+      "id": "ency_trust_and_commissions",
+      "category": "system",
+      "title": "信任与委托",
+      "related_ids": {},
+      "unlock_rule": {
+        "type": "talk_to_npc",
+        "npc": "moss_keeper"
+      },
+      "summary": "当前项目的委托推进与 NPC 信任奖励已经在数据层建立了基础对应关系。",
+      "sections": [
+        {
+          "heading": "信任奖励",
+          "body": "NPC 会在不同信任阶段开放建筑、蓝图、情报或稀有个体线索。"
+        },
+        {
+          "heading": "委托结构",
+          "body": "现有任务模板已包含交付、访问、建造、观察、结缘、安抚等基础步骤。"
+        },
+        {
+          "heading": "扩展方向",
+          "body": "最适合继续接事件、对话、图鉴与百科，让任务结果能沉淀为长期内容。"
+        }
+      ],
+      "keywords": [
+        "trust",
+        "quest",
+        "progression"
+      ]
+    }
+  ]
+}

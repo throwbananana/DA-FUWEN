@@ -1,0 +1,35 @@
+# 建议追加到 scripts/autoload/data_repository.gd
+
+var events: Dictionary = {}
+var dialogues: Dictionary = {}
+var codex_entries: Dictionary = {}
+var encyclopedia_entries: Dictionary = {}
+
+func load_all() -> void:
+    habitats = _index_by_id(_read_json("%s/habitats.json" % DATA_ROOT).get("habitats", []))
+    species = _index_by_id(_read_json("%s/species.json" % DATA_ROOT).get("species", []))
+    npcs = _index_by_id(_read_json("%s/npc_profiles.json" % DATA_ROOT).get("npcs", []))
+    buildings = _index_by_id(_read_json("%s/building_blueprints.json" % DATA_ROOT).get("buildings", []))
+    quests = _index_by_id(_read_json("%s/quest_templates.json" % DATA_ROOT).get("quests", []))
+    items = _index_by_id(_read_json("%s/items.json" % DATA_ROOT).get("items", []))
+
+    events = _index_by_id(_read_json("%s/events.json" % DATA_ROOT).get("events", []))
+    dialogues = _index_by_id(_read_json("%s/dialogues.json" % DATA_ROOT).get("dialogues", []))
+    codex_entries = _index_by_id(_read_json("%s/codex_entries.json" % DATA_ROOT).get("codex_entries", []))
+    encyclopedia_entries = _index_by_id(_read_json("%s/encyclopedia_entries.json" % DATA_ROOT).get("encyclopedia_entries", []))
+
+    encounters.clear()
+    for row in _read_json("%s/encounter_tables.json" % DATA_ROOT).get("encounters", []):
+        encounters[String(row.get("habitat_id", ""))] = row
+
+func get_event(event_id: String) -> Dictionary:
+    return events.get(event_id, {})
+
+func get_dialogue(dialogue_id: String) -> Dictionary:
+    return dialogues.get(dialogue_id, {})
+
+func get_codex_entry(entry_id: String) -> Dictionary:
+    return codex_entries.get(entry_id, {})
+
+func get_encyclopedia_entry(entry_id: String) -> Dictionary:
+    return encyclopedia_entries.get(entry_id, {})

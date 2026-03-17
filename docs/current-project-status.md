@@ -11,6 +11,7 @@
 - MDA120 内容：已接入物种、羁绊、建筑、技能、进化链、遭遇表与扩展地点
 - 建筑共鸣：覆盖战前增益、经济追加产出、成长加速
 - 进化条件：优先读取 `evolution_chains_mda.json`，支持地点、建筑、羁绊与阶段条件
+- JSON 扩展内容：`quest_templates.json` 已扩充到 20 条，并补入 `events.json`、`dialogues.json`、`codex_entries.json`、`encyclopedia_entries.json`
 
 ## Runtime Entry Points
 
@@ -21,6 +22,7 @@
 - `scripts/services/dojo_service.gd`：道馆挑战、奖励与开放链
 - `scripts/services/encounter_service.gd`：遭遇筛选与稀有度权重
 - `scripts/services/synergy_service.gd`：羁绊与建筑共鸣
+- `scripts/json_expansion_smoke_test.gd`：扩展任务 / 事件 / 对话 / 图鉴 / 百科读表校验
 
 ## Validation
 
@@ -31,10 +33,12 @@ godot --headless --path . -s res://scripts/smoke_test.gd
 godot --headless --path . -s res://scripts/season_upgrade_smoke_test.gd
 godot --headless --path . -s res://scripts/bond_double_smoke_test.gd
 godot --headless --path . -s res://scripts/mda120_upgrade_smoke_test.gd
+godot --headless --path . -s res://scripts/json_expansion_smoke_test.gd
 ```
 
 ## Reference Materials
 
 - 根目录两个早期“方案”文档已移除，避免继续把当前项目误读成未落地提案。
 - `DA_FUWEN_升级文档与JSON示例包/` 与 `DA_FUWEN_MDA_JSON_120包/` 仍保留，作用是追溯上游 JSON 与需求说明。
+- `da_fuwen_json_expansion/` 作为扩展数据源备份保留；当前运行时使用的是已同步到 `data/` 的版本。
 - 根目录 `.docx` 视为历史策划材料；在没有明确清理要求前不作为当前实现文档。

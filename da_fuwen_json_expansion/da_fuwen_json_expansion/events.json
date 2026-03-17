@@ -1,0 +1,335 @@
+{
+  "version": 1,
+  "events": [
+    {
+      "id": "evt_moss_night_watch",
+      "title": "雾苔窟的守夜哼唱",
+      "category": "habitat_story",
+      "habitat_id": "mist_moss_cave",
+      "participants": [
+        "moss_keeper",
+        "lost_apprentice"
+      ],
+      "trigger": {
+        "after_quest": "build_warm_nest",
+        "required_building": {
+          "id": "warm_nest",
+          "min_level": 2
+        },
+        "time": "night"
+      },
+      "summary": "夜深后，迟叔会请玩家一起守着新搭好的保温窝，记录幼体对声音与光线的反应。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "moss_keeper",
+          "text": "迟叔提议今晚别急着走，听听苔团在窝里翻身的声音。"
+        },
+        {
+          "type": "observe",
+          "species_id": "moss_puff",
+          "text": "保温窝内的苔团会随着哼唱缓慢舒展。"
+        },
+        {
+          "type": "talk",
+          "npc": "lost_apprentice",
+          "text": "小禾补记了几条育幼观察笔记。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "hum_softly",
+          "text": "轻轻哼唱，稳定幼体情绪",
+          "outcome": "苔团会主动靠近热源，迟叔对玩家的细心更认可。",
+          "effects": {
+            "trust": {
+              "moss_keeper": 1
+            },
+            "unlock_dialogue": "dlg_moss_keeper_night_watch",
+            "unlock_codex": "codex_moss_puff",
+            "unlock_encyclopedia": "ency_mist_moss_cave"
+          }
+        },
+        {
+          "id": "dim_lantern",
+          "text": "把灯调暗，只记录动作",
+          "outcome": "观察更安静，但笔记偏向行为学数据。",
+          "effects": {
+            "trust": {
+              "lost_apprentice": 1
+            },
+            "journal_entry": "幼巢低光环境观察"
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_shallow_pool_reflection",
+      "title": "浅池映光",
+      "category": "care_event",
+      "habitat_id": "crystal_creek",
+      "participants": [
+        "washer_grandma"
+      ],
+      "trigger": {
+        "after_quest": "help_shell_pup_settle",
+        "required_building": {
+          "id": "shallow_pool",
+          "min_level": 1
+        },
+        "weather": "clear"
+      },
+      "summary": "晴朗时，浅池会映出壳幼背壳的花纹变化，婆婆会借此教玩家判断健康状态。",
+      "stages": [
+        {
+          "type": "observe",
+          "species_id": "shell_pup",
+          "text": "壳幼在浅池边慢慢翻动，背壳反光会显示细纹。"
+        },
+        {
+          "type": "talk",
+          "npc": "washer_grandma",
+          "text": "婆婆解释不同纹路对应的温度与心情。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "compare_shell_lines",
+          "text": "对照石纹记录背壳细线",
+          "outcome": "可解锁更细的护理提示。",
+          "effects": {
+            "items": {
+              "warm_stone": 1
+            },
+            "unlock_codex": "codex_shell_pup",
+            "unlock_dialogue": "dlg_washer_grandma_pool"
+          }
+        },
+        {
+          "id": "let_them_play",
+          "text": "先不打扰，让壳幼自己玩水",
+          "outcome": "壳幼心情更稳定，之后更容易结缘。",
+          "effects": {
+            "trust": {
+              "washer_grandma": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_post_storm_layover",
+      "title": "暴雨后的驿站留客",
+      "category": "settlement_event",
+      "habitat_id": "sky_post",
+      "participants": [
+        "innkeeper_yun",
+        "boarder_liu",
+        "traveling_peddler"
+      ],
+      "trigger": {
+        "required_building": {
+          "id": "message_board",
+          "min_level": 1
+        },
+        "weather": "storm"
+      },
+      "summary": "风雨天会有更多巡游商人与照料员停留，云升驿会刷新传闻与跨点委托。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "innkeeper_yun",
+          "text": "云伯让玩家帮忙整理新增的留信与寄养请求。"
+        },
+        {
+          "type": "talk",
+          "npc": "traveling_peddler",
+          "text": "青禾会透露下一站可能出现的稀有遭遇。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "sort_letters",
+          "text": "优先整理留信牌上的委托",
+          "outcome": "跨点委托刷新得更快。",
+          "effects": {
+            "unlock_dialogue": "dlg_innkeeper_yun_letters",
+            "unlock_encyclopedia": "ency_boarding_and_mail"
+          }
+        },
+        {
+          "id": "help_boarding",
+          "text": "先去寄养栏安顿同行宠物",
+          "outcome": "柳姐会开放更温和的寄养说明。",
+          "effects": {
+            "trust": {
+              "boarder_liu": 1
+            },
+            "items": {
+              "tea_leaf": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_platform_echo_bloom",
+      "title": "古械平台的回响开花",
+      "category": "ruin_event",
+      "habitat_id": "ancient_platform",
+      "participants": [
+        "field_recorder",
+        "ruin_restorer"
+      ],
+      "trigger": {
+        "after_quest": "echo_room_tuning",
+        "required_building": {
+          "id": "echo_room",
+          "min_level": 1
+        },
+        "time": "night"
+      },
+      "summary": "回响室首次稳定后，辉蛾会被低频共鸣吸引而来，平台会出现短暂的“开花”景象。",
+      "stages": [
+        {
+          "type": "observe",
+          "species_id": "glow_moth",
+          "text": "辉蛾会在玻片与辉尘上方盘旋，留下柔和轨迹。"
+        },
+        {
+          "type": "talk",
+          "npc": "field_recorder",
+          "text": "叶衡会请玩家决定更偏记录还是更偏修复。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "record_resonance",
+          "text": "优先记录辉尘轨迹",
+          "outcome": "得到一段可写入图鉴的夜间行为数据。",
+          "effects": {
+            "items": {
+              "glow_dust": 1
+            },
+            "unlock_codex": "codex_glow_moth",
+            "unlock_dialogue": "dlg_field_recorder_resonance"
+          }
+        },
+        {
+          "id": "stabilize_panels",
+          "text": "先帮绛固定玻片与面板",
+          "outcome": "修复系事件触发概率提高。",
+          "effects": {
+            "trust": {
+              "ruin_restorer": 1
+            },
+            "items": {
+              "parts": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_bazaar_night_swap",
+      "title": "铜锤集夜换会",
+      "category": "market_event",
+      "habitat_id": "copper_hammer_bazaar",
+      "participants": [
+        "tinker_bo",
+        "smith_ya",
+        "parts_vendor"
+      ],
+      "trigger": {
+        "after_quest": "bazaar_repair_stall",
+        "season": "festival"
+      },
+      "summary": "节庆夜里，铜锤集会临时开启夜换会，玩家可以听到配件与装饰的来路故事。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "tinker_bo",
+          "text": "阿铂邀请玩家看新修好的摊位上摆出的旧零件。"
+        },
+        {
+          "type": "talk",
+          "npc": "smith_ya",
+          "text": "哑叔会用敲击声示意每件饰件的用途。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "swap_stories",
+          "text": "听摊主讲零件来历",
+          "outcome": "能解锁更多世界观词条。",
+          "effects": {
+            "unlock_encyclopedia": "ency_copper_hammer_bazaar",
+            "unlock_dialogue": "dlg_tinker_bo_night_swap"
+          }
+        },
+        {
+          "id": "trade_parts",
+          "text": "直接换一些实用材料",
+          "outcome": "得到少量维修与装饰资源。",
+          "effects": {
+            "items": {
+              "parts": 2,
+              "rare_decor_part": 1
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "evt_spire_calm_window",
+      "title": "裂辉尖塔的安静窗口",
+      "category": "anomaly_event",
+      "habitat_id": "radiant_spire",
+      "participants": [
+        "anomaly_researcher"
+      ],
+      "trigger": {
+        "after_quest": "rescue_rift_fawn",
+        "anomaly": "high"
+      },
+      "summary": "异常强度升高后偶尔会出现极短的稳定窗口，澄会带玩家尝试在窗口内完成记录与救助。",
+      "stages": [
+        {
+          "type": "observe",
+          "species_id": "rift_fawn",
+          "text": "隙鹿会在稳定窗口里短暂放松警戒。"
+        },
+        {
+          "type": "observe",
+          "species_id": "lumen_howler",
+          "text": "远处能听见辉嚎的回声，但不会直接逼近。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "mark_safe_nodes",
+          "text": "先标记可撤离节点",
+          "outcome": "之后的尖塔访问会更安全。",
+          "effects": {
+            "items": {
+              "stability_shard": 1
+            },
+            "unlock_encyclopedia": "ency_radiant_spire",
+            "unlock_dialogue": "dlg_anomaly_researcher_window"
+          }
+        },
+        {
+          "id": "focus_on_fawn",
+          "text": "只专注安抚隙鹿",
+          "outcome": "更容易得到稀有救助路线提示。",
+          "effects": {
+            "trust": {
+              "anomaly_researcher": 1
+            },
+            "unlock_codex": "codex_rift_fawn"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -18,6 +18,7 @@
 - 道馆挑战、阶位限制、首通奖励与开放联动
 - 建筑驻守、建筑共鸣、战前增益、访问增产与成长加成
 - MDA120 数据包已并入运行时读取流程，包括物种、建筑、技能、羁绊、进化链、遭遇表与成长曲线
+- JSON 扩展包已补入运行时数据，任务表扩到 20 条，并新增事件、对话树、图鉴与百科条目
 
 ## 技术与运行环境
 
@@ -47,6 +48,7 @@ godot --headless --path . -s res://scripts/smoke_test.gd
 godot --headless --path . -s res://scripts/season_upgrade_smoke_test.gd
 godot --headless --path . -s res://scripts/bond_double_smoke_test.gd
 godot --headless --path . -s res://scripts/mda120_upgrade_smoke_test.gd
+godot --headless --path . -s res://scripts/json_expansion_smoke_test.gd
 ```
 
 它们分别覆盖：
@@ -55,6 +57,7 @@ godot --headless --path . -s res://scripts/mda120_upgrade_smoke_test.gd
 - 季节切换、地点开放、道馆首通奖励链
 - 双打编成、背包人口、升星、羁绊与建筑战前增益
 - MDA120 成长曲线、遭遇权重、访问共鸣与进化链
+- 扩展任务、事件、对话树、图鉴和百科表已被 `DataRepository` 正常读取
 
 ## 主要目录
 
@@ -67,6 +70,7 @@ godot --headless --path . -s res://scripts/mda120_upgrade_smoke_test.gd
 - `data/`：运行时实际读取的 JSON 数据源
 - `docs/`：当前版本状态说明
 - `DA_FUWEN_升级文档与JSON示例包/`、`DA_FUWEN_MDA_JSON_120包/`：上游参考资料与历史接入包
+- `da_fuwen_json_expansion/`：已落地到 `data/` 的扩展数据源备份与参考补丁
 
 ## 核心数据文件
 
@@ -81,6 +85,10 @@ godot --headless --path . -s res://scripts/mda120_upgrade_smoke_test.gd
 - `dojo_definitions.json`
 - `reward_tables.json`
 - `quest_templates.json`
+- `events.json`
+- `dialogues.json`
+- `codex_entries.json`
+- `encyclopedia_entries.json`
 - `npc_profiles.json`
 - `items.json`
 - `synergy_definitions_mda.json`

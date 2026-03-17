@@ -1,0 +1,371 @@
+{
+  "version": 1,
+  "codex_entries": [
+    {
+      "id": "codex_moss_puff",
+      "species_id": "moss_puff",
+      "title": "苔团观察档案",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "moss_puff",
+        "count": 1
+      },
+      "portrait_hint": "常缩成带露珠的小圆团，受惊时会整团微缩。",
+      "habitat_notes": [
+        "偏好雾苔窟的温湿角落",
+        "保温窝提升后更愿意靠近人"
+      ],
+      "behavior_notes": [
+        "会对低声哼唱有回应",
+        "在夜里比白天更愿意换位置"
+      ],
+      "care_notes": [
+        "适合低光环境",
+        "不要突然抬高灯火或音量"
+      ],
+      "research_tags": [
+        "moss",
+        "warmth",
+        "nursery"
+      ],
+      "related_npcs": [
+        "moss_keeper",
+        "lost_apprentice"
+      ],
+      "related_events": [
+        "evt_moss_night_watch"
+      ]
+    },
+    {
+      "id": "codex_cave_sniffer",
+      "species_id": "cave_sniffer",
+      "title": "穴嗅兽观察档案",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "encounter_species",
+        "species_id": "cave_sniffer",
+        "count": 1
+      },
+      "portrait_hint": "会贴着岩面慢慢嗅行，遇到岔路时停留最久。",
+      "habitat_notes": [
+        "多在雾苔窟边缘活动",
+        "冬季更偏向保守路线"
+      ],
+      "behavior_notes": [
+        "对隐蔽通路和根茎类食物反应明显",
+        "不喜欢拥挤环境"
+      ],
+      "care_notes": [
+        "适合观察而非追赶",
+        "可以用食物把它引到安全路径"
+      ],
+      "research_tags": [
+        "burrow",
+        "guard",
+        "gather"
+      ],
+      "related_npcs": [
+        "moss_keeper"
+      ]
+    },
+    {
+      "id": "codex_dew_slug",
+      "species_id": "dew_slug",
+      "title": "露涎虫观察档案",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "encounter_species",
+        "species_id": "dew_slug",
+        "count": 1
+      },
+      "portrait_hint": "体表水光很重，常在湿石边留下细长润痕。",
+      "habitat_notes": [
+        "雾苔窟的湿冷区域最常见",
+        "喜好露晶与潮湿表面"
+      ],
+      "behavior_notes": [
+        "饥饿时会更积极移动",
+        "干燥空气会让它明显烦躁"
+      ],
+      "care_notes": [
+        "喂食前先补湿",
+        "适合放在有遮蔽的低温角落"
+      ],
+      "research_tags": [
+        "moss",
+        "gather",
+        "calm"
+      ],
+      "related_npcs": [
+        "lost_apprentice"
+      ]
+    },
+    {
+      "id": "codex_shell_pup",
+      "species_id": "shell_pup",
+      "title": "壳幼观察档案",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "bond_species",
+        "species_id": "shell_pup",
+        "count": 1
+      },
+      "portrait_hint": "背壳会随光线显出细纹，动作慢却很愿意接近温热石面。",
+      "habitat_notes": [
+        "浅池与晴日更利于观察",
+        "在浅水边比深水区更放松"
+      ],
+      "behavior_notes": [
+        "会跟着水面反光调整姿势",
+        "对温石反应积极"
+      ],
+      "care_notes": [
+        "先安顿环境再接触",
+        "在浅池事件后更容易建立信任"
+      ],
+      "research_tags": [
+        "water",
+        "stone",
+        "cleaner"
+      ],
+      "related_npcs": [
+        "washer_grandma"
+      ],
+      "related_events": [
+        "evt_shallow_pool_reflection"
+      ]
+    },
+    {
+      "id": "codex_ripple_slime",
+      "species_id": "ripple_slime",
+      "title": "漪团观察档案",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "ripple_slime",
+        "count": 1
+      },
+      "portrait_hint": "身体边缘像水波被风轻轻拽开，常顺着浅滩缓慢飘动。",
+      "habitat_notes": [
+        "清水越稳定越常见",
+        "不喜欢油污与混浊水域"
+      ],
+      "behavior_notes": [
+        "会主动靠近干净芦苇",
+        "观察比直接驱赶更有效"
+      ],
+      "care_notes": [
+        "适合作为清洁型同伴",
+        "浅滩任务后更容易刷新"
+      ],
+      "research_tags": [
+        "water",
+        "cleaner",
+        "calm"
+      ],
+      "related_npcs": [
+        "washer_grandma"
+      ]
+    },
+    {
+      "id": "codex_stream_glider",
+      "species_id": "stream_glider",
+      "title": "溪翔观察档案",
+      "rarity": "uncommon",
+      "unlock_rule": {
+        "type": "bond_species",
+        "species_id": "stream_glider",
+        "count": 1
+      },
+      "portrait_hint": "贴着水风滑行，转向轻巧，停下来时像一片薄薄的流影。",
+      "habitat_notes": [
+        "净溪与风口是高频活动区",
+        "适合承担短距引路与递送"
+      ],
+      "behavior_notes": [
+        "会对风铃和轻响作出回应",
+        "不喜欢狭窄空间"
+      ],
+      "care_notes": [
+        "引导比约束更有效",
+        "与驿站送信任务联动度高"
+      ],
+      "research_tags": [
+        "water",
+        "messenger",
+        "speed"
+      ],
+      "related_npcs": [
+        "innkeeper_yun",
+        "traveling_peddler"
+      ]
+    },
+    {
+      "id": "codex_gear_finch",
+      "species_id": "gear_finch",
+      "title": "齿翎雀观察档案",
+      "rarity": "uncommon",
+      "unlock_rule": {
+        "type": "encounter_species",
+        "species_id": "gear_finch",
+        "count": 1
+      },
+      "portrait_hint": "喜欢在零件堆上跳跃，用喙敲出短促的机械节拍。",
+      "habitat_notes": [
+        "古械平台的裸露构件区常见",
+        "对小零件与清脆声音兴趣高"
+      ],
+      "behavior_notes": [
+        "忙碌时最不怕人",
+        "湿羽状态会显得烦躁"
+      ],
+      "care_notes": [
+        "可以用小零件转移注意",
+        "适合与修理间玩法联动"
+      ],
+      "research_tags": [
+        "machine",
+        "curious",
+        "spark"
+      ],
+      "related_npcs": [
+        "ruin_restorer"
+      ]
+    },
+    {
+      "id": "codex_spark_mite",
+      "species_id": "spark_mite",
+      "title": "霆粒观察档案",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "encounter_species",
+        "species_id": "spark_mite",
+        "count": 1
+      },
+      "portrait_hint": "像带静电的小尘团，会沿着构件边缘跳跃移动。",
+      "habitat_notes": [
+        "古械平台与机括零件区活动频繁",
+        "夜里比白天更显眼"
+      ],
+      "behavior_notes": [
+        "喜欢点击声和辉尘",
+        "空气过于沉闷时会躲藏"
+      ],
+      "care_notes": [
+        "适合做充能辅助",
+        "不要在密闭安静环境里强行追逐"
+      ],
+      "research_tags": [
+        "spark",
+        "machine",
+        "curious"
+      ],
+      "related_npcs": [
+        "field_recorder"
+      ]
+    },
+    {
+      "id": "codex_glow_moth",
+      "species_id": "glow_moth",
+      "title": "辉蛾观察档案",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "glow_moth",
+        "count": 1
+      },
+      "portrait_hint": "翅粉会在夜里拖出很淡的弧线，像正在消散的回声。",
+      "habitat_notes": [
+        "古械平台夜间高频出现",
+        "回响室调频后更容易被吸引"
+      ],
+      "behavior_notes": [
+        "会追着低频共鸣移动",
+        "不喜欢突然触碰"
+      ],
+      "care_notes": [
+        "保持环境安静",
+        "轻声引导优于直接围堵"
+      ],
+      "research_tags": [
+        "light",
+        "echo",
+        "calm"
+      ],
+      "related_npcs": [
+        "field_recorder",
+        "ruin_restorer"
+      ],
+      "related_events": [
+        "evt_platform_echo_bloom"
+      ]
+    },
+    {
+      "id": "codex_rift_fawn",
+      "species_id": "rift_fawn",
+      "title": "隙鹿观察档案",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "calm_species",
+        "species_id": "rift_fawn",
+        "count": 1
+      },
+      "portrait_hint": "靠近时总先退半步，等确认没有威胁才会重新靠近稳定区域。",
+      "habitat_notes": [
+        "裂辉尖塔异常波动高时更常见",
+        "喜欢临时安全点与遮蔽"
+      ],
+      "behavior_notes": [
+        "对平稳语调反应良好",
+        "会主动避开强光和攻击行为"
+      ],
+      "care_notes": [
+        "救助优先级高于观察",
+        "先给退路再尝试接近"
+      ],
+      "research_tags": [
+        "rescue",
+        "stabilize"
+      ],
+      "related_npcs": [
+        "anomaly_researcher"
+      ],
+      "related_events": [
+        "evt_spire_calm_window"
+      ]
+    },
+    {
+      "id": "codex_lumen_howler",
+      "species_id": "lumen_howler",
+      "title": "辉嚎观察档案",
+      "rarity": "epic",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "lumen_howler",
+        "count": 1
+      },
+      "portrait_hint": "远看像被月风切开的长影，叫声会先到，身形后到。",
+      "habitat_notes": [
+        "裂辉尖塔夜间与高异常时最可能出现",
+        "通常只在外缘留下痕迹"
+      ],
+      "behavior_notes": [
+        "厌恶拥挤与束缚",
+        "会巡弋开阔区域"
+      ],
+      "care_notes": [
+        "以记录路线为主，不宜贸然追踪",
+        "需要更高安全等级的异常处理"
+      ],
+      "research_tags": [
+        "light",
+        "guard",
+        "storm"
+      ],
+      "related_npcs": [
+        "anomaly_researcher"
+      ]
+    }
+  ]
+}

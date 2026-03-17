@@ -22,6 +22,10 @@ var skill_library: Dictionary = {}
 var evolution_families: Dictionary = {}
 var evolution_by_species: Dictionary = {}
 var progression_curves: Dictionary = {}
+var events: Dictionary = {}
+var dialogues: Dictionary = {}
+var codex_entries: Dictionary = {}
+var encyclopedia_entries: Dictionary = {}
 
 func _ready() -> void:
 	load_all()
@@ -36,6 +40,10 @@ func load_all() -> void:
 	buildings = _merge_indexed_rows(buildings, _read_json("%s/building_blueprints_mda.json" % DATA_ROOT).get("buildings", []))
 	quests = _index_by_id(_read_json("%s/quest_templates.json" % DATA_ROOT).get("quests", []))
 	items = _index_by_id(_read_json("%s/items.json" % DATA_ROOT).get("items", []))
+	events = _index_by_id(_read_json("%s/events.json" % DATA_ROOT).get("events", []))
+	dialogues = _index_by_id(_read_json("%s/dialogues.json" % DATA_ROOT).get("dialogues", []))
+	codex_entries = _index_by_id(_read_json("%s/codex_entries.json" % DATA_ROOT).get("codex_entries", []))
+	encyclopedia_entries = _index_by_id(_read_json("%s/encyclopedia_entries.json" % DATA_ROOT).get("encyclopedia_entries", []))
 	season_rules = _index_by_id(_read_json("%s/season_rules.json" % DATA_ROOT).get("seasons", []))
 	unlock_rules_by_habitat = _group_unlock_rules(_read_json("%s/habitat_unlock_rules.json" % DATA_ROOT).get("rules", []))
 	dojos = _index_by_id(_read_json("%s/dojo_definitions.json" % DATA_ROOT).get("dojos", []))
@@ -147,6 +155,18 @@ func get_building(building_id: String) -> Dictionary:
 
 func get_quest(quest_id: String) -> Dictionary:
 	return quests.get(quest_id, {})
+
+func get_event(event_id: String) -> Dictionary:
+	return events.get(event_id, {})
+
+func get_dialogue(dialogue_id: String) -> Dictionary:
+	return dialogues.get(dialogue_id, {})
+
+func get_codex_entry(entry_id: String) -> Dictionary:
+	return codex_entries.get(entry_id, {})
+
+func get_encyclopedia_entry(entry_id: String) -> Dictionary:
+	return encyclopedia_entries.get(entry_id, {})
 
 func get_season_rule(season_id: String) -> Dictionary:
 	return season_rules.get(season_id, {})

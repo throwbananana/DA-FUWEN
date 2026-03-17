@@ -1,7 +1,5 @@
 extends SceneTree
 
-const MonsterInstance = preload("res://scripts/monster_instance.gd")
-
 func _initialize() -> void:
 	var packed: PackedScene = load("res://scenes/main.tscn")
 	var scene = packed.instantiate()
@@ -9,27 +7,29 @@ func _initialize() -> void:
 	_run_checks.call_deferred(scene)
 
 func _run_checks(scene: Node) -> void:
-	scene._on_roll_pressed()
-	if scene.reachable_paths.is_empty():
-		push_error("Smoke test failed: no reachable paths after roll.")
+	await process_frame
+	scene._on_start_day_pressed()
+	if scene._get_selectable_nodes().is_empty():
+		push_error("Smoke test failed: no selectable habitats after starting a day.")
 		quit(1)
 		return
-	var first_target := int(scene.reachable_paths.keys()[0])
-	scene._on_board_node_chosen(first_target)
 
-	var allies := [MonsterInstance.new("ember_lynx"), MonsterInstance.new("mossback")]
-	var enemies := [MonsterInstance.new("stonehorn")]
-	scene.battle_panel.start_battle({
-		"title": "Smoke",
-		"subtitle": "Battle entry check",
-		"kind": "wild",
-		"allow_capture": false,
-		"allies": allies,
-		"enemies": enemies,
-		"ally_first_round_attack_bonus": false,
-	})
+	var first_target := int(scene._get_selectable_nodes()[0])
+	scene._on_board_node_chosen(first_target)
 	await process_frame
-	scene.battle_panel._on_enemy_selected(enemies[0].uid)
-	scene.battle_panel._on_skill_pressed(allies[0].uid, String(allies[0].skills[0]))
-	await create_timer(0.2).timeout
+	if not scene.decision_panel.visible:
+		push_error("Smoke test failed: visit decision panel did not open.")
+		quit(1)
+		return
+
+	scene._on_base_pressed()
+	await process_frame
+	if not scene.base_panel.visible:
+		push_error("Smoke test failed: base overview did not open.")
+		quit(1)
+		return
+
+	scene.base_panel.close_panel()
+	scene.decision_panel.close_panel()
+	await create_timer(0.1).timeout
 	quit()

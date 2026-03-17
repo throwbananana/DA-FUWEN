@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "npcs": [
+    {
+      "id": "moss_keeper",
+      "name": "守窟人 迟叔",
+      "role": "resident",
+      "home": "mist_moss_cave",
+      "tags": [
+        "care",
+        "moss",
+        "teaching"
+      ],
+      "trust_rewards": {
+        "1": "开放苔床建造",
+        "3": "解锁保温窝委托",
+        "5": "引荐稀有幼体"
+      }
+    },
+    {
+      "id": "lost_apprentice",
+      "name": "迷路学徒 小禾",
+      "role": "resident",
+      "home": "mist_moss_cave",
+      "tags": [
+        "errand",
+        "growth"
+      ],
+      "trust_rewards": {
+        "2": "采集路线标记",
+        "4": "共享育幼笔记"
+      }
+    },
+    {
+      "id": "washer_grandma",
+      "name": "洗石婆婆",
+      "role": "resident",
+      "home": "crystal_creek",
+      "tags": [
+        "care",
+        "waterside"
+      ],
+      "trust_rewards": {
+        "1": "开放浅池建造",
+        "3": "获得温石配方",
+        "5": "引来罕见壳幼"
+      }
+    },
+    {
+      "id": "stone_trader",
+      "name": "石片商 阿砾",
+      "role": "traveler",
+      "home": "crystal_creek",
+      "route": [
+        "crystal_creek",
+        "copper_hammer_bazaar"
+      ],
+      "tags": [
+        "trade",
+        "stone"
+      ],
+      "trust_rewards": {
+        "2": "材料折扣",
+        "4": "特殊装饰"
+      }
+    },
+    {
+      "id": "innkeeper_yun",
+      "name": "驿长 云伯",
+      "role": "resident",
+      "home": "sky_post",
+      "tags": [
+        "rest",
+        "logistics"
+      ],
+      "trust_rewards": {
+        "1": "开放茶棚",
+        "3": "邮件功能升级",
+        "5": "寄养位+1"
+      }
+    },
+    {
+      "id": "boarder_liu",
+      "name": "寄养员 柳姐",
+      "role": "resident",
+      "home": "sky_post",
+      "tags": [
+        "boarding",
+        "care"
+      ],
+      "trust_rewards": {
+        "2": "短期寄养",
+        "4": "寄养期间心情不降"
+      }
+    },
+    {
+      "id": "traveling_peddler",
+      "name": "流动商 青禾",
+      "role": "traveler",
+      "home": "sky_post",
+      "route": [
+        "sky_post",
+        "ancient_platform",
+        "copper_hammer_bazaar"
+      ],
+      "tags": [
+        "trade",
+        "rumor"
+      ],
+      "trust_rewards": {
+        "2": "稀有饵食",
+        "4": "异常区情报"
+      }
+    },
+    {
+      "id": "ruin_restorer",
+      "name": "遗迹修复师 绛",
+      "role": "resident",
+      "home": "ancient_platform",
+      "tags": [
+        "repair",
+        "ruin",
+        "machine"
+      ],
+      "trust_rewards": {
+        "1": "开放观测台",
+        "3": "开放修理间",
+        "5": "回响室草图"
+      }
+    },
+    {
+      "id": "field_recorder",
+      "name": "记录员 叶衡",
+      "role": "resident",
+      "home": "ancient_platform",
+      "tags": [
+        "journal",
+        "observation"
+      ],
+      "trust_rewards": {
+        "2": "图鉴额外条目",
+        "4": "异常天气预告"
+      }
+    },
+    {
+      "id": "tinker_bo",
+      "name": "修补匠 阿铂",
+      "role": "resident",
+      "home": "copper_hammer_bazaar",
+      "tags": [
+        "craft",
+        "repair"
+      ],
+      "trust_rewards": {
+        "1": "开放修理台",
+        "3": "装饰槽+1"
+      }
+    },
+    {
+      "id": "smith_ya",
+      "name": "锻匠 哑叔",
+      "role": "resident",
+      "home": "copper_hammer_bazaar",
+      "tags": [
+        "forge",
+        "decor"
+      ],
+      "trust_rewards": {
+        "2": "金属饰件",
+        "4": "专属铭牌"
+      }
+    },
+    {
+      "id": "parts_vendor",
+      "name": "配件贩 小轮",
+      "role": "traveler",
+      "home": "copper_hammer_bazaar",
+      "route": [
+        "copper_hammer_bazaar",
+        "sky_post"
+      ],
+      "tags": [
+        "trade",
+        "parts"
+      ],
+      "trust_rewards": {
+        "2": "部件稀有度提升"
+      }
+    },
+    {
+      "id": "anomaly_researcher",
+      "name": "异常观察员 澄",
+      "role": "resident",
+      "home": "radiant_spire",
+      "tags": [
+        "anomaly",
+        "rescue"
+      ],
+      "trust_rewards": {
+        "2": "稳定器蓝图",
+        "4": "稀有救助路线"
+      }
+    }
+  ]
+}

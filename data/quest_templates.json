@@ -1,0 +1,211 @@
+{
+  "version": 1,
+  "quests": [
+    {
+      "id": "build_warm_nest",
+      "title": "给雾苔窟搭个保温窝",
+      "giver": "moss_keeper",
+      "category": "build",
+      "target_habitat": "mist_moss_cave",
+      "steps": [
+        {
+          "type": "deliver",
+          "item": "soft_moss",
+          "count": 4
+        },
+        {
+          "type": "visit",
+          "habitat_id": "mist_moss_cave"
+        },
+        {
+          "type": "build",
+          "building_id": "warm_nest",
+          "level": 1
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "herbal_steam": 1
+        }
+      }
+    },
+    {
+      "id": "send_letter_to_post",
+      "title": "替驿站捎封信",
+      "giver": "innkeeper_yun",
+      "category": "errand",
+      "target_habitat": "sky_post",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "innkeeper_yun"
+        },
+        {
+          "type": "mail",
+          "destination": "copper_hammer_bazaar"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "tea_leaf": 2
+        }
+      }
+    },
+    {
+      "id": "observe_glow_moth",
+      "title": "记录一只夜辉蛾",
+      "giver": "field_recorder",
+      "category": "observe",
+      "target_habitat": "ancient_platform",
+      "steps": [
+        {
+          "type": "visit",
+          "habitat_id": "ancient_platform",
+          "time": "night"
+        },
+        {
+          "type": "encounter",
+          "species_id": "glow_moth"
+        },
+        {
+          "type": "observe",
+          "species_id": "glow_moth"
+        }
+      ],
+      "rewards": {
+        "trust": 2,
+        "journal_entry": "辉蛾夜行习性"
+      }
+    },
+    {
+      "id": "help_shell_pup_settle",
+      "title": "帮壳幼安顿到浅池",
+      "giver": "washer_grandma",
+      "category": "care",
+      "target_habitat": "crystal_creek",
+      "steps": [
+        {
+          "type": "encounter",
+          "species_id": "shell_pup"
+        },
+        {
+          "type": "bond",
+          "species_id": "shell_pup"
+        },
+        {
+          "type": "build",
+          "building_id": "shallow_pool",
+          "level": 1
+        }
+      ],
+      "rewards": {
+        "trust": 2,
+        "items": {
+          "warm_stone": 2
+        }
+      }
+    },
+    {
+      "id": "open_platform",
+      "title": "修好平台的第一处观测架",
+      "giver": "ruin_restorer",
+      "category": "unlock",
+      "target_habitat": "ancient_platform",
+      "steps": [
+        {
+          "type": "deliver",
+          "item": "parts",
+          "count": 4
+        },
+        {
+          "type": "visit",
+          "habitat_id": "ancient_platform"
+        },
+        {
+          "type": "build",
+          "building_id": "watch_tower",
+          "level": 1
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "unlock_habitat": "ancient_platform"
+      }
+    },
+    {
+      "id": "bazaar_repair_stall",
+      "title": "帮阿铂修好摊位",
+      "giver": "tinker_bo",
+      "category": "craft",
+      "target_habitat": "copper_hammer_bazaar",
+      "steps": [
+        {
+          "type": "deliver",
+          "item": "wood",
+          "count": 4
+        },
+        {
+          "type": "deliver",
+          "item": "parts",
+          "count": 2
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "repair_kit": 1
+        }
+      }
+    },
+    {
+      "id": "rescue_rift_fawn",
+      "title": "安抚受惊的隙鹿",
+      "giver": "anomaly_researcher",
+      "category": "rescue",
+      "target_habitat": "radiant_spire",
+      "steps": [
+        {
+          "type": "visit",
+          "habitat_id": "radiant_spire"
+        },
+        {
+          "type": "encounter",
+          "species_id": "rift_fawn"
+        },
+        {
+          "type": "calm",
+          "species_id": "rift_fawn"
+        }
+      ],
+      "rewards": {
+        "trust": 2,
+        "items": {
+          "stability_shard": 1
+        }
+      }
+    },
+    {
+      "id": "find_apprentice_notes",
+      "title": "替小禾找回笔记",
+      "giver": "lost_apprentice",
+      "category": "errand",
+      "target_habitat": "mist_moss_cave",
+      "steps": [
+        {
+          "type": "observe",
+          "marker": "note_cache"
+        },
+        {
+          "type": "return",
+          "npc": "lost_apprentice"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "育幼手记"
+      }
+    }
+  ]
+}

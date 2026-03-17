@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "soft_moss",
+      "name": "软苔",
+      "type": "material"
+    },
+    {
+      "id": "fiber",
+      "name": "纤维束",
+      "type": "material"
+    },
+    {
+      "id": "warm_stone",
+      "name": "温石",
+      "type": "material"
+    },
+    {
+      "id": "amber_resin",
+      "name": "琥脂",
+      "type": "rare_material"
+    },
+    {
+      "id": "water_drop",
+      "name": "净水滴",
+      "type": "material"
+    },
+    {
+      "id": "wood",
+      "name": "木材",
+      "type": "material"
+    },
+    {
+      "id": "stone_chip",
+      "name": "石片",
+      "type": "material"
+    },
+    {
+      "id": "clear_sand",
+      "name": "净砂",
+      "type": "material"
+    },
+    {
+      "id": "reed",
+      "name": "芦苇",
+      "type": "material"
+    },
+    {
+      "id": "rope",
+      "name": "绳索",
+      "type": "material"
+    },
+    {
+      "id": "parts",
+      "name": "机括零件",
+      "type": "material"
+    },
+    {
+      "id": "glass",
+      "name": "玻片",
+      "type": "material"
+    },
+    {
+      "id": "glow_dust",
+      "name": "辉尘",
+      "type": "rare_material"
+    },
+    {
+      "id": "spring_core",
+      "name": "簧芯",
+      "type": "rare_material"
+    },
+    {
+      "id": "tea_leaf",
+      "name": "茶叶",
+      "type": "consumable"
+    },
+    {
+      "id": "cloth",
+      "name": "布料",
+      "type": "material"
+    },
+    {
+      "id": "ink",
+      "name": "墨汁",
+      "type": "material"
+    },
+    {
+      "id": "paper",
+      "name": "信纸",
+      "type": "material"
+    },
+    {
+      "id": "metal",
+      "name": "金属块",
+      "type": "material"
+    },
+    {
+      "id": "oil",
+      "name": "润滑油",
+      "type": "material"
+    },
+    {
+      "id": "herbal_steam",
+      "name": "草药蒸汽包",
+      "type": "consumable"
+    },
+    {
+      "id": "repair_kit",
+      "name": "修理包",
+      "type": "tool"
+    },
+    {
+      "id": "stability_shard",
+      "name": "稳定碎片",
+      "type": "rare_material"
+    }
+  ]
+}

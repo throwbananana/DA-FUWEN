@@ -1,0 +1,413 @@
+{
+  "version": 1,
+  "buildings": [
+    {
+      "id": "warm_nest",
+      "name": "保温窝",
+      "habitat_types": [
+        "habitat"
+      ],
+      "site": "mist_moss_cave",
+      "max_level": 3,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "soft_moss": 4,
+            "fiber": 2
+          },
+          "effects": [
+            "驻守宠物回复+1",
+            "心情下降减缓"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "soft_moss": 6,
+            "warm_stone": 2
+          },
+          "effects": [
+            "访问时额外恢复",
+            "幼体事件概率提升"
+          ]
+        },
+        {
+          "level": 3,
+          "cost": {
+            "soft_moss": 8,
+            "amber_resin": 2
+          },
+          "effects": [
+            "孵育事件开启",
+            "稀有个体更愿停留"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moss_bed",
+      "name": "苔床区",
+      "habitat_types": [
+        "habitat"
+      ],
+      "site": "mist_moss_cave",
+      "max_level": 3,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "soft_moss": 3,
+            "water_drop": 2
+          },
+          "effects": [
+            "每次拜访产出软苔"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "soft_moss": 5,
+            "reed": 3
+          },
+          "effects": [
+            "心情恢复额外+1"
+          ]
+        },
+        {
+          "level": 3,
+          "cost": {
+            "soft_moss": 7,
+            "dew_crystal": 1
+          },
+          "effects": [
+            "低戒备遭遇概率提升"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nursery_corner",
+      "name": "育幼角",
+      "habitat_types": [
+        "habitat"
+      ],
+      "site": "mist_moss_cave",
+      "max_level": 2,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "wood": 3,
+            "soft_moss": 4
+          },
+          "effects": [
+            "幼体观察事件解锁"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "wood": 5,
+            "amber_resin": 1
+          },
+          "effects": [
+            "稀有幼体遭遇提升"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shallow_pool",
+      "name": "浅池",
+      "site": "crystal_creek",
+      "max_level": 3,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "stone_chip": 4,
+            "water_drop": 3
+          },
+          "effects": [
+            "水栖宠物心情+1"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "stone_chip": 6,
+            "warm_stone": 2
+          },
+          "effects": [
+            "结缘成功趋势提升"
+          ]
+        },
+        {
+          "level": 3,
+          "cost": {
+            "stone_chip": 8,
+            "clear_sand": 3
+          },
+          "effects": [
+            "引来新个体停留"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sun_drying_rack",
+      "name": "晒石台",
+      "site": "crystal_creek",
+      "max_level": 3,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "wood": 4,
+            "rope": 2
+          },
+          "effects": [
+            "产出温石"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "wood": 6,
+            "stone_chip": 3
+          },
+          "effects": [
+            "额外产出矿砂"
+          ]
+        },
+        {
+          "level": 3,
+          "cost": {
+            "wood": 8,
+            "amber_resin": 1
+          },
+          "effects": [
+            "天气加成扩大"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reed_shed",
+      "name": "水草棚",
+      "site": "crystal_creek",
+      "max_level": 2,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "reed": 4,
+            "wood": 2
+          },
+          "effects": [
+            "钓取和喂食选项增强"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "reed": 6,
+            "fiber": 3
+          },
+          "effects": [
+            "稀有水边遭遇提升"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tea_shed",
+      "name": "茶棚",
+      "site": "sky_post",
+      "max_level": 2,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "wood": 4,
+            "tea_leaf": 3
+          },
+          "effects": [
+            "访问后同行恢复疲劳"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "wood": 6,
+            "cloth": 2
+          },
+          "effects": [
+            "可一次服务两只同行宠物"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "boarding_pen",
+      "name": "寄养栏",
+      "site": "sky_post",
+      "max_level": 2,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "wood": 5,
+            "fiber": 4
+          },
+          "effects": [
+            "寄养位+1"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "wood": 8,
+            "cloth": 3
+          },
+          "effects": [
+            "寄养期间心情不降"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "message_board",
+      "name": "留信牌",
+      "site": "sky_post",
+      "max_level": 2,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "wood": 3,
+            "ink": 1
+          },
+          "effects": [
+            "巡游 NPC 位置可见"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "wood": 5,
+            "paper": 3
+          },
+          "effects": [
+            "跨点委托刷新"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "watch_tower",
+      "name": "观测台",
+      "site": "ancient_platform",
+      "max_level": 3,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "parts": 4,
+            "wood": 3
+          },
+          "effects": [
+            "天气/异常预告"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "parts": 6,
+            "glass": 2
+          },
+          "effects": [
+            "观测成功率提升"
+          ]
+        },
+        {
+          "level": 3,
+          "cost": {
+            "parts": 8,
+            "glow_dust": 2
+          },
+          "effects": [
+            "稀有夜间事件解锁"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "repair_bench",
+      "name": "修理间",
+      "site": "ancient_platform",
+      "max_level": 3,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "parts": 4,
+            "oil": 2
+          },
+          "effects": [
+            "修理类委托可接"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "parts": 6,
+            "metal": 3
+          },
+          "effects": [
+            "构件修复奖励提升"
+          ]
+        },
+        {
+          "level": 3,
+          "cost": {
+            "parts": 8,
+            "spring_core": 1
+          },
+          "effects": [
+            "古代构件产出提升"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "echo_room",
+      "name": "回响室",
+      "site": "ancient_platform",
+      "max_level": 2,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "glow_dust": 4,
+            "glass": 2
+          },
+          "effects": [
+            "共鸣事件解锁"
+          ]
+        },
+        {
+          "level": 2,
+          "cost": {
+            "glow_dust": 6,
+            "spring_core": 1
+          },
+          "effects": [
+            "特殊图鉴条目开放"
+          ]
+        }
+      ]
+    }
+  ]
+}

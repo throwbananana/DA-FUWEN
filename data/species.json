@@ -1,0 +1,324 @@
+{
+  "version": 1,
+  "species": [
+    {
+      "id": "moss_puff",
+      "name": "苔团",
+      "rarity": "common",
+      "temperament": "shy",
+      "habitat_preferences": [
+        "cold_cave",
+        "mossy"
+      ],
+      "resident_tags": [
+        "moss",
+        "warmth",
+        "nursery"
+      ],
+      "likes": [
+        "soft_moss",
+        "dim_light",
+        "humming"
+      ],
+      "dislikes": [
+        "loud_noise",
+        "dry_heat"
+      ],
+      "care_actions": [
+        "feed",
+        "hum",
+        "brush"
+      ],
+      "bond_skill": "soften_mood",
+      "work_style": "slow_steady"
+    },
+    {
+      "id": "cave_sniffer",
+      "name": "穴嗅兽",
+      "rarity": "common",
+      "temperament": "curious",
+      "habitat_preferences": [
+        "cold_cave"
+      ],
+      "resident_tags": [
+        "burrow",
+        "guard",
+        "gather"
+      ],
+      "likes": [
+        "root_snacks",
+        "hidden_paths"
+      ],
+      "dislikes": [
+        "crowds"
+      ],
+      "care_actions": [
+        "observe",
+        "track",
+        "feed"
+      ],
+      "bond_skill": "find_material",
+      "work_style": "explorer"
+    },
+    {
+      "id": "dew_slug",
+      "name": "露涎虫",
+      "rarity": "common",
+      "temperament": "hungry",
+      "habitat_preferences": [
+        "cold_cave",
+        "mossy"
+      ],
+      "resident_tags": [
+        "moss",
+        "gather",
+        "calm"
+      ],
+      "likes": [
+        "dew_crystal",
+        "wet_stone"
+      ],
+      "dislikes": [
+        "dry_air"
+      ],
+      "care_actions": [
+        "feed",
+        "shelter",
+        "observe"
+      ],
+      "bond_skill": "moisture_trail",
+      "work_style": "forager"
+    },
+    {
+      "id": "shell_pup",
+      "name": "壳幼",
+      "rarity": "common",
+      "temperament": "gentle",
+      "habitat_preferences": [
+        "waterside",
+        "sunny"
+      ],
+      "resident_tags": [
+        "water",
+        "stone",
+        "cleaner"
+      ],
+      "likes": [
+        "warm_stone",
+        "clear_water"
+      ],
+      "dislikes": [
+        "muddy_noise"
+      ],
+      "care_actions": [
+        "feed",
+        "soak",
+        "pat"
+      ],
+      "bond_skill": "purify_water",
+      "work_style": "caretaker"
+    },
+    {
+      "id": "ripple_slime",
+      "name": "漪团",
+      "rarity": "common",
+      "temperament": "hungry",
+      "habitat_preferences": [
+        "waterside"
+      ],
+      "resident_tags": [
+        "water",
+        "cleaner",
+        "calm"
+      ],
+      "likes": [
+        "clear_water",
+        "reed"
+      ],
+      "dislikes": [
+        "oil"
+      ],
+      "care_actions": [
+        "feed",
+        "observe",
+        "guide"
+      ],
+      "bond_skill": "cleanse_pool",
+      "work_style": "cleaner"
+    },
+    {
+      "id": "stream_glider",
+      "name": "溪翔",
+      "rarity": "uncommon",
+      "temperament": "alert",
+      "habitat_preferences": [
+        "waterside",
+        "windy"
+      ],
+      "resident_tags": [
+        "water",
+        "messenger",
+        "speed"
+      ],
+      "likes": [
+        "wind_chimes",
+        "fish_bits"
+      ],
+      "dislikes": [
+        "tight_spaces"
+      ],
+      "care_actions": [
+        "feed",
+        "play",
+        "guide"
+      ],
+      "bond_skill": "swift_delivery",
+      "work_style": "messenger"
+    },
+    {
+      "id": "gear_finch",
+      "name": "齿翎雀",
+      "rarity": "uncommon",
+      "temperament": "busy",
+      "habitat_preferences": [
+        "ruin",
+        "machine"
+      ],
+      "resident_tags": [
+        "machine",
+        "curious",
+        "spark"
+      ],
+      "likes": [
+        "small_parts",
+        "clicking_sounds"
+      ],
+      "dislikes": [
+        "wet_feathers"
+      ],
+      "care_actions": [
+        "observe",
+        "repair",
+        "feed"
+      ],
+      "bond_skill": "repair_bonus",
+      "work_style": "maker"
+    },
+    {
+      "id": "spark_mite",
+      "name": "霆粒",
+      "rarity": "common",
+      "temperament": "curious",
+      "habitat_preferences": [
+        "ruin",
+        "machine"
+      ],
+      "resident_tags": [
+        "spark",
+        "machine",
+        "curious"
+      ],
+      "likes": [
+        "glow_dust",
+        "clicking_sounds"
+      ],
+      "dislikes": [
+        "still_air"
+      ],
+      "care_actions": [
+        "observe",
+        "guide",
+        "repair"
+      ],
+      "bond_skill": "charge_parts",
+      "work_style": "tinkerer"
+    },
+    {
+      "id": "glow_moth",
+      "name": "辉蛾",
+      "rarity": "rare",
+      "temperament": "fragile",
+      "habitat_preferences": [
+        "ruin",
+        "night"
+      ],
+      "resident_tags": [
+        "light",
+        "echo",
+        "calm"
+      ],
+      "likes": [
+        "quiet_music",
+        "glow_dust"
+      ],
+      "dislikes": [
+        "sudden_touch"
+      ],
+      "care_actions": [
+        "hum",
+        "observe",
+        "guide"
+      ],
+      "bond_skill": "echo_event",
+      "work_style": "mystic"
+    },
+    {
+      "id": "rift_fawn",
+      "name": "隙鹿",
+      "rarity": "rare",
+      "temperament": "fearful",
+      "habitat_preferences": [
+        "anomaly"
+      ],
+      "resident_tags": [
+        "rescue",
+        "stabilize"
+      ],
+      "likes": [
+        "calm_voice",
+        "safe_shelter"
+      ],
+      "dislikes": [
+        "bright_flash",
+        "aggression"
+      ],
+      "care_actions": [
+        "calm",
+        "feed",
+        "shelter"
+      ],
+      "bond_skill": "anomaly_resist",
+      "work_style": "survivor"
+    },
+    {
+      "id": "lumen_howler",
+      "name": "辉嚎",
+      "rarity": "epic",
+      "temperament": "wild",
+      "habitat_preferences": [
+        "anomaly",
+        "night"
+      ],
+      "resident_tags": [
+        "light",
+        "guard",
+        "storm"
+      ],
+      "likes": [
+        "open_space",
+        "moon_wind"
+      ],
+      "dislikes": [
+        "crowds",
+        "chains"
+      ],
+      "care_actions": [
+        "observe",
+        "retreat",
+        "calm"
+      ],
+      "bond_skill": "storm_guard",
+      "work_style": "guardian"
+    }
+  ]
+}

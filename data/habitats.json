@@ -1,0 +1,279 @@
+{
+  "version": 1,
+  "habitats": [
+    {
+      "id": "mist_moss_cave",
+      "name": "雾苔窟",
+      "type": "habitat",
+      "biome": "cold_cave",
+      "mood_tags": [
+        "安静",
+        "保温",
+        "孵育"
+      ],
+      "travel_cost": 1,
+      "resident_slots": 1,
+      "support_slots": 1,
+      "resident_preferences": [
+        "moss",
+        "burrow",
+        "warmth"
+      ],
+      "buildings": [
+        "warm_nest",
+        "moss_bed",
+        "nursery_corner"
+      ],
+      "npc_pool": [
+        "moss_keeper",
+        "lost_apprentice"
+      ],
+      "wild_pool": [
+        "moss_puff",
+        "cave_sniffer",
+        "dew_slug"
+      ],
+      "visit_actions": [
+        "care",
+        "build",
+        "talk",
+        "observe",
+        "forage"
+      ],
+      "unlock_rule": {
+        "type": "default"
+      },
+      "seasonal_hooks": {
+        "spring": [
+          "幼体孵化率提升"
+        ],
+        "rain": [
+          "软苔采集量提升"
+        ],
+        "winter": [
+          "保温需求上升"
+        ]
+      }
+    },
+    {
+      "id": "crystal_creek",
+      "name": "晶溪滩",
+      "type": "habitat",
+      "biome": "waterside",
+      "mood_tags": [
+        "清爽",
+        "晒暖",
+        "安居"
+      ],
+      "travel_cost": 1,
+      "resident_slots": 1,
+      "support_slots": 1,
+      "resident_preferences": [
+        "water",
+        "stone",
+        "cleaner"
+      ],
+      "buildings": [
+        "shallow_pool",
+        "sun_drying_rack",
+        "reed_shed"
+      ],
+      "npc_pool": [
+        "washer_grandma",
+        "stone_trader"
+      ],
+      "wild_pool": [
+        "shell_pup",
+        "ripple_slime",
+        "stream_glider"
+      ],
+      "visit_actions": [
+        "care",
+        "build",
+        "talk",
+        "observe",
+        "fish"
+      ],
+      "unlock_rule": {
+        "type": "default"
+      },
+      "seasonal_hooks": {
+        "summer": [
+          "晒石台产出提升"
+        ],
+        "fog": [
+          "稀有个体更易出现"
+        ]
+      }
+    },
+    {
+      "id": "sky_post",
+      "name": "云升驿",
+      "type": "settlement",
+      "biome": "highroad",
+      "mood_tags": [
+        "往来",
+        "休息",
+        "传闻"
+      ],
+      "travel_cost": 1,
+      "resident_slots": 0,
+      "support_slots": 0,
+      "resident_preferences": [],
+      "buildings": [
+        "tea_shed",
+        "boarding_pen",
+        "message_board"
+      ],
+      "npc_pool": [
+        "innkeeper_yun",
+        "boarder_liu",
+        "traveling_peddler"
+      ],
+      "wild_pool": [],
+      "visit_actions": [
+        "rest",
+        "trade",
+        "quest",
+        "talk",
+        "mail"
+      ],
+      "unlock_rule": {
+        "type": "default"
+      },
+      "seasonal_hooks": {
+        "storm": [
+          "巡游 NPC 更常停留"
+        ]
+      }
+    },
+    {
+      "id": "ancient_platform",
+      "name": "古械平台",
+      "type": "habitat",
+      "biome": "ruin",
+      "mood_tags": [
+        "探索",
+        "发现",
+        "微神秘"
+      ],
+      "travel_cost": 2,
+      "resident_slots": 1,
+      "support_slots": 1,
+      "resident_preferences": [
+        "curious",
+        "spark",
+        "machine"
+      ],
+      "buildings": [
+        "watch_tower",
+        "repair_bench",
+        "echo_room"
+      ],
+      "npc_pool": [
+        "ruin_restorer",
+        "field_recorder"
+      ],
+      "wild_pool": [
+        "spark_mite",
+        "gear_finch",
+        "glow_moth"
+      ],
+      "visit_actions": [
+        "care",
+        "build",
+        "talk",
+        "observe",
+        "repair"
+      ],
+      "unlock_rule": {
+        "type": "quest",
+        "quest_id": "open_platform"
+      },
+      "seasonal_hooks": {
+        "aurora": [
+          "回响室事件概率提升"
+        ]
+      }
+    },
+    {
+      "id": "copper_hammer_bazaar",
+      "name": "铜锤集",
+      "type": "settlement",
+      "biome": "workshop",
+      "mood_tags": [
+        "热闹",
+        "手作",
+        "交换"
+      ],
+      "travel_cost": 1,
+      "resident_slots": 0,
+      "support_slots": 0,
+      "resident_preferences": [],
+      "buildings": [
+        "tool_shelf",
+        "repair_counter",
+        "display_corner"
+      ],
+      "npc_pool": [
+        "tinker_bo",
+        "smith_ya",
+        "parts_vendor"
+      ],
+      "wild_pool": [],
+      "visit_actions": [
+        "trade",
+        "craft",
+        "quest",
+        "decorate",
+        "talk"
+      ],
+      "unlock_rule": {
+        "type": "default"
+      },
+      "seasonal_hooks": {
+        "festival": [
+          "装饰与交换任务增加"
+        ]
+      }
+    },
+    {
+      "id": "radiant_spire",
+      "name": "裂辉尖塔",
+      "type": "anomaly",
+      "biome": "anomaly",
+      "mood_tags": [
+        "异常",
+        "救助",
+        "高风险"
+      ],
+      "travel_cost": 3,
+      "resident_slots": 0,
+      "support_slots": 0,
+      "resident_preferences": [],
+      "buildings": [],
+      "npc_pool": [
+        "anomaly_researcher"
+      ],
+      "wild_pool": [
+        "rift_fawn",
+        "lumen_howler"
+      ],
+      "visit_actions": [
+        "rescue",
+        "stabilize",
+        "observe"
+      ],
+      "unlock_rule": {
+        "type": "season_progress",
+        "required_habitat_rank": 3,
+        "required_trust_total": 8
+      },
+      "seasonal_hooks": {
+        "eclipse": [
+          "异常波动更强，但稀有奖励更好"
+        ]
+      }
+    }
+  ]
+}

@@ -1,36 +1,95 @@
 # DA-FUWEN
 
-当前仓库已经不是“重构接入包”，而是一个可直接运行的 Godot 4.6 原型。主循环为：棋盘推进 -> 地点拜访 / 道馆挑战 -> 双打战斗 -> 基地养成与羁绊构筑。
+`DA-FUWEN` 当前是一个可直接运行的 Godot 4.6 原型项目，不是“待接入的 JSON 升级包”。  
+仓库主线实现围绕 `scenes/`、`scripts/`、`data/` 展开，核心体验是：
 
-## 当前已接入内容
+营地准备 -> 选择已开放地点 -> 到点驻守 / 建设 / 交谈 / 观察 / 试炼 -> 回营记录 -> 推进季节轮换
 
-- 季节轮换、地点解锁、道馆挑战与奖励表结算
-- 2v2 战斗、背包人口、重复个体 `3 合 1` 升星
-- MDA120 内容包：物种、羁绊、建筑、技能、进化链、成长曲线
-- 建筑共鸣：战前增益、经济追加产出、成长增益
-- 基于 `unlock_rank` 和 `shop_odds` 的遭遇过滤与稀有度权重
+项目窗口名仍为 `dafuwen`，主界面标题为“雾野养成原型”。
 
-## 目录说明
+## 当前实现概览
 
-- `scenes/main.tscn`：主场景入口
-- `scripts/autoload/`：全局数据与存档状态，已在 `project.godot` 注册为 AutoLoad
-- `scripts/services/`：地点、遭遇、道馆、羁绊等服务逻辑
-- `scripts/*_smoke_test.gd`：无界面烟测脚本
-- `data/`：当前运行时使用的 JSON 表
-- `DA_FUWEN_升级文档与JSON示例包/`、`DA_FUWEN_MDA_JSON_120包/`：保留的上游参考包，不是运行时入口
+- 季节轮换、天气与时段变化，以及地点开放链
+- 棋盘式地图推进与地点拜访流程
+- 固定 `2v2` 双打编成
+- 背包容量随成长曲线提升，按“人口”而非传统格子计算
+- 重复个体 `3 合 1` 升星，并支持场地 / 建筑 / 羁绊条件进化
+- NPC 交谈、委托接取与完成结算
+- 道馆挑战、阶位限制、首通奖励与开放联动
+- 建筑驻守、建筑共鸣、战前增益、访问增产与成长加成
+- MDA120 数据包已并入运行时读取流程，包括物种、建筑、技能、羁绊、进化链、遭遇表与成长曲线
 
-## 运行与验证
+## 技术与运行环境
+
+- 引擎：Godot `4.6`
+- 主场景：`res://scenes/main.tscn`
+- AutoLoad：
+  - `DataRepository`：静态 JSON 表读取与查询
+  - `GameState`：季节、库存、伙伴、地点、委托、道馆等运行时状态
+- 额外依赖：无，当前仓库内容可直接在 Godot 中打开运行
+
+## 快速开始
+
+在项目根目录执行：
 
 ```powershell
 godot --path .
+```
+
+如果本机 Godot 已加入环境变量，也可以直接用编辑器打开 [project.godot](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\project.godot)。
+
+## 基础回归
+
+仓库内保留了 4 组无界面烟测脚本，适合在改动数据表或服务逻辑后快速验证：
+
+```powershell
 godot --headless --path . -s res://scripts/smoke_test.gd
 godot --headless --path . -s res://scripts/season_upgrade_smoke_test.gd
 godot --headless --path . -s res://scripts/bond_double_smoke_test.gd
 godot --headless --path . -s res://scripts/mda120_upgrade_smoke_test.gd
 ```
 
-## 文档约定
+它们分别覆盖：
 
-- 当前实现与数据以 `scripts/`、`data/`、`scenes/` 为准。
-- `docs/current-project-status.md` 记录当前版本范围与验证方式。
-- 升级包内的说明文档仅用于回溯原始需求；若与仓库实现冲突，以仓库代码为准。
+- 主场景可启动、可进入地点、可打开驻点总览
+- 季节切换、地点开放、道馆首通奖励链
+- 双打编成、背包人口、升星、羁绊与建筑战前增益
+- MDA120 成长曲线、遭遇权重、访问共鸣与进化链
+
+## 主要目录
+
+- [scenes/main.tscn](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\scenes\main.tscn)：主场景入口
+- [scripts/main.gd](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\scripts\main.gd)：主循环、UI 刷新、拜访与战斗面板调度
+- [scripts/autoload/data_repository.gd](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\scripts\autoload\data_repository.gd)：静态表加载、并表与索引查询
+- [scripts/autoload/game_state.gd](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\scripts\autoload\game_state.gd)：运行时状态、成长、解锁、库存和伙伴管理
+- `scripts/services/`：地点访问、建设、NPC、遭遇、羁绊、道馆等服务层
+- `scripts/*smoke_test.gd`：回归脚本
+- `data/`：运行时实际读取的 JSON 数据源
+- `docs/`：当前版本状态说明
+- `DA_FUWEN_升级文档与JSON示例包/`、`DA_FUWEN_MDA_JSON_120包/`：上游参考资料与历史接入包
+
+## 核心数据文件
+
+运行时会从 `data/` 读取并合并这些内容：
+
+- `habitats.json` + `habitats_mda_expanded.json`
+- `species.json` + `species_mda120.json`
+- `building_blueprints.json` + `building_blueprints_mda.json`
+- `encounter_tables.json` + `encounter_tables_mda.json`
+- `season_rules.json`
+- `habitat_unlock_rules.json`
+- `dojo_definitions.json`
+- `reward_tables.json`
+- `quest_templates.json`
+- `npc_profiles.json`
+- `items.json`
+- `synergy_definitions_mda.json`
+- `skill_library_mda.json`
+- `evolution_chains_mda.json`
+- `progression_curves_mda.json`
+
+## 文档边界
+
+- 当前项目说明以 [docs/current-project-status.md](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\docs\current-project-status.md) 和仓库代码为准。
+- 如果升级包中的说明与当前实现冲突，以 `scripts/`、`data/`、`scenes/` 里的现状为准。
+- 根目录 `.docx` 和两个历史数据包目录保留用于回溯需求，不作为当前实现的唯一依据。

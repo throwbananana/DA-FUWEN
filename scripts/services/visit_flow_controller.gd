@@ -21,6 +21,8 @@ var dojo_service = DojoServiceScript.new()
 var current_habitat_id := ""
 var current_step := "idle"
 var current_encounter := {}
+var pending_dojo_id := ""
+var pending_dojo_tier := ""
 
 func start_visit(habitat_id: String) -> void:
 	current_habitat_id = habitat_id
@@ -54,9 +56,24 @@ func open_dojo_menu() -> void:
 	state_changed.emit("dojo_menu", dojo_service.get_dojo_menu(current_habitat_id))
 
 func choose_dojo_tier(tier: String) -> void:
-	current_step = "dojo_result"
 	var dojo := dojo_service.get_dojo_for_habitat(current_habitat_id)
-	state_changed.emit("dojo_result", dojo_service.attempt_dojo(String(dojo.get("id", "")), tier))
+	var result := dojo_service.prepare_dojo_battle(String(dojo.get("id", "")), tier)
+	if not bool(result.get("ok", false)):
+		current_step = "dojo_result"
+		state_changed.emit("dojo_result", result)
+		return
+	pending_dojo_id = String(dojo.get("id", ""))
+	pending_dojo_tier = tier
+	current_step = "dojo_battle"
+	state_changed.emit("dojo_battle", result)
+
+func resolve_dojo_battle(battle_result: Dictionary) -> void:
+	if pending_dojo_id.is_empty() or pending_dojo_tier.is_empty():
+		return
+	current_step = "dojo_result"
+	state_changed.emit("dojo_result", dojo_service.resolve_dojo_battle(pending_dojo_id, pending_dojo_tier, battle_result))
+	pending_dojo_id = ""
+	pending_dojo_tier = ""
 
 func start_observation() -> void:
 	current_encounter = encounter_service.roll_encounter(current_habitat_id)
@@ -80,4 +97,6 @@ func finish_visit() -> void:
 	current_habitat_id = ""
 	current_step = "idle"
 	current_encounter.clear()
+	pending_dojo_id = ""
+	pending_dojo_tier = ""
 	visit_finished.emit(report)

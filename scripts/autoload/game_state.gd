@@ -1,5 +1,7 @@
 extends Node
 
+const GameData = preload("res://scripts/game_data.gd")
+
 const DEFAULT_SEASON_ID := "spring"
 const DEFAULT_SEASON_LENGTH := 6
 const SEASON_ORDER := ["spring", "summer", "autumn", "winter"]
@@ -28,6 +30,9 @@ var season_points := 0
 var badge_count := 0
 var failed_dojo_streak := 0
 var current_available_habitats_cache: Array[String] = []
+var battle_slots: Array[String] = []
+var backpack_slots: Array[String] = []
+var backpack_capacity := 4
 
 var _pet_serial := 1
 
@@ -57,6 +62,9 @@ func reset_for_new_season() -> void:
 	badge_count = 0
 	failed_dojo_streak = 0
 	current_available_habitats_cache.clear()
+	battle_slots.clear()
+	backpack_slots.clear()
+	backpack_capacity = 4
 	quest_memory = {
 		"visited_habitats": {},
 		"visited_moments": {},
@@ -73,6 +81,8 @@ func reset_for_new_season() -> void:
 	}
 	_pet_serial = 1
 	_seed_companions()
+	_recalculate_backpack_capacity()
+	_sync_roster_slots()
 	_sync_current_season_rule()
 	refresh_season_unlocks()
 
@@ -232,9 +242,9 @@ func _rank_from_state(habitat_state: Dictionary) -> int:
 	return total
 
 func _seed_companions() -> void:
-	add_companion("shell_pup", "小壳")
-	add_companion("moss_puff", "霜团")
-	add_companion("gear_finch", "灰爪")
+	add_companion("steam_otter_1", "汐牙")
+	add_companion("moss_deer_1", "苔角")
+	add_companion("spark_mouse_1", "火花")
 
 func add_companion(species_id: String, nickname: String = "") -> String:
 	var profile := DataRepository.get_species(species_id)
@@ -245,13 +255,16 @@ func add_companion(species_id: String, nickname: String = "") -> String:
 		"uid": uid,
 		"species_id": species_id,
 		"display_name": display_name,
+		"nickname_locked": not nickname.is_empty(),
 		"bond_level": 1,
+		"star_level": 1,
 		"residence_habitat_id": "",
 		"temperament": String(profile.get("temperament", "")),
 		"resident_tags": profile.get("resident_tags", []).duplicate(),
 	}
 	register_species_seen(species_id)
 	add_journal_entry("新伙伴加入照料名册：%s。" % display_name)
+	_sync_roster_slots()
 	return uid
 
 func get_companions() -> Array:
@@ -265,6 +278,20 @@ func get_companions() -> Array:
 
 func get_pet(pet_uid: String) -> Dictionary:
 	return pet_states.get(pet_uid, {})
+
+func add_pet_bond(pet_uid: String, amount: int) -> Dictionary:
+	if not pet_states.has(pet_uid) or amount == 0:
+		return {}
+	var pet: Dictionary = pet_states[pet_uid].duplicate(true)
+	var old_level := int(pet.get("bond_level", 1))
+	pet["bond_level"] = clampi(old_level + amount, 1, 6)
+	pet_states[pet_uid] = pet
+	return {
+		"pet_uid": pet_uid,
+		"old_level": old_level,
+		"new_level": int(pet.get("bond_level", old_level)),
+		"changed": old_level != int(pet.get("bond_level", old_level)),
+	}
 
 func set_pet_residence(pet_uid: String, habitat_id: String) -> void:
 	if not pet_states.has(pet_uid):
@@ -296,6 +323,8 @@ func set_building_level(habitat_id: String, building_id: String, level: int) -> 
 		habitat_state["service_levels"] = building_levels
 	habitat_state["rank"] = _rank_from_state(habitat_state)
 	habitats[habitat_id] = habitat_state
+	_recalculate_backpack_capacity()
+	_sync_roster_slots()
 	refresh_season_unlocks()
 
 func note_visit(habitat_id: String) -> void:
@@ -401,6 +430,8 @@ func apply_system_rewards(system_rewards: Dictionary) -> void:
 				season_points += int(system_rewards[reward_id])
 			"failed_dojo_streak_relief":
 				failed_dojo_streak = maxi(0, failed_dojo_streak - int(system_rewards[reward_id]))
+	_recalculate_backpack_capacity()
+	_sync_roster_slots()
 
 func accept_quest(quest_id: String) -> void:
 	if completed_quests.has(quest_id) or active_quests.has(quest_id):
@@ -439,6 +470,7 @@ func advance_to_next_season() -> bool:
 	time_of_day = "day"
 	failed_dojo_streak = 0
 	_sync_current_season_rule()
+	_sync_roster_slots()
 	refresh_season_unlocks()
 	return true
 
@@ -536,9 +568,19 @@ func _legacy_unlock_status(habitat_id: String, habitat: Dictionary) -> Dictionar
 			var is_open := bool(habitats.get(habitat_id, {}).get("is_unlocked", false))
 			if is_open:
 				return {"open": true, "reasons": [], "unlock_text": ""}
+			var quest_id := String(unlock_rule.get("quest_id", ""))
+			if not quest_id.is_empty() and DataRepository.get_quest(quest_id).is_empty():
+				var rank_gate := maxi(1, int(habitat.get("recommended_rank", 1)))
+				if get_habitat_rank_total() >= rank_gate:
+					return {"open": true, "reasons": [], "unlock_text": ""}
+				return {
+					"open": false,
+					"reasons": ["总据点等级达到 %d" % rank_gate],
+					"unlock_text": "",
+				}
 			return {
 				"open": false,
-				"reasons": ["完成委托 %s" % String(unlock_rule.get("quest_id", "未命名任务"))],
+				"reasons": ["完成委托 %s" % quest_id],
 				"unlock_text": "",
 			}
 		"season_progress":
@@ -638,3 +680,380 @@ func is_habitat_unlocked(habitat_id: String) -> bool:
 
 func record_visit(payload: Dictionary) -> void:
 	visit_history.append(payload)
+
+func get_progression_rank() -> int:
+	return maxi(1, 1 + badge_count + int(get_habitat_rank_total() / 2))
+
+func get_progression_summary() -> String:
+	var entry := DataRepository.get_population_curve_entry(get_progression_rank())
+	if entry.is_empty():
+		return ""
+	var parts: Array[String] = []
+	var new_system := String(entry.get("new_system", ""))
+	var flow_goal := String(entry.get("flow_goal", ""))
+	if not new_system.is_empty():
+		parts.append(new_system)
+	if not flow_goal.is_empty():
+		parts.append(flow_goal)
+	return " ｜ ".join(parts)
+
+func _recalculate_backpack_capacity() -> void:
+	var curve_entry := DataRepository.get_population_curve_entry(get_progression_rank())
+	backpack_capacity = int(curve_entry.get("backpack_capacity", 4))
+
+func _sync_roster_slots() -> void:
+	var valid_uids := {}
+	for companion in get_companions():
+		valid_uids[String(companion.get("uid", ""))] = true
+	var clean_battle: Array[String] = []
+	for pet_uid in battle_slots:
+		if valid_uids.has(pet_uid) and not clean_battle.has(pet_uid):
+			clean_battle.append(pet_uid)
+	var clean_backpack: Array[String] = []
+	for pet_uid in backpack_slots:
+		if valid_uids.has(pet_uid) and not clean_battle.has(pet_uid) and not clean_backpack.has(pet_uid):
+			if _population_used_for_uids(clean_backpack) + _population_cost_for_uid(String(pet_uid)) <= backpack_capacity:
+				clean_backpack.append(pet_uid)
+	for companion in get_companions():
+		var pet_uid := String(companion.get("uid", ""))
+		if clean_battle.size() < 2 and not clean_battle.has(pet_uid):
+			clean_battle.append(pet_uid)
+			continue
+		if not clean_battle.has(pet_uid) and not clean_backpack.has(pet_uid) and _population_used_for_uids(clean_backpack) + _population_cost_for_uid(pet_uid) <= backpack_capacity:
+			clean_backpack.append(pet_uid)
+	battle_slots = clean_battle
+	backpack_slots = clean_backpack
+
+func get_battle_party_uids() -> Array[String]:
+	_sync_roster_slots()
+	return battle_slots.duplicate()
+
+func get_backpack_uids() -> Array[String]:
+	_sync_roster_slots()
+	return backpack_slots.duplicate()
+
+func get_backpack_population_used() -> int:
+	_sync_roster_slots()
+	return _population_used_for_uids(backpack_slots)
+
+func get_building_slot_uids() -> Array[String]:
+	var result: Array[String] = []
+	for habitat_state in habitats.values():
+		for slot_key in ["resident_uid", "assistant_uid"]:
+			var pet_uid := String(habitat_state.get(slot_key, ""))
+			if pet_uid.is_empty() or result.has(pet_uid):
+				continue
+			result.append(pet_uid)
+	return result
+
+func set_battle_slot(slot_index: int, pet_uid: String) -> void:
+	if not pet_states.has(pet_uid):
+		return
+	_sync_roster_slots()
+	while battle_slots.size() <= slot_index:
+		battle_slots.append("")
+	var displaced_uid := String(battle_slots[slot_index])
+	battle_slots[slot_index] = pet_uid
+	for index in range(battle_slots.size()):
+		if index == slot_index:
+			continue
+		if battle_slots[index] == pet_uid:
+			battle_slots[index] = displaced_uid
+			break
+	_sync_roster_slots()
+
+func toggle_backpack_slot(pet_uid: String) -> void:
+	if not pet_states.has(pet_uid):
+		return
+	_sync_roster_slots()
+	if battle_slots.has(pet_uid):
+		return
+	if backpack_slots.has(pet_uid):
+		backpack_slots.erase(pet_uid)
+	else:
+		while not backpack_slots.is_empty() and get_backpack_population_used() + _population_cost_for_uid(pet_uid) > backpack_capacity:
+			backpack_slots.pop_back()
+		if get_backpack_population_used() + _population_cost_for_uid(pet_uid) <= backpack_capacity:
+			backpack_slots.append(pet_uid)
+	_sync_roster_slots()
+
+func get_pet_population_cost(pet_uid: String) -> int:
+	return _population_cost_for_uid(pet_uid)
+
+func _population_cost_for_uid(pet_uid: String) -> int:
+	var pet := get_pet(pet_uid)
+	if pet.is_empty():
+		return 0
+	var profile := GameData.get_species_synergy_profile(String(pet.get("species_id", "")))
+	return maxi(1, int(profile.get("population_cost", 1)))
+
+func _population_used_for_uids(pet_uids: Array) -> int:
+	var total := 0
+	for pet_uid in pet_uids:
+		total += _population_cost_for_uid(String(pet_uid))
+	return total
+
+func count_species_pets(species_id: String, star_level: int = -1) -> int:
+	var total := 0
+	for pet in pet_states.values():
+		if String(pet.get("species_id", "")) != species_id:
+			continue
+		if star_level > 0 and int(pet.get("star_level", 1)) != star_level:
+			continue
+		total += 1
+	return total
+
+func merge_species_duplicates(species_id: String) -> Dictionary:
+	var upgrades: Array = []
+	var keep_merging := true
+	while keep_merging:
+		keep_merging = false
+		for star_level in [1, 2]:
+			var result := _merge_species_star(species_id, star_level)
+			if bool(result.get("ok", false)):
+				upgrades.append(result)
+				keep_merging = true
+				break
+	return {
+		"ok": not upgrades.is_empty(),
+		"upgrades": upgrades,
+	}
+
+func _merge_species_star(species_id: String, star_level: int) -> Dictionary:
+	if star_level >= 3:
+		return {"ok": false, "reason": "max_star"}
+	var candidates: Array[String] = []
+	for pet_uid in pet_states.keys():
+		var pet: Dictionary = pet_states[pet_uid]
+		if String(pet.get("species_id", "")) != species_id:
+			continue
+		if int(pet.get("star_level", 1)) != star_level:
+			continue
+		candidates.append(String(pet_uid))
+	if candidates.size() < 3:
+		return {"ok": false, "reason": "not_enough_duplicates"}
+	candidates.sort()
+	var base_uid := String(candidates[0])
+	var consume_uids: Array[String] = [String(candidates[1]), String(candidates[2])]
+	var base_pet: Dictionary = pet_states.get(base_uid, {}).duplicate(true)
+	if base_pet.is_empty():
+		return {"ok": false, "reason": "base_missing"}
+	var profile := GameData.get_species_synergy_profile(species_id)
+	var evolution_chain: Array = profile.get("evolution_chain", [])
+	var species_profile: Dictionary = DataRepository.get_species(species_id)
+	var next_requirements := _get_next_evolution_requirements(species_id, species_profile)
+	var next_star := star_level + 1
+	var previous_name := String(base_pet.get("display_name", species_id))
+	base_pet["star_level"] = next_star
+	base_pet["bond_level"] = mini(6, int(base_pet.get("bond_level", 1)) + 1)
+	var next_species_id := String(species_profile.get("evolution", {}).get("next_species_id", ""))
+	if not next_species_id.is_empty() and _can_apply_species_evolution(base_pet, species_profile, next_requirements):
+		base_pet["species_id"] = next_species_id
+		if not bool(base_pet.get("nickname_locked", false)):
+			base_pet["display_name"] = String(DataRepository.get_species(next_species_id).get("name", previous_name))
+	if not bool(base_pet.get("nickname_locked", false)) and evolution_chain.size() >= next_star:
+		base_pet["display_name"] = String(evolution_chain[next_star - 1])
+	pet_states[base_uid] = base_pet
+	for consume_uid in consume_uids:
+		_erase_pet(consume_uid)
+	_sync_roster_slots()
+	register_species_seen(String(base_pet.get("species_id", species_id)))
+	return {
+		"ok": true,
+		"species_id": species_id,
+		"new_species_id": String(base_pet.get("species_id", species_id)),
+		"pet_uid": base_uid,
+		"old_star": star_level,
+		"new_star": next_star,
+		"old_name": previous_name,
+		"new_name": String(base_pet.get("display_name", previous_name)),
+	}
+
+func _get_next_evolution_requirements(species_id: String, species_profile: Dictionary) -> Dictionary:
+	var evolution_info := DataRepository.get_evolution_by_species(species_id)
+	var current_entry: Dictionary = evolution_info.get("entry", {})
+	var family: Dictionary = evolution_info.get("family", {})
+	var current_stage := int(current_entry.get("stage", species_profile.get("stage", 0)))
+	for entry in family.get("entries", []):
+		if int(entry.get("stage", 0)) == current_stage + 1:
+			return entry.get("requirements", {}).duplicate(true)
+	return {}
+
+func _can_apply_species_evolution(pet: Dictionary, species_profile: Dictionary, next_requirements: Dictionary = {}) -> bool:
+	var extra_condition_value = species_profile.get("evolution", {}).get("extra_condition", {})
+	var extra_condition: Dictionary = extra_condition_value if typeof(extra_condition_value) == TYPE_DICTIONARY else {}
+	var required_site := String(next_requirements.get("site", extra_condition.get("site", "")))
+	var required_building := String(next_requirements.get("building", extra_condition.get("building", "")))
+	var synergy_requirement := String(next_requirements.get("condition", extra_condition.get("synergy_requirement", "")))
+	var bond_requirement := int(next_requirements.get("bond", extra_condition.get("bond_requirement", 0)))
+	var home_id := String(pet.get("residence_habitat_id", ""))
+	if not required_site.is_empty() and home_id != required_site:
+		return false
+	var building_site := required_site if not required_site.is_empty() else home_id
+	if not required_building.is_empty():
+		if building_site.is_empty():
+			return false
+		if get_building_level(building_site, required_building) <= 0:
+			return false
+	if bond_requirement > 0 and _bond_score_for_pet(pet) < bond_requirement:
+		return false
+	if not synergy_requirement.is_empty() and not _matches_evolution_synergy_requirement(synergy_requirement):
+		return false
+	return true
+
+func _bond_score_for_pet(pet: Dictionary) -> int:
+	return maxi(25, int(pet.get("bond_level", 1)) * 25)
+
+func _matches_evolution_synergy_requirement(requirement_text: String) -> bool:
+	var normalized := requirement_text.replace(" ", "")
+	if normalized.is_empty():
+		return true
+	var counts := _build_active_species_tag_counts()
+	for clause in normalized.split("且"):
+		var clause_text := String(clause)
+		if clause_text.is_empty():
+			continue
+		if not _matches_evolution_clause(clause_text, counts):
+			return false
+	return true
+
+func _matches_evolution_clause(clause_text: String, counts: Dictionary) -> bool:
+	if not clause_text.contains("≥"):
+		return false
+	var parts := clause_text.split("≥")
+	if parts.size() < 2:
+		return false
+	var required_count := int(parts[1])
+	for option in String(parts[0]).split("或"):
+		if _evolution_requirement_count(String(option), counts) >= required_count:
+			return true
+	return false
+
+func _build_active_species_tag_counts() -> Dictionary:
+	var counts := {
+		"types": {},
+		"ecologies": {},
+		"roles": {},
+		"tags": {},
+	}
+	var seen_species := {}
+	var source_uids: Array[String] = []
+	for pet_uid in get_battle_party_uids():
+		source_uids.append(String(pet_uid))
+	for pet_uid in get_backpack_uids():
+		source_uids.append(String(pet_uid))
+	for pet_uid in get_building_slot_uids():
+		source_uids.append(String(pet_uid))
+	for pet_uid in source_uids:
+		var pet := get_pet(pet_uid)
+		if pet.is_empty():
+			continue
+		var species_id := String(pet.get("species_id", ""))
+		if species_id.is_empty() or seen_species.has(species_id):
+			continue
+		seen_species[species_id] = true
+		var species_row := DataRepository.get_species(species_id)
+		if species_row.is_empty():
+			continue
+		_increment_requirement_counts(counts["types"], species_row.get("types", []))
+		_increment_requirement_counts(counts["ecologies"], species_row.get("ecology_tags", []))
+		_increment_requirement_counts(counts["roles"], species_row.get("roles", []))
+		var trait_tags: Array = []
+		trait_tags.append_array(species_row.get("resident_tags", []))
+		trait_tags.append_array(species_row.get("signature_tags", []))
+		_increment_requirement_counts(counts["tags"], trait_tags)
+	return counts
+
+func _increment_requirement_counts(bucket: Dictionary, values: Array) -> void:
+	var local_seen := {}
+	for value in values:
+		var tag_id := String(value)
+		if tag_id.is_empty() or local_seen.has(tag_id):
+			continue
+		local_seen[tag_id] = true
+		bucket[tag_id] = int(bucket.get(tag_id, 0)) + 1
+
+func _evolution_requirement_count(token: String, counts: Dictionary) -> int:
+	var mapped := _map_requirement_token(token)
+	if mapped.is_empty():
+		return 0
+	var bucket_id := String(mapped.get("bucket", ""))
+	var value_id := String(mapped.get("id", ""))
+	return int(counts.get(bucket_id, {}).get(value_id, 0))
+
+func _map_requirement_token(token: String) -> Dictionary:
+	match token:
+		"火系":
+			return {"bucket": "types", "id": "fire"}
+		"水系":
+			return {"bucket": "types", "id": "water"}
+		"电系":
+			return {"bucket": "types", "id": "electric"}
+		"草系":
+			return {"bucket": "types", "id": "grass"}
+		"岩系":
+			return {"bucket": "types", "id": "rock"}
+		"风系":
+			return {"bucket": "types", "id": "wind"}
+		"雾系":
+			return {"bucket": "types", "id": "mist"}
+		"念系":
+			return {"bucket": "types", "id": "psychic"}
+		"金属":
+			return {"bucket": "types", "id": "metal"}
+		"暗影":
+			return {"bucket": "types", "id": "shadow"}
+		"光系":
+			return {"bucket": "types", "id": "light"}
+		"岸线":
+			return {"bucket": "ecologies", "id": "shore"}
+		"森林":
+			return {"bucket": "ecologies", "id": "forest"}
+		"洞窟":
+			return {"bucket": "ecologies", "id": "cave"}
+		"异常":
+			return {"bucket": "ecologies", "id": "anomaly"}
+		"湿地":
+			return {"bucket": "ecologies", "id": "wetland"}
+		"风暴":
+			return {"bucket": "ecologies", "id": "storm"}
+		"火山":
+			return {"bucket": "ecologies", "id": "volcanic"}
+		"霜境":
+			return {"bucket": "ecologies", "id": "frost"}
+		"侦查", "scout":
+			return {"bucket": "roles", "id": "scout"}
+		"控制", "controller":
+			return {"bucket": "roles", "id": "controller"}
+		"修造", "builder":
+			return {"bucket": "roles", "id": "builder"}
+		"治疗", "healer":
+			return {"bucket": "roles", "id": "healer"}
+		"守护", "guardian":
+			return {"bucket": "roles", "id": "guardian"}
+		"先锋", "vanguard":
+			return {"bucket": "roles", "id": "vanguard"}
+		"输出", "striker":
+			return {"bucket": "roles", "id": "striker"}
+		"充能", "charger":
+			return {"bucket": "roles", "id": "charger"}
+		"净化", "purify":
+			return {"bucket": "tags", "id": "purify"}
+		_:
+			return {}
+
+func _erase_pet(pet_uid: String) -> void:
+	if not pet_states.has(pet_uid):
+		return
+	for habitat_id in habitats.keys():
+		var habitat_state: Dictionary = habitats[habitat_id]
+		var changed := false
+		for slot_key in ["resident_uid", "assistant_uid"]:
+			if String(habitat_state.get(slot_key, "")) == pet_uid:
+				habitat_state[slot_key] = ""
+				changed = true
+		if changed:
+			habitats[habitat_id] = habitat_state
+	battle_slots.erase(pet_uid)
+	backpack_slots.erase(pet_uid)
+	pet_states.erase(pet_uid)

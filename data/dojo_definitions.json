@@ -16,8 +16,8 @@
         {
           "tier": "tier_1",
           "enemy_pool": [
-            "gear_finch",
-            "shell_pup"
+            "spark_mouse_1",
+            "volt_carp_1"
           ],
           "modifiers": [
             "speed_up"
@@ -26,8 +26,8 @@
         {
           "tier": "tier_2",
           "enemy_pool": [
-            "gear_finch",
-            "storm_ram"
+            "spark_mouse_2",
+            "storm_yak_1"
           ],
           "modifiers": [
             "speed_up",
@@ -78,8 +78,8 @@
         {
           "tier": "tier_1",
           "enemy_pool": [
-            "moss_puff",
-            "shell_pup"
+            "bloom_lark_1",
+            "moss_deer_1"
           ],
           "modifiers": [
             "precision_up"
@@ -88,8 +88,8 @@
         {
           "tier": "tier_2",
           "enemy_pool": [
-            "moss_puff",
-            "storm_ram"
+            "cedar_bear_1",
+            "mind_owl_1"
           ],
           "modifiers": [
             "precision_up",
@@ -99,8 +99,8 @@
         {
           "tier": "tier_3",
           "enemy_pool": [
-            "storm_ram",
-            "glaze_crane"
+            "chapel_stag_2",
+            "dusk_wolf_2"
           ],
           "modifiers": [
             "duel_rule",

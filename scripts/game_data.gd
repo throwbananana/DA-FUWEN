@@ -24,29 +24,90 @@ const ROLE_NAMES := {
 }
 
 const TYPE_NAMES := {
+	"fire": "火",
+	"water": "水",
+	"electric": "电",
+	"grass": "草",
+	"rock": "岩",
+	"wind": "风",
+	"mist": "雾",
+	"psychic": "念",
+	"metal": "钢",
+	"shadow": "影",
+	"light": "光",
 	"blaze": "焰",
 	"grove": "林",
 	"tide": "潮",
 	"spark": "霆",
 	"stone": "岩",
-	"mist": "雾",
+}
+
+const SYNERGY_THRESHOLDS := [2, 4, 6]
+const BIOME_NAMES := {
+	"cave": "洞窟",
+	"waterside": "水岸",
+	"wetland": "湿地",
+	"ruin": "遗迹",
+	"shore": "海岸",
+	"storm": "风暴",
+	"forest": "森林",
+	"meadow": "草地",
+	"volcanic": "火山",
+	"frost": "霜境",
+	"anomaly": "异常",
+	"wind": "风口",
+	"ice": "霜境",
+}
+const JOB_NAMES := {
+	"vanguard": "先锋",
+	"guardian": "守护",
+	"striker": "输出",
+	"support": "治疗",
+	"healer": "治疗",
+	"controller": "控场",
+	"charger": "充能",
+	"gatherer": "采集",
+	"builder": "修造",
+	"scout": "侦察",
+	"maker": "修造",
+	"observer": "观察",
 }
 
 const TYPE_COLORS := {
+	"fire": Color("ef4444"),
+	"water": Color("0ea5e9"),
+	"electric": Color("eab308"),
+	"grass": Color("22c55e"),
+	"rock": Color("78716c"),
+	"wind": Color("38bdf8"),
 	"blaze": Color("d97706"),
 	"grove": Color("16a34a"),
 	"tide": Color("0ea5e9"),
 	"spark": Color("ca8a04"),
 	"stone": Color("78716c"),
 	"mist": Color("7c3aed"),
+	"psychic": Color("a855f7"),
+	"metal": Color("94a3b8"),
+	"shadow": Color("475569"),
+	"light": Color("facc15"),
 }
 
 const TYPE_ADVANTAGE := {
+	"fire": "grass",
+	"grass": "water",
+	"water": "fire",
+	"electric": "water",
+	"rock": "electric",
+	"wind": "mist",
+	"mist": "psychic",
+	"psychic": "shadow",
+	"light": "shadow",
+	"shadow": "light",
+	"metal": "rock",
 	"blaze": "grove",
 	"grove": "tide",
 	"tide": "blaze",
 	"spark": "mist",
-	"mist": "stone",
 	"stone": "spark",
 }
 
@@ -329,6 +390,139 @@ const MONSTERS := {
 	},
 }
 
+const SPECIES_BATTLE_PROFILES := {
+	"moss_puff": {
+		"template": "mossback",
+		"name": "苔团",
+		"combat_type": "grove",
+		"elements": ["grove"],
+		"biome_tags": ["cave", "wetland"],
+		"job_tags": ["support", "gatherer"],
+		"building_tags": ["warm_nest", "moss_bed"],
+		"evolution_chain": ["苔团", "苔绒团", "苔冠团"],
+	},
+	"cave_sniffer": {
+		"template": "stonehorn",
+		"name": "穴嗅兽",
+		"combat_type": "stone",
+		"elements": ["stone"],
+		"biome_tags": ["cave"],
+		"job_tags": ["guardian", "observer"],
+		"building_tags": ["warm_nest", "watch_tower"],
+		"evolution_chain": ["穴嗅兽", "深穴嗅兽", "脉岩嗅王"],
+	},
+	"dew_slug": {
+		"template": "tide_mite",
+		"name": "露涎虫",
+		"combat_type": "tide",
+		"elements": ["tide", "grove"],
+		"biome_tags": ["cave", "wetland"],
+		"job_tags": ["support", "gatherer"],
+		"building_tags": ["moss_bed", "shallow_pool"],
+		"evolution_chain": ["露涎虫", "露沫蜒", "潮苔巨蜒"],
+	},
+	"shell_pup": {
+		"template": "tide_mite",
+		"name": "壳幼",
+		"combat_type": "tide",
+		"elements": ["tide"],
+		"biome_tags": ["wetland"],
+		"job_tags": ["guardian", "support"],
+		"building_tags": ["shallow_pool", "sun_drying_rack"],
+		"evolution_chain": ["壳幼", "潮壳犬", "壳潮卫"],
+	},
+	"ripple_slime": {
+		"template": "mossback",
+		"name": "漪团",
+		"combat_type": "tide",
+		"elements": ["tide"],
+		"biome_tags": ["wetland"],
+		"job_tags": ["support", "gatherer"],
+		"building_tags": ["shallow_pool", "reed_shed"],
+		"evolution_chain": ["漪团", "漪胶团", "净潮母体"],
+	},
+	"stream_glider": {
+		"template": "mist_owl",
+		"name": "溪翔",
+		"combat_type": "mist",
+		"elements": ["tide", "mist"],
+		"biome_tags": ["wetland", "wind"],
+		"job_tags": ["striker", "observer"],
+		"building_tags": ["message_board", "boarding_pen"],
+		"evolution_chain": ["溪翔", "溪风翔", "潮风隼"],
+	},
+	"gear_finch": {
+		"template": "spark_hare",
+		"name": "齿翎雀",
+		"combat_type": "spark",
+		"elements": ["spark"],
+		"biome_tags": ["ruin", "wind"],
+		"job_tags": ["striker", "maker"],
+		"building_tags": ["repair_bench", "charging_pad"],
+		"evolution_chain": ["齿翎雀", "机翎雀", "雷机羽王"],
+	},
+	"spark_mite": {
+		"template": "spark_hare",
+		"name": "霆粒",
+		"combat_type": "spark",
+		"elements": ["spark"],
+		"biome_tags": ["ruin"],
+		"job_tags": ["maker", "observer"],
+		"building_tags": ["repair_bench", "watch_tower"],
+		"evolution_chain": ["霆粒", "霆簇", "雷构核"],
+	},
+	"glow_moth": {
+		"template": "mist_owl",
+		"name": "辉蛾",
+		"combat_type": "mist",
+		"elements": ["mist", "grove"],
+		"biome_tags": ["ruin", "anomaly"],
+		"job_tags": ["observer", "support"],
+		"building_tags": ["echo_room", "watch_tower"],
+		"evolution_chain": ["辉蛾", "辉纹蛾", "辉夜蛾"],
+	},
+	"storm_ram": {
+		"template": "stonehorn",
+		"name": "霆角羊",
+		"combat_type": "spark",
+		"elements": ["spark", "stone"],
+		"biome_tags": ["wind"],
+		"job_tags": ["guardian", "striker"],
+		"building_tags": ["charging_pad", "watch_tower"],
+		"evolution_chain": ["霆角羊", "霆角公", "雷岩羊王"],
+	},
+	"glaze_crane": {
+		"template": "mist_owl",
+		"name": "镜釉鹤",
+		"combat_type": "mist",
+		"elements": ["mist"],
+		"biome_tags": ["ice", "wetland"],
+		"job_tags": ["observer", "support"],
+		"building_tags": ["mirror_roost", "message_board"],
+		"evolution_chain": ["镜釉鹤", "霜镜鹤", "镜华仙鹤"],
+	},
+	"rift_fawn": {
+		"template": "mossback",
+		"name": "隙鹿",
+		"combat_type": "mist",
+		"elements": ["mist"],
+		"biome_tags": ["anomaly"],
+		"job_tags": ["support", "guardian"],
+		"building_tags": ["stabilizer", "watch_tower"],
+		"evolution_chain": ["隙鹿", "隙角鹿", "裂辉圣鹿"],
+	},
+	"lumen_howler": {
+		"template": "stonehorn",
+		"name": "辉嚎",
+		"combat_type": "mist",
+		"elements": ["mist", "spark"],
+		"biome_tags": ["anomaly", "wind"],
+		"job_tags": ["striker", "guardian"],
+		"building_tags": ["stabilizer", "echo_room"],
+		"evolution_chain": ["辉嚎", "辉嚎王", "裂光狼君"],
+	},
+}
+
 const START_PLAYER_SPECIES := ["ember_lynx", "mossback", "spark_hare"]
 
 const AI_PERSONALITIES := {
@@ -557,7 +751,80 @@ static func get_board_lookup() -> Dictionary:
 		lookup[int(node.get("id", -1))] = node
 	return lookup
 
+static func get_skill(skill_id: String) -> Dictionary:
+	var skill_row: Dictionary = DataRepository.get_skill(skill_id)
+	if not skill_row.is_empty():
+		return _normalize_skill(skill_id, skill_row)
+	return SKILLS.get(skill_id, {})
+
+static func get_monster_template(species_id: String) -> Dictionary:
+	var species_row: Dictionary = DataRepository.get_species(species_id)
+	if not species_row.is_empty() and species_row.has("base_stats"):
+		return _monster_template_from_species(species_row)
+	var profile: Dictionary = SPECIES_BATTLE_PROFILES.get(species_id, {})
+	var template_id := String(profile.get("template", species_id))
+	var template: Dictionary = MONSTERS.get(template_id, {}).duplicate(true)
+	if template.is_empty():
+		return {}
+	if not profile.is_empty():
+		for key in profile.keys():
+			if key == "template":
+				continue
+			template[key] = profile[key]
+		if profile.has("combat_type"):
+			template["type"] = profile["combat_type"]
+	return template
+
+static func get_species_synergy_profile(species_id: String) -> Dictionary:
+	var species_row: Dictionary = DataRepository.get_species(species_id)
+	if not species_row.is_empty() and species_row.has("base_stats"):
+		var family: Dictionary = DataRepository.get_evolution_family(String(species_row.get("family_id", "")))
+		return {
+			"elements": Array(species_row.get("types", [])).duplicate(),
+			"biome_tags": Array(species_row.get("ecology_tags", [])).duplicate(),
+			"job_tags": Array(species_row.get("roles", [])).duplicate(),
+			"building_tags": Array(species_row.get("building_affinities", [])).duplicate(),
+			"evolution_chain": Array(family.get("names", [])).duplicate(),
+			"population_cost": int(species_row.get("population_cost", 1)),
+			"family_id": String(species_row.get("family_id", "")),
+		}
+	var template := get_monster_template(species_id)
+	if template.is_empty():
+		return {
+			"elements": [],
+			"biome_tags": [],
+			"job_tags": [],
+			"building_tags": [],
+			"evolution_chain": [],
+		}
+	return {
+		"elements": template.get("elements", [template.get("type", "mist")]).duplicate(),
+		"biome_tags": template.get("biome_tags", []).duplicate(),
+		"job_tags": template.get("job_tags", []).duplicate(),
+		"building_tags": template.get("building_tags", []).duplicate(),
+		"evolution_chain": template.get("evolution_chain", []).duplicate(),
+	}
+
+static func get_synergy_thresholds(category: String, tag_id: String) -> Array:
+	var bucket_key := ""
+	match category:
+		"elements":
+			bucket_key = "types"
+		"biomes":
+			bucket_key = "ecologies"
+		"jobs":
+			bucket_key = "roles"
+		_:
+			bucket_key = category
+	var entry: Dictionary = DataRepository.get_synergy_bucket(bucket_key).get(tag_id, {})
+	if not entry.is_empty():
+		return Array(entry.get("thresholds", [])).duplicate(true)
+	return SYNERGY_THRESHOLDS.duplicate()
+
 static func get_building_name(building_id: String) -> String:
+	var building: Dictionary = DataRepository.get_building(building_id)
+	if not building.is_empty():
+		return String(building.get("name", building_id))
 	return BUILDINGS.get(building_id, {}).get("name", building_id)
 
 static func get_role_name(role_id: String) -> String:
@@ -573,11 +840,119 @@ static func get_next_building_cost(building_id: String, level: int) -> Dictionar
 	return BUILDINGS.get(building_id, {}).get("costs", {}).get(level + 1, {})
 
 static func type_multiplier(attacker_type: String, defender_type: String) -> float:
+	if attacker_type == "mist" and defender_type == "stone":
+		return 1.3
+	if defender_type == "mist" and attacker_type == "stone":
+		return 0.8
 	if TYPE_ADVANTAGE.get(attacker_type, "") == defender_type:
 		return 1.3
 	if TYPE_ADVANTAGE.get(defender_type, "") == attacker_type:
 		return 0.8
 	return 1.0
+
+static func _monster_template_from_species(species_row: Dictionary) -> Dictionary:
+	var stats: Dictionary = species_row.get("base_stats", {})
+	var types: Array = species_row.get("types", [])
+	var primary_type := String(types[0]) if not types.is_empty() else "mist"
+	var attack_value := maxi(int(stats.get("atk", 50)), int(stats.get("sp_atk", 50)))
+	var role_map := {}
+	for role_id in species_row.get("roles", []):
+		role_map[String(role_id)] = 2
+	var family: Dictionary = DataRepository.get_evolution_family(String(species_row.get("family_id", "")))
+	return {
+		"name": String(species_row.get("name", "")),
+		"type": primary_type,
+		"max_hp": clampi(int(round(float(stats.get("hp", 52)) / 4.0)), 18, 40),
+		"attack": clampi(int(round(float(attack_value) / 12.0)), 5, 14),
+		"speed": clampi(int(round(float(stats.get("spd", 52)) / 12.0)), 4, 14),
+		"skills": _pick_battle_skill_ids(species_row),
+		"roles": role_map,
+		"elements": Array(types).duplicate(),
+		"biome_tags": Array(species_row.get("ecology_tags", [])).duplicate(),
+		"job_tags": Array(species_row.get("roles", [])).duplicate(),
+		"building_tags": Array(species_row.get("building_affinities", [])).duplicate(),
+		"evolution_chain": Array(family.get("names", [])).duplicate(),
+		"stage": int(species_row.get("stage", 1)),
+		"rarity": String(species_row.get("rarity", "common")),
+		"population_cost": int(species_row.get("population_cost", 1)),
+	}
+
+static func _pick_battle_skill_ids(species_row: Dictionary) -> Array:
+	var skill_ids: Array = species_row.get("skill_ids", [])
+	var result: Array = []
+	for skill_id in skill_ids:
+		result.append(String(skill_id))
+		if result.size() >= 3:
+			break
+	return result
+
+static func _normalize_skill(skill_id: String, skill_row: Dictionary) -> Dictionary:
+	var kind := String(skill_row.get("kind", "basic"))
+	var targeting := String(skill_row.get("targeting", "single"))
+	var skill_type := String(skill_row.get("type", "mist"))
+	var power := int(round(float(skill_row.get("power", 50)) / 8.0))
+	var effect_text := String(skill_row.get("effect", ""))
+	var effect_id := ""
+	var target := "enemy"
+	var effect_value = 0
+	var cooldown := 0
+	if targeting in ["single_or_line", "line_or_zone"]:
+		target = "enemy_all"
+	elif targeting in ["ally_pair"]:
+		target = "ally"
+	elif targeting == "ally_or_enemy":
+		target = "ally" if kind in ["tactic", "signature"] and power <= 0 else "enemy"
+	if kind == "burst":
+		cooldown = 2
+	elif kind in ["signature", "tactic"]:
+		cooldown = 1
+	if kind == "tactic" or power <= 0:
+		if skill_id.contains("guardian") or skill_id.contains("metal") or skill_id.contains("magma_tortoise"):
+			effect_id = "guard"
+			target = "ally"
+			effect_value = 0.45
+		elif skill_id.contains("healer") or effect_text.contains("治疗") or effect_text.contains("回复") or effect_text.contains("recover") or effect_text.contains("cleanse"):
+			effect_id = "heal"
+			target = "ally"
+			effect_value = 7
+		elif skill_id.contains("charger") or effect_text.contains("充能") or effect_text.contains("速度"):
+			effect_id = "haste"
+			target = "self"
+			effect_value = 3
+		elif skill_id.contains("controller") or effect_text.contains("控制") or effect_text.contains("减速"):
+			effect_id = "slow"
+			target = "enemy"
+			effect_value = 3
+		elif skill_id.contains("builder") or effect_text.contains("护盾"):
+			effect_id = "guard"
+			target = "ally"
+			effect_value = 0.35
+		elif skill_id.contains("scout") or skill_type == "wind":
+			effect_id = "haste"
+			target = "self"
+			effect_value = 2
+		elif skill_id.contains("vanguard") or skill_id.contains("striker") or effect_text.contains("破绽"):
+			effect_id = "vulnerable"
+			target = "enemy"
+			effect_value = 2
+		else:
+			effect_id = "weaken"
+			target = "enemy"
+			effect_value = 2
+		power = 0
+	elif target == "enemy_all":
+		effect_id = "damage_all"
+	return {
+		"name": String(skill_row.get("name", skill_id)),
+		"type": skill_type,
+		"power": power,
+		"cooldown": cooldown,
+		"target": target,
+		"effect": effect_id,
+		"effect_value": effect_value,
+		"effect_turns": 2,
+		"text": effect_text,
+	}
 
 static func get_ai_weight(personality_id: String, node_type: String) -> int:
 	return AI_PERSONALITIES.get(personality_id, {}).get("weights", {}).get(node_type, 0)

@@ -1,0 +1,1337 @@
+{
+  "version": 2,
+  "schema": "mda_bond_buildings_v2",
+  "buildings": [
+    {
+      "id": "warm_nest",
+      "name": "温巢台",
+      "site": "mist_moss_cave",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "grass",
+          "light"
+        ],
+        "accepted_roles": [
+          "healer",
+          "guardian"
+        ],
+        "accepted_ecologies": [
+          "cave"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "幼体与回复型前置增益 +1",
+          "满足条件时提升 healer 协同"
+        ],
+        "growth": [
+          "幼体与回复相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 mist_moss_cave 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 grass 或 healer 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "moss_bed",
+      "name": "苔绒床",
+      "site": "mist_moss_cave",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "grass",
+          "mist"
+        ],
+        "accepted_roles": [
+          "healer",
+          "builder"
+        ],
+        "accepted_ecologies": [
+          "cave",
+          "forest"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "静养与孵育型前置增益 +1",
+          "满足条件时提升 healer 协同"
+        ],
+        "growth": [
+          "静养与孵育相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 mist_moss_cave 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 grass 或 healer 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "nursery_corner",
+      "name": "育芽角",
+      "site": "mist_moss_cave",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 13,
+        "stone": 10,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "grass"
+        ],
+        "accepted_roles": [
+          "healer"
+        ],
+        "accepted_ecologies": [
+          "cave"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "进化前置型前置增益 +1",
+          "满足条件时提升 healer 协同"
+        ],
+        "growth": [
+          "进化前置相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 mist_moss_cave 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 grass 或 healer 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "shallow_pool",
+      "name": "浅池",
+      "site": "crystal_creek",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 13,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "water"
+        ],
+        "accepted_roles": [
+          "healer",
+          "controller"
+        ],
+        "accepted_ecologies": [
+          "shore",
+          "waterside"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "净化与回复型前置增益 +1",
+          "满足条件时提升 healer 协同"
+        ],
+        "growth": [
+          "净化与回复相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 crystal_creek 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 water 或 healer 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "sun_drying_rack",
+      "name": "晒石架",
+      "site": "crystal_creek",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "light",
+          "rock"
+        ],
+        "accepted_roles": [
+          "builder",
+          "scout"
+        ],
+        "accepted_ecologies": [
+          "shore"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "充能与晒暖型前置增益 +1",
+          "满足条件时提升 builder 协同"
+        ],
+        "growth": [
+          "充能与晒暖相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 crystal_creek 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 light 或 builder 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "reed_shed",
+      "name": "芦棚",
+      "site": "crystal_creek",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 19,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "water",
+          "grass",
+          "mist"
+        ],
+        "accepted_roles": [
+          "healer",
+          "builder"
+        ],
+        "accepted_ecologies": [
+          "wetland",
+          "shore"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "续航与掩护型前置增益 +1",
+          "满足条件时提升 healer 协同"
+        ],
+        "growth": [
+          "续航与掩护相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 crystal_creek 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 water 或 healer 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "watch_tower",
+      "name": "望衡塔",
+      "site": "ancient_platform",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "wind",
+          "psychic"
+        ],
+        "accepted_roles": [
+          "scout",
+          "controller"
+        ],
+        "accepted_ecologies": [
+          "ruin"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "先手与视野型前置增益 +1",
+          "满足条件时提升 scout 协同"
+        ],
+        "growth": [
+          "先手与视野相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 ancient_platform 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 wind 或 scout 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "repair_bench",
+      "name": "修造台",
+      "site": "ancient_platform",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 7
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "metal",
+          "electric"
+        ],
+        "accepted_roles": [
+          "builder",
+          "charger"
+        ],
+        "accepted_ecologies": [
+          "ruin"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "工具与修复型前置增益 +1",
+          "满足条件时提升 builder 协同"
+        ],
+        "growth": [
+          "工具与修复相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 ancient_platform 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 metal 或 builder 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "echo_room",
+      "name": "回响室",
+      "site": "ancient_platform",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 10,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "mist",
+          "psychic"
+        ],
+        "accepted_roles": [
+          "controller"
+        ],
+        "accepted_ecologies": [
+          "ruin",
+          "anomaly"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "控制与回音型前置增益 +1",
+          "满足条件时提升 controller 协同"
+        ],
+        "growth": [
+          "控制与回音相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 ancient_platform 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 mist 或 controller 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "tea_shed",
+      "name": "茶棚",
+      "site": "sky_post",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 10,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "light",
+          "grass"
+        ],
+        "accepted_roles": [
+          "healer"
+        ],
+        "accepted_ecologies": [
+          "meadow"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "低压恢复型前置增益 +1",
+          "满足条件时提升 healer 协同"
+        ],
+        "growth": [
+          "低压恢复相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 sky_post 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 light 或 healer 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "boarding_pen",
+      "name": "驿栏",
+      "site": "sky_post",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "wind",
+          "light"
+        ],
+        "accepted_roles": [
+          "scout",
+          "guardian"
+        ],
+        "accepted_ecologies": [
+          "meadow"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "出行与换位型前置增益 +1",
+          "满足条件时提升 scout 协同"
+        ],
+        "growth": [
+          "出行与换位相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 sky_post 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 wind 或 scout 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "message_board",
+      "name": "告示板",
+      "site": "sky_post",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "psychic",
+          "wind"
+        ],
+        "accepted_roles": [
+          "scout",
+          "builder"
+        ],
+        "accepted_ecologies": [
+          "meadow"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "委托与路线型前置增益 +1",
+          "满足条件时提升 scout 协同"
+        ],
+        "growth": [
+          "委托与路线相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 sky_post 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 psychic 或 scout 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "forge_hearth",
+      "name": "锻炉",
+      "site": "copper_hammer_bazaar",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 7
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "fire",
+          "metal"
+        ],
+        "accepted_roles": [
+          "builder",
+          "guardian"
+        ],
+        "accepted_ecologies": [
+          "volcanic"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "锻造与护甲型前置增益 +1",
+          "满足条件时提升 builder 协同"
+        ],
+        "growth": [
+          "锻造与护甲相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 copper_hammer_bazaar 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 fire 或 builder 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "tool_shelf",
+      "name": "工具架",
+      "site": "copper_hammer_bazaar",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 13,
+        "stone": 10,
+        "ore": 7
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "metal"
+        ],
+        "accepted_roles": [
+          "builder"
+        ],
+        "accepted_ecologies": [
+          "ruin"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "经济与合成型前置增益 +1",
+          "满足条件时提升 builder 协同"
+        ],
+        "growth": [
+          "经济与合成相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 copper_hammer_bazaar 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 metal 或 builder 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "repair_counter",
+      "name": "修配柜",
+      "site": "copper_hammer_bazaar",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 7
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "electric",
+          "metal"
+        ],
+        "accepted_roles": [
+          "builder",
+          "charger"
+        ],
+        "accepted_ecologies": [
+          "ruin"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "装备维护型前置增益 +1",
+          "满足条件时提升 builder 协同"
+        ],
+        "growth": [
+          "装备维护相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 copper_hammer_bazaar 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 electric 或 builder 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "lightning_rod",
+      "name": "引雷柱",
+      "site": "thunder_meadow",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 13,
+        "stone": 10,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "electric"
+        ],
+        "accepted_roles": [
+          "charger"
+        ],
+        "accepted_ecologies": [
+          "storm"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "充能爆发型前置增益 +1",
+          "满足条件时提升 charger 协同"
+        ],
+        "growth": [
+          "充能爆发相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 thunder_meadow 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 electric 或 charger 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "training_pole",
+      "name": "试招桩",
+      "site": "thunder_meadow",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "rock",
+          "electric"
+        ],
+        "accepted_roles": [
+          "vanguard",
+          "striker"
+        ],
+        "accepted_ecologies": [
+          "storm",
+          "meadow"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "速攻训练型前置增益 +1",
+          "满足条件时提升 vanguard 协同"
+        ],
+        "growth": [
+          "速攻训练相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 thunder_meadow 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 rock 或 vanguard 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "expression"
+    },
+    {
+      "id": "wind_sail",
+      "name": "风帆桅",
+      "site": "thunder_meadow",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 13,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "wind"
+        ],
+        "accepted_roles": [
+          "scout",
+          "charger"
+        ],
+        "accepted_ecologies": [
+          "storm",
+          "shore"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "速度控制型前置增益 +1",
+          "满足条件时提升 scout 协同"
+        ],
+        "growth": [
+          "速度控制相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 thunder_meadow 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 wind 或 scout 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "frost_mirror",
+      "name": "霜镜",
+      "site": "frost_mirror_lake",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "mist",
+          "light"
+        ],
+        "accepted_roles": [
+          "controller",
+          "healer"
+        ],
+        "accepted_ecologies": [
+          "frost"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "净化与镜面型前置增益 +1",
+          "满足条件时提升 controller 协同"
+        ],
+        "growth": [
+          "净化与镜面相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 frost_mirror_lake 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 mist 或 controller 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "glow_lantern",
+      "name": "辉灯",
+      "site": "frost_mirror_lake",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 13,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "light"
+        ],
+        "accepted_roles": [
+          "healer",
+          "scout"
+        ],
+        "accepted_ecologies": [
+          "frost"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "安全反馈型前置增益 +1",
+          "满足条件时提升 healer 协同"
+        ],
+        "growth": [
+          "安全反馈相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 frost_mirror_lake 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 light 或 healer 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "insulated_den",
+      "name": "保温窟",
+      "site": "frost_mirror_lake",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "water",
+          "grass"
+        ],
+        "accepted_roles": [
+          "guardian",
+          "healer"
+        ],
+        "accepted_ecologies": [
+          "frost",
+          "cave"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "耐久与孵育型前置增益 +1",
+          "满足条件时提升 guardian 协同"
+        ],
+        "growth": [
+          "耐久与孵育相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 frost_mirror_lake 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 water 或 guardian 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "grove_perch",
+      "name": "栖枝台",
+      "site": "greenbark_grove",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "grass",
+          "wind"
+        ],
+        "accepted_roles": [
+          "scout",
+          "healer"
+        ],
+        "accepted_ecologies": [
+          "forest"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "巡林与轻疗型前置增益 +1",
+          "满足条件时提升 scout 协同"
+        ],
+        "growth": [
+          "巡林与轻疗相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 greenbark_grove 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 grass 或 scout 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "seed_house",
+      "name": "种荚屋",
+      "site": "greenbark_grove",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 13,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "grass"
+        ],
+        "accepted_roles": [
+          "builder",
+          "healer"
+        ],
+        "accepted_ecologies": [
+          "forest"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "成长与收集型前置增益 +1",
+          "满足条件时提升 builder 协同"
+        ],
+        "growth": [
+          "成长与收集相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 greenbark_grove 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 grass 或 builder 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "herb_canopy",
+      "name": "药冠棚",
+      "site": "greenbark_grove",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "grass",
+          "mist"
+        ],
+        "accepted_roles": [
+          "healer",
+          "controller"
+        ],
+        "accepted_ecologies": [
+          "forest"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "持续治疗型前置增益 +1",
+          "满足条件时提升 healer 协同"
+        ],
+        "growth": [
+          "持续治疗相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 greenbark_grove 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 grass 或 healer 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "low_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "purify_pool",
+      "name": "净化潭",
+      "site": "reed_mire",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "water",
+          "light"
+        ],
+        "accepted_roles": [
+          "healer",
+          "controller"
+        ],
+        "accepted_ecologies": [
+          "wetland"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "解状态型前置增益 +1",
+          "满足条件时提升 healer 协同"
+        ],
+        "growth": [
+          "解状态相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 reed_mire 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 water 或 healer 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "moon_well",
+      "name": "月井",
+      "site": "reed_mire",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "mist",
+          "shadow"
+        ],
+        "accepted_roles": [
+          "controller",
+          "healer"
+        ],
+        "accepted_ecologies": [
+          "wetland",
+          "anomaly"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "夜雾调和型前置增益 +1",
+          "满足条件时提升 controller 协同"
+        ],
+        "growth": [
+          "夜雾调和相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 reed_mire 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 mist 或 controller 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "clarity"
+    },
+    {
+      "id": "ember_pit",
+      "name": "烬坑",
+      "site": "ember_crater",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 13,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "fire"
+        ],
+        "accepted_roles": [
+          "striker",
+          "charger"
+        ],
+        "accepted_ecologies": [
+          "volcanic"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "灼烧与爆发型前置增益 +1",
+          "满足条件时提升 striker 协同"
+        ],
+        "growth": [
+          "灼烧与爆发相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 ember_crater 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 fire 或 striker 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "expression"
+    },
+    {
+      "id": "heat_vent",
+      "name": "热脉孔",
+      "site": "ember_crater",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "fire",
+          "rock"
+        ],
+        "accepted_roles": [
+          "guardian",
+          "builder"
+        ],
+        "accepted_ecologies": [
+          "volcanic"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "蓄热护甲型前置增益 +1",
+          "满足条件时提升 guardian 协同"
+        ],
+        "growth": [
+          "蓄热护甲相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 ember_crater 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 fire 或 guardian 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "mid_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "stability_anchor",
+      "name": "稳相锚",
+      "site": "radiant_spire",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "light",
+          "psychic"
+        ],
+        "accepted_roles": [
+          "guardian",
+          "controller"
+        ],
+        "accepted_ecologies": [
+          "anomaly"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "抗异常型前置增益 +1",
+          "满足条件时提升 guardian 协同"
+        ],
+        "growth": [
+          "抗异常相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 radiant_spire 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 light 或 guardian 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "high_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "star_map",
+      "name": "星图盘",
+      "site": "radiant_observatory",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "light",
+          "psychic"
+        ],
+        "accepted_roles": [
+          "scout",
+          "controller"
+        ],
+        "accepted_ecologies": [
+          "anomaly",
+          "ruin"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "高压观测型前置增益 +1",
+          "满足条件时提升 scout 协同"
+        ],
+        "growth": [
+          "高压观测相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 radiant_observatory 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 light 或 scout 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "high_pressure",
+      "mda_role": "support"
+    },
+    {
+      "id": "resonance_frame",
+      "name": "共振框",
+      "site": "moonfen_ruins",
+      "category": "resonance_building",
+      "construction_cost": {
+        "wood": 16,
+        "stone": 12,
+        "ore": 5
+      },
+      "resident_slot_rules": {
+        "slots": 1,
+        "accepted_types": [
+          "mist",
+          "shadow"
+        ],
+        "accepted_roles": [
+          "controller",
+          "builder"
+        ],
+        "accepted_ecologies": [
+          "anomaly",
+          "ruin"
+        ],
+        "duplicate_species_counts": false
+      },
+      "resonance_effects": {
+        "pre_battle": [
+          "高阶进化型前置增益 +1",
+          "满足条件时提升 controller 协同"
+        ],
+        "growth": [
+          "高阶进化相关个体亲密增长更快"
+        ],
+        "economy": [
+          "驻守时产出少量 moonfen_ruins 素材"
+        ]
+      },
+      "evolution_hooks": [
+        "满足 mist 或 controller 条件时，可作为分支进化触发位"
+      ],
+      "flow_band": "high_pressure",
+      "mda_role": "support"
+    }
+  ]
+}

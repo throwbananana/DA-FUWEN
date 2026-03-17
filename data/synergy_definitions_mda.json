@@ -1,0 +1,484 @@
+{
+  "version": 2,
+  "schema": "mda_bond_synergy_v2",
+  "rules": {
+    "duplicate_species_counts": false,
+    "count_sources": [
+      "frontline",
+      "backpack",
+      "building_garrison"
+    ],
+    "default_threshold_pattern": "2/4/6",
+    "exception_threshold_pattern": "1/3/5 for anomaly-style ecologies"
+  },
+  "types": {
+    "fire": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "火伤+8%，首次命中附 15% 灼烧"
+        },
+        {
+          "count": 4,
+          "effect": "灼烧层数上限+1，爆发技能后返还能量 6"
+        },
+        {
+          "count": 6,
+          "effect": "对草/冰标签额外+18% 伤害，收尾击杀刷新 1 次轻技能"
+        }
+      ]
+    },
+    "water": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "回复与净化效率+10%"
+        },
+        {
+          "count": 4,
+          "effect": "每 3 回合触发一次潮护盾"
+        },
+        {
+          "count": 6,
+          "effect": "净化后为全队恢复 8% 最大生命"
+        }
+      ]
+    },
+    "electric": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "开场充能+8"
+        },
+        {
+          "count": 4,
+          "effect": "提速区：我方首 2 次行动速度+12%"
+        },
+        {
+          "count": 6,
+          "effect": "连击命中后追加 1 次 35% 威力电弧"
+        }
+      ]
+    },
+    "grass": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "治疗量+12%，护盾量+8%"
+        },
+        {
+          "count": 4,
+          "effect": "成长：受治单位攻击/特攻+6%"
+        },
+        {
+          "count": 6,
+          "effect": "回合结束为生命最低单位生成再生护罩"
+        }
+      ]
+    },
+    "rock": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "护甲+10%"
+        },
+        {
+          "count": 4,
+          "effect": "受击首次触发反震"
+        },
+        {
+          "count": 6,
+          "effect": "驻守建筑时战前获得 1 层地脉护盾"
+        }
+      ]
+    },
+    "wind": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "速度+10%"
+        },
+        {
+          "count": 4,
+          "effect": "位移/换位后首次技能增伤 12%"
+        },
+        {
+          "count": 6,
+          "effect": "先手时额外抽取 1 次行动条推进"
+        }
+      ]
+    },
+    "mist": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "抗性+10%，异常命中+8%"
+        },
+        {
+          "count": 4,
+          "effect": "开局生成薄雾区降低敌方命中"
+        },
+        {
+          "count": 6,
+          "effect": "薄雾区内我方控制技能持续+1 回合"
+        }
+      ]
+    },
+    "psychic": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "技能命中与控制成功率+10%"
+        },
+        {
+          "count": 4,
+          "effect": "每回合首次技能返还能量 5"
+        },
+        {
+          "count": 6,
+          "effect": "预示：显示敌方下回合主要意图并减其伤害 8%"
+        }
+      ]
+    },
+    "metal": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "防御+12%，建造效率+10%"
+        },
+        {
+          "count": 4,
+          "effect": "受到暴击伤害降低 18%"
+        },
+        {
+          "count": 6,
+          "effect": "每场第一次被击破护盾时立即再铸 1 层"
+        }
+      ]
+    },
+    "shadow": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "背击或后手追击伤害+10%"
+        },
+        {
+          "count": 4,
+          "effect": "击中受控目标时吸取 6% 生命"
+        },
+        {
+          "count": 6,
+          "effect": "隐袭：敌方生命低于 40% 时伤害+20%"
+        }
+      ]
+    },
+    "light": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "净化后获得 1 层希望"
+        },
+        {
+          "count": 4,
+          "effect": "希望可转化为治疗或护盾"
+        },
+        {
+          "count": 6,
+          "effect": "希望达到 6 层后全队获得一次免死 1 血"
+        }
+      ]
+    }
+  },
+  "ecologies": {
+    "cave": {
+      "thresholds": [
+        {
+          "count": 1,
+          "effect": "洞窟适性：在低压地图保温成长+1"
+        },
+        {
+          "count": 3,
+          "effect": "驻守洞窟建筑时回复效率+12%"
+        },
+        {
+          "count": 5,
+          "effect": "洞窟地图开场获得稳定护盾"
+        }
+      ]
+    },
+    "waterside": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "临水：净化与回复技能前置+1"
+        },
+        {
+          "count": 3,
+          "effect": "潮线：开局获得少量能量"
+        },
+        {
+          "count": 5,
+          "effect": "临水个体在潮汐天气中速度+10%"
+        }
+      ]
+    },
+    "wetland": {
+      "thresholds": [
+        {
+          "count": 1,
+          "effect": "湿地潜伏：遭遇稀有雾系概率微升"
+        },
+        {
+          "count": 3,
+          "effect": "拖延与减速效果+1 回合"
+        },
+        {
+          "count": 5,
+          "effect": "湿地战斗回合末为敌方附加迟滞层"
+        }
+      ]
+    },
+    "forest": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "林息：持续治疗+8%"
+        },
+        {
+          "count": 3,
+          "effect": "草/光系成长事件更常见"
+        },
+        {
+          "count": 5,
+          "effect": "森林个体首次被击倒时保留 1 点进化热度"
+        }
+      ]
+    },
+    "storm": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "风暴适性：速度+8%"
+        },
+        {
+          "count": 3,
+          "effect": "充能收益翻倍 1 次"
+        },
+        {
+          "count": 5,
+          "effect": "风暴地图开场全队提速 20% 1 回合"
+        }
+      ]
+    },
+    "ruin": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "遗迹熟练：观察与制造产出+10%"
+        },
+        {
+          "count": 3,
+          "effect": "控制命中+10%"
+        },
+        {
+          "count": 5,
+          "effect": "遗迹战斗中首次施法不消耗能量"
+        }
+      ]
+    },
+    "shore": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "岸线机动：换位后护盾+6%"
+        },
+        {
+          "count": 3,
+          "effect": "侦查类遭遇更易刷新"
+        },
+        {
+          "count": 5,
+          "effect": "岸线地图所有 scout 首次行动先制"
+        }
+      ]
+    },
+    "frost": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "寒域：受持续伤害降低 20%"
+        },
+        {
+          "count": 3,
+          "effect": "镜面：首次受控立即净化"
+        },
+        {
+          "count": 5,
+          "effect": "寒域地图中我方回复后追加护盾"
+        }
+      ]
+    },
+    "volcanic": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "熔域：火伤+10%"
+        },
+        {
+          "count": 3,
+          "effect": "热脉：被攻击后返还能量 4"
+        },
+        {
+          "count": 5,
+          "effect": "火/金属技能额外附加熔甲破坏"
+        }
+      ]
+    },
+    "anomaly": {
+      "thresholds": [
+        {
+          "count": 1,
+          "effect": "异常适性：高压图额外获得 1 点容错"
+        },
+        {
+          "count": 3,
+          "effect": "异常抗性+15%"
+        },
+        {
+          "count": 5,
+          "effect": "每场首次触发建筑共鸣时复制一次弱化版效果"
+        }
+      ]
+    }
+  },
+  "roles": {
+    "vanguard": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "入场伤害与挑衅成功率+8%"
+        },
+        {
+          "count": 4,
+          "effect": "开局推进前线 10%"
+        },
+        {
+          "count": 6,
+          "effect": "先锋命中后为后排输出挂上破绽"
+        }
+      ]
+    },
+    "guardian": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "护盾与减伤+10%"
+        },
+        {
+          "count": 4,
+          "effect": "替队友分担 15% 伤害"
+        },
+        {
+          "count": 6,
+          "effect": "守护状态下全队控制抗性+20%"
+        }
+      ]
+    },
+    "striker": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "主伤害技能+10%"
+        },
+        {
+          "count": 4,
+          "effect": "对已受控目标额外+12%"
+        },
+        {
+          "count": 6,
+          "effect": "击杀后 1 次再行动条推进"
+        }
+      ]
+    },
+    "charger": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "回能效率+12%"
+        },
+        {
+          "count": 4,
+          "effect": "开场能量+10"
+        },
+        {
+          "count": 6,
+          "effect": "每次充能同时为搭档充能 6"
+        }
+      ]
+    },
+    "healer": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "治疗/净化+10%"
+        },
+        {
+          "count": 4,
+          "effect": "过量治疗转护盾"
+        },
+        {
+          "count": 6,
+          "effect": "每场首次治疗触发群体小恢复"
+        }
+      ]
+    },
+    "controller": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "减速/沉默/束缚命中+10%"
+        },
+        {
+          "count": 4,
+          "effect": "控制命中后敌方受伤+8%"
+        },
+        {
+          "count": 6,
+          "effect": "敌方被控时其能量恢复归零 1 次"
+        }
+      ]
+    },
+    "builder": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "建筑驻守收益+12%"
+        },
+        {
+          "count": 4,
+          "effect": "战前工事层+1"
+        },
+        {
+          "count": 6,
+          "effect": "建筑触发时为前排赋予额外护甲"
+        }
+      ]
+    },
+    "scout": {
+      "thresholds": [
+        {
+          "count": 2,
+          "effect": "暴露弱点与命中+8%"
+        },
+        {
+          "count": 4,
+          "effect": "换位或先手后获得闪避"
+        },
+        {
+          "count": 6,
+          "effect": "战前额外预览 1 个遭遇分支"
+        }
+      ]
+    }
+  }
+}

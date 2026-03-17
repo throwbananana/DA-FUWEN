@@ -1,12 +1,15 @@
 extends Control
 
+const GameData = preload("res://scripts/game_data.gd")
 const BoardView = preload("res://scripts/board_view.gd")
+const BattlePanel = preload("res://scripts/battle_panel.gd")
 const DecisionPanel = preload("res://scripts/decision_panel.gd")
 const BasePanel = preload("res://scripts/base_panel.gd")
 const VisitFlowController = preload("res://scripts/services/visit_flow_controller.gd")
 const HabitatService = preload("res://scripts/services/habitat_service.gd")
 const NpcService = preload("res://scripts/services/npc_service.gd")
 const EncounterService = preload("res://scripts/services/encounter_service.gd")
+const SynergyService = preload("res://scripts/services/synergy_service.gd")
 
 const GAME_TITLE := "雾野养成原型"
 
@@ -44,6 +47,11 @@ const NODE_TEMPLATES := [
 	{"id": 9, "name": "霜镜湖", "type": "habitat", "description": "冬季限定的低压高价值观察点。", "position": Vector2(1290, 70), "edges": [11], "travel_cost": 2, "habitat_id": "frost_mirror_lake"},
 	{"id": 10, "name": "回声断桥", "type": "settlement", "description": "通过夏秋试炼后会开放的中转节点。", "position": Vector2(1110, 320), "edges": [11], "travel_cost": 2, "habitat_id": "echo_broken_bridge"},
 	{"id": 11, "name": "裂辉观测台", "type": "anomaly", "description": "高阶试炼会通向这里。", "position": Vector2(1440, 220), "edges": [], "travel_cost": 3, "habitat_id": "radiant_observatory"},
+	{"id": 12, "name": "青栎林", "type": "habitat", "description": "新增的低压成长路线。", "position": Vector2(1480, 470), "edges": [10, 13], "travel_cost": 1, "habitat_id": "greenbark_grove"},
+	{"id": 13, "name": "烬火盆地", "type": "habitat", "description": "偏火系、锻炼与爆发的中压地点。", "position": Vector2(1710, 470), "edges": [16], "travel_cost": 2, "habitat_id": "ember_crater"},
+	{"id": 14, "name": "芦泽沼", "type": "habitat", "description": "净化与拖延风格的湿地路线。", "position": Vector2(1670, 330), "edges": [15, 16], "travel_cost": 2, "habitat_id": "reed_mire"},
+	{"id": 15, "name": "盐镜海岸", "type": "habitat", "description": "机动与潮汐构筑的新中期点。", "position": Vector2(1690, 110), "edges": [16], "travel_cost": 2, "habitat_id": "saltglass_coast"},
+	{"id": 16, "name": "月沼遗迹", "type": "anomaly", "description": "异常、侵蚀与控制流的高压终点。", "position": Vector2(1880, 230), "edges": [], "travel_cost": 3, "habitat_id": "moonfen_ruins"},
 ]
 
 @onready var title_label: Label = %TitleLabel
@@ -65,7 +73,7 @@ const NODE_TEMPLATES := [
 @onready var base_button: Button = %BaseButton
 @onready var new_game_button: Button = %NewGameButton
 @onready var board_view: BoardView = %BoardView
-@onready var legacy_battle_panel: Control = %BattlePanel
+@onready var battle_panel: BattlePanel = %BattlePanel
 @onready var decision_panel: DecisionPanel = %DecisionPanel
 @onready var base_panel: BasePanel = %BasePanel
 
@@ -77,6 +85,7 @@ var visit_flow: VisitFlowController
 var habitat_service := HabitatService.new()
 var npc_service := NpcService.new()
 var encounter_service := EncounterService.new()
+var synergy_service := SynergyService.new()
 
 var season_finished := false
 var awaiting_destination := false
@@ -108,10 +117,12 @@ func _connect_signals() -> void:
 	board_view.node_chosen.connect(_on_board_node_chosen)
 	decision_panel.choice_selected.connect(_on_decision_choice_selected)
 	decision_panel.closed.connect(_on_decision_closed)
+	base_panel.manage_requested.connect(_on_base_manage_requested)
 	base_panel.closed.connect(_on_base_closed)
+	battle_panel.battle_finished.connect(_on_battle_finished)
 
 func _apply_basic_styles() -> void:
-	legacy_battle_panel.hide()
+	battle_panel.hide()
 	plus_button.hide()
 	minus_button.hide()
 	reroll_button.hide()
@@ -126,7 +137,7 @@ func _apply_basic_styles() -> void:
 	panel_style.corner_radius_top_right = 12
 	panel_style.corner_radius_bottom_left = 12
 	panel_style.corner_radius_bottom_right = 12
-	for panel in [decision_panel, base_panel]:
+	for panel in [battle_panel, decision_panel, base_panel]:
 		panel.add_theme_stylebox_override("panel", panel_style)
 
 func start_new_game() -> void:
@@ -227,6 +238,12 @@ func _on_support_pressed() -> void:
 	decision_panel.open_panel("委托记录", "\n".join(lines), [], "关闭")
 
 func _on_base_pressed() -> void:
+	var synergy_report := synergy_service.build_synergy_report()
+	var facility_bonus := synergy_service.build_facility_bonus()
+	var battle_bonus := synergy_service.merge_battle_bonus([
+		synergy_service.build_battle_bonus(synergy_report),
+		facility_bonus.get("bonus", {}),
+	])
 	base_panel.open_panel({
 		"season": {
 			"season_name": _season_name(),
@@ -235,6 +252,8 @@ func _on_base_pressed() -> void:
 			"weather_name": _weather_name(GameState.weather_id),
 			"time_name": _time_name(GameState.time_of_day),
 			"care_progress": GameState.get_care_progress(),
+			"progression_rank": GameState.get_progression_rank(),
+			"progression_summary": GameState.get_progression_summary(),
 			"badge_count": GameState.badge_count,
 			"season_points": GameState.season_points,
 			"dojo_rotation": _active_dojo_names(),
@@ -244,6 +263,12 @@ func _on_base_pressed() -> void:
 		"habitats": _build_habitat_summaries(),
 		"active_quests": _quest_titles(GameState.active_quests),
 		"completed_quests": GameState.completed_quests.duplicate(),
+		"battle_slots": _battle_slot_names(),
+		"backpack_summary": "%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity],
+		"synergy_lines": synergy_service.format_active_lines(synergy_report, 4),
+		"nearby_synergy_lines": synergy_service.format_nearby_lines(synergy_report, 3),
+		"building_lines": facility_bonus.get("lines", []),
+		"battle_bonus_lines": synergy_service.describe_battle_bonus(battle_bonus),
 	})
 
 func _on_board_node_chosen(node_id: int) -> void:
@@ -273,6 +298,8 @@ func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
 			_show_npc_menu(payload)
 		"dojo_menu":
 			_show_dojo_menu(payload)
+		"dojo_battle":
+			_start_dojo_battle(payload)
 		"dojo_result":
 			_show_dojo_result(payload)
 		"encounter_preview":
@@ -377,6 +404,15 @@ func _show_dojo_menu(payload: Dictionary) -> void:
 	var lines: Array[String] = []
 	lines.append("[b]推荐据点等级[/b] %d" % int(dojo.get("recommended_rank", 1)))
 	lines.append("[b]门票[/b] %s" % _format_item_cost(payload.get("entry_cost", {})))
+	lines.append("[b]当前双打位[/b] %s" % (" / ".join(payload.get("battle_slots", [])) if not payload.get("battle_slots", []).is_empty() else "尚未就绪"))
+	lines.append("[b]背包容量[/b] %s" % String(payload.get("backpack_summary", "0 / 0")))
+	for line in payload.get("synergy_lines", []):
+		lines.append("[b]已激活羁绊[/b] %s" % line)
+		break
+	if not payload.get("nearby_synergy_lines", []).is_empty():
+		lines.append("[b]差 1 激活[/b] %s" % " / ".join(payload.get("nearby_synergy_lines", [])))
+	if not payload.get("building_lines", []).is_empty():
+		lines.append("[b]建筑增益[/b] %s" % " / ".join(payload.get("building_lines", []).slice(0, 2)))
 	if not String(payload.get("hint", "")).is_empty():
 		lines.append("[b]提示[/b] %s" % String(payload.get("hint", "")))
 	pending_context = {"kind": "dojo_menu", "on_close": "arrival"}
@@ -391,9 +427,13 @@ func _show_dojo_result(payload: Dictionary) -> void:
 	var tier := String(payload.get("tier", "tier_1"))
 	var reward_result: Dictionary = payload.get("reward_result", {})
 	var lines: Array[String] = []
-	lines.append("[b]当前评分[/b] %d / %d" % [int(payload.get("challenge_score", 0)), int(payload.get("required_rank", 0))])
+	if payload.has("challenge_score") and payload.has("required_rank"):
+		lines.append("[b]当前评分[/b] %d / %d" % [int(payload.get("challenge_score", 0)), int(payload.get("required_rank", 0))])
 	if not payload.get("modifiers", []).is_empty():
 		lines.append("[b]规则修正[/b] %s" % " / ".join(payload.get("modifiers", [])))
+	var battle_result: Dictionary = payload.get("battle_result", {})
+	if bool(battle_result.get("timed_out", false)):
+		lines.append("[b]结算方式[/b] 达到回合上限后按剩余战力判定")
 	var reward_text := _format_reward_bundle(reward_result)
 	if bool(payload.get("success", false)):
 		var result_line := "[b]结果[/b] 首通 %s" % _dojo_tier_name(tier) if bool(payload.get("first_clear", false)) else "[b]结果[/b] 再次通过 %s" % _dojo_tier_name(tier)
@@ -403,12 +443,24 @@ func _show_dojo_result(payload: Dictionary) -> void:
 		_push_log("%s 通过了 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
 	else:
 		lines.append("[b]结果[/b] 暂未通过 %s" % _dojo_tier_name(tier))
-		lines.append("还差约 %d 点准备度，建议先补据点等级、信赖或门票素材。" % int(payload.get("gap", 1)))
+		if payload.has("gap"):
+			lines.append("还差约 %d 点准备度，建议先补据点等级、信赖或门票素材。" % int(payload.get("gap", 1)))
+		else:
+			lines.append("建议先补双打位羁绊、建筑驻守或星级，再来验证这一阶。")
 		if not reward_text.is_empty():
 			lines.append("[b]安慰奖励[/b] %s" % reward_text)
 		_push_log("%s 暂时没能通过 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
 	pending_context = {"kind": "dojo_result", "on_close": "arrival"}
 	decision_panel.open_panel("试炼结果", "\n".join(lines), [], "返回地点")
+
+func _start_dojo_battle(payload: Dictionary) -> void:
+	var battle_config: Dictionary = payload.get("battle_config", {})
+	if battle_config.is_empty():
+		_show_dojo_result({"ok": false, "reason": "battle_config_missing"})
+		return
+	decision_panel.hide()
+	_push_log("进入 %s，准备进行双打验证。" % String(battle_config.get("title", "试炼")))
+	battle_panel.start_battle(battle_config)
 
 func _show_encounter_preview(payload: Dictionary) -> void:
 	current_encounter = payload.duplicate(true)
@@ -466,6 +518,22 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 				_try_accept_quest(choice_id.trim_prefix("quest:"))
 		"dojo_menu":
 			visit_flow.choose_dojo_tier(choice_id)
+		"team_manage":
+			match choice_id:
+				"battle_0":
+					_open_battle_slot_picker(0)
+				"battle_1":
+					_open_battle_slot_picker(1)
+				"backpack":
+					_open_backpack_picker()
+		"team_battle_slot":
+			GameState.set_battle_slot(int(context.get("slot_index", 0)), choice_id)
+			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
+			decision_panel.open_panel("队伍已更新", "%s 已被放到双打位 %d。" % [GameState.get_pet_display_name(choice_id), int(context.get("slot_index", 0)) + 1], [], "返回总览")
+		"team_backpack_slot":
+			GameState.toggle_backpack_slot(choice_id)
+			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
+			decision_panel.open_panel("背包已更新", "已切换 %s 的背包状态。" % GameState.get_pet_display_name(choice_id), [], "返回总览")
 		"encounter_preview":
 			last_encounter_action_id = choice_id
 			visit_flow.choose_encounter_action(choice_id)
@@ -483,6 +551,10 @@ func _on_decision_closed() -> void:
 		"arrival":
 			if not current_visit_habitat_id.is_empty():
 				visit_flow.start_visit(current_visit_habitat_id)
+		"team_manage":
+			_open_team_manage_menu()
+		"reopen_base":
+			_on_base_pressed()
 		_:
 			pass
 
@@ -496,6 +568,48 @@ func _on_visit_finished(_report: Dictionary) -> void:
 
 func _on_base_closed() -> void:
 	_update_ui()
+
+func _on_base_manage_requested() -> void:
+	_open_team_manage_menu()
+
+func _on_battle_finished(result: Dictionary) -> void:
+	visit_flow.resolve_dojo_battle(result)
+	_update_ui()
+
+func _open_team_manage_menu() -> void:
+	var choices := [
+		{"id": "battle_0", "label": "双打位 1", "summary": "当前：%s" % _battle_slot_name_at(0)},
+		{"id": "battle_1", "label": "双打位 2", "summary": "当前：%s" % _battle_slot_name_at(1)},
+		{"id": "backpack", "label": "调整背包", "summary": "当前：%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity]},
+	]
+	pending_context = {"kind": "team_manage", "on_close": "reopen_base"}
+	decision_panel.open_panel("整备队伍", "双打位决定本场直接战斗，背包位提供羁绊与生态支持；同物种不会重复计入羁绊。", choices, "返回总览")
+
+func _open_battle_slot_picker(slot_index: int) -> void:
+	var choices := []
+	for companion in GameState.get_companions():
+		var pet_uid := String(companion.get("uid", ""))
+		choices.append({
+			"id": pet_uid,
+			"label": "%s ★%d" % [String(companion.get("display_name", "未命名伙伴")), int(companion.get("star_level", 1))],
+			"summary": "%s ｜ 当前：%s" % [String(companion.get("species_id", "")), _companion_slot_label(pet_uid)],
+		})
+	pending_context = {"kind": "team_battle_slot", "slot_index": slot_index, "on_close": "team_manage"}
+	decision_panel.open_panel("选择双打位 %d" % (slot_index + 1), "挑一只本场直接上阵的伙伴。", choices, "返回整备")
+
+func _open_backpack_picker() -> void:
+	var choices := []
+	for companion in GameState.get_companions():
+		var pet_uid := String(companion.get("uid", ""))
+		var in_backpack := GameState.get_backpack_uids().has(pet_uid)
+		choices.append({
+			"id": pet_uid,
+			"label": "%s ★%d" % [String(companion.get("display_name", "未命名伙伴")), int(companion.get("star_level", 1))],
+			"summary": "%s ｜ 人口 %d ｜ %s" % [String(companion.get("species_id", "")), GameState.get_pet_population_cost(pet_uid), "当前已在背包" if in_backpack else "当前未在背包"],
+			"disabled": GameState.get_battle_party_uids().has(pet_uid),
+		})
+	pending_context = {"kind": "team_backpack_slot", "on_close": "team_manage"}
+	decision_panel.open_panel("调整背包位", "背包位不上场，但会提供羁绊；每只会占用不同人口值，上阵位无法直接切到背包，同物种不会重复计数。", choices, "返回整备")
 
 func _open_resident_picker() -> void:
 	var choices := []
@@ -611,11 +725,10 @@ func _handle_encounter_result_effects(payload: Dictionary) -> String:
 		GameState.note_calm(species_id)
 	if outcome == "bond_success":
 		GameState.note_bond(species_id)
-		var joined := _add_companion_if_new(species_id)
+		var acquisition := _acquire_companion(species_id)
 		_push_log("%s 愿意靠近，并把这里当成了新的联系点。" % species_name)
 		_check_active_quests()
-		if joined:
-			return "[b]%s[/b]\n%s 愿意靠近，并加入了你的照料名册。" % [_encounter_outcome_text(outcome), species_name]
+		return "[b]%s[/b]\n%s" % [_encounter_outcome_text(outcome), String(acquisition.get("body", "%s 愿意靠近。" % species_name))]
 	elif outcome == "bond_progress":
 		_push_log("%s 对你的存在不再那么戒备了。" % species_name)
 	elif outcome == "safe_leave":
@@ -625,12 +738,29 @@ func _handle_encounter_result_effects(payload: Dictionary) -> String:
 	_check_active_quests()
 	return "[b]%s[/b]\n%s" % [_encounter_outcome_text(outcome), species_name]
 
-func _add_companion_if_new(species_id: String) -> bool:
-	for pet in GameState.pet_states.values():
-		if String(pet.get("species_id", "")) == species_id:
-			return false
-	GameState.add_companion(species_id)
-	return true
+func _acquire_companion(species_id: String) -> Dictionary:
+	var is_new_species := GameState.count_species_pets(species_id) == 0
+	var pet_uid := GameState.add_companion(species_id)
+	var pet := GameState.get_pet(pet_uid)
+	var lines: Array[String] = []
+	if is_new_species:
+		lines.append("%s 愿意靠近，并加入了你的照料名册。" % String(pet.get("display_name", species_id)))
+	else:
+		lines.append("%s 的新个体加入了队伍，可用于羁绊、驻守或升星。" % String(pet.get("display_name", species_id)))
+	var merge_result := GameState.merge_species_duplicates(species_id)
+	for upgrade in merge_result.get("upgrades", []):
+		var upgrade_line := "3 合 1：%s 升到 ★%d，并进化为 %s。" % [
+			String(upgrade.get("old_name", species_id)),
+			int(upgrade.get("new_star", 1)),
+			String(upgrade.get("new_name", species_id)),
+		]
+		lines.append(upgrade_line)
+		_push_log(upgrade_line)
+	return {
+		"pet_uid": pet_uid,
+		"merged": bool(merge_result.get("ok", false)),
+		"body": "\n".join(lines),
+	}
 
 func _can_mark_return(npc_id: String) -> bool:
 	for quest_id in GameState.active_quests:
@@ -660,29 +790,69 @@ func _finish_current_visit() -> void:
 	visit_flow.finish_visit()
 
 func _resolve_visit_yield(habitat_id: String) -> void:
-	var reward := {}
+	var reward := _base_visit_reward(habitat_id)
+	var resonance: Dictionary = synergy_service.build_visit_resonance(habitat_id)
+	var base_reward := _base_visit_reward(habitat_id)
+	for _roll in range(int(resonance.get("economy_rolls", 0))):
+		_merge_reward_items(reward, base_reward)
+	_merge_reward_items(reward, _seasonal_visit_reward(habitat_id))
+	if not reward.is_empty():
+		GameState.grant_items(reward)
+		_push_log("回营时顺手带回：%s。" % _format_item_cost(reward))
+	var growth_lines := _apply_visit_growth_resonance(resonance.get("bond_gains", {}))
+	for line in resonance.get("lines", []):
+		_push_log("建筑共鸣：%s" % String(line))
+	for line in growth_lines:
+		_push_log(line)
+
+func _base_visit_reward(habitat_id: String) -> Dictionary:
 	match habitat_id:
 		"mist_moss_cave":
-			reward = {"soft_moss": 1 + GameState.get_building_level(habitat_id, "moss_bed")}
+			return {"soft_moss": 1 + GameState.get_building_level(habitat_id, "moss_bed")}
 		"crystal_creek":
-			reward = {"stone_chip": 1 + GameState.get_building_level(habitat_id, "sun_drying_rack")}
+			return {"stone_chip": 1 + GameState.get_building_level(habitat_id, "sun_drying_rack")}
 		"sky_post":
-			reward = {"tea_leaf": 1}
+			return {"tea_leaf": 1}
 		"ancient_platform":
-			reward = {"parts": 1 + GameState.get_building_level(habitat_id, "repair_bench")}
+			return {"parts": 1 + GameState.get_building_level(habitat_id, "repair_bench")}
 		"copper_hammer_bazaar":
-			reward = {"fiber": 1, "parts": 1}
+			return {"fiber": 1, "parts": 1}
 		"radiant_spire":
-			reward = {"stability_shard": 1}
+			return {"stability_shard": 1}
 		"echo_broken_bridge":
-			reward = {"parts": 1, "paper": 1}
+			return {"parts": 1, "paper": 1}
 		"radiant_observatory":
-			reward = {"glow_dust": 1, "stability_shard": 1}
-	_merge_reward_items(reward, _seasonal_visit_reward(habitat_id))
-	if reward.is_empty():
-		return
-	GameState.grant_items(reward)
-	_push_log("回营时顺手带回：%s。" % _format_item_cost(reward))
+			return {"glow_dust": 1, "stability_shard": 1}
+		"thunder_meadow":
+			return {"spark_reed": 1}
+		"autumn_leaf_dojo":
+			return {"amber_resin": 1}
+		"frost_mirror_lake":
+			return {"ice_glass": 1}
+		"greenbark_grove":
+			return {"amber_resin": 1}
+		"ember_crater":
+			return {"warm_stone": 1}
+		"reed_mire":
+			return {"reed": 1}
+		"saltglass_coast":
+			return {"glass": 1}
+		"moonfen_ruins":
+			return {"glow_dust": 1}
+		_:
+			return {}
+
+func _apply_visit_growth_resonance(bond_gains: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	for pet_uid in bond_gains.keys():
+		var result: Dictionary = GameState.add_pet_bond(String(pet_uid), int(bond_gains[pet_uid]))
+		if result.is_empty() or not bool(result.get("changed", false)):
+			continue
+		lines.append("%s 的信赖提升到 %d。" % [
+			GameState.get_pet_display_name(String(pet_uid)),
+			int(result.get("new_level", 1)),
+		])
+	return lines
 
 func _finish_season() -> void:
 	season_finished = true
@@ -699,13 +869,37 @@ func _finish_season() -> void:
 func _build_companion_summaries() -> Array:
 	var result: Array = []
 	for companion in GameState.get_companions():
-		var species := DataRepository.get_species(String(companion.get("species_id", "")))
+		var species_id := String(companion.get("species_id", ""))
+		var species := DataRepository.get_species(species_id)
 		var home_id := String(companion.get("residence_habitat_id", ""))
 		var entry: Dictionary = companion.duplicate(true)
-		entry["species_name"] = String(species.get("name", companion.get("species_id", "")))
+		var star_level := int(entry.get("star_level", 1))
+		var synergy_profile: Dictionary = GameData.get_species_synergy_profile(species_id)
+		var evolution_chain: Array = synergy_profile.get("evolution_chain", [])
+		entry["species_name"] = String(species.get("name", species_id))
 		entry["residence_name"] = _habitat_name(home_id) if not home_id.is_empty() else "暂未安居"
+		entry["slot_label"] = _companion_slot_label(String(companion.get("uid", "")))
+		entry["duplicate_count"] = GameState.count_species_pets(species_id, star_level)
+		entry["duplicate_need"] = 0 if star_level >= 3 else maxi(0, 3 - int(entry.get("duplicate_count", 1)))
+		entry["evolution_name"] = String(evolution_chain[star_level - 1]) if evolution_chain.size() >= star_level else entry["species_name"]
+		entry["next_evolution_name"] = String(evolution_chain[star_level]) if evolution_chain.size() > star_level else ""
+		entry["population_cost"] = int(synergy_profile.get("population_cost", 1))
+		entry["type_text"] = _format_type_tags(synergy_profile.get("elements", []))
+		entry["role_text"] = _format_role_tags(synergy_profile.get("job_tags", []))
 		result.append(entry)
 	return result
+
+func _format_type_tags(type_ids: Array) -> String:
+	var parts: Array[String] = []
+	for type_id in type_ids:
+		parts.append(GameData.get_type_name(String(type_id)))
+	return " / ".join(parts)
+
+func _format_role_tags(role_ids: Array) -> String:
+	var parts: Array[String] = []
+	for role_id in role_ids:
+		parts.append(String(GameData.JOB_NAMES.get(String(role_id), String(role_id))))
+	return " / ".join(parts)
 
 func _build_habitat_summaries() -> Array:
 	var result: Array = []
@@ -740,7 +934,8 @@ func _update_ui() -> void:
 
 func _update_header() -> void:
 	round_label.text = "%s · 第 %d / %d 日" % [_season_name(), GameState.day_index, GameState.season_length]
-	objective_label.text = "照料进度 %d ｜ 已安居 %d ｜ 徽章 %d ｜ 季节点数 %d" % [
+	objective_label.text = "构筑等级 %d ｜ 照料进度 %d ｜ 已安居 %d ｜ 徽章 %d ｜ 季节点数 %d" % [
+		GameState.get_progression_rank(),
 		GameState.get_care_progress(),
 		GameState.get_settled_habitat_count(),
 		GameState.badge_count,
@@ -764,17 +959,41 @@ func _update_action_ui() -> void:
 		action_hint_label.text = "[b]从营地开始一天。[/b]\n核心闭环：准备 -> 选地点 -> 到点照料/建设/试炼 -> 回营记录。"
 
 func _update_summaries() -> void:
-	player_summary_label.text = "[b]营地记录[/b]\n照料进度：%d\n徽章：%d ｜ 季节点数：%d\n库存：%s\n活跃委托：%d" % [GameState.get_care_progress(), GameState.badge_count, GameState.season_points, _format_inventory_highlights(), GameState.active_quests.size()]
+	var synergy_report := synergy_service.build_synergy_report()
+	var facility_bonus := synergy_service.build_facility_bonus()
+	player_summary_label.text = "[b]营地记录[/b]\n构筑等级：%d\n照料进度：%d\n徽章：%d ｜ 季节点数：%d\n背包人口：%d / %d\n双打：%s\n库存：%s" % [
+		GameState.get_progression_rank(),
+		GameState.get_care_progress(),
+		GameState.badge_count,
+		GameState.season_points,
+		GameState.get_backpack_population_used(),
+		GameState.backpack_capacity,
+		" / ".join(_battle_slot_names()),
+		_format_inventory_highlights(),
+	]
 	ai_summary_label.text = "[b]今日计划[/b]\n季节：%s\n轮换试炼：%s\n推荐：%s" % [_season_name(), " / ".join(_active_dojo_names()), _today_focus_text()]
-	control_summary_label.text = "[b]地点状态[/b]\n%s" % "\n".join(_location_status_lines())
+	var control_lines: Array[String] = []
+	control_lines.append("[b]地点状态[/b]")
+	control_lines.append_array(_location_status_lines().slice(0, 5))
+	control_lines.append("")
+	control_lines.append("[b]已激活羁绊[/b]")
+	control_lines.append_array(synergy_service.format_active_lines(synergy_report, 2))
+	if not facility_bonus.get("lines", []).is_empty():
+		control_lines.append("[b]建筑前置增益[/b]")
+		control_lines.append_array(facility_bonus.get("lines", []).slice(0, 2))
+	control_summary_label.text = "\n".join(control_lines)
 
 func _update_roster() -> void:
-	var lines: Array[String] = ["[b]伙伴与安居[/b]"]
+	var lines: Array[String] = ["[b]伙伴与编成[/b]"]
+	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
+	lines.append("背包人口：%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity])
 	for companion in GameState.get_companions():
 		var home_id := String(companion.get("residence_habitat_id", ""))
-		lines.append("%s  [%s]  驻守：%s" % [
+		lines.append("%s ★%d  [%s]  %s  驻守：%s" % [
 			String(companion.get("display_name", "未命名伙伴")),
+			int(companion.get("star_level", 1)),
 			String(companion.get("species_id", "")),
+			_companion_slot_label(String(companion.get("uid", ""))),
 			_habitat_name(home_id) if not home_id.is_empty() else "暂未安居",
 		])
 	roster_label.text = "\n".join(lines)
@@ -952,6 +1171,30 @@ func _npc_names(npcs: Array) -> Array[String]:
 		names.append(String(npc.get("name", "")))
 	return names
 
+func _battle_slot_names() -> Array[String]:
+	var names: Array[String] = []
+	for pet_uid in GameState.get_battle_party_uids():
+		names.append(GameState.get_pet_display_name(pet_uid))
+	if names.is_empty():
+		names.append("未配置")
+	return names
+
+func _battle_slot_name_at(slot_index: int) -> String:
+	var battle_uids := GameState.get_battle_party_uids()
+	if slot_index < 0 or slot_index >= battle_uids.size():
+		return "未配置"
+	return GameState.get_pet_display_name(String(battle_uids[slot_index]))
+
+func _companion_slot_label(pet_uid: String) -> String:
+	if GameState.get_battle_party_uids().has(pet_uid):
+		return "上阵"
+	if GameState.get_backpack_uids().has(pet_uid):
+		return "背包"
+	for habitat_state in GameState.habitats.values():
+		if String(habitat_state.get("resident_uid", "")) == pet_uid or String(habitat_state.get("assistant_uid", "")) == pet_uid:
+			return "驻守"
+	return "待命"
+
 func _action_name(action_id: String) -> String:
 	match action_id:
 		"feed": return "投喂"
@@ -982,6 +1225,8 @@ func _build_fail_reason(reason: String) -> String:
 		"tier_locked": return "需要先通过前一阶试炼。"
 		"entry_cost_missing": return "门票材料还没凑齐，先去当季地点收集。"
 		"payment_failed": return "扣除门票时出现问题，请重试。"
+		"battle_slots_missing": return "双打位还没凑齐 2 只伙伴，当前 build 无法进入试炼。"
+		"battle_config_missing": return "试炼战斗配置缺失，当前无法开战。"
 		"dojo_missing": return "这里还没有可用的试炼定义。"
 		"tier_missing": return "这个阶位暂时没有配置。"
 		_: return "这一步今天还做不了。"
@@ -1159,4 +1404,4 @@ func _step_is_complete(step: Dictionary) -> bool:
 			return false
 
 func _is_modal_open() -> bool:
-	return decision_panel.visible or base_panel.visible
+	return battle_panel.visible or decision_panel.visible or base_panel.visible

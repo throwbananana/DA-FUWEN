@@ -47,9 +47,12 @@ func start_battle(config: Dictionary) -> void:
 			"statuses": {},
 			"guard": 0.0,
 		}
+	_apply_prebattle_modifiers()
 	title_label.text = "%s" % String(config.get("title", "遭遇战"))
 	subtitle_label.text = String(config.get("subtitle", ""))
 	battle_log.text = "[b]战斗开始[/b]\n"
+	for line in _build_bonus_log_lines():
+		_log(line)
 	show()
 	_render_rosters()
 	_begin_round()
@@ -62,6 +65,8 @@ func _begin_round() -> void:
 	for uid in temp_state.keys():
 		temp_state[uid]["guard"] = 0.0
 	for unit in allies + enemies:
+		if _is_ally(unit):
+			temp_state[unit.uid]["guard"] = float(battle_config.get("ally_guard_bonus", 0.0))
 		if unit.is_alive():
 			turn_queue.append(unit)
 	turn_queue.sort_custom(_sort_turn_order)
@@ -105,7 +110,7 @@ func _prompt_player_action(actor: MonsterInstance) -> void:
 	action_box.add_child(intro)
 
 	for skill_id in actor.skills:
-		var skill: Dictionary = GameData.SKILLS.get(skill_id, {})
+		var skill: Dictionary = GameData.get_skill(String(skill_id))
 		var button := Button.new()
 		button.focus_mode = Control.FOCUS_NONE
 		button.custom_minimum_size = Vector2(300, 48)
@@ -149,18 +154,18 @@ func _choose_enemy_skill(actor: MonsterInstance) -> String:
 	if available.is_empty():
 		return actor.skills[0]
 	available.sort_custom(func(a: String, b: String) -> bool:
-		return int(GameData.SKILLS[a].get("power", 0)) > int(GameData.SKILLS[b].get("power", 0))
+		return int(GameData.get_skill(a).get("power", 0)) > int(GameData.get_skill(b).get("power", 0))
 	)
 	var wounded_allies := _team_lowest_health(_get_team_for(actor))
 	if not wounded_allies.is_empty():
 		for skill_id in available:
-			if GameData.SKILLS[skill_id].get("effect", "") == "heal":
+			if GameData.get_skill(skill_id).get("effect", "") == "heal":
 				var target: MonsterInstance = wounded_allies[0]
 				if target.current_hp < target.max_hp / 2:
 					selected_ally_uid = target.uid
 					return skill_id
 	for skill_id in available:
-		if GameData.SKILLS[skill_id].get("effect", "") == "guard" and actor.current_hp < actor.max_hp / 2:
+		if GameData.get_skill(skill_id).get("effect", "") == "guard" and actor.current_hp < actor.max_hp / 2:
 			return skill_id
 	return available[0]
 
@@ -171,7 +176,7 @@ func _on_skill_pressed(actor_uid: String, skill_id: String) -> void:
 	_perform_skill(actor, skill_id)
 
 func _perform_skill(actor: MonsterInstance, skill_id: String) -> void:
-	var skill: Dictionary = GameData.SKILLS.get(skill_id, {})
+	var skill: Dictionary = GameData.get_skill(skill_id)
 	temp_state[actor.uid]["cooldowns"][skill_id] = int(skill.get("cooldown", 0))
 	var target_mode := String(skill.get("target", "enemy"))
 	if target_mode == "enemy_all":
@@ -189,6 +194,8 @@ func _perform_skill(actor: MonsterInstance, skill_id: String) -> void:
 		match String(skill.get("effect", "")):
 			"heal":
 				var heal_value := int(skill.get("effect_value", 0)) + actor.get_role_bonus("lab")
+				if _is_ally(actor):
+					heal_value += int(battle_config.get("ally_heal_bonus", 0))
 				target.heal(heal_value)
 				_log("%s 对 %s 施放 %s，回复 %d 点生命。" % [actor.display_name, target.display_name, skill.get("name", skill_id), heal_value])
 			"guard":
@@ -326,6 +333,11 @@ func _end_round() -> void:
 			statuses[status_id]["turns"] = int(statuses[status_id].get("turns", 0)) - 1
 			if int(statuses[status_id]["turns"]) <= 0:
 				statuses.erase(status_id)
+	var round_limit := int(battle_config.get("round_limit", GameData.MAX_ROUNDS))
+	if round_index >= round_limit:
+		_log("达到 %d 回合上限，按场上剩余战力结算。" % round_limit)
+		_finish_battle(_resolve_timeout_result())
+		return
 	round_index += 1
 	_begin_round()
 
@@ -472,3 +484,42 @@ func _get_effective_speed(unit: MonsterInstance) -> int:
 	if statuses.has("haste"):
 		speed += 3
 	return speed
+
+func _apply_prebattle_modifiers() -> void:
+	for ally in allies:
+		ally.max_hp += int(battle_config.get("ally_hp_bonus", 0))
+		ally.current_hp = ally.max_hp
+		ally.attack += int(battle_config.get("ally_attack_bonus", 0))
+		ally.speed += int(battle_config.get("ally_speed_bonus", 0))
+	for enemy in enemies:
+		enemy.attack = maxi(1, enemy.attack - int(battle_config.get("enemy_attack_penalty", 0)))
+
+func _build_bonus_log_lines() -> Array[String]:
+	var lines: Array[String] = []
+	if int(battle_config.get("ally_attack_bonus", 0)) > 0:
+		lines.append("羁绊增益：我方攻击 +%d。" % int(battle_config.get("ally_attack_bonus", 0)))
+	if int(battle_config.get("ally_speed_bonus", 0)) > 0:
+		lines.append("羁绊增益：我方速度 +%d。" % int(battle_config.get("ally_speed_bonus", 0)))
+	if int(battle_config.get("ally_hp_bonus", 0)) > 0:
+		lines.append("羁绊增益：我方体力 +%d。" % int(battle_config.get("ally_hp_bonus", 0)))
+	if int(battle_config.get("ally_heal_bonus", 0)) > 0:
+		lines.append("羁绊增益：治疗效果 +%d。" % int(battle_config.get("ally_heal_bonus", 0)))
+	if float(battle_config.get("ally_guard_bonus", 0.0)) > 0.0:
+		lines.append("建筑增益：开场减伤 %d%%。" % int(round(float(battle_config.get("ally_guard_bonus", 0.0)) * 100.0)))
+	if int(battle_config.get("enemy_attack_penalty", 0)) > 0:
+		lines.append("压制生效：敌方攻击 -%d。" % int(battle_config.get("enemy_attack_penalty", 0)))
+	return lines
+
+func _resolve_timeout_result() -> Dictionary:
+	var ally_hp := 0
+	for ally in _alive_allies():
+		ally_hp += ally.current_hp
+	var enemy_hp := 0
+	for enemy in _alive_enemies():
+		enemy_hp += enemy.current_hp
+	return {
+		"player_won": ally_hp >= enemy_hp,
+		"captured_species": "",
+		"battle_kind": battle_config.get("kind", "wild"),
+		"timed_out": true,
+	}

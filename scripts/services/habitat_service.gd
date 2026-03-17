@@ -56,12 +56,12 @@ func can_build(habitat_id: String, building_id: String) -> Dictionary:
 		return {"ok": false, "reason": "resident_required"}
 
 	var current_level := GameState.get_building_level(habitat_id, building_id)
-	var levels: Array = building.get("levels", [])
+	var levels: Array = _building_levels(building)
 	if current_level >= levels.size():
 		return {"ok": false, "reason": "max_level"}
 
 	var next_level: Dictionary = levels[current_level]
-	var cost: Dictionary = next_level.get("cost", {})
+	var cost: Dictionary = _normalize_cost(next_level.get("cost", {}))
 	if not GameState.can_pay(cost):
 		return {"ok": false, "reason": "insufficient_items", "cost": cost}
 
@@ -133,3 +133,30 @@ func _resident_matches_preferences(habitat_id: String, pet_uid: String) -> bool:
 		if preferences.has(tag):
 			return true
 	return preferences.is_empty()
+
+func _building_levels(building: Dictionary) -> Array:
+	if building.has("levels"):
+		return building.get("levels", [])
+	var effects: Array[String] = []
+	var resonance_effects: Dictionary = building.get("resonance_effects", {})
+	effects.append_array(resonance_effects.get("pre_battle", []))
+	effects.append_array(resonance_effects.get("growth", []))
+	effects.append_array(resonance_effects.get("economy", []))
+	if effects.is_empty():
+		effects.append("建筑共鸣已激活")
+	return [{
+		"level": 1,
+		"cost": building.get("construction_cost", {}),
+		"effects": effects,
+	}]
+
+func _normalize_cost(cost: Dictionary) -> Dictionary:
+	var normalized := {}
+	var alias_map := {
+		"stone": "stone_chip",
+		"ore": "parts",
+	}
+	for item_id in cost.keys():
+		var target_id := String(alias_map.get(String(item_id), String(item_id)))
+		normalized[target_id] = int(normalized.get(target_id, 0)) + int(cost[item_id])
+	return normalized

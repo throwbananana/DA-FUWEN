@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "unlock_tidal_sprout_shore",
+      "habitat_id": "tidal_sprout_shore",
+      "priority": 10,
+      "unlock_text": "春芽季来临，潮芽浅滩退潮露出可行路径。",
+      "conditions": [
+        {
+          "type": "season_is",
+          "value": "spring"
+        }
+      ]
+    },
+    {
+      "id": "unlock_thunder_meadow",
+      "habitat_id": "thunder_meadow",
+      "priority": 20,
+      "unlock_text": "盛雷季的草场稳定下来，可以尝试进入训练。",
+      "conditions": [
+        {
+          "type": "season_is",
+          "value": "summer"
+        },
+        {
+          "type": "habitat_rank_total_at_least",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "unlock_autumn_leaf_dojo",
+      "habitat_id": "autumn_leaf_dojo",
+      "priority": 30,
+      "unlock_text": "赤叶演武场在秋季开门，完成一次二级建筑升级后可正式参战。",
+      "conditions": [
+        {
+          "type": "season_is",
+          "value": "autumn"
+        },
+        {
+          "type": "built_level_at_least",
+          "building_id": "warm_nest",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "unlock_frost_mirror_lake",
+      "habitat_id": "frost_mirror_lake",
+      "priority": 40,
+      "unlock_text": "霜镜湖只在冬季可达，且需要足够的伙伴与 NPC 信赖。",
+      "conditions": [
+        {
+          "type": "season_is",
+          "value": "winter"
+        },
+        {
+          "type": "trust_at_least",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "id": "unlock_echo_bridge",
+      "habitat_id": "echo_broken_bridge",
+      "priority": 50,
+      "unlock_text": "你已经证明了自己的试炼能力，回声断桥的封路被移开。",
+      "conditions": [
+        {
+          "type": "dojo_cleared",
+          "value": "summer_storm_trial:tier_1"
+        },
+        {
+          "type": "dojo_cleared",
+          "value": "autumn_leaf_dojo:tier_1"
+        }
+      ]
+    },
+    {
+      "id": "unlock_radiant_observatory",
+      "habitat_id": "radiant_observatory",
+      "priority": 60,
+      "unlock_text": "你获得了进入异常观测台的许可。",
+      "conditions": [
+        {
+          "type": "season_in",
+          "value": [
+            "autumn",
+            "winter"
+          ]
+        },
+        {
+          "type": "dojo_cleared",
+          "value": "autumn_leaf_dojo:tier_2"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "seasons": [
+    {
+      "id": "spring",
+      "name": "春芽季",
+      "days": 6,
+      "weather_pool": [
+        "clear",
+        "drizzle",
+        "mist"
+      ],
+      "unlock_habitats": [
+        "tidal_sprout_shore"
+      ],
+      "lock_habitats": [
+        "frost_mirror_lake"
+      ],
+      "event_tags": [
+        "spring",
+        "growth",
+        "nursery"
+      ],
+      "resource_bonus": {
+        "soft_moss": 1,
+        "dew_crystal": 1
+      },
+      "dojo_rotation": [
+        "spring_bloom_trial"
+      ]
+    },
+    {
+      "id": "summer",
+      "name": "盛雷季",
+      "days": 6,
+      "weather_pool": [
+        "clear",
+        "storm",
+        "humid"
+      ],
+      "unlock_habitats": [
+        "thunder_meadow"
+      ],
+      "lock_habitats": [
+        "frost_mirror_lake"
+      ],
+      "event_tags": [
+        "summer",
+        "training",
+        "storm"
+      ],
+      "resource_bonus": {
+        "spark_reed": 1,
+        "warm_stone": 1
+      },
+      "dojo_rotation": [
+        "summer_storm_trial"
+      ]
+    },
+    {
+      "id": "autumn",
+      "name": "赤叶季",
+      "days": 6,
+      "weather_pool": [
+        "clear",
+        "windy",
+        "dry"
+      ],
+      "unlock_habitats": [
+        "autumn_leaf_dojo"
+      ],
+      "lock_habitats": [],
+      "event_tags": [
+        "autumn",
+        "harvest",
+        "duel"
+      ],
+      "resource_bonus": {
+        "amber_resin": 1,
+        "tea_leaf": 1
+      },
+      "dojo_rotation": [
+        "autumn_leaf_dojo"
+      ]
+    },
+    {
+      "id": "winter",
+      "name": "霜镜季",
+      "days": 6,
+      "weather_pool": [
+        "snow",
+        "clear",
+        "mist"
+      ],
+      "unlock_habitats": [
+        "frost_mirror_lake"
+      ],
+      "lock_habitats": [
+        "tidal_sprout_shore"
+      ],
+      "event_tags": [
+        "winter",
+        "quiet",
+        "observation"
+      ],
+      "resource_bonus": {
+        "ice_glass": 1,
+        "glow_dust": 1
+      },
+      "dojo_rotation": [
+        "winter_mirror_trial"
+      ]
+    }
+  ]
+}

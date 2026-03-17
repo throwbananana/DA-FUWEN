@@ -112,6 +112,46 @@
       "type": "tool"
     },
     {
+      "id": "dew_crystal",
+      "name": "露晶",
+      "type": "rare_material"
+    },
+    {
+      "id": "spark_reed",
+      "name": "电芒芦",
+      "type": "material"
+    },
+    {
+      "id": "storm_core",
+      "name": "雷核",
+      "type": "rare_material"
+    },
+    {
+      "id": "blueprint_scrap",
+      "name": "蓝图碎片",
+      "type": "rare_material"
+    },
+    {
+      "id": "master_badge",
+      "name": "宗师徽章",
+      "type": "trophy"
+    },
+    {
+      "id": "rare_decor_part",
+      "name": "稀有饰件",
+      "type": "rare_material"
+    },
+    {
+      "id": "training_note",
+      "name": "试炼札记",
+      "type": "consumable"
+    },
+    {
+      "id": "ice_glass",
+      "name": "冰镜片",
+      "type": "rare_material"
+    },
+    {
       "id": "stability_shard",
       "name": "稳定碎片",
       "type": "rare_material"

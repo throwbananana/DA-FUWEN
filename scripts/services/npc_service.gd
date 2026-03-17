@@ -58,10 +58,7 @@ func finish_quest(quest_id: String) -> Dictionary:
 
 	if rewards.has("unlock_habitat"):
 		var habitat_id := String(rewards["unlock_habitat"])
-		if GameState.habitats.has(habitat_id):
-			var state: Dictionary = GameState.habitats[habitat_id]
-			state["is_unlocked"] = true
-			GameState.habitats[habitat_id] = state
+		GameState.unlock_habitat(habitat_id)
 
 	GameState.complete_quest(quest_id)
 

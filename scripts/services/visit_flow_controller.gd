@@ -7,6 +7,7 @@ extends Node
 const HabitatServiceScript = preload("res://scripts/services/habitat_service.gd")
 const NpcServiceScript = preload("res://scripts/services/npc_service.gd")
 const EncounterServiceScript = preload("res://scripts/services/encounter_service.gd")
+const DojoServiceScript = preload("res://scripts/services/dojo_service.gd")
 
 signal visit_started(habitat_id: String)
 signal state_changed(step_id: String, payload: Dictionary)
@@ -15,6 +16,7 @@ signal visit_finished(report: Dictionary)
 var habitat_service = HabitatServiceScript.new()
 var npc_service = NpcServiceScript.new()
 var encounter_service = EncounterServiceScript.new()
+var dojo_service = DojoServiceScript.new()
 
 var current_habitat_id := ""
 var current_step := "idle"
@@ -46,6 +48,15 @@ func open_npc_menu() -> void:
 		"npcs": npc_service.get_visible_npcs(current_habitat_id),
 		"quests": npc_service.get_available_quests(current_habitat_id)
 	})
+
+func open_dojo_menu() -> void:
+	current_step = "dojo_menu"
+	state_changed.emit("dojo_menu", dojo_service.get_dojo_menu(current_habitat_id))
+
+func choose_dojo_tier(tier: String) -> void:
+	current_step = "dojo_result"
+	var dojo := dojo_service.get_dojo_for_habitat(current_habitat_id)
+	state_changed.emit("dojo_result", dojo_service.attempt_dojo(String(dojo.get("id", "")), tier))
 
 func start_observation() -> void:
 	current_encounter = encounter_service.roll_encounter(current_habitat_id)

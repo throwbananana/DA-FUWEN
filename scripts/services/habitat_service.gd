@@ -107,6 +107,21 @@ func get_visit_summary(habitat_id: String) -> Dictionary:
 		"buildings": DataRepository.get_buildings_for_habitat(habitat_id),
 		"npcs": DataRepository.get_habitat_npcs(habitat_id),
 		"resident": GameState.get_pet(resident_uid) if not resident_uid.is_empty() else {},
+		"access": get_access_report(habitat_id),
+		"dojo": DataRepository.get_dojo(String(habitat.get("dojo_id", ""))),
+	}
+
+func get_access_report(habitat_id: String) -> Dictionary:
+	var habitat := DataRepository.get_habitat(habitat_id)
+	var status := GameState.get_habitat_unlock_status(habitat_id)
+	return {
+		"habitat_id": habitat_id,
+		"open": bool(status.get("open", false)),
+		"unlock_text": String(status.get("unlock_text", "")),
+		"reasons": status.get("reasons", []).duplicate(),
+		"recommended_rank": int(habitat.get("recommended_rank", 0)),
+		"flow_band": String(habitat.get("flow_band", "")),
+		"seasonal_events": habitat.get("seasonal_events", []).duplicate(),
 	}
 
 func _resident_matches_preferences(habitat_id: String, pet_uid: String) -> bool:

@@ -34,7 +34,8 @@ func _render_summary(panel_state: Dictionary) -> void:
 	var active_quests: Array = panel_state.get("active_quests", [])
 	var completed_quests: Array = panel_state.get("completed_quests", [])
 	var lines: Array[String] = []
-	lines.append("[b]本季进度[/b] 第 %d / %d 日" % [
+	lines.append("[b]当前季节[/b] %s ｜ 第 %d / %d 日" % [
+		String(season.get("season_name", "未知季节")),
 		int(season.get("day_index", 1)),
 		int(season.get("season_length", 1)),
 	])
@@ -46,6 +47,11 @@ func _render_summary(panel_state: Dictionary) -> void:
 		int(season.get("care_progress", 0)),
 		completed_quests.size(),
 	])
+	lines.append("[b]徽章[/b] %d ｜ [b]季节点数[/b] %d" % [
+		int(season.get("badge_count", 0)),
+		int(season.get("season_points", 0)),
+	])
+	lines.append("[b]轮换试炼[/b] %s" % " / ".join(season.get("dojo_rotation", ["暂无"])))
 	lines.append("[b]当前委托[/b] %s" % (", ".join(active_quests) if not active_quests.is_empty() else "暂无"))
 	lines.append("[b]库存摘记[/b] %s" % _format_inventory(inventory))
 	summary_label.text = "\n".join(lines)
@@ -94,10 +100,14 @@ func _render_habitats(panel_state: Dictionary) -> void:
 
 		var detail := Label.new()
 		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		detail.text = "驻守：%s\n建设：%s\n委托：%s" % [
+		var dojo_text := String(summary.get("dojo_text", ""))
+		var dojo_line := "\n试炼：%s" % dojo_text if not dojo_text.is_empty() else ""
+		detail.text = "驻守：%s\n建设：%s\n委托：%s\n状态：%s%s" % [
 			String(summary.get("resident_name", "暂无")),
 			String(summary.get("building_text", "尚未推进")),
 			String(summary.get("quest_text", "暂无")),
+			String(summary.get("status_text", "可回访")),
+			dojo_line,
 		]
 		card.add_child(detail)
 

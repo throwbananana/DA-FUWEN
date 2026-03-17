@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "habitats_patch": [
+    {
+      "id": "thunder_meadow",
+      "name": "鸣雷草场",
+      "type": "habitat",
+      "biome": "storm_field",
+      "travel_cost": 2,
+      "resident_slots": 1,
+      "support_slots": 1,
+      "unlock_rule_id": "unlock_thunder_meadow",
+      "season_availability": [
+        "summer"
+      ],
+      "dojo_id": "summer_storm_trial",
+      "recommended_rank": 2,
+      "flow_band": "mid_pressure",
+      "seasonal_events": [
+        "summer_training",
+        "storm_observation"
+      ],
+      "seasonal_resources": [
+        "spark_reed",
+        "warm_stone"
+      ],
+      "mda_role": "growth"
+    },
+    {
+      "id": "autumn_leaf_dojo",
+      "name": "赤叶演武场",
+      "type": "dojo",
+      "biome": "red_forest",
+      "travel_cost": 2,
+      "resident_slots": 0,
+      "support_slots": 0,
+      "unlock_rule_id": "unlock_autumn_leaf_dojo",
+      "season_availability": [
+        "autumn"
+      ],
+      "dojo_id": "autumn_leaf_dojo",
+      "recommended_rank": 3,
+      "flow_band": "high_pressure",
+      "seasonal_events": [
+        "autumn_duel",
+        "mentor_visit"
+      ],
+      "seasonal_resources": [
+        "amber_resin",
+        "tea_leaf"
+      ],
+      "mda_role": "mastery"
+    },
+    {
+      "id": "frost_mirror_lake",
+      "name": "霜镜湖",
+      "type": "habitat",
+      "biome": "ice_lake",
+      "travel_cost": 2,
+      "resident_slots": 1,
+      "support_slots": 1,
+      "unlock_rule_id": "unlock_frost_mirror_lake",
+      "season_availability": [
+        "winter"
+      ],
+      "dojo_id": "",
+      "recommended_rank": 3,
+      "flow_band": "low_pressure",
+      "seasonal_events": [
+        "winter_reflection",
+        "rare_observe"
+      ],
+      "seasonal_resources": [
+        "ice_glass",
+        "glow_dust"
+      ],
+      "mda_role": "recovery"
+    }
+  ]
+}

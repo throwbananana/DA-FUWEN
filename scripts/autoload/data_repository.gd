@@ -13,6 +13,10 @@ var buildings: Dictionary = {}
 var encounters: Dictionary = {}
 var quests: Dictionary = {}
 var items: Dictionary = {}
+var season_rules: Dictionary = {}
+var unlock_rules_by_habitat: Dictionary = {}
+var dojos: Dictionary = {}
+var reward_bundles: Dictionary = {}
 
 func _ready() -> void:
 	load_all()
@@ -24,6 +28,10 @@ func load_all() -> void:
 	buildings = _index_by_id(_read_json("%s/building_blueprints.json" % DATA_ROOT).get("buildings", []))
 	quests = _index_by_id(_read_json("%s/quest_templates.json" % DATA_ROOT).get("quests", []))
 	items = _index_by_id(_read_json("%s/items.json" % DATA_ROOT).get("items", []))
+	season_rules = _index_by_id(_read_json("%s/season_rules.json" % DATA_ROOT).get("seasons", []))
+	unlock_rules_by_habitat = _group_unlock_rules(_read_json("%s/habitat_unlock_rules.json" % DATA_ROOT).get("rules", []))
+	dojos = _index_by_id(_read_json("%s/dojo_definitions.json" % DATA_ROOT).get("dojos", []))
+	reward_bundles = _read_json("%s/reward_tables.json" % DATA_ROOT).get("reward_bundles", {})
 	encounters.clear()
 	for row in _read_json("%s/encounter_tables.json" % DATA_ROOT).get("encounters", []):
 		encounters[String(row.get("habitat_id", ""))] = row
@@ -49,6 +57,21 @@ func _index_by_id(rows: Array) -> Dictionary:
 		result[id] = row
 	return result
 
+func _group_unlock_rules(rows: Array) -> Dictionary:
+	var result := {}
+	for row in rows:
+		var habitat_id := String(row.get("habitat_id", ""))
+		if habitat_id.is_empty():
+			continue
+		if not result.has(habitat_id):
+			result[habitat_id] = []
+		result[habitat_id].append(row)
+	for habitat_id in result.keys():
+		result[habitat_id].sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			return int(a.get("priority", 0)) < int(b.get("priority", 0))
+		)
+	return result
+
 func get_habitat(habitat_id: String) -> Dictionary:
 	return habitats.get(habitat_id, {})
 
@@ -63,6 +86,18 @@ func get_building(building_id: String) -> Dictionary:
 
 func get_quest(quest_id: String) -> Dictionary:
 	return quests.get(quest_id, {})
+
+func get_season_rule(season_id: String) -> Dictionary:
+	return season_rules.get(season_id, {})
+
+func get_unlock_rules_for_habitat(habitat_id: String) -> Array:
+	return unlock_rules_by_habitat.get(habitat_id, []).duplicate(true)
+
+func get_dojo(dojo_id: String) -> Dictionary:
+	return dojos.get(dojo_id, {})
+
+func get_reward_bundle(bundle_id: String) -> Dictionary:
+	return reward_bundles.get(bundle_id, {})
 
 func get_habitat_npcs(habitat_id: String) -> Array:
 	var result: Array = []

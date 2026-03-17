@@ -274,6 +274,259 @@
           "异常波动更强，但稀有奖励更好"
         ]
       }
+    },
+    {
+      "id": "thunder_meadow",
+      "name": "鸣雷草场",
+      "type": "habitat",
+      "biome": "storm_field",
+      "mood_tags": [
+        "训练",
+        "迅疾",
+        "雷鸣"
+      ],
+      "travel_cost": 2,
+      "resident_slots": 1,
+      "support_slots": 1,
+      "resident_preferences": [
+        "speed",
+        "storm",
+        "training"
+      ],
+      "buildings": [],
+      "npc_pool": [],
+      "wild_pool": [
+        "gear_finch",
+        "storm_ram"
+      ],
+      "visit_actions": [
+        "care",
+        "observe",
+        "challenge"
+      ],
+      "unlock_rule_id": "unlock_thunder_meadow",
+      "season_availability": [
+        "summer"
+      ],
+      "dojo_id": "summer_storm_trial",
+      "recommended_rank": 2,
+      "flow_band": "mid_pressure",
+      "seasonal_events": [
+        "summer_training",
+        "storm_observation"
+      ],
+      "seasonal_resources": [
+        "spark_reed",
+        "warm_stone"
+      ],
+      "mda_role": "growth",
+      "seasonal_hooks": {
+        "summer": [
+          "雷暴后更容易出现训练型个体"
+        ],
+        "storm": [
+          "挑战奖励的季节点数会被强调"
+        ]
+      }
+    },
+    {
+      "id": "autumn_leaf_dojo",
+      "name": "赤叶演武场",
+      "type": "dojo",
+      "biome": "red_forest",
+      "mood_tags": [
+        "试炼",
+        "对决",
+        "掌控"
+      ],
+      "travel_cost": 2,
+      "resident_slots": 0,
+      "support_slots": 0,
+      "resident_preferences": [],
+      "buildings": [],
+      "npc_pool": [],
+      "wild_pool": [],
+      "visit_actions": [
+        "challenge",
+        "talk"
+      ],
+      "unlock_rule_id": "unlock_autumn_leaf_dojo",
+      "season_availability": [
+        "autumn"
+      ],
+      "dojo_id": "autumn_leaf_dojo",
+      "recommended_rank": 3,
+      "flow_band": "high_pressure",
+      "seasonal_events": [
+        "autumn_duel",
+        "mentor_visit"
+      ],
+      "seasonal_resources": [
+        "amber_resin",
+        "tea_leaf"
+      ],
+      "mda_role": "mastery",
+      "seasonal_hooks": {
+        "autumn": [
+          "演武场开放，适合验证当前 build"
+        ],
+        "windy": [
+          "对决修正更偏向精准与控制"
+        ]
+      }
+    },
+    {
+      "id": "frost_mirror_lake",
+      "name": "霜镜湖",
+      "type": "habitat",
+      "biome": "ice_lake",
+      "mood_tags": [
+        "静观",
+        "寒霜",
+        "安抚"
+      ],
+      "travel_cost": 2,
+      "resident_slots": 1,
+      "support_slots": 1,
+      "resident_preferences": [
+        "calm",
+        "ice",
+        "reflection"
+      ],
+      "buildings": [],
+      "npc_pool": [],
+      "wild_pool": [
+        "glaze_crane",
+        "shell_pup"
+      ],
+      "visit_actions": [
+        "care",
+        "observe",
+        "calm"
+      ],
+      "unlock_rule_id": "unlock_frost_mirror_lake",
+      "season_availability": [
+        "winter"
+      ],
+      "dojo_id": "",
+      "recommended_rank": 3,
+      "flow_band": "low_pressure",
+      "seasonal_events": [
+        "winter_reflection",
+        "rare_observe"
+      ],
+      "seasonal_resources": [
+        "ice_glass",
+        "glow_dust"
+      ],
+      "mda_role": "recovery",
+      "seasonal_hooks": {
+        "winter": [
+          "更适合进行高价值的低压观察"
+        ],
+        "snow": [
+          "稀有倒影事件概率提升"
+        ]
+      }
+    },
+    {
+      "id": "echo_broken_bridge",
+      "name": "回声断桥",
+      "type": "settlement",
+      "biome": "broken_bridge",
+      "mood_tags": [
+        "中转",
+        "回响",
+        "捷径"
+      ],
+      "travel_cost": 2,
+      "resident_slots": 0,
+      "support_slots": 0,
+      "resident_preferences": [],
+      "buildings": [],
+      "npc_pool": [],
+      "wild_pool": [
+        "gear_finch",
+        "glow_moth"
+      ],
+      "visit_actions": [
+        "observe",
+        "rest",
+        "mail"
+      ],
+      "unlock_rule_id": "unlock_echo_bridge",
+      "season_availability": [],
+      "dojo_id": "",
+      "recommended_rank": 3,
+      "flow_band": "mid_pressure",
+      "seasonal_events": [
+        "echo_route",
+        "shortcut_notice"
+      ],
+      "seasonal_resources": [
+        "parts",
+        "paper"
+      ],
+      "mda_role": "routing",
+      "seasonal_hooks": {
+        "autumn": [
+          "通往异常区的消息和脚印变多了"
+        ],
+        "winter": [
+          "断桥边会留下更明显的回响线索"
+        ]
+      }
+    },
+    {
+      "id": "radiant_observatory",
+      "name": "裂辉观测台",
+      "type": "anomaly",
+      "biome": "observatory",
+      "mood_tags": [
+        "观测",
+        "异常",
+        "高压"
+      ],
+      "travel_cost": 3,
+      "resident_slots": 0,
+      "support_slots": 0,
+      "resident_preferences": [],
+      "buildings": [],
+      "npc_pool": [],
+      "wild_pool": [
+        "glow_moth",
+        "lumen_howler"
+      ],
+      "visit_actions": [
+        "observe",
+        "stabilize",
+        "rescue"
+      ],
+      "unlock_rule_id": "unlock_radiant_observatory",
+      "season_availability": [
+        "autumn",
+        "winter"
+      ],
+      "dojo_id": "",
+      "recommended_rank": 4,
+      "flow_band": "high_pressure",
+      "seasonal_events": [
+        "aurora_scan",
+        "rare_rescue"
+      ],
+      "seasonal_resources": [
+        "glow_dust",
+        "stability_shard"
+      ],
+      "mda_role": "mastery",
+      "seasonal_hooks": {
+        "autumn": [
+          "观测台会放大季末异常波动"
+        ],
+        "winter": [
+          "高阶救助与观测事件更容易出现"
+        ]
+      }
     }
   ]
 }

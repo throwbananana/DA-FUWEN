@@ -14,8 +14,14 @@ const WEATHER_ORDER := ["clear", "fog", "rain", "storm"]
 const WEATHER_NAMES := {
 	"clear": "晴日",
 	"fog": "薄雾",
+	"mist": "雾息",
 	"rain": "细雨",
 	"storm": "风暴",
+	"drizzle": "微雨",
+	"humid": "闷热",
+	"windy": "劲风",
+	"dry": "燥风",
+	"snow": "雪幕",
 }
 
 const TIME_ORDER := ["day", "evening", "night"]
@@ -31,8 +37,13 @@ const NODE_TEMPLATES := [
 	{"id": 2, "name": "晶溪滩", "type": "habitat", "description": "浅水和暖石交错的水边驻点。", "position": Vector2(470, 320), "edges": [5], "travel_cost": 1, "habitat_id": "crystal_creek"},
 	{"id": 3, "name": "云升驿", "type": "settlement", "description": "来往消息最灵通的聚落节点。", "position": Vector2(530, 90), "edges": [4, 5], "travel_cost": 1, "habitat_id": "sky_post"},
 	{"id": 4, "name": "古械平台", "type": "habitat", "description": "需要慢慢修复的遗迹据点。", "position": Vector2(830, 140), "edges": [6], "travel_cost": 2, "habitat_id": "ancient_platform"},
-	{"id": 5, "name": "铜锤集", "type": "settlement", "description": "手作和交换最热闹的工坊聚落。", "position": Vector2(840, 330), "edges": [6], "travel_cost": 1, "habitat_id": "copper_hammer_bazaar"},
-	{"id": 6, "name": "裂辉尖塔", "type": "anomaly", "description": "季末才建议踏入的异常区域。", "position": Vector2(1150, 220), "edges": [], "travel_cost": 3, "habitat_id": "radiant_spire"},
+	{"id": 5, "name": "铜锤集", "type": "settlement", "description": "手作和交换最热闹的工坊聚落。", "position": Vector2(840, 330), "edges": [6, 7], "travel_cost": 1, "habitat_id": "copper_hammer_bazaar"},
+	{"id": 6, "name": "裂辉尖塔", "type": "anomaly", "description": "季末才建议踏入的异常区域。", "position": Vector2(1150, 220), "edges": [9, 11], "travel_cost": 3, "habitat_id": "radiant_spire"},
+	{"id": 7, "name": "鸣雷草场", "type": "habitat", "description": "盛雷季会开放的训练型地点。", "position": Vector2(1040, 430), "edges": [8, 10], "travel_cost": 2, "habitat_id": "thunder_meadow"},
+	{"id": 8, "name": "赤叶演武场", "type": "dojo", "description": "秋季开启的主道馆，用于验证当前 build。", "position": Vector2(1250, 430), "edges": [10], "travel_cost": 2, "habitat_id": "autumn_leaf_dojo"},
+	{"id": 9, "name": "霜镜湖", "type": "habitat", "description": "冬季限定的低压高价值观察点。", "position": Vector2(1290, 70), "edges": [11], "travel_cost": 2, "habitat_id": "frost_mirror_lake"},
+	{"id": 10, "name": "回声断桥", "type": "settlement", "description": "通过夏秋试炼后会开放的中转节点。", "position": Vector2(1110, 320), "edges": [11], "travel_cost": 2, "habitat_id": "echo_broken_bridge"},
+	{"id": 11, "name": "裂辉观测台", "type": "anomaly", "description": "高阶试炼会通向这里。", "position": Vector2(1440, 220), "edges": [], "travel_cost": 3, "habitat_id": "radiant_observatory"},
 ]
 
 @onready var title_label: Label = %TitleLabel
@@ -133,8 +144,8 @@ func start_new_game() -> void:
 	pending_context.clear()
 	decision_panel.hide()
 	base_panel.hide()
-	_push_log("新的季节开始。目标不再是抢赢谁，而是把伙伴和地点安顿好。")
-	_push_log("先从雾苔窟、晶溪滩和云升驿开始回访。")
+	_push_log("%s开始。目标不再是抢赢谁，而是把伙伴和地点安顿好。" % _season_name())
+	_push_log("先从雾苔窟、晶溪滩和云升驿开始回访，并留意季节新点位。")
 	_begin_next_day()
 
 func _build_world_nodes() -> Array:
@@ -144,10 +155,12 @@ func _build_world_nodes() -> Array:
 		var habitat_id := String(node.get("habitat_id", ""))
 		if not habitat_id.is_empty():
 			var habitat := DataRepository.get_habitat(habitat_id)
-			if not habitat.is_empty():
-				node["name"] = habitat.get("name", node["name"])
-				node["description"] = _description_for_habitat(habitat)
-				node["travel_cost"] = int(habitat.get("travel_cost", node.get("travel_cost", 1)))
+			if habitat.is_empty():
+				continue
+			node["name"] = habitat.get("name", node["name"])
+			node["type"] = habitat.get("type", node["type"])
+			node["description"] = _description_for_habitat(habitat)
+			node["travel_cost"] = int(habitat.get("travel_cost", node.get("travel_cost", 1)))
 		nodes.append(node)
 	return nodes
 
@@ -160,24 +173,35 @@ func _build_board_lookup() -> Dictionary:
 func _description_for_habitat(habitat: Dictionary) -> String:
 	var mood_tags: Array = habitat.get("mood_tags", [])
 	var actions: Array = habitat.get("visit_actions", [])
-	return "%s\n可做的事：%s" % ["、".join(mood_tags), " / ".join(actions)]
+	var recommended_rank := int(habitat.get("recommended_rank", 0))
+	var head := "、".join(mood_tags) if not mood_tags.is_empty() else "当前没有记录到明显气氛"
+	if recommended_rank > 0:
+		head += "\n推荐据点等级：%d" % recommended_rank
+	return "%s\n可做的事：%s" % [head, " / ".join(actions)]
 
 func _begin_next_day() -> void:
 	if GameState.day_index > GameState.season_length:
-		_finish_season()
-		return
+		if GameState.advance_to_next_season():
+			world_nodes = _build_world_nodes()
+			board_lookup = _build_board_lookup()
+			board_view.setup(world_nodes)
+			_push_log("%s来临，可访问地点与试炼轮换已刷新。" % _season_name())
+		else:
+			_finish_season()
+			return
 	awaiting_destination = false
 	current_node_id = 0
 	current_visit_habitat_id = ""
 	current_encounter.clear()
 	last_encounter_action_id = ""
-	var next_weather: String = String(WEATHER_ORDER[rng.randi_range(0, WEATHER_ORDER.size() - 1)])
+	var weather_pool: Array = GameState.get_current_season_rule().get("weather_pool", WEATHER_ORDER)
+	var next_weather: String = String(weather_pool[rng.randi_range(0, weather_pool.size() - 1)]) if not weather_pool.is_empty() else "clear"
 	var next_time: String = String(TIME_ORDER[rng.randi_range(0, TIME_ORDER.size() - 1)])
 	if GameState.day_index == 1:
-		next_weather = "clear"
+		next_weather = String(weather_pool[0]) if not weather_pool.is_empty() else "clear"
 		next_time = "day"
 	GameState.set_daily_conditions(next_weather, next_time)
-	_push_log("[第 %d 日] 天气：%s，时段：%s。" % [GameState.day_index, _weather_name(GameState.weather_id), _time_name(GameState.time_of_day)])
+	_push_log("[%s 第 %d 日] 天气：%s，时段：%s。" % [_season_name(), GameState.day_index, _weather_name(GameState.weather_id), _time_name(GameState.time_of_day)])
 	_update_ui()
 
 func _on_start_day_pressed() -> void:
@@ -205,11 +229,15 @@ func _on_support_pressed() -> void:
 func _on_base_pressed() -> void:
 	base_panel.open_panel({
 		"season": {
+			"season_name": _season_name(),
 			"day_index": GameState.day_index,
 			"season_length": GameState.season_length,
 			"weather_name": _weather_name(GameState.weather_id),
 			"time_name": _time_name(GameState.time_of_day),
 			"care_progress": GameState.get_care_progress(),
+			"badge_count": GameState.badge_count,
+			"season_points": GameState.season_points,
+			"dojo_rotation": _active_dojo_names(),
 		},
 		"inventory": GameState.inventory,
 		"companions": _build_companion_summaries(),
@@ -243,6 +271,10 @@ func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
 			_show_build_result(payload)
 		"npc_menu":
 			_show_npc_menu(payload)
+		"dojo_menu":
+			_show_dojo_menu(payload)
+		"dojo_result":
+			_show_dojo_result(payload)
 		"encounter_preview":
 			_show_encounter_preview(payload)
 		"encounter_result":
@@ -261,6 +293,10 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 	lines.append("[b]据点等级[/b] %d" % int(state.get("rank", 0)))
 	lines.append("[b]常见人物[/b] %s" % (" / ".join(_npc_names(npcs)) if not npcs.is_empty() else "今天没有遇见谁"))
 	lines.append("[b]建设进度[/b] %s" % _format_building_levels(current_visit_habitat_id, buildings))
+	if int(habitat.get("recommended_rank", 0)) > 0:
+		lines.append("[b]推荐等级[/b] %d" % int(habitat.get("recommended_rank", 0)))
+	if not String(habitat.get("dojo_id", "")).is_empty():
+		lines.append("[b]试炼状态[/b] %s" % _dojo_status_text(String(habitat.get("dojo_id", ""))))
 
 	var choices := []
 	if String(habitat.get("type", "")) == "habitat":
@@ -271,6 +307,8 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 		choices.append({"id": "npc_menu", "label": "与人交谈", "summary": "看看谁有新的反馈和委托。"})
 	if not habitat.get("wild_pool", []).is_empty():
 		choices.append({"id": "observe", "label": "观察野外", "summary": "先看情绪，再决定如何靠近。"})
+	if not String(habitat.get("dojo_id", "")).is_empty():
+		choices.append({"id": "dojo_menu", "label": "进入试炼", "summary": "查看当前阶位、门票与奖励。"})
 	if String(habitat.get("type", "")) == "settlement":
 		choices.append({"id": "mail_menu", "label": "寄送留信", "summary": "处理跨点消息和驿站类委托。"})
 	pending_context = {"kind": "visit_arrival", "on_close": "finish_visit"}
@@ -330,6 +368,48 @@ func _show_npc_menu(payload: Dictionary) -> void:
 	pending_context = {"kind": "npc_menu", "on_close": "arrival"}
 	decision_panel.open_panel("与地点上的人交谈", "先听听他们最近关心什么。", choices, "返回地点")
 
+func _show_dojo_menu(payload: Dictionary) -> void:
+	var dojo: Dictionary = payload.get("dojo", {})
+	if dojo.is_empty():
+		pending_context = {"kind": "dojo_menu", "on_close": "arrival"}
+		decision_panel.open_panel("试炼入口", "这里今天没有可进行的试炼。", [], "返回地点")
+		return
+	var lines: Array[String] = []
+	lines.append("[b]推荐据点等级[/b] %d" % int(dojo.get("recommended_rank", 1)))
+	lines.append("[b]门票[/b] %s" % _format_item_cost(payload.get("entry_cost", {})))
+	if not String(payload.get("hint", "")).is_empty():
+		lines.append("[b]提示[/b] %s" % String(payload.get("hint", "")))
+	pending_context = {"kind": "dojo_menu", "on_close": "arrival"}
+	decision_panel.open_panel(String(dojo.get("name", "试炼")), "\n".join(lines), payload.get("choices", []), "返回地点")
+
+func _show_dojo_result(payload: Dictionary) -> void:
+	if not bool(payload.get("ok", false)):
+		pending_context = {"kind": "dojo_result", "on_close": "arrival"}
+		decision_panel.open_panel("试炼受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "返回地点")
+		return
+	var dojo: Dictionary = payload.get("dojo", {})
+	var tier := String(payload.get("tier", "tier_1"))
+	var reward_result: Dictionary = payload.get("reward_result", {})
+	var lines: Array[String] = []
+	lines.append("[b]当前评分[/b] %d / %d" % [int(payload.get("challenge_score", 0)), int(payload.get("required_rank", 0))])
+	if not payload.get("modifiers", []).is_empty():
+		lines.append("[b]规则修正[/b] %s" % " / ".join(payload.get("modifiers", [])))
+	var reward_text := _format_reward_bundle(reward_result)
+	if bool(payload.get("success", false)):
+		var result_line := "[b]结果[/b] 首通 %s" % _dojo_tier_name(tier) if bool(payload.get("first_clear", false)) else "[b]结果[/b] 再次通过 %s" % _dojo_tier_name(tier)
+		lines.append(result_line)
+		if not reward_text.is_empty():
+			lines.append("[b]获得[/b] %s" % reward_text)
+		_push_log("%s 通过了 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
+	else:
+		lines.append("[b]结果[/b] 暂未通过 %s" % _dojo_tier_name(tier))
+		lines.append("还差约 %d 点准备度，建议先补据点等级、信赖或门票素材。" % int(payload.get("gap", 1)))
+		if not reward_text.is_empty():
+			lines.append("[b]安慰奖励[/b] %s" % reward_text)
+		_push_log("%s 暂时没能通过 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
+	pending_context = {"kind": "dojo_result", "on_close": "arrival"}
+	decision_panel.open_panel("试炼结果", "\n".join(lines), [], "返回地点")
+
 func _show_encounter_preview(payload: Dictionary) -> void:
 	current_encounter = payload.duplicate(true)
 	if not bool(payload.get("ok", false)):
@@ -369,6 +449,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 					visit_flow.open_build_menu()
 				"npc_menu":
 					visit_flow.open_npc_menu()
+				"dojo_menu":
+					visit_flow.open_dojo_menu()
 				"observe":
 					visit_flow.start_observation()
 				"mail_menu":
@@ -382,6 +464,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 				_handle_talk_to_npc(choice_id.trim_prefix("talk:"))
 			elif choice_id.begins_with("quest:"):
 				_try_accept_quest(choice_id.trim_prefix("quest:"))
+		"dojo_menu":
+			visit_flow.choose_dojo_tier(choice_id)
 		"encounter_preview":
 			last_encounter_action_id = choice_id
 			visit_flow.choose_encounter_action(choice_id)
@@ -590,6 +674,11 @@ func _resolve_visit_yield(habitat_id: String) -> void:
 			reward = {"fiber": 1, "parts": 1}
 		"radiant_spire":
 			reward = {"stability_shard": 1}
+		"echo_broken_bridge":
+			reward = {"parts": 1, "paper": 1}
+		"radiant_observatory":
+			reward = {"glow_dust": 1, "stability_shard": 1}
+	_merge_reward_items(reward, _seasonal_visit_reward(habitat_id))
 	if reward.is_empty():
 		return
 	GameState.grant_items(reward)
@@ -598,11 +687,12 @@ func _resolve_visit_yield(habitat_id: String) -> void:
 func _finish_season() -> void:
 	season_finished = true
 	awaiting_destination = false
-	action_hint_label.text = "[b]季末回顾[/b]\n照料进度 %d ｜ 已安居据点 %d ｜ 图鉴 %d ｜ 完成委托 %d" % [
+	action_hint_label.text = "[b]年度回顾[/b]\n照料进度 %d ｜ 已安居据点 %d ｜ 图鉴 %d ｜ 徽章 %d ｜ 季节点数 %d" % [
 		GameState.get_care_progress(),
 		GameState.get_settled_habitat_count(),
 		GameState.discovered_species.size(),
-		GameState.completed_quests.size(),
+		GameState.badge_count,
+		GameState.season_points,
 	]
 	_update_ui()
 
@@ -634,6 +724,8 @@ func _build_habitat_summaries() -> Array:
 			"resident_name": resident_name,
 			"building_text": _format_building_levels(habitat_id, DataRepository.get_buildings_for_habitat(habitat_id)),
 			"quest_text": _quest_text_for_habitat(habitat_id),
+			"status_text": _unlock_marker_text(habitat_id),
+			"dojo_text": _dojo_status_text(String(habitat.get("dojo_id", ""))),
 		})
 	return result
 
@@ -647,33 +739,33 @@ func _update_ui() -> void:
 	board_view.refresh_view(current_node_id, _get_selectable_nodes(), _build_board_markers(), _get_locked_nodes())
 
 func _update_header() -> void:
-	round_label.text = "第 %d / %d 日" % [GameState.day_index, GameState.season_length]
-	objective_label.text = "本季照料进度 %d ｜ 已安居 %d ｜ 图鉴 %d ｜ 委托 %d" % [
+	round_label.text = "%s · 第 %d / %d 日" % [_season_name(), GameState.day_index, GameState.season_length]
+	objective_label.text = "照料进度 %d ｜ 已安居 %d ｜ 徽章 %d ｜ 季节点数 %d" % [
 		GameState.get_care_progress(),
 		GameState.get_settled_habitat_count(),
-		GameState.discovered_species.size(),
-		GameState.completed_quests.size(),
+		GameState.badge_count,
+		GameState.season_points,
 	]
 
 func _update_action_ui() -> void:
-	dice_label.text = "今日天气：%s ｜ 时段：%s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
+	dice_label.text = "%s ｜ 天气：%s ｜ 时段：%s" % [_season_name(), _weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
 	roll_button.text = "开始今天"
 	support_button.text = "查看委托"
 	base_button.text = "驻点总览"
-	new_game_button.text = "重开本季"
+	new_game_button.text = "重开年度"
 	roll_button.disabled = season_finished or _is_modal_open() or awaiting_destination
 	support_button.disabled = _is_modal_open() and not decision_panel.visible
 	base_button.disabled = _is_modal_open() and not base_panel.visible
 	if season_finished:
 		return
 	if awaiting_destination:
-		action_hint_label.text = "[b]今天想去哪里看看？[/b]\n点亮的地点都可以出发，重点关注还没安居的据点。"
+		action_hint_label.text = "[b]今天想去哪里看看？[/b]\n点亮的地点都可以出发，优先考虑当季新开放的节点与试炼。"
 	else:
-		action_hint_label.text = "[b]从营地开始一天。[/b]\n核心闭环：准备 -> 选地点 -> 到点照料/建设/交谈 -> 回营记录。"
+		action_hint_label.text = "[b]从营地开始一天。[/b]\n核心闭环：准备 -> 选地点 -> 到点照料/建设/试炼 -> 回营记录。"
 
 func _update_summaries() -> void:
-	player_summary_label.text = "[b]营地记录[/b]\n照料进度：%d\n库存：%s\n活跃委托：%d" % [GameState.get_care_progress(), _format_inventory_highlights(), GameState.active_quests.size()]
-	ai_summary_label.text = "[b]今日计划[/b]\n天气：%s\n时段：%s\n推荐：%s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day), _today_focus_text()]
+	player_summary_label.text = "[b]营地记录[/b]\n照料进度：%d\n徽章：%d ｜ 季节点数：%d\n库存：%s\n活跃委托：%d" % [GameState.get_care_progress(), GameState.badge_count, GameState.season_points, _format_inventory_highlights(), GameState.active_quests.size()]
+	ai_summary_label.text = "[b]今日计划[/b]\n季节：%s\n轮换试炼：%s\n推荐：%s" % [_season_name(), " / ".join(_active_dojo_names()), _today_focus_text()]
 	control_summary_label.text = "[b]地点状态[/b]\n%s" % "\n".join(_location_status_lines())
 
 func _update_roster() -> void:
@@ -697,6 +789,14 @@ func _update_map_hint() -> void:
 		for node_id in _get_selectable_nodes():
 			var node: Dictionary = board_lookup[node_id]
 			lines.append("%s [%s]" % [node["name"], _type_name(String(node.get("type", "")))])
+		var locked_lines: Array[String] = []
+		for node_id in _get_locked_nodes():
+			var node: Dictionary = board_lookup[node_id]
+			locked_lines.append("%s：%s" % [String(node.get("name", "")), _unlock_marker_text(String(node.get("habitat_id", "")))])
+		if not locked_lines.is_empty():
+			lines.append("")
+			lines.append("[b]未开放[/b]")
+			lines.append("\n".join(locked_lines.slice(0, 3)))
 		map_hint_label.text = "\n".join(lines)
 		return
 	map_hint_label.text = "[b]今日提醒[/b]\n%s" % _today_focus_text()
@@ -710,7 +810,7 @@ func _build_board_markers() -> Dictionary:
 			markers[node_id] = "准备区"
 			continue
 		if not GameState.is_habitat_unlocked(habitat_id):
-			markers[node_id] = "尚未开放"
+			markers[node_id] = _unlock_marker_text(habitat_id)
 			continue
 		var state: Dictionary = GameState.habitats.get(habitat_id, {})
 		var resident_uid := String(state.get("resident_uid", ""))
@@ -723,6 +823,9 @@ func _build_board_markers() -> Dictionary:
 			parts.append(resident_text)
 		if not quest_text.is_empty():
 			parts.append(quest_text)
+		var dojo_id := String(DataRepository.get_habitat(habitat_id).get("dojo_id", ""))
+		if not dojo_id.is_empty():
+			parts.append(_dojo_status_text(dojo_id))
 		if parts.is_empty():
 			parts.append("可回访")
 		markers[node_id] = " · ".join(parts)
@@ -756,6 +859,12 @@ func _get_locked_nodes() -> Array[int]:
 func _today_focus_text() -> String:
 	if not GameState.active_quests.is_empty():
 		return "优先推进：%s" % _quest_title(GameState.active_quests[0])
+	if GameState.season_id == "summer" and GameState.is_habitat_unlocked("thunder_meadow") and not GameState.has_cleared_dojo("summer_storm_trial", "tier_1"):
+		return "去鸣雷草场试试夏季一阶试炼，拿第一枚季节徽章。"
+	if GameState.season_id == "autumn" and GameState.is_habitat_unlocked("autumn_leaf_dojo") and not GameState.has_cleared_dojo("autumn_leaf_dojo", "tier_1"):
+		return "赤叶演武场已经开放，适合验证当前 build。"
+	if GameState.season_id == "winter" and GameState.is_habitat_unlocked("frost_mirror_lake"):
+		return "霜镜湖已开放，优先收集冬季限定素材与观察条目。"
 	if GameState.get_settled_habitat_count() < 2:
 		return "先替据点安排驻守，让它们真正成为家。"
 	if GameState.get_habitat_rank_total() < 3:
@@ -766,14 +875,24 @@ func _today_focus_text() -> String:
 
 func _location_status_lines() -> Array[String]:
 	var lines: Array[String] = []
-	for habitat_id in ["mist_moss_cave", "crystal_creek", "sky_post", "ancient_platform", "copper_hammer_bazaar"]:
+	for node in world_nodes:
+		var habitat_id := String(node.get("habitat_id", ""))
+		if habitat_id.is_empty():
+			continue
+		if not GameState.is_habitat_unlocked(habitat_id):
+			lines.append("%s：%s" % [String(node.get("name", habitat_id)), _unlock_marker_text(habitat_id)])
+			continue
 		var habitat := DataRepository.get_habitat(habitat_id)
 		var state: Dictionary = GameState.habitats.get(habitat_id, {})
 		var resident_uid := String(state.get("resident_uid", ""))
 		var resident_name := "暂无"
 		if not resident_uid.is_empty():
 			resident_name = GameState.get_pet_display_name(resident_uid)
-		lines.append("%s：%s" % [String(habitat.get("name", habitat_id)), resident_name])
+		var summary := resident_name
+		var dojo_id := String(habitat.get("dojo_id", ""))
+		if not dojo_id.is_empty():
+			summary = _dojo_status_text(dojo_id)
+		lines.append("%s：%s" % [String(habitat.get("name", habitat_id)), summary])
 	return lines
 
 func _quest_text_for_habitat(habitat_id: String) -> String:
@@ -860,10 +979,15 @@ func _build_fail_reason(reason: String) -> String:
 		"site_mismatch": return "这项建设不属于当前地点。"
 		"building_missing": return "蓝图暂时没有准备好。"
 		"pet_missing": return "这只伙伴现在不在照料名册里。"
+		"tier_locked": return "需要先通过前一阶试炼。"
+		"entry_cost_missing": return "门票材料还没凑齐，先去当季地点收集。"
+		"payment_failed": return "扣除门票时出现问题，请重试。"
+		"dojo_missing": return "这里还没有可用的试炼定义。"
+		"tier_missing": return "这个阶位暂时没有配置。"
 		_: return "这一步今天还做不了。"
 
 func _format_inventory_highlights() -> String:
-	var highlights := ["soft_moss", "stone_chip", "parts", "wood", "tea_leaf", "glow_dust"]
+	var highlights := ["soft_moss", "stone_chip", "parts", "wood", "spark_reed", "tea_leaf", "amber_resin", "glow_dust", "ice_glass"]
 	var parts: Array[String] = []
 	for item_id in highlights:
 		if int(GameState.inventory.get(item_id, 0)) <= 0:
@@ -885,6 +1009,7 @@ func _type_name(type_id: String) -> String:
 		"camp": return "营地"
 		"habitat": return "栖居据点"
 		"settlement": return "聚落节点"
+		"dojo": return "试炼场"
 		"anomaly": return "异常区域"
 		_: return type_id
 
@@ -895,6 +1020,86 @@ func _habitat_name(habitat_id: String) -> String:
 
 func _push_log(text: String) -> void:
 	GameState.add_journal_entry(text)
+
+func _season_name() -> String:
+	return String(GameState.get_current_season_rule().get("name", GameState.season_id))
+
+func _active_dojo_names() -> Array[String]:
+	var names: Array[String] = []
+	for dojo_id in GameState.get_current_dojo_rotation():
+		var dojo := DataRepository.get_dojo(String(dojo_id))
+		if dojo.is_empty():
+			continue
+		names.append(String(dojo.get("name", dojo_id)))
+	if names.is_empty():
+		names.append("暂无")
+	return names
+
+func _dojo_status_text(dojo_id: String) -> String:
+	if dojo_id.is_empty():
+		return ""
+	var dojo := DataRepository.get_dojo(dojo_id)
+	if dojo.is_empty():
+		return "试炼未配置"
+	for tier in ["tier_3", "tier_2", "tier_1"]:
+		if GameState.has_cleared_dojo(dojo_id, tier):
+			return "%s已通过" % _dojo_tier_name(tier)
+	return "可试炼"
+
+func _unlock_marker_text(habitat_id: String) -> String:
+	var status := GameState.get_habitat_unlock_status(habitat_id)
+	if bool(status.get("open", false)):
+		return "可回访"
+	var reasons: Array = status.get("reasons", [])
+	if reasons.is_empty():
+		return "尚未开放"
+	return String(reasons[0])
+
+func _dojo_tier_name(tier: String) -> String:
+	match tier:
+		"tier_1":
+			return "试炼一阶"
+		"tier_2":
+			return "试炼二阶"
+		"tier_3":
+			return "试炼三阶"
+		_:
+			return tier
+
+func _format_reward_bundle(reward_result: Dictionary) -> String:
+	var parts: Array[String] = []
+	var items := _format_item_cost(reward_result.get("items", {}))
+	if not items.is_empty():
+		parts.append(items)
+	var systems: Dictionary = reward_result.get("systems", {})
+	if int(systems.get("badge_count", 0)) > 0:
+		parts.append("徽章 +%d" % int(systems.get("badge_count", 0)))
+	if int(systems.get("season_points", 0)) > 0:
+		parts.append("季节点数 +%d" % int(systems.get("season_points", 0)))
+	var unlocks: Array = reward_result.get("unlocks", [])
+	for habitat_id in unlocks:
+		parts.append("开放 %s" % _habitat_name(String(habitat_id)))
+	return " / ".join(parts)
+
+func _seasonal_visit_reward(habitat_id: String) -> Dictionary:
+	var habitat := DataRepository.get_habitat(habitat_id)
+	if habitat.is_empty():
+		return {}
+	var reward := {}
+	var seasonal_resources: Array = habitat.get("seasonal_resources", [])
+	if not seasonal_resources.is_empty():
+		var base_item := String(seasonal_resources[0])
+		reward[base_item] = int(reward.get(base_item, 0)) + 1
+	var season_bonus: Dictionary = GameState.get_current_season_rule().get("resource_bonus", {})
+	for item_id in seasonal_resources:
+		var key := String(item_id)
+		if season_bonus.has(key):
+			reward[key] = int(reward.get(key, 0)) + int(season_bonus[key])
+	return reward
+
+func _merge_reward_items(target: Dictionary, extra: Dictionary) -> void:
+	for item_id in extra.keys():
+		target[item_id] = int(target.get(item_id, 0)) + int(extra[item_id])
 
 func _check_active_quests() -> void:
 	for quest_id in GameState.active_quests.duplicate():

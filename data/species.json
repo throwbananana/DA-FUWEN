@@ -319,6 +319,81 @@
       ],
       "bond_skill": "storm_guard",
       "work_style": "guardian"
+    },
+    {
+      "id": "storm_ram",
+      "name": "霆角羊",
+      "rarity": "rare",
+      "temperament": "guarded",
+      "habitat_preferences": [
+        "storm_field",
+        "windy"
+      ],
+      "resident_tags": [
+        "storm",
+        "guard",
+        "speed"
+      ],
+      "likes": [
+        "spark_reed",
+        "open_space"
+      ],
+      "dislikes": [
+        "muddy_noise",
+        "tight_spaces"
+      ],
+      "care_actions": [
+        "calm",
+        "guide",
+        "observe"
+      ],
+      "bond_skill": "tempo_charge",
+      "work_style": "vanguard",
+      "season_affinity": [
+        "summer",
+        "autumn"
+      ],
+      "dojo_traits": [
+        "speed_up",
+        "storm_field"
+      ]
+    },
+    {
+      "id": "glaze_crane",
+      "name": "镜釉鹤",
+      "rarity": "rare",
+      "temperament": "fragile",
+      "habitat_preferences": [
+        "ice_lake",
+        "mist"
+      ],
+      "resident_tags": [
+        "calm",
+        "light",
+        "reflection"
+      ],
+      "likes": [
+        "ice_glass",
+        "quiet_music"
+      ],
+      "dislikes": [
+        "aggression",
+        "dry_heat"
+      ],
+      "care_actions": [
+        "hum",
+        "shelter",
+        "observe"
+      ],
+      "bond_skill": "mirror_guard",
+      "work_style": "watcher",
+      "season_affinity": [
+        "winter"
+      ],
+      "dojo_traits": [
+        "precision_up",
+        "pressure_field"
+      ]
     }
   ]
 }

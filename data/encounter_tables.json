@@ -137,6 +137,104 @@
           ]
         }
       ]
+    },
+    {
+      "habitat_id": "thunder_meadow",
+      "weight_groups": [
+        {
+          "when": {
+            "season": "summer"
+          },
+          "entries": [
+            {
+              "species_id": "gear_finch",
+              "weight": 35,
+              "mood": "busy"
+            },
+            {
+              "species_id": "storm_ram",
+              "weight": 45,
+              "mood": "guarded"
+            },
+            {
+              "species_id": "shell_pup",
+              "weight": 20,
+              "mood": "curious"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "habitat_id": "frost_mirror_lake",
+      "weight_groups": [
+        {
+          "when": {
+            "season": "winter"
+          },
+          "entries": [
+            {
+              "species_id": "glaze_crane",
+              "weight": 45,
+              "mood": "fragile"
+            },
+            {
+              "species_id": "shell_pup",
+              "weight": 25,
+              "mood": "cold"
+            },
+            {
+              "species_id": "moss_puff",
+              "weight": 30,
+              "mood": "calm"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "habitat_id": "echo_broken_bridge",
+      "weight_groups": [
+        {
+          "when": {
+            "season": "autumn"
+          },
+          "entries": [
+            {
+              "species_id": "gear_finch",
+              "weight": 40,
+              "mood": "curious"
+            },
+            {
+              "species_id": "glow_moth",
+              "weight": 35,
+              "mood": "fragile"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "habitat_id": "radiant_observatory",
+      "weight_groups": [
+        {
+          "when": {
+            "season": "winter"
+          },
+          "entries": [
+            {
+              "species_id": "glow_moth",
+              "weight": 35,
+              "mood": "fragile"
+            },
+            {
+              "species_id": "lumen_howler",
+              "weight": 30,
+              "mood": "wild"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

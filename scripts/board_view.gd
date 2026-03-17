@@ -7,6 +7,7 @@ const TYPE_SHORT := {
 	"camp": "营",
 	"habitat": "居",
 	"settlement": "聚",
+	"dojo": "试",
 	"anomaly": "异",
 }
 

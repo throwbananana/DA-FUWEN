@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "reward_bundles": {
+    "dojo_summer_first_1": {
+      "items": {
+        "spark_reed": 2,
+        "warm_stone": 1
+      },
+      "systems": {
+        "badge_count": 1,
+        "season_points": 2
+      },
+      "unlocks": []
+    },
+    "dojo_summer_first_2": {
+      "items": {
+        "storm_core": 1,
+        "metal": 2
+      },
+      "systems": {
+        "season_points": 3
+      },
+      "unlocks": [
+        "echo_broken_bridge"
+      ]
+    },
+    "dojo_summer_repeat_1": {
+      "items": {
+        "spark_reed": 1
+      },
+      "systems": {
+        "season_points": 1
+      },
+      "unlocks": []
+    },
+    "dojo_summer_repeat_2": {
+      "items": {
+        "storm_core": 1
+      },
+      "systems": {
+        "season_points": 1
+      },
+      "unlocks": []
+    },
+    "dojo_autumn_first_1": {
+      "items": {
+        "tea_leaf": 2,
+        "amber_resin": 1
+      },
+      "systems": {
+        "badge_count": 1,
+        "season_points": 2
+      },
+      "unlocks": []
+    },
+    "dojo_autumn_first_2": {
+      "items": {
+        "ink": 1,
+        "paper": 2,
+        "blueprint_scrap": 1
+      },
+      "systems": {
+        "season_points": 4
+      },
+      "unlocks": [
+        "radiant_observatory"
+      ]
+    },
+    "dojo_autumn_first_3": {
+      "items": {
+        "master_badge": 1,
+        "rare_decor_part": 1
+      },
+      "systems": {
+        "season_points": 6
+      },
+      "unlocks": []
+    },
+    "dojo_autumn_repeat_1": {
+      "items": {
+        "tea_leaf": 1
+      },
+      "systems": {
+        "season_points": 1
+      },
+      "unlocks": []
+    },
+    "dojo_autumn_repeat_2": {
+      "items": {
+        "blueprint_scrap": 1
+      },
+      "systems": {
+        "season_points": 2
+      },
+      "unlocks": []
+    },
+    "dojo_autumn_repeat_3": {
+      "items": {
+        "rare_decor_part": 1
+      },
+      "systems": {
+        "season_points": 2
+      },
+      "unlocks": []
+    },
+    "dojo_failure_small": {
+      "items": {
+        "training_note": 1
+      },
+      "systems": {
+        "failed_dojo_streak_relief": 1
+      },
+      "unlocks": []
+    },
+    "dojo_failure_medium": {
+      "items": {
+        "training_note": 1,
+        "warm_stone": 1
+      },
+      "systems": {
+        "failed_dojo_streak_relief": 1
+      },
+      "unlocks": []
+    }
+  }
+}

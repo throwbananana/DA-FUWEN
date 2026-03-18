@@ -106,6 +106,8 @@ var awaiting_destination := false
 var current_node_id := 0
 var current_visit_habitat_id := ""
 var current_encounter := {}
+var pending_npc_duel_id := ""
+var pending_battle_source := ""
 var last_encounter_action_id := ""
 var pending_context := {}
 var pending_roll := {}
@@ -168,6 +170,8 @@ func start_new_game() -> void:
 	current_node_id = GameState.current_board_node_id
 	current_visit_habitat_id = ""
 	current_encounter.clear()
+	pending_npc_duel_id = ""
+	pending_battle_source = ""
 	last_encounter_action_id = ""
 	pending_context.clear()
 	pending_roll.clear()
@@ -282,6 +286,8 @@ func _begin_next_day() -> void:
 	current_node_id = GameState.current_board_node_id
 	current_visit_habitat_id = ""
 	current_encounter.clear()
+	pending_npc_duel_id = ""
+	pending_battle_source = ""
 	last_encounter_action_id = ""
 	pending_roll.clear()
 	reachable_paths.clear()
@@ -643,22 +649,28 @@ func _show_npc_menu(payload: Dictionary) -> void:
 	var choices := []
 	for npc in payload.get("npcs", []):
 		var npc_id := String(npc.get("id", ""))
+		var intro_pending := npc_service.needs_intro_duel(npc_id)
+		var duel_status := npc_service.get_intro_duel_status(npc_id)
 		choices.append({
-			"id": "talk:%s" % npc_id,
-			"label": String(npc.get("name", "未命名 NPC")),
-			"summary": "交谈并推进关系。当前信赖 %d" % npc_service.get_npc_trust(npc_id),
+			"id": "duel:%s" % npc_id if intro_pending else "talk:%s" % npc_id,
+			"label": "%s（先决斗）" % String(npc.get("name", "未命名 NPC")) if intro_pending else String(npc.get("name", "未命名 NPC")),
+			"summary": "第一次见面必须先决斗；胜利后基础信赖 2，失败后基础信赖 0。" if intro_pending else "正式拜访并推进关系。当前信赖 %d ｜ %s" % [npc_service.get_npc_trust(npc_id), "首战胜利" if bool(duel_status.get("won", false)) else "首战失利"],
 		})
 	for quest in payload.get("quests", []):
 		var quest_id := String(quest.get("id", ""))
 		if GameState.active_quests.has(quest_id) or GameState.completed_quests.has(quest_id):
 			continue
+		var giver_id := String(quest.get("giver", ""))
+		var giver := DataRepository.get_npc(giver_id)
+		var duel_locked := npc_service.needs_intro_duel(giver_id)
 		choices.append({
 			"id": "quest:%s" % quest_id,
 			"label": "接委托：%s" % String(quest.get("title", "")),
-			"summary": "记录到本季计划里，后续回访时自动检查进度。",
+			"summary": "需先与 %s 完成初见决斗，之后才能正式受理。" % String(giver.get("name", "委托人")) if duel_locked else "记录到本季计划里，后续回访时自动检查进度。",
+			"disabled": duel_locked,
 		})
 	pending_context = {"kind": "npc_menu", "on_close": "arrival"}
-	decision_panel.open_panel("与地点上的人交谈", "先听听他们最近关心什么。", choices, "返回地点")
+	decision_panel.open_panel("与地点上的人交谈", "第一次见面要先决斗，定下态度之后才能正式拜访。", choices, "返回地点")
 
 func _show_dojo_menu(payload: Dictionary) -> void:
 	var dojo: Dictionary = payload.get("dojo", {})
@@ -726,6 +738,7 @@ func _start_dojo_battle(payload: Dictionary) -> void:
 		return
 	decision_panel.hide()
 	_push_log("进入 %s，准备进行双打验证。" % String(battle_config.get("title", "试炼")))
+	pending_battle_source = "dojo"
 	battle_panel.start_battle(battle_config)
 
 func _show_encounter_preview(payload: Dictionary) -> void:
@@ -786,6 +799,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 		"build_select":
 			visit_flow.build_selected(choice_id)
 		"npc_menu":
+			if choice_id.begins_with("duel:"):
+				_start_npc_intro_duel(choice_id.trim_prefix("duel:"))
 			if choice_id.begins_with("talk:"):
 				_handle_talk_to_npc(choice_id.trim_prefix("talk:"))
 			elif choice_id.begins_with("quest:"):
@@ -852,7 +867,12 @@ func _on_base_manage_requested() -> void:
 	_open_team_manage_menu()
 
 func _on_battle_finished(result: Dictionary) -> void:
-	visit_flow.resolve_dojo_battle(result)
+	if pending_battle_source == "npc_intro_duel":
+		_resolve_npc_intro_duel(result)
+	else:
+		visit_flow.resolve_dojo_battle(result)
+	pending_battle_source = ""
+	pending_npc_duel_id = ""
 	_update_ui()
 
 func _open_team_manage_menu() -> void:
@@ -936,7 +956,65 @@ func _assign_resident(pet_uid: String) -> void:
 	pending_context = {"kind": "resident_result", "on_close": "arrival"}
 	decision_panel.open_panel("驻守安排", body, [], "返回地点")
 
+func _start_npc_intro_duel(npc_id: String) -> void:
+	var result := npc_service.prepare_intro_duel(npc_id, current_visit_habitat_id)
+	if not bool(result.get("ok", false)):
+		var reason := String(result.get("reason", "unknown"))
+		var body := "这场初见决斗暂时无法开始。"
+		match reason:
+			"battle_slots_missing":
+				body = "先去总览配好 2 个双打位，第一次拜访才允许决斗。"
+			"already_resolved":
+				body = "这场初见决斗已经打过了，现在可以正式拜访。"
+			"enemy_pool_missing":
+				body = "暂时找不到可用的切磋对手。"
+			"npc_missing":
+				body = "这个拜访对象暂时不在记录里。"
+			_:
+				body = "这场初见决斗还没准备好。"
+		pending_context = {"kind": "npc_duel_result", "on_close": "arrival"}
+		decision_panel.open_panel("初见决斗", body, [], "返回地点")
+		return
+
+	pending_npc_duel_id = npc_id
+	pending_battle_source = "npc_intro_duel"
+	decision_panel.hide()
+	_push_log("第一次拜访 %s，先以切磋定彼此态度。" % String(result.get("npc", {}).get("name", "某人")))
+	battle_panel.start_battle(result.get("battle_config", {}))
+
+func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
+	if pending_npc_duel_id.is_empty():
+		return
+
+	var result := npc_service.resolve_intro_duel(pending_npc_duel_id, battle_result)
+	var npc := result.get("npc", {})
+	var npc_name := String(npc.get("name", "某人"))
+	var body_lines: Array[String] = []
+	if bool(result.get("won", false)):
+		body_lines.append("[b]%s[/b] 认可了你的实力，愿意正式接待你。" % npc_name)
+		body_lines.append("基础信赖提高到 %d。" % int(result.get("base_trust", 0)))
+		_push_log("你赢下了与 %s 的初见切磋，对方明显更愿意配合。" % npc_name)
+	else:
+		body_lines.append("[b]%s[/b] 记住了这场败局，但仍允许你之后再来拜访。" % npc_name)
+		body_lines.append("基础信赖落在 %d。" % int(result.get("base_trust", 0)))
+		_push_log("第一次切磋没能赢过 %s，后续关系需要慢慢补。" % npc_name)
+	body_lines.append("当前信赖：%d" % int(result.get("trust", 0)))
+	var unlocked_lines: Array[String] = []
+	for entry in result.get("unlocked", []):
+		unlocked_lines.append("- 信赖 %d：%s" % [int(entry.get("threshold", 0)), String(entry.get("reward", ""))])
+	if not unlocked_lines.is_empty():
+		body_lines.append("")
+		body_lines.append("[b]已达成的信赖反馈[/b]")
+		body_lines.append("\n".join(unlocked_lines))
+	pending_context = {"kind": "npc_duel_result", "on_close": "arrival"}
+	decision_panel.open_panel("初见决斗", "\n".join(body_lines), [], "返回地点")
+
 func _handle_talk_to_npc(npc_id: String) -> void:
+	if npc_service.needs_intro_duel(npc_id):
+		pending_context = {"kind": "talk_result", "on_close": "arrival"}
+		decision_panel.open_panel("还不能正式拜访", "第一次见面要先决斗，定下彼此态度之后才能拜访。", [], "返回地点")
+		return
+
 	GameState.note_talk(npc_id)
 	GameState.add_weekly_progress("talk_count", 1)
 	if _can_mark_return(npc_id):
@@ -961,6 +1039,12 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 func _try_accept_quest(quest_id: String) -> void:
 	var quest := DataRepository.get_quest(quest_id)
 	if quest.is_empty():
+		return
+	var giver_id := String(quest.get("giver", ""))
+	if npc_service.needs_intro_duel(giver_id):
+		var giver := DataRepository.get_npc(giver_id)
+		pending_context = {"kind": "quest_result", "on_close": "arrival"}
+		decision_panel.open_panel("还不能正式接委托", "第一次见面要先和 %s 完成决斗，之后才能受理委托。" % String(giver.get("name", "委托人")), [], "返回地点")
 		return
 	var cost := _accept_cost_for_quest(quest)
 	if not cost.is_empty() and not GameState.can_pay(cost):

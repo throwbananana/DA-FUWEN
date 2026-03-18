@@ -42,6 +42,7 @@ var inventory: Dictionary = {}
 var habitats: Dictionary = {}
 var pet_states: Dictionary = {}
 var npc_trust: Dictionary = {}
+var npc_duel_records: Dictionary = {}
 var active_quests: Array[String] = []
 var completed_quests: Array[String] = []
 var discovered_species: Array[String] = []
@@ -97,6 +98,7 @@ func reset_for_new_season() -> void:
 	habitats = _default_habitats()
 	pet_states.clear()
 	npc_trust.clear()
+	npc_duel_records.clear()
 	active_quests.clear()
 	completed_quests.clear()
 	discovered_species.clear()
@@ -458,6 +460,30 @@ func note_delivery(item_id: String, count: int) -> void:
 func add_trust(npc_id: String, amount: int) -> void:
 	npc_trust[npc_id] = int(npc_trust.get(npc_id, 0)) + amount
 	refresh_season_unlocks()
+
+func get_npc_duel_record(npc_id: String) -> Dictionary:
+	return Dictionary(npc_duel_records.get(npc_id, {})).duplicate(true)
+
+func has_completed_npc_intro_duel(npc_id: String) -> bool:
+	return bool(npc_duel_records.get(npc_id, {}).get("resolved", false))
+
+func get_npc_intro_duel_won(npc_id: String) -> bool:
+	return bool(npc_duel_records.get(npc_id, {}).get("won", false))
+
+func record_npc_intro_duel(npc_id: String, won: bool, base_trust: int) -> Dictionary:
+	if has_completed_npc_intro_duel(npc_id):
+		return get_npc_duel_record(npc_id)
+
+	var record := {
+		"resolved": true,
+		"won": won,
+		"base_trust": base_trust,
+		"timestamp": Time.get_unix_time_from_system()
+	}
+	npc_duel_records[npc_id] = record
+	npc_trust[npc_id] = maxi(int(npc_trust.get(npc_id, 0)), base_trust)
+	refresh_season_unlocks()
+	return record.duplicate(true)
 
 func can_pay(cost: Dictionary) -> bool:
 	for item_id in cost.keys():

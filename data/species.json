@@ -30,7 +30,11 @@
         "brush"
       ],
       "bond_skill": "soften_mood",
-      "work_style": "slow_steady"
+      "work_style": "slow_steady",
+      "trait_tags": [
+        "scavenger",
+        "pathfinder"
+      ]
     },
     {
       "id": "cave_sniffer",
@@ -58,7 +62,12 @@
         "feed"
       ],
       "bond_skill": "find_material",
-      "work_style": "explorer"
+      "work_style": "explorer",
+      "trait_tags": [
+        "scavenger",
+        "ironwall",
+        "pathfinder"
+      ]
     },
     {
       "id": "dew_slug",
@@ -87,7 +96,11 @@
         "observe"
       ],
       "bond_skill": "moisture_trail",
-      "work_style": "forager"
+      "work_style": "forager",
+      "trait_tags": [
+        "scavenger",
+        "tactician"
+      ]
     },
     {
       "id": "shell_pup",
@@ -116,7 +129,11 @@
         "pat"
       ],
       "bond_skill": "purify_water",
-      "work_style": "caretaker"
+      "work_style": "caretaker",
+      "trait_tags": [
+        "caretaker",
+        "scavenger"
+      ]
     },
     {
       "id": "ripple_slime",
@@ -144,7 +161,12 @@
         "guide"
       ],
       "bond_skill": "cleanse_pool",
-      "work_style": "cleaner"
+      "work_style": "cleaner",
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "scavenger"
+      ]
     },
     {
       "id": "stream_glider",
@@ -173,7 +195,11 @@
         "guide"
       ],
       "bond_skill": "swift_delivery",
-      "work_style": "messenger"
+      "work_style": "messenger",
+      "trait_tags": [
+        "caretaker",
+        "pathfinder"
+      ]
     },
     {
       "id": "gear_finch",
@@ -202,7 +228,12 @@
         "feed"
       ],
       "bond_skill": "repair_bonus",
-      "work_style": "maker"
+      "work_style": "maker",
+      "trait_tags": [
+        "artisan",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "spark_mite",
@@ -231,7 +262,12 @@
         "repair"
       ],
       "bond_skill": "charge_parts",
-      "work_style": "tinkerer"
+      "work_style": "tinkerer",
+      "trait_tags": [
+        "artisan",
+        "tactician",
+        "scavenger"
+      ]
     },
     {
       "id": "glow_moth",
@@ -260,7 +296,11 @@
         "guide"
       ],
       "bond_skill": "echo_event",
-      "work_style": "mystic"
+      "work_style": "mystic",
+      "trait_tags": [
+        "tactician",
+        "artisan"
+      ]
     },
     {
       "id": "rift_fawn",
@@ -288,7 +328,12 @@
         "shelter"
       ],
       "bond_skill": "anomaly_resist",
-      "work_style": "survivor"
+      "work_style": "survivor",
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "hoarder"
+      ]
     },
     {
       "id": "lumen_howler",
@@ -318,7 +363,12 @@
         "calm"
       ],
       "bond_skill": "storm_guard",
-      "work_style": "guardian"
+      "work_style": "guardian",
+      "trait_tags": [
+        "tactician",
+        "ironwall",
+        "pathfinder"
+      ]
     },
     {
       "id": "storm_ram",
@@ -356,6 +406,11 @@
       "dojo_traits": [
         "speed_up",
         "storm_field"
+      ],
+      "trait_tags": [
+        "pathfinder",
+        "ironwall",
+        "raider"
       ]
     },
     {
@@ -393,6 +448,10 @@
       "dojo_traits": [
         "precision_up",
         "pressure_field"
+      ],
+      "trait_tags": [
+        "tactician",
+        "artisan"
       ]
     }
   ]

@@ -777,16 +777,18 @@ static func get_monster_template(species_id: String) -> Dictionary:
 
 static func get_species_synergy_profile(species_id: String) -> Dictionary:
 	var species_row: Dictionary = DataRepository.get_species(species_id)
-	if not species_row.is_empty() and species_row.has("base_stats"):
+	if not species_row.is_empty():
 		var family: Dictionary = DataRepository.get_evolution_family(String(species_row.get("family_id", "")))
 		return {
 			"elements": Array(species_row.get("types", [])).duplicate(),
 			"biome_tags": Array(species_row.get("ecology_tags", [])).duplicate(),
 			"job_tags": Array(species_row.get("roles", [])).duplicate(),
+			"trait_tags": Array(species_row.get("trait_tags", [])).duplicate(),
 			"building_tags": Array(species_row.get("building_affinities", [])).duplicate(),
 			"evolution_chain": Array(family.get("names", [])).duplicate(),
 			"population_cost": int(species_row.get("population_cost", 1)),
 			"family_id": String(species_row.get("family_id", "")),
+			"rarity": String(species_row.get("rarity", "common")),
 		}
 	var template := get_monster_template(species_id)
 	if template.is_empty():
@@ -794,18 +796,22 @@ static func get_species_synergy_profile(species_id: String) -> Dictionary:
 			"elements": [],
 			"biome_tags": [],
 			"job_tags": [],
+			"trait_tags": [],
 			"building_tags": [],
 			"evolution_chain": [],
+			"rarity": "common",
 		}
 	return {
 		"elements": template.get("elements", [template.get("type", "mist")]).duplicate(),
 		"biome_tags": template.get("biome_tags", []).duplicate(),
 		"job_tags": template.get("job_tags", []).duplicate(),
+		"trait_tags": template.get("trait_tags", []).duplicate(),
 		"building_tags": template.get("building_tags", []).duplicate(),
 		"evolution_chain": template.get("evolution_chain", []).duplicate(),
+		"rarity": String(template.get("rarity", "common")),
 	}
 
-static func get_synergy_thresholds(category: String, tag_id: String) -> Array:
+static func get_synergy_definition(category: String, tag_id: String) -> Dictionary:
 	var bucket_key := ""
 	match category:
 		"elements":
@@ -814,9 +820,14 @@ static func get_synergy_thresholds(category: String, tag_id: String) -> Array:
 			bucket_key = "ecologies"
 		"jobs":
 			bucket_key = "roles"
+		"traits":
+			bucket_key = "traits"
 		_:
 			bucket_key = category
-	var entry: Dictionary = DataRepository.get_synergy_bucket(bucket_key).get(tag_id, {})
+	return DataRepository.get_synergy_bucket(bucket_key).get(tag_id, {}).duplicate(true)
+
+static func get_synergy_thresholds(category: String, tag_id: String) -> Array:
+	var entry: Dictionary = get_synergy_definition(category, tag_id)
 	if not entry.is_empty():
 		return Array(entry.get("thresholds", [])).duplicate(true)
 	return SYNERGY_THRESHOLDS.duplicate()

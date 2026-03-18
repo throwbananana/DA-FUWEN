@@ -128,7 +128,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "embercat_2",
@@ -240,7 +245,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "embercat_3",
@@ -347,7 +357,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "magma_tortoise_1",
@@ -461,7 +476,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "artisan",
+        "caretaker"
+      ]
     },
     {
       "id": "magma_tortoise_2",
@@ -575,7 +595,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "artisan",
+        "caretaker"
+      ]
     },
     {
       "id": "magma_tortoise_3",
@@ -684,7 +709,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "artisan",
+        "caretaker"
+      ]
     },
     {
       "id": "steam_otter_1",
@@ -796,7 +826,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "steam_otter_2",
@@ -908,7 +943,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "steam_otter_3",
@@ -1015,7 +1055,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "reed_frog_1",
@@ -1127,7 +1172,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "reed_frog_2",
@@ -1239,7 +1289,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "reed_frog_3",
@@ -1346,7 +1401,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "spark_mouse_1",
@@ -1459,7 +1519,12 @@
           "synergy_requirement": "电系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "hoarder",
+        "pathfinder",
+        "artisan"
+      ]
     },
     {
       "id": "spark_mouse_2",
@@ -1572,7 +1637,12 @@
           "synergy_requirement": "电系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "hoarder",
+        "pathfinder",
+        "artisan"
+      ]
     },
     {
       "id": "spark_mouse_3",
@@ -1680,7 +1750,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "hoarder",
+        "pathfinder",
+        "artisan"
+      ]
     },
     {
       "id": "coil_lizard_1",
@@ -1793,7 +1868,12 @@
           "synergy_requirement": "电系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "hoarder",
+        "tactician",
+        "artisan"
+      ]
     },
     {
       "id": "coil_lizard_2",
@@ -1906,7 +1986,12 @@
           "synergy_requirement": "电系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "hoarder",
+        "tactician",
+        "artisan"
+      ]
     },
     {
       "id": "coil_lizard_3",
@@ -2014,7 +2099,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "hoarder",
+        "tactician",
+        "artisan"
+      ]
     },
     {
       "id": "moss_deer_1",
@@ -2128,7 +2218,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "ironwall",
+        "pathfinder"
+      ]
     },
     {
       "id": "moss_deer_2",
@@ -2242,7 +2337,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "ironwall",
+        "pathfinder"
+      ]
     },
     {
       "id": "moss_deer_3",
@@ -2351,7 +2451,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "ironwall",
+        "pathfinder"
+      ]
     },
     {
       "id": "thorn_boar_1",
@@ -2465,7 +2570,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "ironwall",
+        "caretaker"
+      ]
     },
     {
       "id": "thorn_boar_2",
@@ -2579,7 +2689,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "ironwall",
+        "caretaker"
+      ]
     },
     {
       "id": "thorn_boar_3",
@@ -2688,7 +2803,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "ironwall",
+        "caretaker"
+      ]
     },
     {
       "id": "pebble_mole_1",
@@ -2801,7 +2921,12 @@
           "synergy_requirement": "岩系或洞窟≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "artisan",
+        "ironwall",
+        "caretaker"
+      ]
     },
     {
       "id": "pebble_mole_2",
@@ -2914,7 +3039,12 @@
           "synergy_requirement": "岩系或洞窟≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "artisan",
+        "ironwall",
+        "caretaker"
+      ]
     },
     {
       "id": "pebble_mole_3",
@@ -3022,7 +3152,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "artisan",
+        "ironwall",
+        "caretaker"
+      ]
     },
     {
       "id": "shale_ram_1",
@@ -3136,7 +3271,12 @@
           "synergy_requirement": "岩系或洞窟≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "ironwall",
+        "pathfinder"
+      ]
     },
     {
       "id": "shale_ram_2",
@@ -3250,7 +3390,12 @@
           "synergy_requirement": "岩系或洞窟≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "ironwall",
+        "pathfinder"
+      ]
     },
     {
       "id": "shale_ram_3",
@@ -3359,7 +3504,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "ironwall",
+        "pathfinder"
+      ]
     },
     {
       "id": "breeze_swallow_1",
@@ -3472,7 +3622,12 @@
           "synergy_requirement": "风系或侦查≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "raider",
+        "scavenger"
+      ]
     },
     {
       "id": "breeze_swallow_2",
@@ -3585,7 +3740,12 @@
           "synergy_requirement": "风系或侦查≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "raider",
+        "scavenger"
+      ]
     },
     {
       "id": "breeze_swallow_3",
@@ -3693,7 +3853,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "raider",
+        "scavenger"
+      ]
     },
     {
       "id": "cloud_crane_1",
@@ -3807,7 +3972,12 @@
           "synergy_requirement": "风系或侦查≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "caretaker",
+        "hoarder"
+      ]
     },
     {
       "id": "cloud_crane_2",
@@ -3921,7 +4091,12 @@
           "synergy_requirement": "风系或侦查≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "caretaker",
+        "hoarder"
+      ]
     },
     {
       "id": "cloud_crane_3",
@@ -4030,7 +4205,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "caretaker",
+        "hoarder"
+      ]
     },
     {
       "id": "mist_fox_1",
@@ -4144,7 +4324,12 @@
           "synergy_requirement": "雾系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     },
     {
       "id": "mist_fox_2",
@@ -4258,7 +4443,12 @@
           "synergy_requirement": "雾系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     },
     {
       "id": "mist_fox_3",
@@ -4367,7 +4557,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     },
     {
       "id": "dew_moth_1",
@@ -4481,7 +4676,12 @@
           "synergy_requirement": "雾系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "dew_moth_2",
@@ -4595,7 +4795,12 @@
           "synergy_requirement": "雾系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "dew_moth_3",
@@ -4704,7 +4909,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "mind_owl_1",
@@ -4817,7 +5027,12 @@
           "synergy_requirement": "念系或控制≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     },
     {
       "id": "mind_owl_2",
@@ -4930,7 +5145,12 @@
           "synergy_requirement": "念系或控制≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     },
     {
       "id": "mind_owl_3",
@@ -5038,7 +5258,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     },
     {
       "id": "rune_ant_1",
@@ -5152,7 +5377,12 @@
           "synergy_requirement": "念系或控制≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "artisan",
+        "tactician",
+        "ironwall"
+      ]
     },
     {
       "id": "rune_ant_2",
@@ -5266,7 +5496,12 @@
           "synergy_requirement": "念系或控制≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "artisan",
+        "tactician",
+        "ironwall"
+      ]
     },
     {
       "id": "rune_ant_3",
@@ -5375,7 +5610,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "artisan",
+        "tactician",
+        "ironwall"
+      ]
     },
     {
       "id": "gear_hound_1",
@@ -5488,7 +5728,12 @@
           "synergy_requirement": "金属或修造≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "ironwall"
+      ]
     },
     {
       "id": "gear_hound_2",
@@ -5601,7 +5846,12 @@
           "synergy_requirement": "金属或修造≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "ironwall"
+      ]
     },
     {
       "id": "gear_hound_3",
@@ -5709,7 +5959,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "ironwall"
+      ]
     },
     {
       "id": "forge_beetle_1",
@@ -5822,7 +6077,12 @@
           "synergy_requirement": "金属或修造≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "artisan",
+        "ironwall",
+        "caretaker"
+      ]
     },
     {
       "id": "forge_beetle_2",
@@ -5935,7 +6195,12 @@
           "synergy_requirement": "金属或修造≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "artisan",
+        "ironwall",
+        "caretaker"
+      ]
     },
     {
       "id": "forge_beetle_3",
@@ -6043,7 +6308,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "artisan",
+        "ironwall",
+        "caretaker"
+      ]
     },
     {
       "id": "shade_bat_1",
@@ -6156,7 +6426,12 @@
           "synergy_requirement": "暗影或异常≥1",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "tactician",
+        "scavenger"
+      ]
     },
     {
       "id": "shade_bat_2",
@@ -6269,7 +6544,12 @@
           "synergy_requirement": "暗影或异常≥1",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "tactician",
+        "scavenger"
+      ]
     },
     {
       "id": "shade_bat_3",
@@ -6377,7 +6657,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "tactician",
+        "scavenger"
+      ]
     },
     {
       "id": "dusk_wolf_1",
@@ -6490,7 +6775,12 @@
           "synergy_requirement": "暗影或异常≥1",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "ironwall"
+      ]
     },
     {
       "id": "dusk_wolf_2",
@@ -6603,7 +6893,12 @@
           "synergy_requirement": "暗影或异常≥1",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "ironwall"
+      ]
     },
     {
       "id": "dusk_wolf_3",
@@ -6711,7 +7006,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "ironwall"
+      ]
     },
     {
       "id": "prism_hare_1",
@@ -6824,7 +7124,12 @@
           "synergy_requirement": "光系或净化≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "caretaker",
+        "scavenger"
+      ]
     },
     {
       "id": "prism_hare_2",
@@ -6937,7 +7242,12 @@
           "synergy_requirement": "光系或净化≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "caretaker",
+        "scavenger"
+      ]
     },
     {
       "id": "prism_hare_3",
@@ -7045,7 +7355,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "caretaker",
+        "scavenger"
+      ]
     },
     {
       "id": "chapel_stag_1",
@@ -7158,7 +7473,12 @@
           "synergy_requirement": "光系或净化≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "caretaker",
+        "pathfinder"
+      ]
     },
     {
       "id": "chapel_stag_2",
@@ -7271,7 +7591,12 @@
           "synergy_requirement": "光系或净化≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "caretaker",
+        "pathfinder"
+      ]
     },
     {
       "id": "chapel_stag_3",
@@ -7379,7 +7704,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "caretaker",
+        "pathfinder"
+      ]
     },
     {
       "id": "ice_seal_1",
@@ -7493,7 +7823,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "tactician",
+        "caretaker"
+      ]
     },
     {
       "id": "ice_seal_2",
@@ -7607,7 +7942,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "tactician",
+        "caretaker"
+      ]
     },
     {
       "id": "ice_seal_3",
@@ -7716,7 +8056,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "tactician",
+        "caretaker"
+      ]
     },
     {
       "id": "frost_spider_1",
@@ -7830,7 +8175,12 @@
           "synergy_requirement": "岩系或洞窟≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "artisan",
+        "hoarder"
+      ]
     },
     {
       "id": "frost_spider_2",
@@ -7944,7 +8294,12 @@
           "synergy_requirement": "岩系或洞窟≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "artisan",
+        "hoarder"
+      ]
     },
     {
       "id": "frost_spider_3",
@@ -8053,7 +8408,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "artisan",
+        "hoarder"
+      ]
     },
     {
       "id": "bloom_lark_1",
@@ -8167,7 +8527,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "bloom_lark_2",
@@ -8281,7 +8646,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "bloom_lark_3",
@@ -8390,7 +8760,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "storm_yak_1",
@@ -8504,7 +8879,12 @@
           "synergy_requirement": "电系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "hoarder",
+        "caretaker"
+      ]
     },
     {
       "id": "storm_yak_2",
@@ -8618,7 +8998,12 @@
           "synergy_requirement": "电系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "hoarder",
+        "caretaker"
+      ]
     },
     {
       "id": "storm_yak_3",
@@ -8727,7 +9112,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "hoarder",
+        "caretaker"
+      ]
     },
     {
       "id": "ruin_gecko_1",
@@ -8841,7 +9231,12 @@
           "synergy_requirement": "念系或控制≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "artisan",
+        "hoarder"
+      ]
     },
     {
       "id": "ruin_gecko_2",
@@ -8955,7 +9350,12 @@
           "synergy_requirement": "念系或控制≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "artisan",
+        "hoarder"
+      ]
     },
     {
       "id": "ruin_gecko_3",
@@ -9064,7 +9464,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "artisan",
+        "hoarder"
+      ]
     },
     {
       "id": "tide_ray_1",
@@ -9177,7 +9582,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "raider",
+        "hoarder"
+      ]
     },
     {
       "id": "tide_ray_2",
@@ -9290,7 +9700,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "raider",
+        "hoarder"
+      ]
     },
     {
       "id": "tide_ray_3",
@@ -9398,7 +9813,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "raider",
+        "hoarder"
+      ]
     },
     {
       "id": "flare_rooster_1",
@@ -9511,7 +9931,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "hoarder",
+        "pathfinder"
+      ]
     },
     {
       "id": "flare_rooster_2",
@@ -9624,7 +10049,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "hoarder",
+        "pathfinder"
+      ]
     },
     {
       "id": "flare_rooster_3",
@@ -9732,7 +10162,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "hoarder",
+        "pathfinder"
+      ]
     },
     {
       "id": "bloom_turtle_1",
@@ -9846,7 +10281,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "artisan",
+        "caretaker"
+      ]
     },
     {
       "id": "bloom_turtle_2",
@@ -9960,7 +10400,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "artisan",
+        "caretaker"
+      ]
     },
     {
       "id": "bloom_turtle_3",
@@ -10069,7 +10514,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "artisan",
+        "caretaker"
+      ]
     },
     {
       "id": "echo_snail_1",
@@ -10183,7 +10633,12 @@
           "synergy_requirement": "雾系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "artisan",
+        "hoarder"
+      ]
     },
     {
       "id": "echo_snail_2",
@@ -10297,7 +10752,12 @@
           "synergy_requirement": "雾系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "artisan",
+        "hoarder"
+      ]
     },
     {
       "id": "echo_snail_3",
@@ -10406,7 +10866,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "artisan",
+        "hoarder"
+      ]
     },
     {
       "id": "volt_carp_1",
@@ -10519,7 +10984,12 @@
           "synergy_requirement": "电系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "hoarder",
+        "pathfinder"
+      ]
     },
     {
       "id": "volt_carp_2",
@@ -10632,7 +11102,12 @@
           "synergy_requirement": "电系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "hoarder",
+        "pathfinder"
+      ]
     },
     {
       "id": "volt_carp_3",
@@ -10740,7 +11215,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "hoarder",
+        "pathfinder"
+      ]
     },
     {
       "id": "solar_lizard_1",
@@ -10853,7 +11333,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "solar_lizard_2",
@@ -10966,7 +11451,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "solar_lizard_3",
@@ -11074,7 +11564,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "tactician",
+        "pathfinder"
+      ]
     },
     {
       "id": "lunar_fennec_1",
@@ -11188,7 +11683,12 @@
           "synergy_requirement": "暗影或异常≥1",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     },
     {
       "id": "lunar_fennec_2",
@@ -11302,7 +11802,12 @@
           "synergy_requirement": "暗影或异常≥1",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     },
     {
       "id": "lunar_fennec_3",
@@ -11411,7 +11916,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     },
     {
       "id": "iron_pigeon_1",
@@ -11525,7 +12035,12 @@
           "synergy_requirement": "金属或修造≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "artisan",
+        "scavenger"
+      ]
     },
     {
       "id": "iron_pigeon_2",
@@ -11639,7 +12154,12 @@
           "synergy_requirement": "金属或修造≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "artisan",
+        "scavenger"
+      ]
     },
     {
       "id": "iron_pigeon_3",
@@ -11748,7 +12268,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "pathfinder",
+        "artisan",
+        "scavenger"
+      ]
     },
     {
       "id": "marsh_slime_1",
@@ -11861,7 +12386,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "artisan",
+        "pathfinder"
+      ]
     },
     {
       "id": "marsh_slime_2",
@@ -11974,7 +12504,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "artisan",
+        "pathfinder"
+      ]
     },
     {
       "id": "marsh_slime_3",
@@ -12082,7 +12617,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "caretaker",
+        "artisan",
+        "pathfinder"
+      ]
     },
     {
       "id": "cedar_bear_1",
@@ -12195,7 +12735,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "raider",
+        "caretaker"
+      ]
     },
     {
       "id": "cedar_bear_2",
@@ -12308,7 +12853,12 @@
           "synergy_requirement": "草系或森林≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "raider",
+        "caretaker"
+      ]
     },
     {
       "id": "cedar_bear_3",
@@ -12416,7 +12966,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "ironwall",
+        "raider",
+        "caretaker"
+      ]
     },
     {
       "id": "crystal_shrimp_1",
@@ -12530,7 +13085,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "crystal_shrimp_2",
@@ -12644,7 +13204,12 @@
           "synergy_requirement": "水系或岸线≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "crystal_shrimp_3",
@@ -12753,7 +13318,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "flare_mantis_1",
@@ -12866,7 +13436,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "flare_mantis_2",
@@ -12979,7 +13554,12 @@
           "synergy_requirement": "火系≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "flare_mantis_3",
@@ -13087,7 +13667,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "raider",
+        "pathfinder",
+        "scavenger"
+      ]
     },
     {
       "id": "null_fawn_1",
@@ -13201,7 +13786,12 @@
           "synergy_requirement": "光系或净化≥2",
           "bond_requirement": 50
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "ironwall",
+        "hoarder"
+      ]
     },
     {
       "id": "null_fawn_2",
@@ -13315,7 +13905,12 @@
           "synergy_requirement": "光系或净化≥2",
           "bond_requirement": 60
         }
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "ironwall",
+        "hoarder"
+      ]
     },
     {
       "id": "null_fawn_3",
@@ -13424,7 +14019,12 @@
         },
         "stage_gate": 3,
         "extra_condition": null
-      }
+      },
+      "trait_tags": [
+        "tactician",
+        "ironwall",
+        "hoarder"
+      ]
     }
   ]
 }

@@ -60,6 +60,10 @@ var current_available_habitats_cache: Array[String] = []
 var battle_slots: Array[String] = []
 var backpack_slots: Array[String] = []
 var backpack_capacity := 4
+var wallet_gold := 12
+var bank_gold := 0
+var rival_wallets: Dictionary = {}
+var active_trait_runtime_bonus: Dictionary = {}
 
 var _pet_serial := 1
 
@@ -115,6 +119,10 @@ func reset_for_new_season() -> void:
 	battle_slots.clear()
 	backpack_slots.clear()
 	backpack_capacity = 4
+	wallet_gold = 12
+	bank_gold = 0
+	rival_wallets = {}
+	active_trait_runtime_bonus = {}
 	quest_memory = {
 		"visited_habitats": {},
 		"visited_moments": {},
@@ -609,7 +617,8 @@ func set_daily_conditions(next_weather: String, next_time: String) -> void:
 	weather_id = next_weather
 	time_of_day = next_time
 
-func advance_day() -> void:
+func advance_day() -> Dictionary:
+	var trait_report := _apply_trait_daily_economy()
 	day_index += 1
 	season_turn = day_index
 	global_turn += 1
@@ -620,6 +629,7 @@ func advance_day() -> void:
 		weekly_reroll_count = 0
 	if global_turn % 10 == 0:
 		anchor_points += 1
+	return trait_report
 
 func advance_to_next_season() -> bool:
 	var current_index := SEASON_ORDER.find(season_id)
@@ -666,6 +676,76 @@ func _apply_meta_dice_modules() -> void:
 
 func get_current_season_rule() -> Dictionary:
 	return DataRepository.get_season_rule(season_id)
+
+func set_trait_runtime_bonus(bonus: Dictionary) -> void:
+	active_trait_runtime_bonus = bonus.duplicate(true)
+
+func get_trait_runtime_bonus() -> Dictionary:
+	return active_trait_runtime_bonus.duplicate(true)
+
+func get_treasury_snapshot() -> Dictionary:
+	return {
+		"wallet_gold": wallet_gold,
+		"bank_gold": bank_gold,
+		"rival_wallets": rival_wallets.duplicate(true),
+	}
+
+func add_wallet_gold(amount: int) -> void:
+	if amount <= 0:
+		return
+	wallet_gold += amount
+
+func deposit_bank_gold(amount: int) -> int:
+	var moved := mini(maxi(amount, 0), wallet_gold)
+	if moved <= 0:
+		return 0
+	wallet_gold -= moved
+	bank_gold += moved
+	return moved
+
+func withdraw_bank_gold(amount: int) -> int:
+	var moved := mini(maxi(amount, 0), bank_gold)
+	if moved <= 0:
+		return 0
+	bank_gold -= moved
+	wallet_gold += moved
+	return moved
+
+func _apply_trait_daily_economy() -> Dictionary:
+	var lines: Array[String] = []
+	var passive_wallet_gold := int(active_trait_runtime_bonus.get("wallet_gold_per_day", 0))
+	if passive_wallet_gold > 0:
+		wallet_gold += passive_wallet_gold
+		lines.append("拾荒羁绊：日结额外摸到 %d 金。" % passive_wallet_gold)
+	var deposit_ratio := clampf(float(active_trait_runtime_bonus.get("auto_bank_deposit_ratio", 0.0)), 0.0, 1.0)
+	if deposit_ratio > 0.0 and wallet_gold > 0:
+		var moved := mini(wallet_gold, maxi(1, int(ceil(float(wallet_gold) * deposit_ratio))))
+		wallet_gold -= moved
+		bank_gold += moved
+		lines.append("守财奴：自动存入银行 %d 金。" % moved)
+	var interest_ratio := 0.0 + float(active_trait_runtime_bonus.get("bank_interest_bonus_ratio", 0.0))
+	if bank_gold > 0 and interest_ratio > 0.0:
+		var interest := maxi(1, int(floor(float(bank_gold) * interest_ratio)))
+		bank_gold += interest
+		lines.append("守财奴：银行结算利息 +%d 金。" % interest)
+	var rival_tax_ratio := clampf(float(active_trait_runtime_bonus.get("rival_tax_ratio", 0.0)), 0.0, 0.9)
+	if rival_tax_ratio > 0.0 and not rival_wallets.is_empty():
+		var total_tax := 0
+		for rival_id in rival_wallets.keys():
+			var current_gold := int(rival_wallets.get(rival_id, 0))
+			if current_gold <= 0:
+				continue
+			var tax := mini(current_gold, maxi(1, int(floor(float(current_gold) * rival_tax_ratio))))
+			rival_wallets[rival_id] = current_gold - tax
+			total_tax += tax
+		if total_tax > 0:
+			wallet_gold += total_tax
+			lines.append("守财奴：向全部对手征税，共收取 %d 金。" % total_tax)
+	return {
+		"lines": lines,
+		"wallet_gold": wallet_gold,
+		"bank_gold": bank_gold,
+	}
 
 func set_run_modifiers(modifiers: Array) -> void:
 	run_modifiers = modifiers.duplicate(true)

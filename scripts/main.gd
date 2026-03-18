@@ -872,7 +872,11 @@ func _on_visit_finished(_report: Dictionary) -> void:
 	var is_week_end := GameState.weekly_turn >= 5
 	if is_week_end:
 		_resolve_weekly_settlement()
-	GameState.advance_day()
+	var day_synergy_report := synergy_service.build_synergy_report()
+	GameState.set_trait_runtime_bonus(synergy_service.build_runtime_bonus(day_synergy_report))
+	var day_report := GameState.advance_day()
+	for line in day_report.get("lines", []):
+		_push_log(line)
 	_begin_next_day()
 
 func _on_base_closed() -> void:
@@ -897,7 +901,7 @@ func _open_team_manage_menu() -> void:
 		{"id": "backpack", "label": "调整背包", "summary": "当前：%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity]},
 	]
 	pending_context = {"kind": "team_manage", "on_close": "reopen_base"}
-	decision_panel.open_panel("整备队伍", "双打位决定本场直接战斗，背包位提供羁绊与生态支持；同物种不会重复计入羁绊。", choices, "返回总览")
+	decision_panel.open_panel("整备队伍", "双打位决定本场直接战斗，背包位提供羁绊与生态支持；元素/生态/职能仍按独特物种计数，但特性羁绊会按实际单位叠层。", choices, "返回总览")
 
 func _open_battle_slot_picker(slot_index: int) -> void:
 	var choices := []
@@ -923,7 +927,7 @@ func _open_backpack_picker() -> void:
 			"disabled": GameState.get_battle_party_uids().has(pet_uid),
 		})
 	pending_context = {"kind": "team_backpack_slot", "on_close": "team_manage"}
-	decision_panel.open_panel("调整背包位", "背包位不上场，但会提供羁绊；每只会占用不同人口值，上阵位无法直接切到背包，同物种不会重复计数。", choices, "返回整备")
+	decision_panel.open_panel("调整背包位", "背包位不上场，但会提供羁绊；每只会占用不同人口值，上阵位无法直接切到背包。元素/生态/职能按独特物种计数，特性羁绊按实际单位计数。", choices, "返回整备")
 
 func _open_resident_picker() -> void:
 	var choices := []
@@ -1564,7 +1568,8 @@ func _update_summaries() -> void:
 	var facility_bonus := synergy_service.build_facility_bonus()
 	var npc_lines := npc_route_service.build_status_lines(2)
 	var threat_lines := threat_service.build_status_lines(board_lookup, 2)
-	player_summary_label.text = "[b]远征记录[/b]\n构筑等级：%d\n照料进度：%d\n徽章：%d ｜ 季节点数：%d ｜ 元成长点：%d\n背包人口：%d / %d\n双打：%s\n库存：%s" % [
+	var treasury := GameState.get_treasury_snapshot()
+	player_summary_label.text = "[b]远征记录[/b]\n构筑等级：%d\n照料进度：%d\n徽章：%d ｜ 季节点数：%d ｜ 元成长点：%d\n背包人口：%d / %d\n双打：%s\n库存：%s\n钱包：%d 金 ｜ 银行：%d 金" % [
 		GameState.get_progression_rank(),
 		GameState.get_care_progress(),
 		GameState.badge_count,
@@ -1574,6 +1579,8 @@ func _update_summaries() -> void:
 		GameState.backpack_capacity,
 		" / ".join(_battle_slot_names()),
 		_format_inventory_highlights(),
+		int(treasury.get("wallet_gold", 0)),
+		int(treasury.get("bank_gold", 0)),
 	]
 	var season_goal := String(GameState.get_current_season_rule().get("season_goal", "维持推进感。"))
 	ai_summary_label.text = "[b]本季节奏[/b]\n区域：%s\n目标：%s\n推荐：%s" % [
@@ -1587,6 +1594,10 @@ func _update_summaries() -> void:
 	control_lines.append("")
 	control_lines.append("[b]已激活羁绊[/b]")
 	control_lines.append_array(synergy_service.format_active_lines(synergy_report, 2))
+	var trait_lines := synergy_service.format_trait_effect_lines(synergy_report, 2)
+	if not trait_lines.is_empty():
+		control_lines.append("[b]特性梯度[/b]")
+		control_lines.append_array(trait_lines)
 	if not facility_bonus.get("lines", []).is_empty():
 		control_lines.append("[b]建筑前置增益[/b]")
 		control_lines.append_array(facility_bonus.get("lines", []).slice(0, 2))

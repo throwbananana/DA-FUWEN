@@ -80,6 +80,10 @@ const NODE_TEMPLATES := [
 @onready var weather_label: Label = %WeatherLabel
 @onready var objective_label: Label = %ObjectiveLabel
 @onready var root_margin: MarginContainer = $RootMargin
+@onready var main_vbox: VBoxContainer = $RootMargin/MainVBox
+@onready var header_bar: BoxContainer = $RootMargin/MainVBox/HeaderBar
+@onready var run_status_row: BoxContainer = $RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow
+@onready var content_row: BoxContainer = $RootMargin/MainVBox/ContentRow
 @onready var overlay: Control = $Overlay
 @onready var player_summary_label: RichTextLabel = %PlayerSummaryLabel
 @onready var ai_summary_label: RichTextLabel = %AISummaryLabel
@@ -115,15 +119,22 @@ const NODE_TEMPLATES := [
 @onready var menu_action_hint_label: RichTextLabel = %MenuActionHintLabel
 @onready var menu_run_summary_label: RichTextLabel = %MenuRunSummaryLabel
 @onready var menu_meta_summary_label: RichTextLabel = %MenuMetaSummaryLabel
+@onready var menu_content_row: BoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow
+@onready var menu_action_column: VBoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn
 @onready var board_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel
 @onready var board_top_strip: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip
 @onready var board_stage_panel: PanelContainer = %BoardStagePanel
 @onready var node_detail_card: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard
+@onready var top_strip_row: BoxContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow
+@onready var board_meta_column: VBoxContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow/BoardMetaColumn
+@onready var side_column: VBoxContainer = $RootMargin/MainVBox/ContentRow/SideColumn
 @onready var status_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel
 @onready var player_card: PanelContainer = %PlayerCard
 @onready var rival_card: PanelContainer = %RivalCard
 @onready var control_card: PanelContainer = %ControlCard
 @onready var dice_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/SideColumn/DicePanel
+@onready var roll_row: BoxContainer = $RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox/RollRow
+@onready var support_row: BoxContainer = $RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox/SupportRow
 @onready var roster_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/SideColumn/RosterPanel
 @onready var log_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/SideColumn/LogPanel
 
@@ -191,12 +202,15 @@ var _event_log_snapshot: Array[String] = []
 var runtime_session_started := false
 var ai_turn_in_progress := false
 var _active_ai_observation_line := ""
+var _last_ai_turn_report := {}
 var _post_travel_resolution_in_progress := false
 var _asset_file_dialog: FileDialog
 var _menu_custom_background: TextureRect
 
 func _ready() -> void:
 	rng.randomize()
+	get_window().min_size = Vector2i(1280, 720)
+	get_window().size_changed.connect(_on_window_size_changed)
 	title_label.text = GAME_TITLE
 	base_button.hide()
 	plus_button.hide()
@@ -204,10 +218,12 @@ func _ready() -> void:
 	reroll_button.hide()
 	_connect_signals()
 	_apply_basic_styles()
+	_apply_responsive_layout()
 	_ensure_menu_custom_background()
 	_setup_asset_import_dialog()
 	_ensure_synergy_banner()
 	_ensure_stage_transition_overlay()
+	call_deferred("_apply_responsive_layout")
 	install_visit_flow()
 	if _should_show_boot_menu():
 		_show_main_menu()
@@ -343,6 +359,97 @@ func _apply_basic_styles() -> void:
 	weather_label.modulate = Color(0.86, 0.92, 1.0, 1.0)
 	objective_label.modulate = Color(0.95, 0.93, 0.82, 1.0)
 
+func _on_window_size_changed() -> void:
+	_apply_responsive_layout()
+
+func _apply_responsive_layout() -> void:
+	var window_size := get_window().size
+	var compact_width := window_size.x < 1440
+	var short_height := window_size.y < 820
+	var tight_height := window_size.y < 760
+	var portrait := window_size.y > window_size.x
+	var outer_margin := 10 if tight_height else (12 if compact_width or short_height else 18)
+	var main_separation := 8 if tight_height else (10 if compact_width or short_height else 14)
+	var title_font_size := 26 if tight_height else (28 if compact_width else 32)
+	var meta_font_size := 13 if tight_height else (14 if compact_width else 15)
+	var chip_font_size := 13 if tight_height else (14 if compact_width else 15)
+
+	for edge in ["left", "top", "right", "bottom"]:
+		root_margin.add_theme_constant_override("margin_%s" % edge, outer_margin)
+
+	main_vbox.add_theme_constant_override("separation", main_separation)
+	header_bar.add_theme_constant_override("separation", 12 if compact_width else 18)
+	header_bar.custom_minimum_size = Vector2(0, 72 if short_height else 86)
+	header_bar.vertical = portrait
+	run_status_row.add_theme_constant_override("separation", 6 if compact_width else 8)
+	content_row.add_theme_constant_override("separation", 10 if compact_width else 14)
+	content_row.vertical = portrait
+	top_strip_row.add_theme_constant_override("separation", 10 if compact_width else 12)
+	top_strip_row.vertical = portrait or window_size.x < 1360
+	roll_row.add_theme_constant_override("separation", 4 if tight_height else 6)
+	support_row.add_theme_constant_override("separation", 4 if tight_height else 6)
+	menu_content_row.add_theme_constant_override("separation", 12 if compact_width else 16)
+	menu_content_row.vertical = portrait or compact_width or short_height
+
+	title_label.add_theme_font_size_override("font_size", title_font_size)
+	meta_label.add_theme_font_size_override("font_size", meta_font_size)
+	menu_title_label.add_theme_font_size_override("font_size", 30 if tight_height else (32 if compact_width else 36))
+	menu_subtitle_label.add_theme_font_size_override("font_size", 16 if tight_height else 18)
+	for label in [round_label, weather_label, objective_label]:
+		label.add_theme_font_size_override("font_size", chip_font_size)
+
+	new_game_button.custom_minimum_size = Vector2(120, 40 if tight_height else 44)
+	board_top_strip.custom_minimum_size = Vector2(0, 64 if tight_height else (72 if compact_width else 84))
+	board_meta_column.custom_minimum_size = Vector2(0, 0) if top_strip_row.vertical else Vector2(180 if compact_width else 240, 0)
+	board_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if top_strip_row.vertical else HORIZONTAL_ALIGNMENT_RIGHT
+	board_route_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if top_strip_row.vertical else HORIZONTAL_ALIGNMENT_RIGHT
+	action_hint_label.custom_minimum_size = Vector2(0, 44 if tight_height else 60)
+	action_hint_label.fit_content = not short_height
+	action_hint_label.scroll_active = short_height
+
+	board_view.custom_minimum_size = Vector2(0, 360 if tight_height else (430 if short_height else 520))
+	node_detail_card.custom_minimum_size = Vector2(0, 108 if tight_height else (132 if short_height else 172))
+	map_hint_label.scroll_active = true
+	side_column.custom_minimum_size = Vector2(0, 0) if content_row.vertical else Vector2(320 if tight_height else (360 if compact_width else 420), 0)
+
+	_configure_summary_label(player_summary_label, short_height, 60, 84)
+	_configure_summary_label(ai_summary_label, short_height, 60, 84)
+	_configure_summary_label(control_summary_label, short_height, 64, 90)
+	_configure_summary_label(roster_label, short_height, 96, 150)
+
+	var small_button_height := 40 if tight_height else 44
+	var medium_button_height := 42 if tight_height else 48
+	for button in [roll_button, reroll_button, plus_button, minus_button]:
+		button.custom_minimum_size = Vector2(0, medium_button_height)
+	for button in [support_button, base_button]:
+		button.custom_minimum_size = Vector2(0, small_button_height)
+	for button in [continue_button, menu_new_game_button, settings_button]:
+		button.custom_minimum_size = Vector2(0, 48 if tight_height else 54)
+
+	main_menu_panel.custom_minimum_size = Vector2(680, 460) if tight_height else (Vector2(720, 500) if compact_width or short_height else Vector2(760, 520))
+	menu_action_column.custom_minimum_size = Vector2(0, 0) if menu_content_row.vertical else Vector2(200 if compact_width else 220, 0)
+	menu_run_summary_label.custom_minimum_size = Vector2(0, 148 if menu_content_row.vertical else (180 if compact_width else 200))
+
+	if is_instance_valid(_synergy_banner):
+		var banner_width := 420.0 if compact_width else 520.0
+		var banner_height := 96.0 if tight_height else 120.0
+		_synergy_banner.custom_minimum_size = Vector2(banner_width, banner_height)
+		_synergy_banner.offset_left = -banner_width * 0.5
+		_synergy_banner.offset_right = banner_width * 0.5
+		_synergy_banner.offset_top = 18.0 if tight_height else 28.0
+		_synergy_banner.offset_bottom = _synergy_banner.offset_top + banner_height
+	if is_instance_valid(_synergy_unit_glow_host):
+		var glow_half_width := 240.0 if compact_width else 280.0
+		_synergy_unit_glow_host.offset_left = -glow_half_width
+		_synergy_unit_glow_host.offset_right = glow_half_width
+	if is_instance_valid(_stage_transition_panel):
+		_stage_transition_panel.custom_minimum_size = Vector2(520, 180) if tight_height else (Vector2(620, 210) if compact_width or short_height else Vector2(720, 240))
+
+func _configure_summary_label(label: RichTextLabel, compact: bool, compact_height: int, regular_height: int) -> void:
+	label.fit_content = not compact
+	label.scroll_active = compact
+	label.custom_minimum_size = Vector2(0, compact_height if compact else regular_height)
+
 func _ensure_synergy_banner() -> void:
 	if _synergy_banner != null:
 		return
@@ -384,7 +491,7 @@ func _ensure_synergy_banner() -> void:
 	_synergy_banner.add_child(margin)
 	_synergy_banner_label = RichTextLabel.new()
 	_synergy_banner_label.bbcode_enabled = true
-	_synergy_banner_label.scroll_active = false
+	_synergy_banner_label.scroll_active = true
 	_synergy_banner_label.fit_content = false
 	_synergy_banner_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_synergy_banner_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -452,10 +559,11 @@ func _ensure_stage_transition_overlay() -> void:
 	box.add_child(_stage_transition_title)
 	_stage_transition_subtitle = RichTextLabel.new()
 	_stage_transition_subtitle.bbcode_enabled = true
-	_stage_transition_subtitle.scroll_active = false
-	_stage_transition_subtitle.fit_content = false
+	_stage_transition_subtitle.scroll_active = true
+	_stage_transition_subtitle.fit_content = true
 	_stage_transition_subtitle.custom_minimum_size = Vector2(0, 104)
 	_stage_transition_subtitle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_stage_transition_subtitle.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(_stage_transition_subtitle)
 
 func _should_show_boot_menu() -> bool:
@@ -903,6 +1011,7 @@ func start_new_game() -> void:
 	pending_tutorial_battle_config.clear()
 	pending_tutorial_battle_source = ""
 	pending_tutorial_battle_log = ""
+	_last_ai_turn_report.clear()
 	decision_panel.hide()
 	base_panel.hide()
 	system_panel.hide()
@@ -960,6 +1069,7 @@ func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
 	pending_tutorial_battle_config.clear()
 	pending_tutorial_battle_source = ""
 	pending_tutorial_battle_log = ""
+	_last_ai_turn_report.clear()
 	decision_panel.hide()
 	base_panel.hide()
 	system_panel.hide()
@@ -1343,7 +1453,178 @@ func _reachable_selectable_nodes() -> Array[int]:
 	return selectable
 
 func _on_support_pressed() -> void:
-	system_panel.open_panel("系统手册", _build_system_sections(), "quest")
+	var sections := _build_support_sections()
+	if sections.is_empty():
+		return
+	var title := "系统手册"
+	var initial_section_id := "quest"
+	if not _last_ai_turn_report.is_empty() and String(sections[0].get("id", "")).begins_with("ai_"):
+		title = "系统手册 / AI 观察"
+		initial_section_id = String(sections[0].get("id", "ai_0"))
+	system_panel.open_panel(title, sections, initial_section_id)
+
+func _build_support_sections() -> Array:
+	if _last_ai_turn_report.is_empty():
+		return _build_system_sections()
+	var ai_sections := _build_ai_report_sections(_last_ai_turn_report)
+	if ai_sections.is_empty():
+		return _build_system_sections()
+	ai_sections.append_array(_build_system_sections())
+	return ai_sections
+
+func _build_ai_report_sections(ai_result: Dictionary) -> Array:
+	var sections: Array = []
+	var reports: Array = ai_result.get("reports", [])
+	for index in range(reports.size()):
+		var report: Dictionary = Dictionary(reports[index]).duplicate(true)
+		var rival: Dictionary = Dictionary(report.get("player", {})).duplicate(true)
+		if rival.is_empty():
+			continue
+		var move: Dictionary = Dictionary(report.get("move", {})).duplicate(true)
+		var landing: Dictionary = Dictionary(report.get("landing", {})).duplicate(true)
+		var next_plan: Dictionary = Dictionary(report.get("next_plan", {})).duplicate(true)
+		var display_name := String(rival.get("display_name", "对手 %d" % (index + 1)))
+		var node_name := String(landing.get("node_name", move.get("destination_name", "")))
+		if node_name.is_empty():
+			node_name = String(board_lookup.get(int(rival.get("current_node_id", -1)), {}).get("name", "未知节点"))
+
+		var summary_lines: Array[String] = [
+			"[b]当前位置[/b] %s" % node_name,
+			"[b]短行为[/b] %s" % String(report.get("short", "待命")),
+			"[b]下回合意图[/b] %s" % String(report.get("intent", "继续观察")),
+		]
+
+		var body_lines: Array[String] = [
+			"[b]完整行动[/b]",
+			String(report.get("line", "暂无行动记录。")),
+			"",
+			"[b]移动决策[/b]",
+			"首掷：%d" % int(move.get("first_roll", 0)),
+			"最终骰值：%d" % int(move.get("final_roll", 0)),
+			"是否改掷：%s" % ("是" if bool(move.get("reroll_used", false)) else "否"),
+		]
+		if bool(move.get("reroll_used", false)):
+			body_lines.append("改掷值：%d" % int(move.get("reroll_value", 0)))
+		body_lines.append("目标节点：%s" % String(move.get("destination_name", node_name)))
+		var path_text := _format_ai_path_text(move.get("path_names", []))
+		if not path_text.is_empty():
+			body_lines.append("推进路径：%s" % path_text)
+		body_lines.append("当前选点分数：%.2f" % float(move.get("score", 0.0)))
+		if not String(move.get("ideal_plan_text", "")).is_empty():
+			body_lines.append("理想计划：%s" % String(move.get("ideal_plan_text", "")))
+			body_lines.append("理想计划分数：%.2f" % float(move.get("ideal_plan_score", 0.0)))
+		if bool(move.get("reroll_used", false)):
+			body_lines.append_array(_build_ai_candidate_lines("首掷候选", move.get("first_candidates", [])))
+			body_lines.append_array(_build_ai_candidate_lines("改掷候选", move.get("reroll_candidates", [])))
+		else:
+			body_lines.append_array(_build_ai_candidate_lines("候选落点评分", move.get("candidates", [])))
+		if bool(move.get("stayed_put", false)):
+			body_lines.append("结果：这次没有精确落点，回合以整备收尾。")
+
+		if not landing.is_empty():
+			body_lines.append("")
+			body_lines.append("[b]落点结果[/b]")
+			if not String(landing.get("text", "")).is_empty():
+				body_lines.append(String(landing.get("text", "")))
+			var delta_parts: Array[String] = []
+			for delta_key in [
+				{"label": "金", "value": int(landing.get("gold_delta", 0))},
+				{"label": "情报", "value": int(landing.get("intel_delta", 0))},
+				{"label": "控制", "value": int(landing.get("control_delta", 0))},
+				{"label": "威望", "value": int(landing.get("prestige_delta", 0))},
+				{"label": "战术重掷", "value": int(landing.get("rerolls_delta", 0))},
+			]:
+				if int(delta_key.get("value", 0)) == 0:
+					continue
+				delta_parts.append("%s %s" % [
+					String(delta_key.get("label", "")),
+					_format_signed_int(int(delta_key.get("value", 0))),
+				])
+			if not delta_parts.is_empty():
+				body_lines.append("资源变化：%s" % " ｜ ".join(delta_parts))
+			body_lines.append("回合后状态：威望 %d ｜ 金 %d ｜ 情报 %d ｜ 控制 %d ｜ 战术重掷 %d" % [
+				int(landing.get("prestige_after", rival.get("prestige", 0))),
+				int(landing.get("gold_after", rival.get("gold", 0))),
+				int(landing.get("intel_after", rival.get("intel", 0))),
+				int(landing.get("control_after", rival.get("control", 0))),
+				int(landing.get("rerolls_after", rival.get("tactical_rerolls", 0))),
+			])
+
+		if not next_plan.is_empty():
+			body_lines.append("")
+			body_lines.append("[b]后续意图[/b]")
+			body_lines.append(String(next_plan.get("text", "继续观察局势")))
+			if next_plan.has("score"):
+				body_lines.append("计划分数：%.2f" % float(next_plan.get("score", 0.0)))
+
+		sections.append({
+			"id": "ai_%d" % index,
+			"label": display_name,
+			"summary": "\n".join(summary_lines),
+			"body": "\n".join(body_lines),
+		})
+	return sections
+
+func _format_ai_path_text(path_names_value) -> String:
+	var path_names: Array = Array(path_names_value).duplicate()
+	if path_names.is_empty():
+		return ""
+	var names: Array[String] = []
+	for raw_name in path_names:
+		names.append(String(raw_name))
+	return " -> ".join(names)
+
+func _build_ai_candidate_lines(title: String, candidates_value) -> Array[String]:
+	var candidates: Array = Array(candidates_value).duplicate(true)
+	if candidates.is_empty():
+		return []
+	var lines: Array[String] = [
+		"",
+		"[b]%s[/b]" % title,
+	]
+	for index in range(candidates.size()):
+		var candidate: Dictionary = Dictionary(candidates[index]).duplicate(true)
+		var parts: Array[String] = [
+			"%d. #%d %s" % [
+				index + 1,
+				int(candidate.get("node_id", -1)),
+				String(candidate.get("name", "未知节点")),
+			],
+			"%.2f" % float(candidate.get("score", 0.0)),
+			_ai_candidate_type_label(String(candidate.get("legacy_type", ""))),
+		]
+		var danger := int(candidate.get("danger", 0))
+		if danger > 0:
+			parts.append("危险 %d" % danger)
+		var path_text := _format_ai_path_text(candidate.get("path_names", []))
+		if not path_text.is_empty():
+			parts.append("路径 %s" % path_text)
+		lines.append(" ｜ ".join(parts))
+	return lines
+
+func _ai_candidate_type_label(type_id: String) -> String:
+	match type_id:
+		"camp":
+			return "营地"
+		"resource":
+			return "资源"
+		"market":
+			return "补给"
+		"research":
+			return "研判"
+		"control":
+			return "据点"
+		"battle":
+			return "交锋"
+		"boss":
+			return "高潮"
+		"event":
+			return "事件"
+		_:
+			return "未分类"
+
+func _format_signed_int(value: int) -> String:
+	return "+%d" % value if value > 0 else str(value)
 
 func _on_base_pressed(opened_from_travel: bool = false) -> void:
 	camp_panel_requires_finish = camp_panel_requires_finish or opened_from_travel
@@ -2169,7 +2450,8 @@ func _advance_after_travel_stop() -> void:
 func _run_ai_turns() -> void:
 	if not runtime_session_started:
 		return
-	var reports: Array = ai_player_service.simulate_turns(board_lookup).get("reports", [])
+	var ai_result: Dictionary = ai_player_service.simulate_turns(board_lookup)
+	var reports: Array = ai_result.get("reports", [])
 	if reports.is_empty():
 		return
 	ai_turn_in_progress = true
@@ -2190,6 +2472,14 @@ func _run_ai_turns() -> void:
 	ai_turn_in_progress = false
 	_active_ai_observation_line = ""
 	_update_ui()
+	_show_ai_turn_report(ai_result)
+
+func _show_ai_turn_report(ai_result: Dictionary) -> void:
+	_last_ai_turn_report = Dictionary(ai_result).duplicate(true)
+	var sections := _build_ai_report_sections(_last_ai_turn_report)
+	if sections.is_empty():
+		return
+	system_panel.open_panel("AI 回合观察", sections, String(sections[0].get("id", "ai_0")))
 
 func _on_base_closed() -> void:
 	if camp_panel_requires_finish:

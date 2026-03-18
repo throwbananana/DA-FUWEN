@@ -11,6 +11,7 @@ signal reroll_requested
 @onready var subtitle_label: Label = $MarginContainer/VBoxContainer/SubtitleLabel
 @onready var value_label: Label = $MarginContainer/VBoxContainer/ValueLabel
 @onready var detail_label: RichTextLabel = $MarginContainer/VBoxContainer/DetailLabel
+@onready var button_row: BoxContainer = $MarginContainer/VBoxContainer/ButtonRow
 @onready var minus_button: Button = $MarginContainer/VBoxContainer/ButtonRow/MinusButton
 @onready var plus_button: Button = $MarginContainer/VBoxContainer/ButtonRow/PlusButton
 @onready var reroll_button: Button = $MarginContainer/VBoxContainer/ButtonRow/RerollButton
@@ -25,6 +26,7 @@ func _ready() -> void:
 	rng.randomize()
 	modulate.a = 1.0
 	scale = Vector2.ONE
+	_apply_responsive_layout()
 	minus_button.pressed.connect(func() -> void:
 		minus_requested.emit()
 	)
@@ -42,6 +44,7 @@ func _ready() -> void:
 func open_panel(roll_state: Dictionary, panel_state: Dictionary, animation_mode: String = "roll") -> void:
 	show()
 	move_to_front()
+	_apply_responsive_layout()
 	_render(roll_state, panel_state)
 	_play_open_animation()
 	_play_value_feedback(int(roll_state.get("value", 0)), animation_mode)
@@ -50,8 +53,13 @@ func refresh_panel(roll_state: Dictionary, panel_state: Dictionary, animation_mo
 	if not visible:
 		open_panel(roll_state, panel_state, animation_mode)
 		return
+	_apply_responsive_layout()
 	_render(roll_state, panel_state)
 	_play_value_feedback(int(roll_state.get("value", 0)), animation_mode)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		_apply_responsive_layout()
 
 func close_panel() -> void:
 	if GameState.should_skip_animations():
@@ -75,12 +83,30 @@ func _render(roll_state: Dictionary, panel_state: Dictionary) -> void:
 	title_label.text = String(panel_state.get("title", "掷骰结果"))
 	subtitle_label.text = String(panel_state.get("subtitle", "确认本回合步数"))
 	detail_label.text = String(panel_state.get("body", ""))
+	detail_label.scroll_to_line(0)
 	confirm_button.text = String(panel_state.get("confirm_text", "查看落点"))
 	plus_button.disabled = not bool(panel_state.get("can_plus", false))
 	minus_button.disabled = not bool(panel_state.get("can_minus", false))
 	reroll_button.disabled = not bool(panel_state.get("can_reroll", false))
 	if GameState.should_skip_animations():
 		value_label.text = str(int(roll_state.get("value", 0)))
+
+func _apply_responsive_layout() -> void:
+	if not is_node_ready():
+		return
+	var compact_width := size.x < 460.0
+	var short_height := size.y < 380.0
+	title_label.add_theme_font_size_override("font_size", 24 if short_height else 28)
+	subtitle_label.add_theme_font_size_override("font_size", 16 if short_height else 18)
+	value_label.add_theme_font_size_override("font_size", 72 if short_height else 96)
+	detail_label.custom_minimum_size = Vector2(0, 80 if short_height else (96 if compact_width else 110))
+	button_row.vertical = compact_width and short_height
+	button_row.add_theme_constant_override("separation", 6 if short_height else 8)
+	var button_height := 44 if short_height else 48
+	minus_button.custom_minimum_size = Vector2(0, button_height)
+	plus_button.custom_minimum_size = Vector2(0, button_height)
+	reroll_button.custom_minimum_size = Vector2(0, button_height)
+	confirm_button.custom_minimum_size = Vector2(0, 48 if short_height else 52)
 
 func _play_open_animation() -> void:
 	if GameState.should_skip_animations():

@@ -26,6 +26,7 @@ var _queued_close_signal := false
 func _ready() -> void:
 	hide()
 	modulate.a = 1.0
+	_apply_responsive_layout()
 	cancel_button.pressed.connect(_on_cancel_pressed)
 	body_label.gui_input.connect(_on_body_label_gui_input)
 
@@ -37,6 +38,7 @@ func open_panel(title_text: String, body_text: String, choices: Array, cancel_te
 	current_choices = choices.duplicate(true)
 	title_label.text = title_text
 	body_label.text = body_text
+	body_label.scroll_to_line(0)
 	_pending_cancel_text = cancel_text
 	cancel_button.text = cancel_text
 	_queued_close_signal = false
@@ -46,13 +48,14 @@ func open_panel(title_text: String, body_text: String, choices: Array, cancel_te
 		child.queue_free()
 	for choice in current_choices:
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(360, 56)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.focus_mode = Control.FOCUS_NONE
 		button.text = "%s\n%s" % [String(choice.get("label", "")), String(choice.get("summary", ""))]
 		button.tooltip_text = String(choice.get("tooltip", choice.get("summary", "")))
 		button.disabled = bool(choice.get("disabled", false))
 		button.pressed.connect(_on_choice_pressed.bind(String(choice.get("id", ""))))
 		button_container.add_child(button)
+	_apply_responsive_layout()
 
 	if _is_info_popup:
 		_play_open_animation()
@@ -90,6 +93,10 @@ func _on_body_label_gui_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_finish_typewriter()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		_apply_responsive_layout()
 
 func _play_open_animation() -> void:
 	_stop_close_animation(false)
@@ -165,3 +172,18 @@ func _stop_typewriter(show_all_text: bool) -> void:
 		body_label.visible_ratio = 1.0
 	_is_typing = false
 	cancel_button.text = _pending_cancel_text
+
+func _apply_responsive_layout() -> void:
+	if not is_node_ready():
+		return
+	var short_height := size.y < 360.0
+	title_label.add_theme_font_size_override("font_size", 20 if short_height else 24)
+	body_label.custom_minimum_size = Vector2(0, 72 if short_height else 96)
+	cancel_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cancel_button.custom_minimum_size = Vector2(0, 42 if short_height else 46)
+	for child in button_container.get_children():
+		var button := child as Button
+		if button == null:
+			continue
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.custom_minimum_size = Vector2(0, 48 if short_height else 56)

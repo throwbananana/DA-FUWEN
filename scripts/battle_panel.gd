@@ -16,9 +16,11 @@ signal battle_finished(result: Dictionary)
 @onready var title_label: Label = $MarginContainer/VBoxContainer/TitleLabel
 @onready var subtitle_label: Label = $MarginContainer/VBoxContainer/SubtitleLabel
 @onready var turn_label: Label = $MarginContainer/VBoxContainer/TurnLabel
-@onready var turn_order_bar: HBoxContainer = $MarginContainer/VBoxContainer/TurnOrderBar
+@onready var turn_order_bar: BoxContainer = $MarginContainer/VBoxContainer/TurnOrderBar
+@onready var teams_row: BoxContainer = $MarginContainer/VBoxContainer/TeamsRow
 @onready var ally_list: VBoxContainer = $MarginContainer/VBoxContainer/TeamsRow/AllyList
 @onready var enemy_list: VBoxContainer = $MarginContainer/VBoxContainer/TeamsRow/EnemyList
+@onready var action_preview_panel: PanelContainer = $MarginContainer/VBoxContainer/ActionPreviewPanel
 @onready var action_preview_label: Label = $MarginContainer/VBoxContainer/ActionPreviewPanel/MarginContainer/VBoxContainer/ActionPreviewLabel
 @onready var action_preview_detail_label: Label = $MarginContainer/VBoxContainer/ActionPreviewPanel/MarginContainer/VBoxContainer/ActionPreviewDetailLabel
 @onready var battle_log: RichTextLabel = $MarginContainer/VBoxContainer/BattleLog
@@ -69,6 +71,7 @@ func _ready() -> void:
 	_base_position = position
 	_ensure_fx_layer()
 	_ensure_selection_label()
+	_apply_responsive_layout()
 
 func start_battle(config: Dictionary) -> void:
 	if _finish_tween != null:
@@ -108,6 +111,8 @@ func start_battle(config: Dictionary) -> void:
 		_log(line)
 	show()
 	move_to_front()
+	_apply_responsive_layout()
+	_base_position = position
 	_play_open_animation()
 	_render_rosters()
 	_update_selection_summary()
@@ -179,6 +184,7 @@ func _prompt_player_action_with_feedback(actor: MonsterInstance, show_banner: bo
 
 	var intro := Label.new()
 	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	intro.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	if pending_action.is_empty():
 		intro.text = _tr("battle.prompt.player", {"actor": actor.display_name})
 	else:
@@ -196,7 +202,8 @@ func _prompt_player_action_with_feedback(actor: MonsterInstance, show_banner: bo
 		var skill_name := _skill_name(String(skill_id), skill)
 		var button := Button.new()
 		button.focus_mode = Control.FOCUS_NONE
-		button.custom_minimum_size = Vector2(300, 48)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.custom_minimum_size = Vector2(0, _action_button_height())
 		var cooldown_left := int(temp_state[actor.uid]["cooldowns"].get(skill_id, 0))
 		var prefix := "▶ " if String(pending_action.get("skill_id", "")) == String(skill_id) else ""
 		button.text = "%s%s  %s" % [prefix, skill_name, _skill_detail_text(skill_id, skill)]
@@ -209,7 +216,8 @@ func _prompt_player_action_with_feedback(actor: MonsterInstance, show_banner: bo
 	if bool(battle_config.get("allow_capture", false)):
 		var capture_button := Button.new()
 		capture_button.focus_mode = Control.FOCUS_NONE
-		capture_button.custom_minimum_size = Vector2(300, 48)
+		capture_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		capture_button.custom_minimum_size = Vector2(0, _action_button_height())
 		capture_button.text = "%s  %s" % [_tr("battle.capture"), _tr("battle.capture_hint")]
 		capture_button.disabled = alive_enemies.is_empty()
 		capture_button.pressed.connect(_on_capture_pressed.bind(actor.uid))
@@ -218,7 +226,8 @@ func _prompt_player_action_with_feedback(actor: MonsterInstance, show_banner: bo
 	if not pending_action.is_empty():
 		var cancel_button := Button.new()
 		cancel_button.focus_mode = Control.FOCUS_NONE
-		cancel_button.custom_minimum_size = Vector2(300, 40)
+		cancel_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cancel_button.custom_minimum_size = Vector2(0, _secondary_action_button_height())
 		cancel_button.text = _tr("battle.preview.cancel")
 		cancel_button.pressed.connect(_cancel_pending_action.bind(actor.uid))
 		action_box.add_child(cancel_button)
@@ -227,6 +236,7 @@ func _schedule_enemy_action(actor: MonsterInstance) -> void:
 	_clear_action_buttons()
 	var info := Label.new()
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var skill_id := _choose_enemy_skill(actor)
 	var skill := GameData.get_skill(skill_id)
 	var skill_name := _skill_name(skill_id, skill)
@@ -244,6 +254,10 @@ func _schedule_enemy_action(actor: MonsterInstance) -> void:
 	_show_battle_banner(_tr("battle.turn.enemy"), actor.display_name, Color(1.0, 0.55, 0.47, 1.0))
 	var timer := get_tree().create_timer(0.05 if GameState.should_skip_animations() else ENEMY_THINK_DELAY)
 	timer.timeout.connect(_on_enemy_timer_timeout.bind(actor, skill_id, target_uid), CONNECT_ONE_SHOT)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		_apply_responsive_layout()
 
 func _on_enemy_timer_timeout(actor: MonsterInstance, skill_id: String, target_uid: String) -> void:
 	if result_sent or not actor.is_alive():
@@ -1263,6 +1277,30 @@ func _ensure_selection_label() -> void:
 	_selection_label.modulate = Color(0.86, 0.91, 1.0, 0.95)
 	container.add_child(_selection_label)
 	container.move_child(_selection_label, turn_label.get_index() + 1)
+
+func _apply_responsive_layout() -> void:
+	if not is_node_ready():
+		return
+	var compact_width := size.x < 860.0
+	var short_height := size.y < 620.0
+	title_label.add_theme_font_size_override("font_size", 22 if short_height else 26)
+	turn_label.add_theme_font_size_override("font_size", 16 if short_height else 18)
+	action_preview_label.add_theme_font_size_override("font_size", 16 if compact_width or short_height else 18)
+	action_preview_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	action_preview_detail_label.add_theme_font_size_override("font_size", 13 if compact_width or short_height else 14)
+	subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	turn_order_bar.vertical = size.x < 720.0
+	turn_order_bar.add_theme_constant_override("separation", 6 if compact_width else 8)
+	teams_row.add_theme_constant_override("separation", 8 if compact_width else 12)
+	action_preview_panel.custom_minimum_size = Vector2(0, 56 if short_height else 72)
+	battle_log.custom_minimum_size = Vector2(0, 120 if short_height else (150 if compact_width else 190))
+	action_box.add_theme_constant_override("separation", 4 if compact_width else 6)
+
+func _action_button_height() -> float:
+	return 40.0 if size.y < 620.0 else 48.0
+
+func _secondary_action_button_height() -> float:
+	return 36.0 if size.y < 620.0 else 40.0
 
 func _update_selection_summary(actor: MonsterInstance = null, target: MonsterInstance = null, skill_name: String = "") -> void:
 	_update_action_preview(actor, target, skill_name)

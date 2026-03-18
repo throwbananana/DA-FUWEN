@@ -77,13 +77,31 @@ func _simulate_single_turn(rival: Dictionary, node_lookup: Dictionary) -> Dictio
 	var updated_rival: Dictionary = Dictionary(move_report.get("player", rival)).duplicate(true)
 	var node_id := int(updated_rival.get("current_node_id", current_node_id))
 	var landed_node := Dictionary(node_lookup.get(node_id, {})).duplicate(true)
+	var pre_landing_state := updated_rival.duplicate(true)
 	var action_report := _resolve_landing(updated_rival, landed_node)
 	updated_rival = Dictionary(action_report.get("player", updated_rival)).duplicate(true)
+	var move_text := String(move_report.get("text", ""))
+	var action_text := String(action_report.get("text", ""))
+	var landing_debug := {
+		"text": action_text,
+		"short": String(action_report.get("short", "继续推进")),
+		"node_id": node_id,
+		"node_name": String(landed_node.get("name", "")),
+		"node_type": _legacy_type_for_node(landed_node, node_lookup) if not landed_node.is_empty() else "none",
+		"gold_delta": int(updated_rival.get("gold", 0)) - int(pre_landing_state.get("gold", 0)),
+		"intel_delta": int(updated_rival.get("intel", 0)) - int(pre_landing_state.get("intel", 0)),
+		"control_delta": int(updated_rival.get("control", 0)) - int(pre_landing_state.get("control", 0)),
+		"prestige_delta": int(updated_rival.get("prestige", 0)) - int(pre_landing_state.get("prestige", 0)),
+		"rerolls_delta": int(updated_rival.get("tactical_rerolls", 0)) - int(pre_landing_state.get("tactical_rerolls", 0)),
+		"gold_after": int(updated_rival.get("gold", 0)),
+		"intel_after": int(updated_rival.get("intel", 0)),
+		"control_after": int(updated_rival.get("control", 0)),
+		"prestige_after": int(updated_rival.get("prestige", 0)),
+		"rerolls_after": int(updated_rival.get("tactical_rerolls", 0)),
+	}
 	updated_rival["turns_taken"] = int(updated_rival.get("turns_taken", 0)) + 1
 	var next_plan := _build_turn_plan(updated_rival, node_lookup)
 	updated_rival["intent"] = _plan_text(next_plan)
-	var move_text := String(move_report.get("text", ""))
-	var action_text := String(action_report.get("text", ""))
 	var full_line := move_text
 	if not action_text.is_empty():
 		full_line += " " + action_text
@@ -94,6 +112,9 @@ func _simulate_single_turn(rival: Dictionary, node_lookup: Dictionary) -> Dictio
 		"line": updated_rival["latest_action"],
 		"short": updated_rival["latest_action_short"],
 		"intent": updated_rival["intent"],
+		"move": Dictionary(move_report.get("debug", {})).duplicate(true),
+		"landing": landing_debug,
+		"next_plan": Dictionary(next_plan).duplicate(true),
 	}
 
 func _resolve_move(rival: Dictionary, current_node_id: int, node_lookup: Dictionary, ideal_plan: Dictionary) -> Dictionary:
@@ -101,8 +122,10 @@ func _resolve_move(rival: Dictionary, current_node_id: int, node_lookup: Diction
 	var roll := _deterministic_roll(working, "roll")
 	var first_roll := roll
 	var choice := _pick_destination(working, current_node_id, roll, node_lookup)
+	var first_candidates: Array = Array(choice.get("candidates", [])).duplicate(true)
 	var reroll_used := false
 	var reroll_value := 0
+	var reroll_candidates: Array = []
 	var best_plan_score := float(ideal_plan.get("score", -999.0))
 	var current_score := float(choice.get("score", -999.0))
 	if int(working.get("tactical_rerolls", 0)) > 0 and best_plan_score - current_score >= REROLL_THRESHOLD:
@@ -110,6 +133,7 @@ func _resolve_move(rival: Dictionary, current_node_id: int, node_lookup: Diction
 		if reroll_value == roll:
 			reroll_value = 1 + int(posmod(reroll_value + int(working.get("turns_taken", 0)) + 1, MAX_ROLL))
 		var reroll_choice := _pick_destination(working, current_node_id, reroll_value, node_lookup)
+		reroll_candidates = Array(reroll_choice.get("candidates", [])).duplicate(true)
 		if float(reroll_choice.get("score", -999.0)) > current_score:
 			reroll_used = true
 			roll = reroll_value
@@ -125,9 +149,28 @@ func _resolve_move(rival: Dictionary, current_node_id: int, node_lookup: Diction
 			roll,
 		]
 		text = working["latest_action"]
+		var current_node: Dictionary = Dictionary(node_lookup.get(current_node_id, {})).duplicate(true)
 		return {
 			"player": working,
 			"text": text,
+			"debug": {
+				"first_roll": first_roll,
+				"final_roll": roll,
+				"reroll_used": reroll_used,
+				"reroll_value": reroll_value,
+				"destination_node_id": current_node_id,
+				"destination_name": String(current_node.get("name", "当前位置")),
+				"path": [],
+				"path_names": [],
+				"candidates": [],
+				"first_candidates": first_candidates,
+				"reroll_candidates": reroll_candidates,
+				"score": current_score,
+				"ideal_plan_text": String(ideal_plan.get("text", "")),
+				"ideal_plan_score": best_plan_score,
+				"rerolls_after": int(working.get("tactical_rerolls", 0)),
+				"stayed_put": true,
+			},
 		}
 	var destination_node_id := int(choice.get("node_id", current_node_id))
 	var destination_node: Dictionary = choice.get("node", {})
@@ -145,6 +188,24 @@ func _resolve_move(rival: Dictionary, current_node_id: int, node_lookup: Diction
 		"text": text,
 		"destination_node_id": destination_node_id,
 		"node": destination_node,
+		"debug": {
+			"first_roll": first_roll,
+			"final_roll": roll,
+			"reroll_used": reroll_used,
+			"reroll_value": reroll_value,
+			"destination_node_id": destination_node_id,
+			"destination_name": String(destination_node.get("name", "")),
+			"path": Array(choice.get("path", [])).duplicate(),
+			"path_names": _path_node_names(Array(choice.get("path", [])).duplicate(), node_lookup),
+			"candidates": Array(choice.get("candidates", [])).duplicate(true),
+			"first_candidates": first_candidates,
+			"reroll_candidates": reroll_candidates,
+			"score": current_score,
+			"ideal_plan_text": String(ideal_plan.get("text", "")),
+			"ideal_plan_score": best_plan_score,
+			"rerolls_after": int(working.get("tactical_rerolls", 0)),
+			"stayed_put": false,
+		},
 	}
 
 func _resolve_landing(rival: Dictionary, node: Dictionary) -> Dictionary:
@@ -317,19 +378,44 @@ func _plan_text(plan: Dictionary) -> String:
 func _pick_destination(rival: Dictionary, current_node_id: int, roll: int, node_lookup: Dictionary) -> Dictionary:
 	var paths := _reachable_paths(current_node_id, roll, node_lookup)
 	var best_choice := {}
+	var candidates: Array = []
 	for raw_node_id in paths.keys():
 		var node_id := int(raw_node_id)
 		var node := Dictionary(node_lookup.get(node_id, {})).duplicate(true)
 		if node.is_empty():
 			continue
+		var path: Array = Array(paths[raw_node_id]).duplicate()
+		var legacy_type := _legacy_type_for_node(node, node_lookup)
 		var score := _score_destination(rival, node, node_lookup)
+		var candidate := {
+			"node_id": node_id,
+			"name": String(node.get("name", "未知节点")),
+			"legacy_type": legacy_type,
+			"danger": int(GameState.get_node_danger(node_id)),
+			"path": path,
+			"path_names": _path_node_names(path, node_lookup),
+			"score": score,
+		}
+		candidates.append(candidate)
 		if best_choice.is_empty() or score > float(best_choice.get("score", -999.0)) or (is_equal_approx(score, float(best_choice.get("score", -999.0))) and node_id > int(best_choice.get("node_id", -1))):
 			best_choice = {
 				"node_id": node_id,
-				"path": Array(paths[raw_node_id]).duplicate(),
+				"path": path,
+				"path_names": Array(candidate.get("path_names", [])).duplicate(),
 				"node": node,
 				"score": score,
+				"legacy_type": legacy_type,
+				"danger": int(candidate.get("danger", 0)),
 			}
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var a_score := float(a.get("score", -999.0))
+		var b_score := float(b.get("score", -999.0))
+		if not is_equal_approx(a_score, b_score):
+			return a_score > b_score
+		return int(a.get("node_id", -1)) > int(b.get("node_id", -1))
+	)
+	if not best_choice.is_empty():
+		best_choice["candidates"] = candidates.duplicate(true)
 	return best_choice
 
 func _reachable_paths(from_node_id: int, steps: int, node_lookup: Dictionary) -> Dictionary:
@@ -367,6 +453,13 @@ func _reachable_paths(from_node_id: int, steps: int, node_lookup: Dictionary) ->
 				"spent": next_spent,
 			})
 	return result
+
+func _path_node_names(path: Array, node_lookup: Dictionary) -> Array[String]:
+	var names: Array[String] = []
+	for raw_node_id in path:
+		var node_id := int(raw_node_id)
+		names.append(String(node_lookup.get(node_id, {}).get("name", "节点 %d" % node_id)))
+	return names
 
 func _score_destination(rival: Dictionary, node: Dictionary, node_lookup: Dictionary) -> float:
 	var personality_id := String(rival.get("personality_id", ""))

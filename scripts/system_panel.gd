@@ -4,7 +4,7 @@ extends PanelContainer
 signal closed
 
 @onready var header_label: Label = $MarginContainer/VBoxContainer/HeaderRow/HeaderLabel
-@onready var section_row: HBoxContainer = $MarginContainer/VBoxContainer/SectionRow
+@onready var section_row: BoxContainer = $MarginContainer/VBoxContainer/SectionRow
 @onready var summary_label: RichTextLabel = $MarginContainer/VBoxContainer/SummaryLabel
 @onready var detail_label: RichTextLabel = $MarginContainer/VBoxContainer/DetailLabel
 @onready var close_button: Button = $MarginContainer/VBoxContainer/HeaderRow/CloseButton
@@ -18,11 +18,13 @@ func _ready() -> void:
 	hide()
 	modulate.a = 1.0
 	scale = Vector2.ONE
+	_apply_responsive_layout()
 	close_button.pressed.connect(close_panel)
 
 func open_panel(title_text: String, sections: Array, initial_section_id: String = "") -> void:
 	show()
 	move_to_front()
+	_apply_responsive_layout()
 	header_label.text = title_text
 	current_sections = sections.duplicate(true)
 	_render_section_buttons()
@@ -36,6 +38,10 @@ func open_panel(title_text: String, sections: Array, initial_section_id: String 
 		target_id = String(current_sections[0].get("id", ""))
 	_select_section(target_id)
 	_play_open_animation()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		_apply_responsive_layout()
 
 func close_panel() -> void:
 	if GameState.should_skip_animations():
@@ -80,6 +86,7 @@ func _select_section(section_id: String) -> void:
 	current_section_id = section_id
 	summary_label.text = String(section.get("summary", ""))
 	detail_label.text = String(section.get("body", ""))
+	summary_label.scroll_to_line(0)
 	detail_label.scroll_to_line(0)
 	_play_section_transition()
 	for child in section_row.get_children():
@@ -89,6 +96,22 @@ func _select_section(section_id: String) -> void:
 		var is_active := button.text == String(section.get("label", section_id))
 		button.button_pressed = is_active
 		button.modulate = Color(1.0, 0.94, 0.78) if is_active else Color(1, 1, 1)
+
+func _apply_responsive_layout() -> void:
+	if not is_node_ready():
+		return
+	var compact_width := size.x < 760.0
+	var short_height := size.y < 560.0
+	header_label.add_theme_font_size_override("font_size", 20 if short_height else 24)
+	section_row.vertical = compact_width and short_height
+	section_row.add_theme_constant_override("separation", 6 if compact_width else 8)
+	summary_label.custom_minimum_size = Vector2(0, 64 if short_height else 84)
+	summary_label.scroll_active = true
+	for child in section_row.get_children():
+		var button := child as Button
+		if button == null:
+			continue
+		button.custom_minimum_size = Vector2(0, 36 if short_height else 42)
 
 func _play_open_animation() -> void:
 	if GameState.should_skip_animations():

@@ -4,12 +4,15 @@ extends PanelContainer
 signal closed
 signal manage_requested
 
+@onready var header_row: BoxContainer = $MarginContainer/VBoxContainer/HeaderRow
 @onready var header_label: Label = $MarginContainer/VBoxContainer/HeaderRow/HeaderLabel
 @onready var manage_button: Button = $MarginContainer/VBoxContainer/HeaderRow/ManageButton
 @onready var summary_label: RichTextLabel = $MarginContainer/VBoxContainer/SummaryLabel
 @onready var monster_title: Label = $MarginContainer/VBoxContainer/MonsterTitle
+@onready var monster_scroll: ScrollContainer = $MarginContainer/VBoxContainer/MonsterScroll
 @onready var monster_list: VBoxContainer = $MarginContainer/VBoxContainer/MonsterScroll/MonsterList
 @onready var building_title: Label = $MarginContainer/VBoxContainer/BuildingTitle
+@onready var building_scroll: ScrollContainer = $MarginContainer/VBoxContainer/BuildingScroll
 @onready var building_list: VBoxContainer = $MarginContainer/VBoxContainer/BuildingScroll/BuildingList
 @onready var close_button: Button = $MarginContainer/VBoxContainer/HeaderRow/CloseButton
 
@@ -19,12 +22,14 @@ func _ready() -> void:
 	hide()
 	modulate.a = 1.0
 	scale = Vector2.ONE
+	_apply_responsive_layout()
 	manage_button.pressed.connect(_on_manage_pressed)
 	close_button.pressed.connect(_on_close_pressed)
 
 func open_panel(panel_state: Dictionary) -> void:
 	show()
 	move_to_front()
+	_apply_responsive_layout()
 	header_label.text = "营地总览"
 	manage_button.text = "营地整备"
 	monster_title.text = "同行伙伴"
@@ -33,6 +38,10 @@ func open_panel(panel_state: Dictionary) -> void:
 	_render_companions(panel_state)
 	_render_habitats(panel_state)
 	_play_open_animation()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_RESIZED:
+		_apply_responsive_layout()
 
 func close_panel() -> void:
 	if GameState.should_skip_animations():
@@ -143,6 +152,7 @@ func _render_summary(panel_state: Dictionary) -> void:
 	lines.append("[b]当前委托[/b] %s" % (", ".join(active_quests) if not active_quests.is_empty() else "暂无"))
 	lines.append("[b]库存摘记[/b] %s" % _format_inventory(inventory))
 	summary_label.text = "\n".join(lines)
+	summary_label.scroll_to_line(0)
 
 func _render_companions(panel_state: Dictionary) -> void:
 	for child in monster_list.get_children():
@@ -232,3 +242,18 @@ func _on_close_pressed() -> void:
 func _on_manage_pressed() -> void:
 	hide()
 	manage_requested.emit()
+
+func _apply_responsive_layout() -> void:
+	if not is_node_ready():
+		return
+	var compact_width := size.x < 680.0
+	var short_height := size.y < 620.0
+	header_row.vertical = compact_width and short_height
+	header_row.add_theme_constant_override("separation", 6 if compact_width else 8)
+	header_label.add_theme_font_size_override("font_size", 20 if short_height else 24)
+	monster_title.add_theme_font_size_override("font_size", 16 if short_height else 18)
+	building_title.add_theme_font_size_override("font_size", 16 if short_height else 18)
+	summary_label.custom_minimum_size = Vector2(0, 60 if short_height else 72)
+	summary_label.scroll_active = true
+	monster_scroll.custom_minimum_size = Vector2(0, 160 if short_height else (200 if compact_width else 240))
+	building_scroll.custom_minimum_size = Vector2(0, 140 if short_height else (180 if compact_width else 220))

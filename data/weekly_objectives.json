@@ -2,120 +2,123 @@
   "version": 1,
   "objectives": [
     {
-      "id": "spring_visit_route",
+      "id": "spring_topline_scout",
       "season_ids": ["spring"],
-      "title": "巡回三站",
-      "description": "本周完成 3 次落点访问，先熟悉春季路线。",
+      "title": "摸清上线路况",
+      "description": "本周完成 3 次落点访问，优先熟悉春季上半圈节奏。",
       "requirements": [
         { "metric": "visit_count", "target": 3, "label": "访问节点" }
       ],
       "reward_bundle_id": "weekly_supply_bundle"
     },
     {
-      "id": "spring_build_push",
+      "id": "spring_build_commit",
       "season_ids": ["spring"],
-      "title": "推进据点建设",
-      "description": "本周完成 1 次建设，为后续 build 打基础。",
+      "title": "立下建设承诺",
+      "description": "本周完成 1 次建设，尽早决定这季是走建设线还是补给线。",
       "requirements": [
         { "metric": "build_count", "target": 1, "label": "建设次数" }
       ],
       "reward_bundle_id": "weekly_growth_bundle"
     },
     {
-      "id": "spring_social_touch",
+      "id": "spring_field_read",
       "season_ids": ["spring"],
-      "title": "回访熟人",
-      "description": "本周完成 1 次 NPC 交谈，补足路线信息。",
-      "requirements": [
-        { "metric": "talk_count", "target": 1, "label": "交谈次数" }
-      ],
-      "reward_bundle_id": "weekly_social_bundle"
-    },
-    {
-      "id": "summer_encounter_push",
-      "season_ids": ["summer"],
-      "title": "盛雷观察",
-      "description": "本周完成 1 次野外相遇，补强队伍成长。",
+      "title": "试探边境压力",
+      "description": "本周完成 1 次野外相遇，提前判断春季右半圈的风险强度。",
       "requirements": [
         { "metric": "encounter_count", "target": 1, "label": "相遇次数" }
       ],
       "reward_bundle_id": "weekly_discovery_bundle"
     },
+
     {
-      "id": "summer_visit_route",
+      "id": "summer_bridge_dash",
       "season_ids": ["summer"],
-      "title": "雷季巡路",
-      "description": "本周完成 3 次落点访问，维持推进节奏。",
+      "title": "抢下桥区节奏",
+      "description": "本周完成 3 次落点访问，把推进重心放到夏季桥区。",
       "requirements": [
         { "metric": "visit_count", "target": 3, "label": "访问节点" }
       ],
       "reward_bundle_id": "weekly_supply_bundle"
     },
     {
-      "id": "summer_trial_ready",
+      "id": "summer_bridge_ready",
       "season_ids": ["summer"],
-      "title": "试炼热身",
-      "description": "本周完成 1 次建设，为盛雷季试炼备战。",
+      "title": "为强渡做准备",
+      "description": "本周完成 1 次建设，让队伍有资本处理桥头高压。",
       "requirements": [
         { "metric": "build_count", "target": 1, "label": "建设次数" }
       ],
       "reward_bundle_id": "weekly_growth_bundle"
     },
     {
-      "id": "autumn_dojo_clear",
+      "id": "summer_pressure_check",
+      "season_ids": ["summer"],
+      "title": "盛雷压测",
+      "description": "本周完成 1 次野外相遇，确认桥区外侧的敌意与资源回报。",
+      "requirements": [
+        { "metric": "encounter_count", "target": 1, "label": "相遇次数" }
+      ],
+      "reward_bundle_id": "weekly_discovery_bundle"
+    },
+
+    {
+      "id": "autumn_prep_cycle",
       "season_ids": ["autumn"],
-      "title": "演武验证",
-      "description": "本周完成 1 次试炼通关，制造阶段高潮。",
+      "title": "先做试炼筹备",
+      "description": "本周完成 1 次建设，为演武场验证准备最后一层构筑。",
+      "requirements": [
+        { "metric": "build_count", "target": 1, "label": "建设次数" }
+      ],
+      "reward_bundle_id": "weekly_growth_bundle"
+    },
+    {
+      "id": "autumn_trial_push",
+      "season_ids": ["autumn"],
+      "title": "把筹备转成结果",
+      "description": "本周完成 1 次试炼通关，让秋季 build 真正变成阶段成果。",
       "requirements": [
         { "metric": "dojo_clear_count", "target": 1, "label": "试炼通关" }
       ],
       "reward_bundle_id": "weekly_battle_bundle"
     },
     {
-      "id": "autumn_growth_route",
+      "id": "autumn_route_settle",
       "season_ids": ["autumn"],
-      "title": "推进成长路线",
-      "description": "本周完成 3 次落点访问，推动秋季构筑成型。",
+      "title": "走完成型路线",
+      "description": "本周完成 3 次落点访问，把 build 核、桥头与试炼点连成一条节奏线。",
       "requirements": [
         { "metric": "visit_count", "target": 3, "label": "访问节点" }
       ],
       "reward_bundle_id": "weekly_growth_bundle"
     },
+
     {
-      "id": "autumn_social_touch",
-      "season_ids": ["autumn"],
-      "title": "收集情报",
-      "description": "本周完成 1 次 NPC 交谈，补足路线与商店信息。",
-      "requirements": [
-        { "metric": "talk_count", "target": 1, "label": "交谈次数" }
-      ],
-      "reward_bundle_id": "weekly_social_bundle"
-    },
-    {
-      "id": "winter_observe_loop",
+      "id": "winter_final_read",
       "season_ids": ["winter"],
-      "title": "霜镜观察",
-      "description": "本周完成 1 次野外相遇，在终局前补图鉴与材料。",
+      "title": "读懂终局天气",
+      "description": "本周完成 1 次野外相遇，在终局前确认异常区的真实压力。",
       "requirements": [
         { "metric": "encounter_count", "target": 1, "label": "相遇次数" }
       ],
       "reward_bundle_id": "weekly_discovery_bundle"
     },
     {
-      "id": "winter_visit_route",
+      "id": "winter_route_trim",
       "season_ids": ["winter"],
-      "title": "终局巡路",
-      "description": "本周完成 3 次落点访问，保持冬季推进感。",
+      "title": "修短最终路线",
+      "description": "本周完成 3 次落点访问，把冬季推进集中到终局前修正点附近。",
       "requirements": [
         { "metric": "visit_count", "target": 3, "label": "访问节点" }
       ],
       "reward_bundle_id": "weekly_supply_bundle"
     },
     {
-      "id": "winter_build_hold",
+      "id": "winter_last_upgrade",
       "season_ids": ["winter"],
-      "title": "稳住后勤",
-      "description": "本周完成 1 次建设，避免终局前失去成长能力。",
+      "title": "补齐最后短板",
+      "description": "本周完成 1 次建设，避免把明显短板带进年度 Boss。",
       "requirements": [
         { "metric": "build_count", "target": 1, "label": "建设次数" }
       ],

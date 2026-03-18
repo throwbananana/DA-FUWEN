@@ -15,6 +15,7 @@ const EncounterService = preload("res://scripts/services/encounter_service.gd")
 const SynergyService = preload("res://scripts/services/synergy_service.gd")
 const DiceService = preload("res://scripts/services/dice_service.gd")
 const BoardProgressionService = preload("res://scripts/services/board_progression_service.gd")
+const BoardMapEffectService = preload("res://scripts/services/board_map_effect_service.gd")
 const WeeklyCycleService = preload("res://scripts/services/weekly_cycle_service.gd")
 const RunModifierService = preload("res://scripts/services/run_modifier_service.gd")
 const MetaProgressionService = preload("res://scripts/services/meta_progression_service.gd")
@@ -137,6 +138,7 @@ var encounter_service := EncounterService.new()
 var synergy_service := SynergyService.new()
 var dice_service := DiceService.new()
 var board_progression_service := BoardProgressionService.new()
+var board_map_effect_service := BoardMapEffectService.new()
 var weekly_cycle_service := WeeklyCycleService.new()
 var run_modifier_service := RunModifierService.new()
 var meta_progression_service := MetaProgressionService.new()
@@ -190,6 +192,8 @@ var runtime_session_started := false
 var ai_turn_in_progress := false
 var _active_ai_observation_line := ""
 var _post_travel_resolution_in_progress := false
+var _asset_file_dialog: FileDialog
+var _menu_custom_background: TextureRect
 
 func _ready() -> void:
 	rng.randomize()
@@ -200,6 +204,8 @@ func _ready() -> void:
 	reroll_button.hide()
 	_connect_signals()
 	_apply_basic_styles()
+	_ensure_menu_custom_background()
+	_setup_asset_import_dialog()
 	_ensure_synergy_banner()
 	_ensure_stage_transition_overlay()
 	install_visit_flow()
@@ -238,6 +244,38 @@ func _connect_signals() -> void:
 	base_panel.closed.connect(_on_base_closed)
 	system_panel.closed.connect(_on_system_panel_closed)
 	battle_panel.battle_finished.connect(_on_battle_finished)
+
+func _ensure_menu_custom_background() -> void:
+	if is_instance_valid(_menu_custom_background):
+		return
+	_menu_custom_background = TextureRect.new()
+	_menu_custom_background.name = "MenuCustomBackground"
+	_menu_custom_background.visible = false
+	_menu_custom_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_menu_custom_background.layout_mode = 1
+	_menu_custom_background.anchors_preset = Control.PRESET_FULL_RECT
+	_menu_custom_background.anchor_right = 1.0
+	_menu_custom_background.anchor_bottom = 1.0
+	_menu_custom_background.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_menu_custom_background.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_menu_custom_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_menu_custom_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_menu_custom_background.modulate = Color(1, 1, 1, 0.78)
+	overlay.add_child(_menu_custom_background)
+	var backdrop_index := overlay.get_children().find(menu_backdrop)
+	if backdrop_index >= 0:
+		overlay.move_child(_menu_custom_background, backdrop_index)
+
+func _setup_asset_import_dialog() -> void:
+	_asset_file_dialog = FileDialog.new()
+	_asset_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
+	_asset_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILES
+	_asset_file_dialog.use_native_dialog = not OS.has_feature("web")
+	_asset_file_dialog.title = "导入自定义素材"
+	_asset_file_dialog.filters = PackedStringArray(["*.png,*.jpg,*.jpeg,*.webp;Image Files"])
+	_asset_file_dialog.files_selected.connect(_on_asset_files_selected)
+	_asset_file_dialog.canceled.connect(_on_asset_import_canceled)
+	add_child(_asset_file_dialog)
 
 func _apply_basic_styles() -> void:
 	battle_panel.hide()
@@ -429,12 +467,16 @@ func _should_skip_runtime_tutorials() -> bool:
 func _show_main_menu() -> void:
 	_refresh_main_menu()
 	root_margin.hide()
+	if is_instance_valid(_menu_custom_background):
+		_menu_custom_background.visible = _menu_custom_background.texture != null
 	menu_backdrop.show()
 	menu_backdrop.move_to_front()
 	main_menu_panel.show()
 	main_menu_panel.move_to_front()
 
 func _hide_main_menu() -> void:
+	if is_instance_valid(_menu_custom_background):
+		_menu_custom_background.hide()
 	menu_backdrop.hide()
 	main_menu_panel.hide()
 	root_margin.show()
@@ -460,6 +502,7 @@ func _refresh_main_menu() -> void:
 		menu_run_summary_label.text = _build_saved_run_summary()
 	settings_button.text = localization_service.text("menu.settings")
 	menu_meta_summary_label.text = "%s\n\n%s" % [_build_main_menu_meta_summary(), _build_settings_summary()]
+	_refresh_main_menu_visuals()
 
 func _build_saved_run_summary() -> String:
 	var payload := GameState.load_run_payload()
@@ -493,18 +536,22 @@ func _build_settings_summary() -> String:
 	var motion_mode := localization_service.text("settings.motion.reduced") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.standard")
 	var tutorial_mode := localization_service.text("settings.tutorials.on") if GameState.tutorials_enabled() else localization_service.text("settings.tutorials.off")
 	var language_name := localization_service.language_name(GameState.current_language())
+	var custom_bg_label := _custom_main_menu_background_label()
 	return "\n".join([
 		localization_service.text("settings.summary.title"),
 		localization_service.text("settings.summary.window", {"value": window_mode}),
 		localization_service.text("settings.summary.motion", {"value": motion_mode}),
 		localization_service.text("settings.summary.tutorials", {"value": tutorial_mode}),
 		localization_service.text("settings.summary.language", {"value": language_name}),
+		"自定义素材：%d 张" % CustomAssetRepository.get_image_count(),
+		"主菜单背景：%s" % custom_bg_label,
 	])
 
 func _open_settings_menu() -> void:
 	var window_label := localization_service.text("settings.window.to_windowed") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.to_fullscreen")
 	var motion_label := localization_service.text("settings.motion.to_standard") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.to_reduced")
 	var tutorial_label := localization_service.text("settings.tutorials.enable") if not GameState.tutorials_enabled() else localization_service.text("settings.tutorials.disable")
+	var imported_count := CustomAssetRepository.get_image_count()
 	var choices := [
 		{
 			"id": "toggle_fullscreen",
@@ -536,11 +583,29 @@ func _open_settings_menu() -> void:
 			"label": localization_service.text("settings.language.en_us"),
 			"summary": localization_service.text("settings.current", {"value": localization_service.language_name("en_us")}),
 		},
+		{
+			"id": "open_custom_asset_import",
+			"label": "导入自定义素材",
+			"summary": "从本地导入 PNG / JPG / WebP 到 user://custom_assets/images",
+		},
+		{
+			"id": "select_main_menu_bg",
+			"label": "选择主菜单背景",
+			"summary": "当前：%s ｜ 已导入 %d 张" % [_custom_main_menu_background_label(), imported_count],
+			"disabled": imported_count <= 0,
+		},
+		{
+			"id": "clear_main_menu_bg",
+			"label": "恢复默认背景",
+			"summary": "清除主菜单背景绑定，回到默认遮罩。",
+			"disabled": CustomAssetRepository.get_slot_binding("main_menu_bg").is_empty(),
+		},
 	]
 	pending_context = {"kind": "menu_settings"}
 	decision_panel.open_panel(localization_service.text("settings.title"), localization_service.text("settings.body"), choices, localization_service.text("settings.back"))
 
 func _apply_menu_setting(choice_id: String) -> void:
+	var reopen_settings := true
 	match choice_id:
 		"toggle_fullscreen":
 			GameState.set_setting("fullscreen", not bool(GameState.settings.get("fullscreen", false)))
@@ -554,10 +619,123 @@ func _apply_menu_setting(choice_id: String) -> void:
 			GameState.set_setting("language", "ja_jp")
 		"set_language_en_us":
 			GameState.set_setting("language", "en_us")
+		"open_custom_asset_import":
+			reopen_settings = false
+			_open_asset_import_dialog()
+		"select_main_menu_bg":
+			reopen_settings = false
+			_open_main_menu_background_picker()
+		"clear_main_menu_bg":
+			reopen_settings = false
+			_clear_main_menu_background_binding()
 		_:
 			return
 	_refresh_main_menu()
-	_open_settings_menu()
+	if reopen_settings:
+		_open_settings_menu()
+
+func _custom_main_menu_background_label() -> String:
+	var asset_id := CustomAssetRepository.get_slot_binding("main_menu_bg")
+	if asset_id.is_empty():
+		return "默认"
+	var image_info := CustomAssetRepository.get_image(asset_id)
+	if image_info.is_empty():
+		return "默认"
+	return String(image_info.get("label", asset_id))
+
+func _refresh_main_menu_visuals() -> void:
+	if not is_instance_valid(_menu_custom_background):
+		return
+	var texture := CustomAssetRepository.get_bound_texture("main_menu_bg")
+	_menu_custom_background.texture = texture
+	_menu_custom_background.visible = texture != null and main_menu_panel.visible
+
+func _open_asset_import_dialog() -> void:
+	if not is_instance_valid(_asset_file_dialog):
+		return
+	_asset_file_dialog.popup_centered_ratio(0.82)
+
+func _on_asset_import_canceled() -> void:
+	if main_menu_panel.visible:
+		_open_settings_menu()
+
+func _on_asset_files_selected(paths: PackedStringArray) -> void:
+	var results := CustomAssetRepository.import_images(paths)
+	var success_rows: Array = []
+	var fail_lines: Array[String] = []
+	for row in results:
+		if bool(row.get("ok", false)):
+			success_rows.append(row)
+		else:
+			fail_lines.append("- %s：%s" % [
+				String(row.get("path", "")),
+				String(row.get("message", "失败")),
+			])
+	_refresh_main_menu()
+	if success_rows.is_empty():
+		pending_context = {"kind": "custom_asset_result", "on_close": "reopen_settings"}
+		var fail_body := "没有成功导入任何图片。"
+		if not fail_lines.is_empty():
+			fail_body += "\n\n%s" % "\n".join(fail_lines)
+		decision_panel.open_panel("素材导入失败", fail_body, [], "返回设置")
+		return
+	var body_lines: Array[String] = ["成功导入 %d 张图片。" % success_rows.size()]
+	if not fail_lines.is_empty():
+		body_lines.append("")
+		body_lines.append("失败项目：")
+		for line in fail_lines:
+			body_lines.append(line)
+	var choices := _build_custom_background_choices(success_rows)
+	pending_context = {"kind": "custom_asset_bind_menu", "on_close": "reopen_settings"}
+	decision_panel.open_panel("素材导入完成", "\n".join(body_lines), choices, "返回设置")
+
+func _open_main_menu_background_picker() -> void:
+	var images := CustomAssetRepository.list_images()
+	if images.is_empty():
+		pending_context = {"kind": "custom_asset_picker", "on_close": "reopen_settings"}
+		decision_panel.open_panel("还没有可用素材", "先导入至少 1 张图片，之后才能绑定到主菜单背景。", [], "返回设置")
+		return
+	pending_context = {"kind": "custom_asset_bind_menu", "on_close": "reopen_settings"}
+	decision_panel.open_panel(
+		"选择主菜单背景",
+		"已导入 %d 张图片。\n当前绑定：%s" % [images.size(), _custom_main_menu_background_label()],
+		_build_custom_background_choices(images),
+		"返回设置"
+	)
+
+func _build_custom_background_choices(image_rows: Array) -> Array:
+	var choices: Array = []
+	for row in image_rows:
+		var image_info := Dictionary(row)
+		var asset_id := String(image_info.get("id", ""))
+		if asset_id.is_empty():
+			continue
+		choices.append({
+			"id": asset_id,
+			"label": String(image_info.get("label", asset_id)),
+			"summary": "%dx%d ｜ 设为主菜单背景" % [
+				int(image_info.get("width", 0)),
+				int(image_info.get("height", 0)),
+			],
+		})
+	return choices
+
+func _bind_main_menu_background(asset_id: String) -> void:
+	CustomAssetRepository.bind_slot("main_menu_bg", asset_id)
+	_refresh_main_menu()
+	pending_context = {"kind": "custom_asset_bound", "on_close": "reopen_settings"}
+	decision_panel.open_panel(
+		"主菜单背景已更新",
+		"已将 %s 设为主菜单背景。" % _custom_main_menu_background_label(),
+		[],
+		"返回设置"
+	)
+
+func _clear_main_menu_background_binding() -> void:
+	CustomAssetRepository.clear_slot("main_menu_bg")
+	_refresh_main_menu()
+	pending_context = {"kind": "custom_asset_cleared", "on_close": "reopen_settings"}
+	decision_panel.open_panel("已恢复默认背景", "主菜单背景已清除自定义绑定。", [], "返回设置")
 
 func _resume_onboarding_flow() -> void:
 	if _should_skip_runtime_tutorials() or season_finished:
@@ -1244,13 +1422,40 @@ func _on_board_travel_finished(node_id: int) -> void:
 		_resolve_board_event_node(node)
 		_update_ui()
 		return
+	if _try_open_board_map_effect(node):
+		_update_ui()
+		return
+	_continue_board_stop_flow(node)
+
+func _continue_board_stop_flow(node: Dictionary) -> void:
 	_check_active_quests()
-	if _should_trigger_prearrival_ambush(node_id):
+	if _should_trigger_prearrival_ambush(current_node_id):
 		_push_log("%s 附近残留着躁动痕迹，本次需要先处理袭扰。" % String(node.get("name", "未知地点")))
 		visit_flow.start_observation_for_habitat(current_visit_habitat_id, "ambush")
 	else:
 		visit_flow.start_visit(current_visit_habitat_id)
 	_update_ui()
+
+func _try_open_board_map_effect(node: Dictionary) -> bool:
+	var report := board_map_effect_service.apply_on_arrival(
+		node,
+		current_node_id,
+		GameState.board_region_id,
+		_current_boss_node_id(),
+		board_lookup
+	)
+	if report.is_empty():
+		return false
+	var body_lines: Array[String] = []
+	var description := String(report.get("description", ""))
+	if not description.is_empty():
+		body_lines.append(description)
+	for line in report.get("lines", []):
+		body_lines.append("- %s" % String(line))
+		_push_log("地图效果：%s。" % String(line))
+	pending_context = {"kind": "board_map_effect", "on_close": "resume_board_stop"}
+	decision_panel.open_panel(String(report.get("title", "地图效果")), "\n".join(body_lines), [], "继续前进")
+	return true
 
 func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
 	match step_id:
@@ -1293,6 +1498,10 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 	lines.append("[b]建设进度[/b] %s" % _format_building_levels(current_visit_habitat_id, buildings))
 	if not primary_action.is_empty():
 		lines.append("[b]节点主玩法[/b] %s" % _primary_content_label(primary_action))
+	var effect_title := board_map_effect_service.preview_title(node)
+	if not effect_title.is_empty():
+		var effect_state := "待触发" if board_map_effect_service.has_pending_effect(node, current_node_id, GameState.board_region_id) else "已触发"
+		lines.append("[b]地图效果[/b] %s（%s）" % [effect_title, effect_state])
 	var node_danger := GameState.get_node_danger(current_node_id)
 	if node_danger > 0:
 		lines.append("[b]区域危险[/b] %d / 3" % node_danger)
@@ -1610,6 +1819,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 			_handle_camp_mail_selection(choice_id)
 		"menu_settings":
 			_apply_menu_setting(choice_id)
+		"custom_asset_bind_menu":
+			_bind_main_menu_background(choice_id)
 
 func _on_decision_closed() -> void:
 	if pending_context.is_empty():
@@ -1637,6 +1848,14 @@ func _on_decision_closed() -> void:
 			_finish_board_event_visit()
 		"finish_transit_stop":
 			_finish_transit_stop()
+		"resume_board_stop":
+			var node: Dictionary = board_lookup.get(current_node_id, {})
+			if not node.is_empty():
+				_continue_board_stop_flow(node)
+		"reopen_settings":
+			if main_menu_panel.visible:
+				_refresh_main_menu()
+				_open_settings_menu()
 		"arrival":
 			if not current_visit_habitat_id.is_empty():
 				visit_flow.start_visit(current_visit_habitat_id)
@@ -2876,6 +3095,8 @@ func _update_map_hint() -> void:
 		for node_id in _get_selectable_nodes().slice(0, 4):
 			var node: Dictionary = board_lookup[node_id]
 			var tags: Array[String] = [String(node.get("reward_hint", "查看详情"))]
+			if board_map_effect_service.has_pending_effect(node, node_id, GameState.board_region_id):
+				tags.append("效果 %s" % board_map_effect_service.preview_title(node))
 			if GameState.get_node_danger(node_id) > 0:
 				tags.append("危险 %d" % GameState.get_node_danger(node_id))
 			if npc_markers.has(node_id):
@@ -2952,6 +3173,8 @@ func _build_board_markers() -> Dictionary:
 			parts.append("赛季高潮")
 		if type_id == "event":
 			parts.append("事件格")
+		if board_map_effect_service.has_pending_effect(node, node_id, GameState.board_region_id):
+			parts.append("地图效果")
 		var danger := GameState.get_node_danger(node_id)
 		if danger > 0:
 			parts.append("危险 %d" % danger)

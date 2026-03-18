@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "effects": [
+    {
+      "id": "spring_scout_cache",
+      "trigger": "arrival",
+      "title": "侦察标记",
+      "description": "前线留下的标记把模糊路况重新整理成了可执行路线。",
+      "once_per_node": true,
+      "effects": [
+        { "type": "reveal_ahead", "amount": 4 },
+        { "type": "grant_resource", "resource": "season_adjust_points", "amount": 1 }
+      ]
+    },
+    {
+      "id": "summer_bridge_window",
+      "trigger": "arrival",
+      "title": "桥区通行窗口",
+      "description": "桥头的短暂空档让这段高压路线终于有了可控的突破口。",
+      "once_per_node": true,
+      "effects": [
+        { "type": "clear_ambush", "scope": "current" },
+        { "type": "reduce_danger", "scope": "current", "amount": 1 },
+        { "type": "grant_resource", "resource": "anchor_points", "amount": 1 }
+      ]
+    },
+    {
+      "id": "autumn_forge_cycle",
+      "trigger": "arrival",
+      "title": "构筑预热",
+      "description": "试作台把零散素材压成了更顺手的中段推进节奏。",
+      "once_per_node": true,
+      "effects": [
+        { "type": "reduce_danger", "scope": "current_and_neighbors", "amount": 1 },
+        { "type": "grant_resource", "resource": "season_adjust_points", "amount": 1 }
+      ]
+    },
+    {
+      "id": "winter_route_alignment",
+      "trigger": "arrival",
+      "title": "终局校线",
+      "description": "最后的路线校正迫使敌群后撤，也让终局前的情报重新清晰起来。",
+      "once_per_node": true,
+      "effects": [
+        { "type": "retreat_threats", "amount": 1 },
+        { "type": "reveal_ahead", "amount": 3 },
+        { "type": "clear_ambush", "scope": "current" }
+      ]
+    }
+  ]
+}

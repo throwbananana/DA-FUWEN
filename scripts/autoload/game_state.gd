@@ -138,7 +138,24 @@ func reset_for_new_season() -> void:
 	active_trait_runtime_bonus = {}
 	active_trait_runtime_report = {"active": [], "nearby": []}
 	trait_runtime_dirty = true
-	quest_memory = {
+	quest_memory = _default_quest_memory()
+	_pet_serial = 1
+	_seed_companions()
+	_recalculate_backpack_capacity()
+	_sync_roster_slots()
+	_sync_current_season_rule()
+	refresh_season_unlocks()
+	_sync_rival_wallets_from_ai_players()
+
+func _ensure_meta_progression_defaults() -> void:
+	if meta_unlocks.is_empty():
+		meta_unlocks = {
+			"tracks": [],
+			"dice_modules": [],
+		}
+
+func _default_quest_memory() -> Dictionary:
+	return {
 		"visited_habitats": {},
 		"visited_moments": {},
 		"built_levels": {},
@@ -158,21 +175,24 @@ func reset_for_new_season() -> void:
 		"dialogue_last_seen": {},
 		"last_dialogue_by_npc": {},
 		"npc_topic_counts": {},
+		"map_effect_flags": {},
 	}
-	_pet_serial = 1
-	_seed_companions()
-	_recalculate_backpack_capacity()
-	_sync_roster_slots()
-	_sync_current_season_rule()
-	refresh_season_unlocks()
-	_sync_rival_wallets_from_ai_players()
 
-func _ensure_meta_progression_defaults() -> void:
-	if meta_unlocks.is_empty():
-		meta_unlocks = {
-			"tracks": [],
-			"dice_modules": [],
-		}
+func _ensure_quest_memory_defaults() -> void:
+	var defaults := _default_quest_memory()
+	if quest_memory.is_empty():
+		quest_memory = defaults
+		return
+	for key in defaults.keys():
+		if quest_memory.has(key):
+			continue
+		var value = defaults[key]
+		if typeof(value) == TYPE_DICTIONARY:
+			quest_memory[key] = Dictionary(value).duplicate(true)
+		elif typeof(value) == TYPE_ARRAY:
+			quest_memory[key] = Array(value).duplicate(true)
+		else:
+			quest_memory[key] = value
 
 func _default_settings() -> Dictionary:
 	return {
@@ -437,6 +457,7 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	journal_entries = _coerce_string_array(snapshot.get("journal_entries", []))
 	visit_history = _duplicate_array(snapshot.get("visit_history", []))
 	quest_memory = _duplicate_dictionary(snapshot.get("quest_memory", {}))
+	_ensure_quest_memory_defaults()
 	dojo_clear_flags = _duplicate_dictionary(snapshot.get("dojo_clear_flags", {}))
 	season_unlock_history = _duplicate_dictionary(snapshot.get("season_unlock_history", {}))
 	season_points = int(snapshot.get("season_points", 0))
@@ -750,6 +771,16 @@ func note_observe_marker(marker_id: String) -> void:
 	var markers: Dictionary = quest_memory["observed_markers"]
 	markers[marker_id] = true
 	quest_memory["observed_markers"] = markers
+
+func has_map_effect_trigger(effect_key: String) -> bool:
+	return bool(quest_memory["map_effect_flags"].get(effect_key, false))
+
+func mark_map_effect_trigger(effect_key: String) -> void:
+	if effect_key.is_empty():
+		return
+	var flags: Dictionary = quest_memory["map_effect_flags"]
+	flags[effect_key] = true
+	quest_memory["map_effect_flags"] = flags
 
 func note_bond(species_id: String) -> void:
 	var bonded: Dictionary = quest_memory["bonded_species"]
@@ -1204,6 +1235,11 @@ func queue_node_ambush(node_id: int, amount: int = 1) -> void:
 
 func has_node_ambush(node_id: int) -> bool:
 	return int(pending_node_ambushes.get(node_id, 0)) > 0
+
+func clear_node_ambush(node_id: int) -> void:
+	if node_id < 0:
+		return
+	pending_node_ambushes.erase(node_id)
 
 func consume_node_ambush(node_id: int) -> bool:
 	if not has_node_ambush(node_id):

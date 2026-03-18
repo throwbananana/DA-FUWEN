@@ -7,7 +7,7 @@
       "name": "春芽边境",
       "start_node_id": 0,
       "boss_node_id": 12,
-      "revealed_nodes": [0, 1, 2, 3],
+      "revealed_nodes": [0, 1, 2, 3, 9, 11],
       "nodes": [
         {
           "id": 0,
@@ -49,42 +49,43 @@
         },
         {
           "id": 3,
-          "name": "云升驿枢",
+          "name": "天穹驿",
           "type": "settlement",
-          "description": "春季第一支点，决定本圈先往林地还是湿地展开。",
+          "description": "春季第一支点，负责把上半圈情报整理成可执行路线。",
           "position": [340, 300],
           "edges": [1, 2, 4, 6],
           "travel_cost": 1,
           "habitat_id": "sky_post",
+          "map_effect_id": "spring_scout_cache",
           "primary_content": "npc_menu",
-          "focus": "支点 / 委托",
-          "reward_hint": "从这里拿情报，整圈的节奏会清楚很多"
+          "focus": "情报 / 定线",
+          "reward_hint": "接委托、看上路与回流线，再决定这周偏侦察还是偏建设"
         },
         {
           "id": 4,
           "name": "青栎林径",
           "type": "habitat",
-          "description": "上路外圈的林地观察点，压强低但收益扎实。",
+          "description": "上路外圈的林地侦察点，负责把春季上半圈风险先摸清。",
           "position": [520, 90],
           "edges": [3, 5],
           "travel_cost": 1,
           "habitat_id": "greenbark_grove",
           "primary_content": "observe",
-          "focus": "观察 / 巡护",
-          "reward_hint": "用低压收益把春季前半段稳住"
+          "focus": "侦察 / 定线",
+          "reward_hint": "先摸清上半圈风险，再决定要不要继续压上路"
         },
         {
           "id": 5,
-          "name": "古械平台",
+          "name": "古械前场",
           "type": "habitat",
-          "description": "春季上路最稳定的建设爆点，适合中段集中投入。",
+          "description": "春季上路的建设承诺点，一旦投入就意味着本周节奏开始成型。",
           "position": [700, 90],
           "edges": [4, 7],
           "travel_cost": 1,
           "habitat_id": "ancient_platform",
           "primary_content": "build_menu",
-          "focus": "建设 / 修复",
-          "reward_hint": "把中段材料砸在这里，后续收益最清晰"
+          "focus": "建设 / 路线承诺",
+          "reward_hint": "这里是春季最明确的承诺点：决定这周偏建设还是偏补给"
         },
         {
           "id": 6,
@@ -101,16 +102,16 @@
         },
         {
           "id": 7,
-          "name": "铜锤交换站",
+          "name": "铜锤集",
           "type": "settlement",
-          "description": "春季第二支点，把前半圈材料直接换成更稳的推进。",
+          "description": "春季第二支点，负责把上路材料换成更稳定的转线收益。",
           "position": [700, 300],
           "edges": [5, 6, 8, 10],
           "travel_cost": 1,
           "habitat_id": "copper_hammer_bazaar",
           "primary_content": "npc_menu",
-          "focus": "支点 / 交易",
-          "reward_hint": "第二支点决定你是走上路冲塔，还是走下路回稳"
+          "focus": "交易 / 转线",
+          "reward_hint": "把上路拿到的材料转成更稳收益，适合春季回收节奏"
         },
         {
           "id": 8,
@@ -281,14 +282,14 @@
           "id": 6,
           "name": "云升补给站",
           "type": "settlement",
-          "description": "下路的情报补给点，负责在高压回合前收拾局面。",
+          "description": "下路的情报补给点，负责把桥区压力先转成可用补给。",
           "position": [520, 510],
           "edges": [3, 7],
           "travel_cost": 1,
           "habitat_id": "sky_post",
           "primary_content": "npc_menu",
-          "focus": "委托 / 节奏",
-          "reward_hint": "坏手气时先来这里，别硬压试炼"
+          "focus": "补给 / 抢节奏",
+          "reward_hint": "把桥区压力转换成下半圈补给优势，再决定要不要强压上路"
         },
         {
           "id": 7,
@@ -307,27 +308,28 @@
           "id": 8,
           "name": "回声桥首",
           "type": "settlement",
-          "description": "高压上路的前哨，用来确认断桥线何时值得压进。",
+          "description": "高压上路的桥头支点，负责决定这一圈要不要强行抢桥。",
           "position": [880, 90],
           "edges": [7, 9],
           "travel_cost": 1,
           "habitat_id": "echo_broken_bridge",
-          "primary_content": "observe",
-          "focus": "观察 / 路线",
-          "reward_hint": "桥头一旦开放，就能明显缩短后段路线"
+          "map_effect_id": "summer_bridge_window",
+          "primary_content": "npc_menu",
+          "focus": "架桥 / 通行",
+          "reward_hint": "桥头不是普通观察点，而是夏季最明显的节奏开关"
         },
         {
           "id": 9,
           "name": "盐镜东岬",
           "type": "habitat",
-          "description": "冲塔前的机动观察点，负责修正上路的资源与站位。",
+          "description": "过桥后的机动修正点，用来决定是继续强渡还是把路线往下半圈收。",
           "position": [1060, 90],
           "edges": [8, 11],
           "travel_cost": 1,
           "habitat_id": "saltglass_coast",
-          "primary_content": "observe",
-          "focus": "观察 / 机动",
-          "reward_hint": "这里是冲 Boss 前最好的最后一眼"
+          "primary_content": "npc_menu",
+          "focus": "强渡 / 修正",
+          "reward_hint": "回程时决定是冒险穿桥，还是保守修正下圈路线"
         },
         {
           "id": 10,
@@ -389,7 +391,7 @@
       "name": "赤叶锻路",
       "start_node_id": 0,
       "boss_node_id": 12,
-      "revealed_nodes": [0, 1, 2, 3],
+      "revealed_nodes": [0, 1, 2, 3, 10],
       "nodes": [
         {
           "id": 0,
@@ -433,40 +435,40 @@
           "id": 3,
           "name": "铜锤锻路枢",
           "type": "settlement",
-          "description": "赤叶季第一支点，负责把资源线和试炼线重新对齐。",
+          "description": "赤叶季第一支点，负责把建设与试炼的先后顺序排清。",
           "position": [340, 300],
           "edges": [1, 2, 4, 6],
           "travel_cost": 1,
           "habitat_id": "copper_hammer_bazaar",
           "primary_content": "npc_menu",
-          "focus": "支点 / 交易",
-          "reward_hint": "第一支点决定你是先锻材料，还是先交卷"
+          "focus": "排期 / 情报",
+          "reward_hint": "这里负责整理 build 与试炼顺序，不只是普通交易点"
         },
         {
           "id": 4,
           "name": "烬火外圈",
           "type": "habitat",
-          "description": "秋季上路的爆发建设点，适合在试炼前做最后强化。",
+          "description": "秋季上路的预热建设点，适合在试炼前先补一层构筑。",
           "position": [520, 90],
           "edges": [3, 5],
           "travel_cost": 1,
           "habitat_id": "ember_crater",
           "primary_content": "build_menu",
-          "focus": "建设 / 爆发",
-          "reward_hint": "要冲高分试炼，先在这里把关键建设补齐"
+          "focus": "筹备 / 预热",
+          "reward_hint": "先做热身建设，再决定要不要直冲演武场"
         },
         {
           "id": 5,
           "name": "赤叶演武场前庭",
           "type": "dojo",
-          "description": "秋季上路的试炼入口，适合先做一次阶段性验收。",
+          "description": "秋季上路的试炼入口，适合把刚成型的 build 先做一次阶段验收。",
           "position": [700, 90],
           "edges": [4, 7],
           "travel_cost": 1,
           "habitat_id": "autumn_leaf_dojo",
           "primary_content": "dojo_menu",
           "focus": "试炼 / 验收",
-          "reward_hint": "先试一层，能很快知道这一圈的 build 是否够用"
+          "reward_hint": "这里是秋季的第一次验收，不急着通关也能看出 build 成色"
         },
         {
           "id": 6,
@@ -485,27 +487,28 @@
           "id": 7,
           "name": "古械试作台",
           "type": "habitat",
-          "description": "秋季第二支点，负责把前半圈资源转成中后段推进力。",
+          "description": "秋季第二支点，负责把前半圈材料砸成试炼前的最后一口气。",
           "position": [700, 300],
           "edges": [5, 6, 8, 10],
           "travel_cost": 1,
           "habitat_id": "ancient_platform",
+          "map_effect_id": "autumn_forge_cycle",
           "primary_content": "build_menu",
-          "focus": "支点 / 试作",
-          "reward_hint": "第二支点决定你要继续养成，还是转向终盘"
+          "focus": "爆发 / 验收前夜",
+          "reward_hint": "这是秋季真正的 build 核，决定你能不能把筹备转成结果"
         },
         {
           "id": 8,
           "name": "回声北桥",
           "type": "settlement",
-          "description": "高压上路的桥头观察点，为后段短路提供先手信息。",
+          "description": "高压上路的桥头排程点，用来决定 build 核和试炼点的先后。",
           "position": [880, 90],
           "edges": [7, 9],
           "travel_cost": 1,
           "habitat_id": "echo_broken_bridge",
-          "primary_content": "observe",
-          "focus": "观察 / 路线",
-          "reward_hint": "桥头一开，后半圈会明显变短"
+          "primary_content": "npc_menu",
+          "focus": "排期 / 情报",
+          "reward_hint": "这里负责整理 build 核、桥头与试炼点的推进顺序"
         },
         {
           "id": 9,
@@ -530,8 +533,8 @@
           "travel_cost": 1,
           "habitat_id": "reed_mire",
           "primary_content": "observe",
-          "focus": "观察 / 净化",
-          "reward_hint": "如果前面太贪，回来先在这里把局面拉平"
+          "focus": "回稳 / 止损",
+          "reward_hint": "试炼前失手时的回稳点，不是单纯恢复格"
         },
         {
           "id": 11,
@@ -580,7 +583,7 @@
       "name": "霜镜回路",
       "start_node_id": 0,
       "boss_node_id": 12,
-      "revealed_nodes": [0, 1, 2, 3],
+      "revealed_nodes": [0, 1, 2, 3, 11],
       "nodes": [
         {
           "id": 0,
@@ -624,27 +627,27 @@
           "id": 3,
           "name": "晶溪融渠",
           "type": "habitat",
-          "description": "冬季第一支点，把补给和建设重新折成可持续推进。",
+          "description": "冬季第一支点，先负责判断哪条终局线的异常更值得提早处理。",
           "position": [340, 300],
           "edges": [1, 2, 4, 6],
           "travel_cost": 1,
           "habitat_id": "crystal_creek",
-          "primary_content": "build_menu",
-          "focus": "支点 / 回补",
-          "reward_hint": "第一支点决定你是走镜湖线，还是走暖棚线"
+          "primary_content": "observe",
+          "focus": "异常 / 预警",
+          "reward_hint": "这里负责告诉玩家终局前哪条线更危险"
         },
         {
           "id": 4,
           "name": "盐镜东岬",
           "type": "habitat",
-          "description": "冬季上路的机动观察点，为终盘前的路线调整预留空间。",
+          "description": "冬季上路的机动修正点，用来在进终局前最后整理路线。",
           "position": [520, 90],
           "edges": [3, 5],
           "travel_cost": 1,
           "habitat_id": "saltglass_coast",
-          "primary_content": "observe",
-          "focus": "观察 / 机动",
-          "reward_hint": "想修终盘路线，就先看这里的海岸节奏"
+          "primary_content": "npc_menu",
+          "focus": "机动 / 修正",
+          "reward_hint": "冲年度 Boss 前的最终路线修正点"
         },
         {
           "id": 5,
@@ -728,27 +731,28 @@
           "id": 11,
           "name": "古械终端",
           "type": "habitat",
-          "description": "进终局前的最后支点，适合先问清路数再决定是否硬顶。",
+          "description": "进终局前的补给收束点，适合把最后一圈建设和人手重新归位。",
           "position": [1060, 300],
           "edges": [9, 13, 12],
           "travel_cost": 2,
           "habitat_id": "ancient_platform",
+          "map_effect_id": "winter_route_alignment",
           "primary_content": "npc_menu",
-          "focus": "支点 / 访客",
-          "reward_hint": "最后一次把建设、人手和终局路线对齐的机会"
+          "focus": "回补 / 收束",
+          "reward_hint": "把最后一圈资源整理成终局准备"
         },
         {
           "id": 12,
           "name": "月沼遗迹",
           "type": "anomaly",
-          "description": "冬季与年度终局，负责验收整年远征的准备是否完整。",
+          "description": "冬季与年度终局，负责验收整年远征准备是否真正收口。",
           "position": [1180, 300],
           "edges": [11],
           "travel_cost": 2,
           "habitat_id": "moonfen_ruins",
           "primary_content": "observe",
-          "focus": "赛季高潮 / 年度终局",
-          "reward_hint": "整年的构筑、信赖和路线判断都在这里收束"
+          "focus": "终局 / 年度 Boss",
+          "reward_hint": "真正的年终结算点，前面的修正都为这里服务"
         },
         {
           "id": 13,

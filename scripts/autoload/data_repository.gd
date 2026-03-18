@@ -30,6 +30,7 @@ var npc_routes: Array = []
 var npc_routes_by_season: Dictionary = {}
 var board_regions: Dictionary = {}
 var board_regions_by_season: Dictionary = {}
+var board_map_effects: Dictionary = {}
 var node_decks_by_season: Dictionary = {}
 var board_threats: Array = []
 var board_threats_by_season: Dictionary = {}
@@ -60,6 +61,7 @@ func load_all() -> void:
 	_load_npc_routes(_read_json("%s/npc_routes.json" % DATA_ROOT).get("routes", []))
 	season_rules = _index_by_id(_read_json("%s/season_rules.json" % DATA_ROOT).get("seasons", []))
 	_load_board_regions(_read_json("%s/board_regions.json" % DATA_ROOT).get("regions", []))
+	board_map_effects = _index_by_id(_read_json("%s/board_map_effects.json" % DATA_ROOT).get("effects", []))
 	_load_node_decks(_read_json("%s/node_decks.json" % DATA_ROOT).get("decks", []))
 	_load_board_threats(_read_json("%s/board_threats.json" % DATA_ROOT).get("threats", []))
 	dice_modules = _index_by_id(_read_json("%s/dice_modules.json" % DATA_ROOT).get("modules", []))
@@ -280,6 +282,9 @@ func get_board_region(region_id: String) -> Dictionary:
 
 func get_board_region_for_season(season_id: String) -> Dictionary:
 	return board_regions_by_season.get(season_id, {})
+
+func get_board_map_effect(effect_id: String) -> Dictionary:
+	return board_map_effects.get(effect_id, {}).duplicate(true)
 
 func get_node_deck_for_season(season_id: String) -> Dictionary:
 	return node_decks_by_season.get(season_id, {})

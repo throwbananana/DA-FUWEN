@@ -39,26 +39,42 @@ func get_reachable_paths(from_node_id: int, steps: int) -> Dictionary:
 	if steps <= 0:
 		result[from_node_id] = [from_node_id]
 		return result
-	var frontier: Array = [{"node_id": from_node_id, "path": [from_node_id]}]
-	for _step in range(steps):
-		var next_frontier: Array = []
-		for state in frontier:
-			var current_id := int(state.get("node_id", -1))
-			for neighbor_id in _neighbors(current_id):
-				var next_path: Array = state.get("path", []).duplicate()
-				next_path.append(neighbor_id)
-				next_frontier.append({
-					"node_id": neighbor_id,
-					"path": next_path,
-				})
-		frontier = next_frontier
-		if frontier.is_empty():
-			break
-	for state in frontier:
-		var node_id := int(state.get("node_id", -1))
-		if node_id == -1 or result.has(node_id):
-			continue
-		result[node_id] = state.get("path", []).duplicate()
+
+	var frontier: Array = [{
+		"node_id": from_node_id,
+		"path": [from_node_id],
+		"spent": 0,
+	}]
+
+	while not frontier.is_empty():
+		var state: Dictionary = frontier.pop_front()
+		var current_id := int(state.get("node_id", -1))
+		var current_path: Array = state.get("path", []).duplicate()
+		var spent := int(state.get("spent", 0))
+
+		for neighbor_id in _neighbors(current_id):
+			if current_path.has(neighbor_id):
+				continue
+
+			var move_cost := _step_cost(neighbor_id)
+			var next_spent := spent + move_cost
+			if next_spent > steps:
+				continue
+
+			var next_path := current_path.duplicate()
+			next_path.append(neighbor_id)
+
+			if next_spent == steps:
+				if not result.has(neighbor_id):
+					result[neighbor_id] = next_path
+				continue
+
+			frontier.append({
+				"node_id": neighbor_id,
+				"path": next_path,
+				"spent": next_spent,
+			})
+
 	return result
 
 func expand_reveal_from(node_id: int) -> Array[int]:
@@ -82,7 +98,10 @@ func _normalize_node(node: Dictionary) -> Dictionary:
 	if raw_position is Array and raw_position.size() >= 2:
 		normalized["position"] = Vector2(float(raw_position[0]), float(raw_position[1]))
 	elif raw_position is Dictionary:
-		normalized["position"] = Vector2(float(raw_position.get("x", 0.0)), float(raw_position.get("y", 0.0)))
+		normalized["position"] = Vector2(
+			float(raw_position.get("x", 0.0)),
+			float(raw_position.get("y", 0.0))
+		)
 	return normalized
 
 func _neighbors(node_id: int) -> Array[int]:
@@ -91,3 +110,7 @@ func _neighbors(node_id: int) -> Array[int]:
 	for raw_neighbor in node.get("edges", []):
 		neighbors.append(int(raw_neighbor))
 	return neighbors
+
+func _step_cost(node_id: int) -> int:
+	var node: Dictionary = node_lookup.get(node_id, {})
+	return maxi(1, int(node.get("travel_cost", 1)))

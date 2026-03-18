@@ -190,10 +190,14 @@ func _build_world_nodes() -> Array:
 			var habitat := DataRepository.get_habitat(habitat_id)
 			if habitat.is_empty():
 				continue
-			node["name"] = habitat.get("name", node["name"])
-			node["type"] = habitat.get("type", node["type"])
-			node["description"] = _description_for_habitat(habitat)
-			node["travel_cost"] = int(habitat.get("travel_cost", node.get("travel_cost", 1)))
+			if String(node.get("name", "")).is_empty():
+				node["name"] = habitat.get("name", node.get("name", ""))
+			if String(node.get("type", "")).is_empty():
+				node["type"] = habitat.get("type", node.get("type", ""))
+			if String(node.get("description", "")).is_empty():
+				node["description"] = _description_for_habitat(habitat)
+			if not node.has("travel_cost"):
+				node["travel_cost"] = int(habitat.get("travel_cost", 1))
 		nodes[index] = node
 	return nodes
 

@@ -10,8 +10,15 @@ const HabitatService = preload("res://scripts/services/habitat_service.gd")
 const NpcService = preload("res://scripts/services/npc_service.gd")
 const EncounterService = preload("res://scripts/services/encounter_service.gd")
 const SynergyService = preload("res://scripts/services/synergy_service.gd")
+const DiceService = preload("res://scripts/services/dice_service.gd")
+const BoardProgressionService = preload("res://scripts/services/board_progression_service.gd")
+const WeeklyCycleService = preload("res://scripts/services/weekly_cycle_service.gd")
+const RunModifierService = preload("res://scripts/services/run_modifier_service.gd")
+const MetaProgressionService = preload("res://scripts/services/meta_progression_service.gd")
+const NpcRouteService = preload("res://scripts/services/npc_route_service.gd")
+const ThreatService = preload("res://scripts/services/threat_service.gd")
 
-const GAME_TITLE := "雾野养成原型"
+const GAME_TITLE := "百回合远征原型"
 
 const WEATHER_ORDER := ["clear", "fog", "rain", "storm"]
 const WEATHER_NAMES := {
@@ -86,6 +93,13 @@ var habitat_service := HabitatService.new()
 var npc_service := NpcService.new()
 var encounter_service := EncounterService.new()
 var synergy_service := SynergyService.new()
+var dice_service := DiceService.new()
+var board_progression_service := BoardProgressionService.new()
+var weekly_cycle_service := WeeklyCycleService.new()
+var run_modifier_service := RunModifierService.new()
+var meta_progression_service := MetaProgressionService.new()
+var npc_route_service := NpcRouteService.new()
+var threat_service := ThreatService.new()
 
 var season_finished := false
 var awaiting_destination := false
@@ -94,6 +108,9 @@ var current_visit_habitat_id := ""
 var current_encounter := {}
 var last_encounter_action_id := ""
 var pending_context := {}
+var pending_roll := {}
+var reachable_paths := {}
+var anchor_override_active := false
 
 func _ready() -> void:
 	rng.randomize()
@@ -111,6 +128,9 @@ func install_visit_flow() -> void:
 
 func _connect_signals() -> void:
 	roll_button.pressed.connect(_on_start_day_pressed)
+	plus_button.pressed.connect(_on_plus_pressed)
+	minus_button.pressed.connect(_on_minus_pressed)
+	reroll_button.pressed.connect(_on_reroll_pressed)
 	support_button.pressed.connect(_on_support_pressed)
 	base_button.pressed.connect(_on_base_pressed)
 	new_game_button.pressed.connect(start_new_game)
@@ -123,9 +143,6 @@ func _connect_signals() -> void:
 
 func _apply_basic_styles() -> void:
 	battle_panel.hide()
-	plus_button.hide()
-	minus_button.hide()
-	reroll_button.hide()
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color("101826")
 	panel_style.border_width_left = 2
@@ -143,26 +160,31 @@ func _apply_basic_styles() -> void:
 func start_new_game() -> void:
 	DataRepository.load_all()
 	GameState.reset_for_new_season()
-	world_nodes = _build_world_nodes()
-	board_lookup = _build_board_lookup()
-	board_view.setup(world_nodes)
+	GameState.set_run_modifiers(run_modifier_service.choose_run_modifiers(1))
+	GameState.apply_system_rewards(run_modifier_service.apply_starting_bonus(GameState.run_modifiers))
+	_refresh_board_region(true)
 	season_finished = false
 	awaiting_destination = false
-	current_node_id = 0
+	current_node_id = GameState.current_board_node_id
 	current_visit_habitat_id = ""
 	current_encounter.clear()
 	last_encounter_action_id = ""
 	pending_context.clear()
+	pending_roll.clear()
+	reachable_paths.clear()
+	anchor_override_active = false
 	decision_panel.hide()
 	base_panel.hide()
-	_push_log("%s开始。目标不再是抢赢谁，而是把伙伴和地点安顿好。" % _season_name())
-	_push_log("先从雾苔窟、晶溪滩和云升驿开始回访，并留意季节新点位。")
+	_assign_weekly_objective()
+	_push_log("%s远征开始。目标是用 4 个赛季的 100 回合，把路线、养成和战斗重新缝成一个主循环。" % _season_name())
+	for modifier_line in run_modifier_service.format_lines(GameState.run_modifiers):
+		_push_log("本局词缀：%s" % modifier_line)
 	_begin_next_day()
 
 func _build_world_nodes() -> Array:
-	var nodes: Array = []
-	for template in NODE_TEMPLATES:
-		var node: Dictionary = template.duplicate(true)
+	var nodes := board_progression_service.get_nodes()
+	for index in range(nodes.size()):
+		var node: Dictionary = nodes[index]
 		var habitat_id := String(node.get("habitat_id", ""))
 		if not habitat_id.is_empty():
 			var habitat := DataRepository.get_habitat(habitat_id)
@@ -172,8 +194,61 @@ func _build_world_nodes() -> Array:
 			node["type"] = habitat.get("type", node["type"])
 			node["description"] = _description_for_habitat(habitat)
 			node["travel_cost"] = int(habitat.get("travel_cost", node.get("travel_cost", 1)))
-		nodes.append(node)
+		nodes[index] = node
 	return nodes
+
+func _refresh_board_region(reset_position: bool) -> void:
+	board_progression_service.set_region_for_season(GameState.season_id)
+	world_nodes = _build_world_nodes()
+	board_lookup = _build_board_lookup()
+	board_view.setup(world_nodes)
+	var region := board_progression_service.get_region()
+	var start_node_id := board_progression_service.get_start_node_id()
+	if reset_position:
+		GameState.set_board_region(String(region.get("id", "")), start_node_id)
+		GameState.reveal_board_nodes(region.get("revealed_nodes", []))
+		GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(start_node_id))
+	current_node_id = GameState.current_board_node_id
+	_initialize_board_threats()
+
+func _initialize_board_threats() -> void:
+	threat_service.setup_for_season(GameState.season_id)
+
+func _resolve_board_threat_turn() -> void:
+	var report := threat_service.advance_turn(GameState.season_turn, board_lookup, current_node_id)
+	for line in report.get("lines", []):
+		_push_log("敌方推进：%s" % String(line))
+
+func _blocked_node_ids() -> Array[int]:
+	return threat_service.get_blocked_node_ids()
+
+func _filter_blocked_selectable_nodes(candidate_nodes: Array[int]) -> Array[int]:
+	var blocked := _blocked_node_ids()
+	if blocked.is_empty():
+		return candidate_nodes.duplicate()
+	var filtered: Array[int] = []
+	for node_id in candidate_nodes:
+		if blocked.has(node_id):
+			continue
+		filtered.append(node_id)
+	return filtered
+
+func _get_blocked_reachable_nodes() -> Array[int]:
+	var blocked := _blocked_node_ids()
+	if blocked.is_empty():
+		return []
+	var blocked_reachable: Array[int] = []
+	for node_id in _reachable_selectable_nodes():
+		if blocked.has(node_id):
+			blocked_reachable.append(node_id)
+	return blocked_reachable
+
+func _assign_weekly_objective() -> void:
+	var objective := weekly_cycle_service.pick_objective(GameState.season_id, GameState.week_index)
+	GameState.set_weekly_objective(objective)
+	if objective.is_empty():
+		return
+	_push_log("第 %d 周目标：%s。" % [GameState.week_index, String(objective.get("title", "本周目标"))])
 
 func _build_board_lookup() -> Dictionary:
 	var lookup := {}
@@ -193,18 +268,20 @@ func _description_for_habitat(habitat: Dictionary) -> String:
 func _begin_next_day() -> void:
 	if GameState.day_index > GameState.season_length:
 		if GameState.advance_to_next_season():
-			world_nodes = _build_world_nodes()
-			board_lookup = _build_board_lookup()
-			board_view.setup(world_nodes)
-			_push_log("%s来临，可访问地点与试炼轮换已刷新。" % _season_name())
+			_refresh_board_region(true)
+			_assign_weekly_objective()
+			_push_log("%s来临，区域棋盘、周目标与路线分叉已刷新。" % _season_name())
 		else:
 			_finish_season()
 			return
 	awaiting_destination = false
-	current_node_id = 0
+	current_node_id = GameState.current_board_node_id
 	current_visit_habitat_id = ""
 	current_encounter.clear()
 	last_encounter_action_id = ""
+	pending_roll.clear()
+	reachable_paths.clear()
+	anchor_override_active = false
 	var weather_pool: Array = GameState.get_current_season_rule().get("weather_pool", WEATHER_ORDER)
 	var next_weather: String = String(weather_pool[rng.randi_range(0, weather_pool.size() - 1)]) if not weather_pool.is_empty() else "clear"
 	var next_time: String = String(TIME_ORDER[rng.randi_range(0, TIME_ORDER.size() - 1)])
@@ -212,19 +289,113 @@ func _begin_next_day() -> void:
 		next_weather = String(weather_pool[0]) if not weather_pool.is_empty() else "clear"
 		next_time = "day"
 	GameState.set_daily_conditions(next_weather, next_time)
-	_push_log("[%s 第 %d 日] 天气：%s，时段：%s。" % [_season_name(), GameState.day_index, _weather_name(GameState.weather_id), _time_name(GameState.time_of_day)])
+	if GameState.weekly_objective.is_empty():
+		_assign_weekly_objective()
+	_sync_npc_routes_for_day()
+	_push_log("[%s 第 %d / %d 回合 ｜ 第 %d 周] 天气：%s，时段：%s。" % [
+		_season_name(),
+		GameState.season_turn,
+		GameState.season_length,
+		GameState.week_index,
+		_weather_name(GameState.weather_id),
+		_time_name(GameState.time_of_day),
+	])
 	_update_ui()
+
+func _sync_npc_routes_for_day() -> void:
+	var report := npc_route_service.sync_daily_positions()
+	for line in report.get("lines", []):
+		_push_log("访客动向：%s" % String(line))
 
 func _on_start_day_pressed() -> void:
 	if season_finished or _is_modal_open():
 		return
 	if awaiting_destination:
 		return
-	awaiting_destination = true
+	pending_roll = dice_service.roll()
+	_apply_current_roll_routes()
 	_update_ui()
+
+func _on_plus_pressed() -> void:
+	if pending_roll.is_empty() or not awaiting_destination:
+		return
+	if not GameState.consume_adjust_point():
+		return
+	var result := dice_service.apply_adjust(pending_roll, 1)
+	if not bool(result.get("ok", false)):
+		GameState.season_adjust_points += 1
+		return
+	pending_roll = result.get("roll", {}).duplicate(true)
+	_apply_current_roll_routes()
+	_update_ui()
+
+func _on_minus_pressed() -> void:
+	if pending_roll.is_empty() or not awaiting_destination:
+		return
+	if not GameState.consume_adjust_point():
+		return
+	var result := dice_service.apply_adjust(pending_roll, -1)
+	if not bool(result.get("ok", false)):
+		GameState.season_adjust_points += 1
+		return
+	pending_roll = result.get("roll", {}).duplicate(true)
+	_apply_current_roll_routes()
+	_update_ui()
+
+func _on_reroll_pressed() -> void:
+	if pending_roll.is_empty() or not awaiting_destination:
+		return
+	if not GameState.consume_weekly_reroll():
+		return
+	pending_roll = dice_service.reroll(pending_roll)
+	_apply_current_roll_routes()
+	_update_ui()
+
+func _apply_current_roll_routes() -> void:
+	reachable_paths = board_progression_service.get_reachable_paths(current_node_id, int(pending_roll.get("value", 0)))
+	anchor_override_active = false
+	var blocked_before_anchor := _get_blocked_reachable_nodes()
+	var selectable := _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
+	if selectable.is_empty() and GameState.anchor_points > 0 and GameState.consume_anchor_point():
+		anchor_override_active = true
+		reachable_paths.clear()
+		for node_id in GameState.revealed_board_nodes:
+			if int(node_id) == current_node_id:
+				continue
+			reachable_paths[int(node_id)] = [current_node_id, int(node_id)]
+		selectable = _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
+		if not reachable_paths.is_empty():
+			if not blocked_before_anchor.is_empty():
+				_push_log("原路线被敌对群占据，自动消耗 1 个锚定点，改为从已显露节点里选路。")
+			else:
+				_push_log("当前掷骰没有安全落点，自动消耗 1 个锚定点，改为从已显露节点里选路。")
+	awaiting_destination = not selectable.is_empty()
+	if not awaiting_destination:
+		if not _get_blocked_reachable_nodes().is_empty():
+			_push_log("这次掷骰的可达节点都被敌对群占住了，先改路线或等待下一回合。")
+		else:
+			_push_log("这次掷骰没有形成可用路线，先调整队伍或等待下一回合。")
+
+func _reachable_selectable_nodes() -> Array[int]:
+	var selectable: Array[int] = []
+	for node_id in reachable_paths.keys():
+		var target_id := int(node_id)
+		var node: Dictionary = board_lookup.get(target_id, {})
+		var habitat_id := String(node.get("habitat_id", ""))
+		if habitat_id.is_empty():
+			continue
+		if GameState.is_habitat_unlocked(habitat_id):
+			selectable.append(target_id)
+	return selectable
 
 func _on_support_pressed() -> void:
 	var lines: Array[String] = []
+	if not GameState.weekly_objective.is_empty():
+		lines.append("[b]本周目标[/b] %s" % String(GameState.weekly_objective.get("title", "本周目标")))
+		lines.append(String(GameState.weekly_objective.get("description", "")))
+		for line in weekly_cycle_service.build_progress_lines(GameState.weekly_objective, GameState.weekly_progress):
+			lines.append("- %s" % line)
+		lines.append("")
 	if GameState.active_quests.is_empty():
 		lines.append("今天没有挂在手边的生活委托。")
 	else:
@@ -234,8 +405,13 @@ func _on_support_pressed() -> void:
 	if not GameState.completed_quests.is_empty():
 		lines.append("")
 		lines.append("[b]已完成[/b] %d 件" % GameState.completed_quests.size())
+	if not GameState.run_modifiers.is_empty():
+		lines.append("")
+		lines.append("[b]本局词缀[/b]")
+		for line in run_modifier_service.format_lines(GameState.run_modifiers):
+			lines.append("- %s" % line)
 	pending_context = {"kind": "quest_journal", "on_close": "none"}
-	decision_panel.open_panel("委托记录", "\n".join(lines), [], "关闭")
+	decision_panel.open_panel("周目标与委托", "\n".join(lines), [], "关闭")
 
 func _on_base_pressed() -> void:
 	var synergy_report := synergy_service.build_synergy_report()
@@ -249,6 +425,8 @@ func _on_base_pressed() -> void:
 			"season_name": _season_name(),
 			"day_index": GameState.day_index,
 			"season_length": GameState.season_length,
+			"week_index": GameState.week_index,
+			"global_turn": GameState.global_turn,
 			"weather_name": _weather_name(GameState.weather_id),
 			"time_name": _time_name(GameState.time_of_day),
 			"care_progress": GameState.get_care_progress(),
@@ -265,6 +443,9 @@ func _on_base_pressed() -> void:
 		"completed_quests": GameState.completed_quests.duplicate(),
 		"battle_slots": _battle_slot_names(),
 		"backpack_summary": "%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity],
+		"run_modifiers": run_modifier_service.format_lines(GameState.run_modifiers),
+		"weekly_objective_text": weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress),
+		"meta_points": GameState.exploration_points_total,
 		"synergy_lines": synergy_service.format_active_lines(synergy_report, 4),
 		"nearby_synergy_lines": synergy_service.format_nearby_lines(synergy_report, 3),
 		"building_lines": facility_bonus.get("lines", []),
@@ -277,13 +458,25 @@ func _on_board_node_chosen(node_id: int) -> void:
 	if not awaiting_destination or not _get_selectable_nodes().has(node_id):
 		return
 	awaiting_destination = false
+	var path_preview: Array = reachable_paths.get(node_id, [])
+	pending_roll.clear()
 	current_node_id = node_id
+	GameState.move_to_board_node(node_id)
+	GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(node_id))
 	var node: Dictionary = board_lookup[node_id]
 	current_visit_habitat_id = String(node.get("habitat_id", ""))
-	_push_log("今天前往 %s。" % String(node.get("name", "未知地点")))
+	GameState.add_weekly_progress("visit_count", 1)
+	_push_log("掷骰后前往 %s。路径：%s。" % [
+		String(node.get("name", "未知地点")),
+		_format_path_preview(path_preview),
+	])
 	GameState.note_visit(current_visit_habitat_id)
 	_check_active_quests()
-	visit_flow.start_visit(current_visit_habitat_id)
+	if _should_trigger_prearrival_ambush(node_id):
+		_push_log("%s 附近残留着躁动痕迹，本次需要先处理袭扰。" % String(node.get("name", "未知地点")))
+		visit_flow.start_observation_for_habitat(current_visit_habitat_id, "ambush")
+	else:
+		visit_flow.start_visit(current_visit_habitat_id)
 	_update_ui()
 
 func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
@@ -312,34 +505,101 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 	var state: Dictionary = payload.get("state", {})
 	var resident: Dictionary = payload.get("resident", {})
 	var npcs: Array = payload.get("npcs", [])
+	var npc_presence: Dictionary = payload.get("npc_presence", {})
 	var buildings: Array = payload.get("buildings", [])
+	var node: Dictionary = board_lookup.get(current_node_id, {})
+	var primary_action := _primary_content_action(node, habitat, buildings, npcs)
 	var lines: Array[String] = []
 	lines.append("[b]地点气氛[/b] %s" % "、".join(habitat.get("mood_tags", [])))
 	lines.append("[b]今日适合[/b] %s" % _seasonal_hook_text(habitat))
 	lines.append("[b]当前驻守[/b] %s" % String(resident.get("display_name", "暂无")))
 	lines.append("[b]据点等级[/b] %d" % int(state.get("rank", 0)))
 	lines.append("[b]常见人物[/b] %s" % (" / ".join(_npc_names(npcs)) if not npcs.is_empty() else "今天没有遇见谁"))
+	if not npc_presence.get("window_lines", []).is_empty():
+		lines.append("[b]来访窗口[/b] %s" % " / ".join(npc_presence.get("window_lines", []).slice(0, 2)))
 	lines.append("[b]建设进度[/b] %s" % _format_building_levels(current_visit_habitat_id, buildings))
+	if not primary_action.is_empty():
+		lines.append("[b]节点主玩法[/b] %s" % _primary_content_label(primary_action))
+	var node_danger := GameState.get_node_danger(current_node_id)
+	if node_danger > 0:
+		lines.append("[b]区域危险[/b] %d / 3" % node_danger)
+	if GameState.has_node_ambush(current_node_id):
+		lines.append("[b]袭扰预警[/b] 这里留下了潜伏痕迹。")
 	if int(habitat.get("recommended_rank", 0)) > 0:
 		lines.append("[b]推荐等级[/b] %d" % int(habitat.get("recommended_rank", 0)))
 	if not String(habitat.get("dojo_id", "")).is_empty():
 		lines.append("[b]试炼状态[/b] %s" % _dojo_status_text(String(habitat.get("dojo_id", ""))))
 
 	var choices := []
-	if String(habitat.get("type", "")) == "habitat":
-		choices.append({"id": "assign_resident", "label": "安排驻守", "summary": "把一只伙伴安顿在这里。"})
-	if not buildings.is_empty():
-		choices.append({"id": "build_menu", "label": "推进建设", "summary": "必须到点后才能动工。"})
-	if not npcs.is_empty():
-		choices.append({"id": "npc_menu", "label": "与人交谈", "summary": "看看谁有新的反馈和委托。"})
-	if not habitat.get("wild_pool", []).is_empty():
-		choices.append({"id": "observe", "label": "观察野外", "summary": "先看情绪，再决定如何靠近。"})
-	if not String(habitat.get("dojo_id", "")).is_empty():
-		choices.append({"id": "dojo_menu", "label": "进入试炼", "summary": "查看当前阶位、门票与奖励。"})
-	if String(habitat.get("type", "")) == "settlement":
-		choices.append({"id": "mail_menu", "label": "寄送留信", "summary": "处理跨点消息和驿站类委托。"})
+	if not primary_action.is_empty():
+		choices.append({
+			"id": primary_action,
+			"label": _primary_content_label(primary_action),
+			"summary": _primary_content_summary(primary_action),
+		})
+	if String(habitat.get("type", "")) == "habitat" and primary_action == "build_menu":
+		choices.append({"id": "assign_resident", "label": "安排驻守", "summary": "作为轻交互，只调整这里的主驻守伙伴。"})
+	elif String(habitat.get("type", "")) == "settlement" and primary_action == "npc_menu" and not _pending_mail_targets().is_empty():
+		choices.append({"id": "mail_menu", "label": "寄送留信", "summary": "作为轻交互，顺手处理跨点消息。"})
 	pending_context = {"kind": "visit_arrival", "on_close": "finish_visit"}
 	decision_panel.open_panel(String(habitat.get("name", "地点")), "\n".join(lines), choices, "结束拜访")
+
+func _should_trigger_prearrival_ambush(node_id: int) -> bool:
+	return GameState.consume_node_ambush(node_id)
+
+func _primary_content_action(node: Dictionary, habitat: Dictionary, buildings: Array, npcs: Array) -> String:
+	var requested := String(node.get("primary_content", ""))
+	if _is_primary_action_available(requested, habitat, buildings, npcs):
+		return requested
+	for fallback_action in ["dojo_menu", "build_menu", "npc_menu", "observe", "mail_menu"]:
+		if _is_primary_action_available(fallback_action, habitat, buildings, npcs):
+			return fallback_action
+	return ""
+
+func _is_primary_action_available(action_id: String, habitat: Dictionary, buildings: Array, npcs: Array) -> bool:
+	match action_id:
+		"build_menu":
+			return not buildings.is_empty()
+		"npc_menu":
+			return not npcs.is_empty()
+		"observe":
+			return not habitat.get("wild_pool", []).is_empty()
+		"dojo_menu":
+			return not String(habitat.get("dojo_id", "")).is_empty()
+		"mail_menu":
+			return String(habitat.get("type", "")) == "settlement"
+		_:
+			return false
+
+func _primary_content_label(action_id: String) -> String:
+	match action_id:
+		"build_menu":
+			return "推进建设"
+		"npc_menu":
+			return "与人交谈"
+		"observe":
+			return "观察野外"
+		"dojo_menu":
+			return "进入试炼"
+		"mail_menu":
+			return "寄送留信"
+		_:
+			return "处理节点主玩法"
+
+func _primary_content_summary(action_id: String) -> String:
+	match action_id:
+		"build_menu":
+			return "这是建设节点，本回合的主收益来自推进建筑和后续共鸣。"
+		"npc_menu":
+			return "这是社交节点，本回合的主收益来自情报、委托和关系推进。"
+		"observe":
+			return "这是遭遇节点，本回合的主收益来自观察、结缘和风险处理。"
+		"dojo_menu":
+			return "这是验证节点，本回合的主收益来自试炼和阶段奖励。"
+		"mail_menu":
+			return "这是中转节点，本回合的主收益来自跨点处理和路线信息。"
+		_:
+			return "处理这个节点最核心的内容。"
 
 func _show_build_menu(payload: Dictionary) -> void:
 	var choices := []
@@ -366,6 +626,7 @@ func _show_build_menu(payload: Dictionary) -> void:
 func _show_build_result(payload: Dictionary) -> void:
 	if bool(payload.get("ok", false)):
 		var building_name := String(DataRepository.get_building(String(payload.get("building_id", ""))).get("name", "建设"))
+		GameState.add_weekly_progress("build_count", 1)
 		_push_log("%s 的 %s 升到了 Lv.%d。" % [_habitat_name(current_visit_habitat_id), building_name, int(payload.get("level", 0))])
 		_check_active_quests()
 		pending_context = {"kind": "build_result", "on_close": "arrival"}
@@ -436,6 +697,7 @@ func _show_dojo_result(payload: Dictionary) -> void:
 		lines.append("[b]结算方式[/b] 达到回合上限后按剩余战力判定")
 	var reward_text := _format_reward_bundle(reward_result)
 	if bool(payload.get("success", false)):
+		GameState.add_weekly_progress("dojo_clear_count", 1)
 		var result_line := "[b]结果[/b] 首通 %s" % _dojo_tier_name(tier) if bool(payload.get("first_clear", false)) else "[b]结果[/b] 再次通过 %s" % _dojo_tier_name(tier)
 		lines.append(result_line)
 		if not reward_text.is_empty():
@@ -464,14 +726,22 @@ func _start_dojo_battle(payload: Dictionary) -> void:
 
 func _show_encounter_preview(payload: Dictionary) -> void:
 	current_encounter = payload.duplicate(true)
+	var source := String(payload.get("source", "observe"))
 	if not bool(payload.get("ok", false)):
 		pending_context = {"kind": "encounter_preview", "on_close": "arrival"}
-		decision_panel.open_panel("今天的野外", "今天没有遇到特别愿意停留的个体。", [], "返回地点")
+		var empty_text := "今天没有遇到特别愿意停留的个体。"
+		if source == "ambush":
+			empty_text = "你先察觉到了躁动，但这次没有真的爆发袭扰。"
+		decision_panel.open_panel("今天的野外", empty_text, [], "返回地点")
 		return
 	var species: Dictionary = payload.get("species", {})
 	var species_id := String(payload.get("species_id", ""))
 	GameState.note_encounter(species_id)
+	GameState.add_weekly_progress("encounter_count", 1)
 	var body_lines: Array[String] = []
+	if source == "ambush":
+		body_lines.append("[b]突发袭扰[/b]")
+		body_lines.append("你刚进入节点就惊动了潜伏的野群，必须先稳住场面。")
 	body_lines.append("[b]%s[/b]" % String(species.get("name", "未知个体")))
 	body_lines.append("[b]当前情绪[/b] %s" % String(payload.get("mood_id", "curious")))
 	body_lines.append("[b]结缘窗口[/b] %s" % String(payload.get("bond_window", "medium")))
@@ -480,7 +750,7 @@ func _show_encounter_preview(payload: Dictionary) -> void:
 	for action_id in encounter_service.get_available_actions(payload):
 		choices.append({"id": action_id, "label": _action_name(action_id), "summary": "按当前情绪做一次温和尝试。"})
 	pending_context = {"kind": "encounter_preview", "on_close": "arrival"}
-	decision_panel.open_panel("野外相遇", "\n".join(body_lines), choices, "返回地点")
+	decision_panel.open_panel("突发袭扰" if source == "ambush" else "野外相遇", "\n".join(body_lines), choices, "返回地点")
 
 func _show_encounter_result(payload: Dictionary) -> void:
 	var outcome_text := _handle_encounter_result_effects(payload)
@@ -560,9 +830,14 @@ func _on_decision_closed() -> void:
 
 func _on_visit_finished(_report: Dictionary) -> void:
 	_resolve_visit_yield(current_visit_habitat_id)
+	_resolve_season_boss_reward()
+	_resolve_board_threat_turn()
 	current_visit_habitat_id = ""
 	if season_finished:
 		return
+	var is_week_end := GameState.weekly_turn >= 5
+	if is_week_end:
+		_resolve_weekly_settlement()
 	GameState.advance_day()
 	_begin_next_day()
 
@@ -659,6 +934,7 @@ func _assign_resident(pet_uid: String) -> void:
 
 func _handle_talk_to_npc(npc_id: String) -> void:
 	GameState.note_talk(npc_id)
+	GameState.add_weekly_progress("talk_count", 1)
 	if _can_mark_return(npc_id):
 		GameState.note_return(npc_id)
 	var npc := DataRepository.get_npc(npc_id)
@@ -724,19 +1000,72 @@ func _handle_encounter_result_effects(payload: Dictionary) -> String:
 	if last_encounter_action_id == "calm" and outcome != "alert_rise":
 		GameState.note_calm(species_id)
 	if outcome == "bond_success":
+		GameState.reduce_node_danger(current_node_id, 1)
 		GameState.note_bond(species_id)
 		var acquisition := _acquire_companion(species_id)
 		_push_log("%s 愿意靠近，并把这里当成了新的联系点。" % species_name)
 		_check_active_quests()
 		return "[b]%s[/b]\n%s" % [_encounter_outcome_text(outcome), String(acquisition.get("body", "%s 愿意靠近。" % species_name))]
 	elif outcome == "bond_progress":
+		GameState.reduce_node_danger(current_node_id, 1)
 		_push_log("%s 对你的存在不再那么戒备了。" % species_name)
 	elif outcome == "safe_leave":
+		GameState.reduce_node_danger(current_node_id, 1)
 		_push_log("你选择先后退一步，让这次相遇停在安全距离。")
 	elif outcome == "alert_rise":
+		var consequence := _apply_alert_rise_consequence(int(payload.get("combat_risk", 1)))
 		_push_log("%s 还是更警惕了一些，你决定改天再来。" % species_name)
+		_check_active_quests()
+		return "[b]%s[/b]\n%s\n%s" % [
+			_encounter_outcome_text(outcome),
+			species_name,
+			String(consequence.get("summary", "这里变得更危险了。")),
+		]
 	_check_active_quests()
 	return "[b]%s[/b]\n%s" % [_encounter_outcome_text(outcome), species_name]
+
+func _apply_alert_rise_consequence(combat_risk: int) -> Dictionary:
+	var danger_gain := maxi(1, combat_risk)
+	GameState.add_node_danger(current_node_id, danger_gain)
+	GameState.queue_node_ambush(current_node_id, 1)
+	var lost_items := _take_alert_penalty_items(danger_gain)
+	var parts: Array[String] = []
+	parts.append("%s 的危险度上升到 %d/3" % [
+		String(board_lookup.get(current_node_id, {}).get("name", "当前节点")),
+		GameState.get_node_danger(current_node_id),
+	])
+	parts.append("下次造访前，这里会先触发一次袭扰。")
+	if not lost_items.is_empty():
+		parts.append("你在混乱中损失了 %s" % _format_item_cost(lost_items))
+	_push_log("节点危险上升：%s。" % String(board_lookup.get(current_node_id, {}).get("name", "当前节点")))
+	if not lost_items.is_empty():
+		_push_log("袭扰损失：%s。" % _format_item_cost(lost_items))
+	return {
+		"summary": "；".join(parts),
+		"lost_items": lost_items,
+	}
+
+func _take_alert_penalty_items(amount: int) -> Dictionary:
+	var candidates: Array[String] = []
+	for item_id in _base_visit_reward(current_visit_habitat_id).keys():
+		candidates.append(String(item_id))
+	for fallback_id in ["soft_moss", "stone_chip", "fiber", "parts", "tea_leaf", "wood"]:
+		if not candidates.has(fallback_id):
+			candidates.append(fallback_id)
+	var result := {}
+	var remaining := maxi(1, amount)
+	for item_id in candidates:
+		if remaining <= 0:
+			break
+		var available := int(GameState.inventory.get(item_id, 0))
+		if available <= 0:
+			continue
+		var loss := mini(available, remaining)
+		result[item_id] = loss
+		remaining -= loss
+	if not result.is_empty():
+		GameState.pay_cost(result)
+	return result
 
 func _acquire_companion(species_id: String) -> Dictionary:
 	var is_new_species := GameState.count_species_pets(species_id) == 0
@@ -796,6 +1125,7 @@ func _resolve_visit_yield(habitat_id: String) -> void:
 	for _roll in range(int(resonance.get("economy_rolls", 0))):
 		_merge_reward_items(reward, base_reward)
 	_merge_reward_items(reward, _seasonal_visit_reward(habitat_id))
+	reward = run_modifier_service.apply_visit_reward_modifiers(reward, GameState.run_modifiers)
 	if not reward.is_empty():
 		GameState.grant_items(reward)
 		_push_log("回营时顺手带回：%s。" % _format_item_cost(reward))
@@ -804,6 +1134,63 @@ func _resolve_visit_yield(habitat_id: String) -> void:
 		_push_log("建筑共鸣：%s" % String(line))
 	for line in growth_lines:
 		_push_log(line)
+
+func _resolve_weekly_settlement() -> void:
+	if GameState.weekly_objective.is_empty():
+		return
+	var objective := GameState.weekly_objective.duplicate(true)
+	var progress := GameState.weekly_progress.duplicate(true)
+	var completed := weekly_cycle_service.is_complete(objective, progress)
+	var summary_lines := weekly_cycle_service.build_progress_lines(objective, progress)
+	_push_log("第 %d 周结算：%s。" % [GameState.week_index, String(objective.get("title", "本周目标"))])
+	for line in summary_lines:
+		_push_log("周进度：%s。" % line)
+	if completed:
+		var reward_bundle := DataRepository.get_reward_bundle(weekly_cycle_service.get_reward_bundle_id(objective))
+		var reward_text := _apply_reward_bundle(reward_bundle)
+		if not reward_text.is_empty():
+			_push_log("周目标完成，获得 %s。" % reward_text)
+	else:
+		GameState.grant_items({"soft_moss": 1})
+		_push_log("周目标未完成，仍获得休整补给：%s。" % _format_item_cost({"soft_moss": 1}))
+	var modifier_bonus := run_modifier_service.apply_weekly_bonus(GameState.run_modifiers)
+	if not modifier_bonus.is_empty():
+		GameState.apply_system_rewards(modifier_bonus)
+		_push_log("词缀追加：%s。" % _format_reward_bundle({"systems": modifier_bonus}))
+	GameState.weekly_objective.clear()
+	GameState.weekly_progress.clear()
+
+func _resolve_season_boss_reward() -> void:
+	var boss_rule := DataRepository.get_season_boss_rule(GameState.season_id)
+	if boss_rule.is_empty():
+		return
+	if GameState.claimed_season_bosses.has(GameState.season_id):
+		return
+	if int(boss_rule.get("node_id", -1)) != current_node_id:
+		return
+	var reward_bundle := DataRepository.get_reward_bundle(String(boss_rule.get("reward_bundle_id", "")))
+	var reward_text := _apply_reward_bundle(reward_bundle)
+	GameState.claimed_season_bosses.append(GameState.season_id)
+	if not reward_text.is_empty():
+		_push_log("赛季高潮：%s 被征服，获得 %s。" % [String(boss_rule.get("name", "赛季 Boss")), reward_text])
+
+func _apply_reward_bundle(reward_bundle: Dictionary) -> String:
+	if reward_bundle.is_empty():
+		return ""
+	var items: Dictionary = reward_bundle.get("items", {}).duplicate(true)
+	var systems: Dictionary = reward_bundle.get("systems", {}).duplicate(true)
+	var unlocks: Array = reward_bundle.get("unlocks", []).duplicate()
+	if not items.is_empty():
+		GameState.grant_items(items)
+	if not systems.is_empty():
+		GameState.apply_system_rewards(systems)
+	for habitat_id in unlocks:
+		GameState.unlock_habitat(String(habitat_id))
+	return _format_reward_bundle({
+		"items": items,
+		"systems": systems,
+		"unlocks": unlocks,
+	})
 
 func _base_visit_reward(habitat_id: String) -> Dictionary:
 	match habitat_id:
@@ -857,13 +1244,23 @@ func _apply_visit_growth_resonance(bond_gains: Dictionary) -> Array[String]:
 func _finish_season() -> void:
 	season_finished = true
 	awaiting_destination = false
-	action_hint_label.text = "[b]年度回顾[/b]\n照料进度 %d ｜ 已安居据点 %d ｜ 图鉴 %d ｜ 徽章 %d ｜ 季节点数 %d" % [
+	var run_summary := meta_progression_service.build_run_summary()
+	var reward_result := meta_progression_service.award_run_points(run_summary)
+	GameState.exploration_points_total = int(reward_result.get("total_after", GameState.exploration_points_total))
+	for track in reward_result.get("new_tracks", []):
+		GameState.register_meta_track(String(track.get("id", "")), track.get("unlock", {}))
+	action_hint_label.text = "[b]年度回顾[/b]\n照料进度 %d ｜ 已安居据点 %d ｜ 图鉴 %d ｜ 徽章 %d ｜ 季节点数 %d\n本局探索点 %d ｜ 累计探索点 %d" % [
 		GameState.get_care_progress(),
 		GameState.get_settled_habitat_count(),
 		GameState.discovered_species.size(),
 		GameState.badge_count,
 		GameState.season_points,
+		int(reward_result.get("points", 0)),
+		GameState.exploration_points_total,
 	]
+	_push_log("年度远征结束，获得探索点 %d。" % int(reward_result.get("points", 0)))
+	for line in meta_progression_service.format_new_tracks(reward_result.get("new_tracks", [])):
+		_push_log("元成长解锁：%s。" % line)
 	_update_ui()
 
 func _build_companion_summaries() -> Array:
@@ -933,45 +1330,71 @@ func _update_ui() -> void:
 	board_view.refresh_view(current_node_id, _get_selectable_nodes(), _build_board_markers(), _get_locked_nodes())
 
 func _update_header() -> void:
-	round_label.text = "%s · 第 %d / %d 日" % [_season_name(), GameState.day_index, GameState.season_length]
-	objective_label.text = "构筑等级 %d ｜ 照料进度 %d ｜ 已安居 %d ｜ 徽章 %d ｜ 季节点数 %d" % [
-		GameState.get_progression_rank(),
-		GameState.get_care_progress(),
-		GameState.get_settled_habitat_count(),
-		GameState.badge_count,
-		GameState.season_points,
+	round_label.text = "%s · 第 %d / %d 回合 · 第 %d 周 · 总回合 %d / 100" % [
+		_season_name(),
+		GameState.season_turn,
+		GameState.season_length,
+		GameState.week_index,
+		GameState.global_turn,
+	]
+	var objective_name := String(GameState.weekly_objective.get("title", "等待周目标"))
+	var objective_progress := " / ".join(weekly_cycle_service.build_progress_lines(GameState.weekly_objective, GameState.weekly_progress))
+	if objective_progress.is_empty():
+		objective_progress = "本周尚未结算"
+	objective_label.text = "%s ｜ %s ｜ 修正 %d ｜ 重掷 %d/%d ｜ 锚定 %d" % [
+		objective_name,
+		objective_progress,
+		GameState.season_adjust_points,
+		GameState.weekly_reroll_count,
+		GameState.weekly_reroll_limit,
+		GameState.anchor_points,
 	]
 
 func _update_action_ui() -> void:
-	dice_label.text = "%s ｜ 天气：%s ｜ 时段：%s" % [_season_name(), _weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
-	roll_button.text = "开始今天"
-	support_button.text = "查看委托"
-	base_button.text = "驻点总览"
-	new_game_button.text = "重开年度"
+	dice_label.text = "%s ｜ 天气：%s ｜ 时段：%s" % [
+		dice_service.describe_roll(pending_roll),
+		_weather_name(GameState.weather_id),
+		_time_name(GameState.time_of_day),
+	]
+	roll_button.text = "掷骰前进"
+	support_button.text = "周目标"
+	base_button.text = "远征总览"
+	new_game_button.text = "重开远征"
 	roll_button.disabled = season_finished or _is_modal_open() or awaiting_destination
+	plus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) >= 6
+	minus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) <= 1
+	reroll_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.weekly_reroll_count >= GameState.weekly_reroll_limit
 	support_button.disabled = _is_modal_open() and not decision_panel.visible
 	base_button.disabled = _is_modal_open() and not base_panel.visible
 	if season_finished:
 		return
 	if awaiting_destination:
-		action_hint_label.text = "[b]今天想去哪里看看？[/b]\n点亮的地点都可以出发，优先考虑当季新开放的节点与试炼。"
+		action_hint_label.text = "[b]掷骰已生效，选择本回合落点。[/b]\n先看可达节点，再决定是否用修正点或本周重掷；当没有安全路线时会自动尝试锚定。"
 	else:
-		action_hint_label.text = "[b]从营地开始一天。[/b]\n核心闭环：准备 -> 选地点 -> 到点照料/建设/试炼 -> 回营记录。"
+		action_hint_label.text = "[b]从当前节点继续推进。[/b]\n核心闭环：掷骰 -> 选路 -> 落点内容 -> 周结算 -> 季切换。"
 
 func _update_summaries() -> void:
 	var synergy_report := synergy_service.build_synergy_report()
 	var facility_bonus := synergy_service.build_facility_bonus()
-	player_summary_label.text = "[b]营地记录[/b]\n构筑等级：%d\n照料进度：%d\n徽章：%d ｜ 季节点数：%d\n背包人口：%d / %d\n双打：%s\n库存：%s" % [
+	var npc_lines := npc_route_service.build_status_lines(2)
+	var threat_lines := threat_service.build_status_lines(board_lookup, 2)
+	player_summary_label.text = "[b]远征记录[/b]\n构筑等级：%d\n照料进度：%d\n徽章：%d ｜ 季节点数：%d ｜ 元成长点：%d\n背包人口：%d / %d\n双打：%s\n库存：%s" % [
 		GameState.get_progression_rank(),
 		GameState.get_care_progress(),
 		GameState.badge_count,
 		GameState.season_points,
+		GameState.exploration_points_total,
 		GameState.get_backpack_population_used(),
 		GameState.backpack_capacity,
 		" / ".join(_battle_slot_names()),
 		_format_inventory_highlights(),
 	]
-	ai_summary_label.text = "[b]今日计划[/b]\n季节：%s\n轮换试炼：%s\n推荐：%s" % [_season_name(), " / ".join(_active_dojo_names()), _today_focus_text()]
+	var season_goal := String(GameState.get_current_season_rule().get("season_goal", "维持推进感。"))
+	ai_summary_label.text = "[b]本季节奏[/b]\n区域：%s\n目标：%s\n推荐：%s" % [
+		board_progression_service.get_region_name(),
+		season_goal,
+		"%s\n敌群：%s" % [_today_focus_text(), " / ".join(threat_lines)],
+	]
 	var control_lines: Array[String] = []
 	control_lines.append("[b]地点状态[/b]")
 	control_lines.append_array(_location_status_lines().slice(0, 5))
@@ -981,6 +1404,11 @@ func _update_summaries() -> void:
 	if not facility_bonus.get("lines", []).is_empty():
 		control_lines.append("[b]建筑前置增益[/b]")
 		control_lines.append_array(facility_bonus.get("lines", []).slice(0, 2))
+	if not GameState.run_modifiers.is_empty():
+		control_lines.append("[b]本局词缀[/b]")
+		control_lines.append_array(run_modifier_service.format_lines(GameState.run_modifiers))
+	control_lines.append("[b]流动访客[/b]")
+	control_lines.append_array(npc_lines)
 	control_summary_label.text = "\n".join(control_lines)
 
 func _update_roster() -> void:
@@ -1003,11 +1431,35 @@ func _update_log() -> void:
 	event_log_label.scroll_to_line(event_log_label.get_line_count())
 
 func _update_map_hint() -> void:
+	var npc_markers := npc_route_service.build_node_markers()
+	var threat_markers := threat_service.build_node_markers()
 	if awaiting_destination:
-		var lines: Array[String] = ["[b]可前往地点[/b]"]
+		var lines: Array[String] = ["[b]本回合可达节点[/b]"]
 		for node_id in _get_selectable_nodes():
 			var node: Dictionary = board_lookup[node_id]
-			lines.append("%s [%s]" % [node["name"], _type_name(String(node.get("type", "")))])
+			var danger_text := " ｜ 危险 %d" % GameState.get_node_danger(node_id) if GameState.get_node_danger(node_id) > 0 else ""
+			var npc_text := " ｜ 访客 %s" % " / ".join(npc_markers.get(node_id, [])) if npc_markers.has(node_id) else ""
+			var threat_text := " ｜ 敌群 %s" % " / ".join(threat_markers.get(node_id, [])) if threat_markers.has(node_id) else ""
+			lines.append("%s [%s] · %s%s%s%s" % [
+				node["name"],
+				_type_name(String(node.get("type", ""))),
+				String(node.get("reward_hint", "查看详情")),
+				danger_text,
+				npc_text,
+				threat_text,
+			])
+			lines.append("路径：%s" % _format_path_preview(reachable_paths.get(node_id, [])))
+		var blocked_lines: Array[String] = []
+		for node_id in _get_blocked_reachable_nodes():
+			var node: Dictionary = board_lookup.get(node_id, {})
+			blocked_lines.append("%s：%s" % [
+				String(node.get("name", "未知节点")),
+				" / ".join(threat_markers.get(node_id, ["敌对群占据"])),
+			])
+		if not blocked_lines.is_empty():
+			lines.append("")
+			lines.append("[b]敌对占点[/b]")
+			lines.append("\n".join(blocked_lines.slice(0, 3)))
 		var locked_lines: Array[String] = []
 		for node_id in _get_locked_nodes():
 			var node: Dictionary = board_lookup[node_id]
@@ -1018,15 +1470,25 @@ func _update_map_hint() -> void:
 			lines.append("\n".join(locked_lines.slice(0, 3)))
 		map_hint_label.text = "\n".join(lines)
 		return
-	map_hint_label.text = "[b]今日提醒[/b]\n%s" % _today_focus_text()
+	map_hint_label.text = "[b]当前提醒[/b]\n%s\n\n[b]流动访客[/b] %s\n\n[b]游走威胁[/b] %s\n\n[b]周目标[/b] %s" % [
+		_today_focus_text(),
+		" / ".join(npc_route_service.build_status_lines(2)),
+		" / ".join(threat_service.build_status_lines(board_lookup, 2)),
+		weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress),
+	]
 
 func _build_board_markers() -> Dictionary:
 	var markers := {}
+	var npc_markers := npc_route_service.build_node_markers()
+	var threat_markers := threat_service.build_node_markers()
 	for node in world_nodes:
 		var node_id := int(node.get("id", -1))
 		var habitat_id := String(node.get("habitat_id", ""))
 		if habitat_id.is_empty():
-			markers[node_id] = "准备区"
+			markers[node_id] = "起点"
+			continue
+		if not GameState.revealed_board_nodes.has(node_id) and not _get_selectable_nodes().has(node_id):
+			markers[node_id] = "未显露"
 			continue
 		if not GameState.is_habitat_unlocked(habitat_id):
 			markers[node_id] = _unlock_marker_text(habitat_id)
@@ -1038,6 +1500,18 @@ func _build_board_markers() -> Dictionary:
 			resident_text = "住着 %s" % GameState.get_pet_display_name(resident_uid)
 		var quest_text := _quest_text_for_habitat(habitat_id)
 		var parts: Array[String] = []
+		var boss_rule := DataRepository.get_season_boss_rule(GameState.season_id)
+		if int(boss_rule.get("node_id", -1)) == node_id:
+			parts.append("赛季高潮")
+		var danger := GameState.get_node_danger(node_id)
+		if danger > 0:
+			parts.append("危险 %d" % danger)
+		if npc_markers.has(node_id):
+			parts.append("访客 %s" % " / ".join(npc_markers[node_id]))
+		if threat_markers.has(node_id):
+			parts.append("敌群 %s" % " / ".join(threat_markers[node_id]))
+		if GameState.has_node_ambush(node_id):
+			parts.append("伏击待命")
 		if not resident_text.is_empty():
 			parts.append(resident_text)
 		if not quest_text.is_empty():
@@ -1054,16 +1528,7 @@ func _get_selectable_nodes() -> Array[int]:
 	var selectable: Array[int] = []
 	if not awaiting_destination:
 		return selectable
-	for node in world_nodes:
-		var node_id := int(node.get("id", -1))
-		if node_id == 0:
-			continue
-		var habitat_id := String(node.get("habitat_id", ""))
-		if habitat_id.is_empty():
-			continue
-		if GameState.is_habitat_unlocked(habitat_id):
-			selectable.append(node_id)
-	return selectable
+	return _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
 
 func _get_locked_nodes() -> Array[int]:
 	var locked: Array[int] = []
@@ -1076,6 +1541,8 @@ func _get_locked_nodes() -> Array[int]:
 	return locked
 
 func _today_focus_text() -> String:
+	if not GameState.weekly_objective.is_empty():
+		return "本周目标：%s" % String(GameState.weekly_objective.get("title", "本周目标"))
 	if not GameState.active_quests.is_empty():
 		return "优先推进：%s" % _quest_title(GameState.active_quests[0])
 	if GameState.season_id == "summer" and GameState.is_habitat_unlocked("thunder_meadow") and not GameState.has_cleared_dojo("summer_storm_trial", "tier_1"):
@@ -1091,6 +1558,15 @@ func _today_focus_text() -> String:
 	if not GameState.is_habitat_unlocked("radiant_spire"):
 		return "继续累积地点等级和 NPC 信赖，为异常区做准备。"
 	return "季末可以考虑去裂辉尖塔做一次救助。"
+
+func _format_path_preview(path: Array) -> String:
+	if path.is_empty():
+		return "未记录路线"
+	var names: Array[String] = []
+	for node_id in path:
+		var node: Dictionary = board_lookup.get(int(node_id), {})
+		names.append(String(node.get("name", node_id)))
+	return " -> ".join(names)
 
 func _location_status_lines() -> Array[String]:
 	var lines: Array[String] = []
@@ -1321,6 +1797,14 @@ func _format_reward_bundle(reward_result: Dictionary) -> String:
 		parts.append("徽章 +%d" % int(systems.get("badge_count", 0)))
 	if int(systems.get("season_points", 0)) > 0:
 		parts.append("季节点数 +%d" % int(systems.get("season_points", 0)))
+	if int(systems.get("season_adjust_points", 0)) > 0:
+		parts.append("修正点 +%d" % int(systems.get("season_adjust_points", 0)))
+	if int(systems.get("weekly_reroll_limit", 0)) > 0:
+		parts.append("周重掷 +%d" % int(systems.get("weekly_reroll_limit", 0)))
+	if int(systems.get("anchor_points", 0)) > 0:
+		parts.append("锚定点 +%d" % int(systems.get("anchor_points", 0)))
+	if int(systems.get("exploration_points", 0)) > 0:
+		parts.append("探索点 +%d" % int(systems.get("exploration_points", 0)))
 	var unlocks: Array = reward_result.get("unlocks", [])
 	for habitat_id in unlocks:
 		parts.append("开放 %s" % _habitat_name(String(habitat_id)))

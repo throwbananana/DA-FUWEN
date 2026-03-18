@@ -7,11 +7,13 @@
 ## Implemented Systems
 
 - 季节轮换与地点开放：使用 `season_rules.json`、`habitat_unlock_rules.json`、`dojo_definitions.json`、`reward_tables.json`
+- 百回合远征主循环：4 季 × 25 回合、区域棋盘、掷骰选路、周目标与周结算
 - 双打与羁绊构筑：固定 `2v2`，背包容量由 `progression_curves_mda.json` 推导
 - MDA120 内容：已接入物种、羁绊、建筑、技能、进化链、遭遇表与扩展地点
 - 建筑共鸣：覆盖战前增益、经济追加产出、成长加速
 - 进化条件：优先读取 `evolution_chains_mda.json`，支持地点、建筑、羁绊与阶段条件
 - JSON 扩展内容：`quest_templates.json` 已扩充到 20 条，并补入 `events.json`、`dialogues.json`、`codex_entries.json`、`encyclopedia_entries.json`
+- 轻 roguelite 结构：本局词缀、探索点、骰子模组解锁与赛季高潮奖励
 
 ## Runtime Entry Points
 
@@ -23,6 +25,8 @@
 - `scripts/services/encounter_service.gd`：遭遇筛选与稀有度权重
 - `scripts/services/synergy_service.gd`：羁绊与建筑共鸣
 - `scripts/json_expansion_smoke_test.gd`：扩展任务 / 事件 / 对话 / 图鉴 / 百科读表校验
+- `scripts/run_upgrade_smoke_test.gd`：百回合升级主循环与赛季奖励校验
+- `scripts/strategic_layer_smoke_test.gd`：节点主玩法收敛与遭遇失败后果校验
 
 ## Validation
 
@@ -34,6 +38,8 @@ godot --headless --path . -s res://scripts/season_upgrade_smoke_test.gd
 godot --headless --path . -s res://scripts/bond_double_smoke_test.gd
 godot --headless --path . -s res://scripts/mda120_upgrade_smoke_test.gd
 godot --headless --path . -s res://scripts/json_expansion_smoke_test.gd
+godot --headless --path . -s res://scripts/run_upgrade_smoke_test.gd
+godot --headless --path . -s res://scripts/strategic_layer_smoke_test.gd
 ```
 
 ## Reference Materials

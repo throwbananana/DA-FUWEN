@@ -3,8 +3,12 @@ extends RefCounted
 
 ## 负责 NPC 好感、委托刷新与奖励发放。
 
+const NpcRouteServiceScript = preload("res://scripts/services/npc_route_service.gd")
+
+var npc_route_service = NpcRouteServiceScript.new()
+
 func get_visible_npcs(habitat_id: String) -> Array:
-	return DataRepository.get_habitat_npcs(habitat_id)
+	return npc_route_service.get_visible_npcs(habitat_id)
 
 func get_npc_trust(npc_id: String) -> int:
 	return int(GameState.npc_trust.get(npc_id, 0))
@@ -32,10 +36,16 @@ func complete_trust_reward(npc_id: String, trust_gain: int) -> Dictionary:
 
 func get_available_quests(habitat_id: String) -> Array:
 	var result: Array = []
+	var visible_givers := {}
+	for npc in get_visible_npcs(habitat_id):
+		visible_givers[String(npc.get("id", ""))] = true
 	for quest in DataRepository.quests.values():
 		var quest_id := String(quest.get("id", ""))
-		if String(quest.get("target_habitat", "")) == habitat_id and not GameState.completed_quests.has(quest_id):
-			result.append(quest)
+		if GameState.completed_quests.has(quest_id):
+			continue
+		if not visible_givers.has(String(quest.get("giver", ""))):
+			continue
+		result.append(quest)
 	return result
 
 func finish_quest(quest_id: String) -> Dictionary:

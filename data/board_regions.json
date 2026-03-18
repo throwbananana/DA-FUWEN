@@ -1,0 +1,353 @@
+{
+  "version": 1,
+  "regions": [
+    {
+      "id": "spring_frontier",
+      "season_id": "spring",
+      "name": "春芽边境",
+      "start_node_id": 0,
+      "boss_node_id": 6,
+      "revealed_nodes": [0, 1, 2, 3],
+      "nodes": [
+        {
+          "id": 0,
+          "name": "营地",
+          "type": "camp",
+          "description": "春季远征的补给起点。",
+          "position": [80, 280],
+          "edges": [1, 2, 3],
+          "travel_cost": 0,
+          "habitat_id": "",
+          "focus": "补给 / 规划",
+          "reward_hint": "查看本周目标与路线"
+        },
+        {
+          "id": 1,
+          "name": "雾苔窟",
+          "type": "habitat",
+          "description": "低压观察点，适合开局养成与驻守。",
+          "position": [300, 120],
+          "edges": [0, 4],
+          "travel_cost": 1,
+          "habitat_id": "mist_moss_cave",
+          "primary_content": "observe",
+          "focus": "观察 / 驻守",
+          "reward_hint": "软苔、观察与羁绊成长"
+        },
+        {
+          "id": 2,
+          "name": "晶溪滩",
+          "type": "habitat",
+          "description": "能快速补材料的水域据点。",
+          "position": [300, 430],
+          "edges": [0, 5],
+          "travel_cost": 1,
+          "habitat_id": "crystal_creek",
+          "primary_content": "build_menu",
+          "focus": "采集 / 成长",
+          "reward_hint": "石片、水域材料与住民养成"
+        },
+        {
+          "id": 3,
+          "name": "云升驿",
+          "type": "settlement",
+          "description": "春季的消息中转站，适合接委托。",
+          "position": [560, 250],
+          "edges": [0, 4, 5],
+          "travel_cost": 1,
+          "habitat_id": "sky_post",
+          "primary_content": "npc_menu",
+          "focus": "NPC / 委托",
+          "reward_hint": "对话、委托与驿站服务"
+        },
+        {
+          "id": 4,
+          "name": "古械平台",
+          "type": "habitat",
+          "description": "建设向节点，是春季周目标的重要来源。",
+          "position": [870, 120],
+          "edges": [1, 3, 6],
+          "travel_cost": 2,
+          "habitat_id": "ancient_platform",
+          "primary_content": "build_menu",
+          "focus": "建设 / 强化",
+          "reward_hint": "零件、修复与建筑共鸣"
+        },
+        {
+          "id": 5,
+          "name": "铜锤集",
+          "type": "settlement",
+          "description": "适合把材料转化成建设收益。",
+          "position": [870, 430],
+          "edges": [2, 3, 6],
+          "travel_cost": 2,
+          "habitat_id": "copper_hammer_bazaar",
+          "primary_content": "npc_menu",
+          "focus": "补给 / 工坊",
+          "reward_hint": "纤维、零件与交易收益"
+        },
+        {
+          "id": 6,
+          "name": "裂辉尖塔",
+          "type": "anomaly",
+          "description": "春季异常终点，承担阶段压力测试。",
+          "position": [1180, 250],
+          "edges": [4, 5],
+          "travel_cost": 3,
+          "habitat_id": "radiant_spire",
+          "primary_content": "observe",
+          "focus": "精英 / 季末压力",
+          "reward_hint": "异常材料与高压回报"
+        }
+      ]
+    },
+    {
+      "id": "summer_stormway",
+      "season_id": "summer",
+      "name": "盛雷走廊",
+      "start_node_id": 0,
+      "boss_node_id": 6,
+      "revealed_nodes": [0, 4, 5],
+      "nodes": [
+        {
+          "id": 0,
+          "name": "营地",
+          "type": "camp",
+          "description": "夏季远征的整备起点。",
+          "position": [120, 280],
+          "edges": [4, 5],
+          "travel_cost": 0,
+          "habitat_id": "",
+          "focus": "补给 / 规划",
+          "reward_hint": "为试炼和精英格蓄力"
+        },
+        {
+          "id": 4,
+          "name": "古械平台",
+          "type": "habitat",
+          "description": "高建设收益的雷季前置站。",
+          "position": [340, 130],
+          "edges": [0, 7, 6],
+          "travel_cost": 1,
+          "habitat_id": "ancient_platform",
+          "primary_content": "build_menu",
+          "focus": "建设 / 缓冲",
+          "reward_hint": "整备建筑、补零件"
+        },
+        {
+          "id": 5,
+          "name": "铜锤集",
+          "type": "settlement",
+          "description": "夏季补给枢纽，常有交易与周任务。",
+          "position": [340, 430],
+          "edges": [0, 7, 10],
+          "travel_cost": 1,
+          "habitat_id": "copper_hammer_bazaar",
+          "primary_content": "npc_menu",
+          "focus": "补给 / 委托",
+          "reward_hint": "交易、整补与路线信息"
+        },
+        {
+          "id": 7,
+          "name": "鸣雷草场",
+          "type": "habitat",
+          "description": "夏季成长节点，是试炼前的养成跳板。",
+          "position": [650, 120],
+          "edges": [4, 5, 10],
+          "travel_cost": 2,
+          "habitat_id": "thunder_meadow",
+          "primary_content": "observe",
+          "focus": "成长 / 训练",
+          "reward_hint": "电芒芦、训练与 build 成型"
+        },
+        {
+          "id": 10,
+          "name": "回声断桥",
+          "type": "settlement",
+          "description": "连向异常区的桥头，承接周挑战。",
+          "position": [650, 430],
+          "edges": [5, 7, 6],
+          "travel_cost": 2,
+          "habitat_id": "echo_broken_bridge",
+          "primary_content": "observe",
+          "focus": "任务 / 过桥",
+          "reward_hint": "桥头事件、联动解锁"
+        },
+        {
+          "id": 6,
+          "name": "裂辉尖塔",
+          "type": "anomaly",
+          "description": "盛雷季的高压终点，强调构筑和节奏掌控。",
+          "position": [980, 250],
+          "edges": [4, 10],
+          "travel_cost": 3,
+          "habitat_id": "radiant_spire",
+          "primary_content": "observe",
+          "focus": "精英 / 阶段 Boss",
+          "reward_hint": "异常奖励与季末验证"
+        }
+      ]
+    },
+    {
+      "id": "autumn_forgepath",
+      "season_id": "autumn",
+      "name": "赤叶锻路",
+      "start_node_id": 0,
+      "boss_node_id": 8,
+      "revealed_nodes": [0, 10, 12],
+      "nodes": [
+        {
+          "id": 0,
+          "name": "营地",
+          "type": "camp",
+          "description": "秋季的锻路起点。",
+          "position": [100, 280],
+          "edges": [10, 12],
+          "travel_cost": 0,
+          "habitat_id": "",
+          "focus": "规划 / 构筑",
+          "reward_hint": "秋季 build 冲刺"
+        },
+        {
+          "id": 10,
+          "name": "回声断桥",
+          "type": "settlement",
+          "description": "秋季路线核心节点，连接试炼与成长支线。",
+          "position": [350, 120],
+          "edges": [0, 8, 13],
+          "travel_cost": 1,
+          "habitat_id": "echo_broken_bridge",
+          "primary_content": "npc_menu",
+          "focus": "桥头 / 路线切换",
+          "reward_hint": "任务推进与路线情报"
+        },
+        {
+          "id": 12,
+          "name": "青栎林",
+          "type": "habitat",
+          "description": "低压成长路线，可稳住秋季节奏。",
+          "position": [350, 430],
+          "edges": [0, 13, 14],
+          "travel_cost": 1,
+          "habitat_id": "greenbark_grove",
+          "primary_content": "observe",
+          "focus": "成长 / 恢复",
+          "reward_hint": "琥脂、稳定成长与低压收益"
+        },
+        {
+          "id": 13,
+          "name": "烬火盆地",
+          "type": "habitat",
+          "description": "爆发型成长节点，适合 build 冲刺。",
+          "position": [670, 120],
+          "edges": [10, 12, 14],
+          "travel_cost": 2,
+          "habitat_id": "ember_crater",
+          "primary_content": "build_menu",
+          "focus": "爆发 / 输出",
+          "reward_hint": "温石、火系材料与强化"
+        },
+        {
+          "id": 14,
+          "name": "芦泽沼",
+          "type": "habitat",
+          "description": "拖延与净化型节点，适合作为风险缓冲。",
+          "position": [670, 430],
+          "edges": [12, 13, 8],
+          "travel_cost": 2,
+          "habitat_id": "reed_mire",
+          "primary_content": "observe",
+          "focus": "恢复 / 净化",
+          "reward_hint": "芦苇、净化与回稳"
+        },
+        {
+          "id": 8,
+          "name": "赤叶演武场",
+          "type": "dojo",
+          "description": "秋季主试炼，是阶段性高潮与构筑验收点。",
+          "position": [1000, 250],
+          "edges": [10, 14],
+          "travel_cost": 3,
+          "habitat_id": "autumn_leaf_dojo",
+          "primary_content": "dojo_menu",
+          "focus": "试炼 / 阶段 Boss",
+          "reward_hint": "徽章、进度点与高阶解锁"
+        }
+      ]
+    },
+    {
+      "id": "winter_mirrorway",
+      "season_id": "winter",
+      "name": "霜镜回路",
+      "start_node_id": 0,
+      "boss_node_id": 16,
+      "revealed_nodes": [0, 9, 11],
+      "nodes": [
+        {
+          "id": 0,
+          "name": "营地",
+          "type": "camp",
+          "description": "冬季远征的起点，强调稳态与终局准备。",
+          "position": [120, 280],
+          "edges": [9, 11],
+          "travel_cost": 0,
+          "habitat_id": "",
+          "focus": "整备 / 终局",
+          "reward_hint": "准备最终构筑"
+        },
+        {
+          "id": 9,
+          "name": "霜镜湖",
+          "type": "habitat",
+          "description": "冬季低压收益点，适合修复状态。",
+          "position": [340, 120],
+          "edges": [0, 15],
+          "travel_cost": 1,
+          "habitat_id": "frost_mirror_lake",
+          "primary_content": "observe",
+          "focus": "恢复 / 观察",
+          "reward_hint": "冰镜片、低压收益"
+        },
+        {
+          "id": 11,
+          "name": "裂辉观测台",
+          "type": "anomaly",
+          "description": "冬季中段的高压节点，为终局铺垫。",
+          "position": [340, 430],
+          "edges": [0, 15, 16],
+          "travel_cost": 2,
+          "habitat_id": "radiant_observatory",
+          "primary_content": "observe",
+          "focus": "异常 / 中压",
+          "reward_hint": "辉尘、异常推进"
+        },
+        {
+          "id": 15,
+          "name": "盐镜海岸",
+          "type": "habitat",
+          "description": "机动型节点，帮助修正最终路线。",
+          "position": [680, 250],
+          "edges": [9, 11, 16],
+          "travel_cost": 2,
+          "habitat_id": "saltglass_coast",
+          "primary_content": "observe",
+          "focus": "机动 / 调整",
+          "reward_hint": "玻片、机动与路线上限"
+        },
+        {
+          "id": 16,
+          "name": "月沼遗迹",
+          "type": "anomaly",
+          "description": "年度终局节点，承担最终压力与结算。",
+          "position": [1010, 250],
+          "edges": [11, 15],
+          "travel_cost": 3,
+          "habitat_id": "moonfen_ruins",
+          "primary_content": "observe",
+          "focus": "终局 / 年度 Boss",
+          "reward_hint": "辉尘、终局奖励与远征结算"
+        }
+      ]
+    }
+  ]
+}

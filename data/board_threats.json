@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "threats": [
+    {
+      "id": "spring_briar_pack",
+      "season_id": "spring",
+      "name": "荆苔猎群",
+      "spawn_turn": 3,
+      "route": [5, 3, 4, 6],
+      "danger_gain": 1,
+      "spillover_danger": 1,
+      "block_node": true,
+      "loop_route": true,
+      "player_ambush": 1
+    },
+    {
+      "id": "summer_tempest_patrol",
+      "season_id": "summer",
+      "name": "雷羽巡猎",
+      "spawn_turn": 4,
+      "route": [10, 7, 6, 4],
+      "danger_gain": 1,
+      "spillover_danger": 1,
+      "block_node": true,
+      "loop_route": true,
+      "player_ambush": 1
+    },
+    {
+      "id": "autumn_ash_hunters",
+      "season_id": "autumn",
+      "name": "灰烬伏行者",
+      "spawn_turn": 3,
+      "route": [13, 10, 14, 8],
+      "danger_gain": 1,
+      "spillover_danger": 1,
+      "block_node": true,
+      "loop_route": true,
+      "player_ambush": 1
+    },
+    {
+      "id": "winter_mirror_stalkers",
+      "season_id": "winter",
+      "name": "镜潮潜袭群",
+      "spawn_turn": 4,
+      "route": [11, 15, 16, 9],
+      "danger_gain": 1,
+      "spillover_danger": 1,
+      "block_node": true,
+      "loop_route": true,
+      "player_ambush": 1
+    }
+  ]
+}

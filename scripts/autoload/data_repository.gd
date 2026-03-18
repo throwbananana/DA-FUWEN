@@ -26,6 +26,19 @@ var events: Dictionary = {}
 var dialogues: Dictionary = {}
 var codex_entries: Dictionary = {}
 var encyclopedia_entries: Dictionary = {}
+var npc_routes: Array = []
+var npc_routes_by_season: Dictionary = {}
+var board_regions: Dictionary = {}
+var board_regions_by_season: Dictionary = {}
+var node_decks_by_season: Dictionary = {}
+var board_threats: Array = []
+var board_threats_by_season: Dictionary = {}
+var dice_modules: Dictionary = {}
+var run_modifiers: Array = []
+var weekly_objectives: Array = []
+var weekly_objectives_by_season: Dictionary = {}
+var season_boss_rules_by_season: Dictionary = {}
+var meta_progression_tracks: Array = []
 
 func _ready() -> void:
 	load_all()
@@ -44,7 +57,16 @@ func load_all() -> void:
 	dialogues = _index_by_id(_read_json("%s/dialogues.json" % DATA_ROOT).get("dialogues", []))
 	codex_entries = _index_by_id(_read_json("%s/codex_entries.json" % DATA_ROOT).get("codex_entries", []))
 	encyclopedia_entries = _index_by_id(_read_json("%s/encyclopedia_entries.json" % DATA_ROOT).get("encyclopedia_entries", []))
+	_load_npc_routes(_read_json("%s/npc_routes.json" % DATA_ROOT).get("routes", []))
 	season_rules = _index_by_id(_read_json("%s/season_rules.json" % DATA_ROOT).get("seasons", []))
+	_load_board_regions(_read_json("%s/board_regions.json" % DATA_ROOT).get("regions", []))
+	_load_node_decks(_read_json("%s/node_decks.json" % DATA_ROOT).get("decks", []))
+	_load_board_threats(_read_json("%s/board_threats.json" % DATA_ROOT).get("threats", []))
+	dice_modules = _index_by_id(_read_json("%s/dice_modules.json" % DATA_ROOT).get("modules", []))
+	run_modifiers = _read_json("%s/run_modifiers.json" % DATA_ROOT).get("modifiers", []).duplicate(true)
+	_load_weekly_objectives(_read_json("%s/weekly_objectives.json" % DATA_ROOT).get("objectives", []))
+	_load_season_boss_rules(_read_json("%s/season_boss_rules.json" % DATA_ROOT).get("bosses", []))
+	meta_progression_tracks = _read_json("%s/meta_progression.json" % DATA_ROOT).get("tracks", []).duplicate(true)
 	unlock_rules_by_habitat = _group_unlock_rules(_read_json("%s/habitat_unlock_rules.json" % DATA_ROOT).get("rules", []))
 	dojos = _index_by_id(_read_json("%s/dojo_definitions.json" % DATA_ROOT).get("dojos", []))
 	reward_bundles = _read_json("%s/reward_tables.json" % DATA_ROOT).get("reward_bundles", {})
@@ -99,6 +121,69 @@ func _group_unlock_rules(rows: Array) -> Dictionary:
 			return int(a.get("priority", 0)) < int(b.get("priority", 0))
 		)
 	return result
+
+func _load_board_regions(rows: Array) -> void:
+	board_regions.clear()
+	board_regions_by_season.clear()
+	for row in rows:
+		var region_id := String(row.get("id", ""))
+		var season_id := String(row.get("season_id", ""))
+		if region_id.is_empty():
+			continue
+		board_regions[region_id] = row
+		if not season_id.is_empty():
+			board_regions_by_season[season_id] = row
+
+func _load_npc_routes(rows: Array) -> void:
+	npc_routes = rows.duplicate(true)
+	npc_routes_by_season.clear()
+	for row in npc_routes:
+		for season_id in row.get("season_ids", []):
+			var key := String(season_id)
+			if key.is_empty():
+				continue
+			if not npc_routes_by_season.has(key):
+				npc_routes_by_season[key] = []
+			npc_routes_by_season[key].append(row)
+
+func _load_node_decks(rows: Array) -> void:
+	node_decks_by_season.clear()
+	for row in rows:
+		var season_id := String(row.get("season_id", ""))
+		if season_id.is_empty():
+			continue
+		node_decks_by_season[season_id] = row
+
+func _load_board_threats(rows: Array) -> void:
+	board_threats = rows.duplicate(true)
+	board_threats_by_season.clear()
+	for row in board_threats:
+		var season_id := String(row.get("season_id", ""))
+		if season_id.is_empty():
+			continue
+		if not board_threats_by_season.has(season_id):
+			board_threats_by_season[season_id] = []
+		board_threats_by_season[season_id].append(row)
+
+func _load_weekly_objectives(rows: Array) -> void:
+	weekly_objectives = rows.duplicate(true)
+	weekly_objectives_by_season.clear()
+	for row in weekly_objectives:
+		for season_id in row.get("season_ids", []):
+			var key := String(season_id)
+			if key.is_empty():
+				continue
+			if not weekly_objectives_by_season.has(key):
+				weekly_objectives_by_season[key] = []
+			weekly_objectives_by_season[key].append(row)
+
+func _load_season_boss_rules(rows: Array) -> void:
+	season_boss_rules_by_season.clear()
+	for row in rows:
+		var season_id := String(row.get("season_id", ""))
+		if season_id.is_empty():
+			continue
+		season_boss_rules_by_season[season_id] = row
 
 func _merge_indexed_rows(base_index: Dictionary, rows: Array) -> Dictionary:
 	var result: Dictionary = base_index.duplicate(true)
@@ -168,8 +253,23 @@ func get_codex_entry(entry_id: String) -> Dictionary:
 func get_encyclopedia_entry(entry_id: String) -> Dictionary:
 	return encyclopedia_entries.get(entry_id, {})
 
+func get_npc_routes_for_season(season_id: String) -> Array:
+	return npc_routes_by_season.get(season_id, []).duplicate(true)
+
 func get_season_rule(season_id: String) -> Dictionary:
 	return season_rules.get(season_id, {})
+
+func get_board_region(region_id: String) -> Dictionary:
+	return board_regions.get(region_id, {})
+
+func get_board_region_for_season(season_id: String) -> Dictionary:
+	return board_regions_by_season.get(season_id, {})
+
+func get_node_deck_for_season(season_id: String) -> Dictionary:
+	return node_decks_by_season.get(season_id, {})
+
+func get_board_threats_for_season(season_id: String) -> Array:
+	return board_threats_by_season.get(season_id, []).duplicate(true)
 
 func get_unlock_rules_for_habitat(habitat_id: String) -> Array:
 	return unlock_rules_by_habitat.get(habitat_id, []).duplicate(true)
@@ -179,6 +279,21 @@ func get_dojo(dojo_id: String) -> Dictionary:
 
 func get_reward_bundle(bundle_id: String) -> Dictionary:
 	return reward_bundles.get(bundle_id, {})
+
+func get_dice_module(module_id: String) -> Dictionary:
+	return dice_modules.get(module_id, {})
+
+func get_run_modifiers() -> Array:
+	return run_modifiers.duplicate(true)
+
+func get_weekly_objectives_for_season(season_id: String) -> Array:
+	return weekly_objectives_by_season.get(season_id, []).duplicate(true)
+
+func get_season_boss_rule(season_id: String) -> Dictionary:
+	return season_boss_rules_by_season.get(season_id, {}).duplicate(true)
+
+func get_meta_progression_tracks() -> Array:
+	return meta_progression_tracks.duplicate(true)
 
 func get_skill(skill_id: String) -> Dictionary:
 	return skill_library.get(skill_id, {})

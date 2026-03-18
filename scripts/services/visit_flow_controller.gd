@@ -80,6 +80,12 @@ func start_observation() -> void:
 	current_step = "encounter_preview"
 	state_changed.emit("encounter_preview", current_encounter)
 
+func start_observation_for_habitat(habitat_id: String, source: String = "observe") -> void:
+	current_habitat_id = habitat_id
+	current_encounter = encounter_service.roll_encounter(current_habitat_id, source)
+	current_step = "encounter_preview"
+	state_changed.emit("encounter_preview", current_encounter)
+
 func choose_encounter_action(action_id: String) -> void:
 	if current_encounter.is_empty():
 		return

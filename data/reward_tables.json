@@ -121,6 +121,103 @@
         "failed_dojo_streak_relief": 1
       },
       "unlocks": []
+    },
+    "weekly_supply_bundle": {
+      "items": {
+        "soft_moss": 2,
+        "wood": 1
+      },
+      "systems": {
+        "season_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_growth_bundle": {
+      "items": {
+        "stone_chip": 2,
+        "parts": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "season_adjust_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_social_bundle": {
+      "items": {
+        "tea_leaf": 1,
+        "paper": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "weekly_reroll_limit": 1
+      },
+      "unlocks": []
+    },
+    "weekly_discovery_bundle": {
+      "items": {
+        "glow_dust": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "exploration_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_battle_bundle": {
+      "items": {
+        "amber_resin": 1,
+        "warm_stone": 1
+      },
+      "systems": {
+        "season_points": 2,
+        "exploration_points": 1
+      },
+      "unlocks": []
+    },
+    "season_boss_spring": {
+      "items": {
+        "dew_crystal": 2,
+        "parts": 1
+      },
+      "systems": {
+        "season_points": 3,
+        "exploration_points": 2
+      },
+      "unlocks": []
+    },
+    "season_boss_summer": {
+      "items": {
+        "storm_core": 1,
+        "spark_reed": 2
+      },
+      "systems": {
+        "season_points": 4,
+        "exploration_points": 2
+      },
+      "unlocks": []
+    },
+    "season_boss_autumn": {
+      "items": {
+        "amber_resin": 2,
+        "blueprint_scrap": 1
+      },
+      "systems": {
+        "season_points": 4,
+        "exploration_points": 3
+      },
+      "unlocks": []
+    },
+    "season_boss_winter": {
+      "items": {
+        "glow_dust": 2,
+        "ice_glass": 2
+      },
+      "systems": {
+        "season_points": 5,
+        "exploration_points": 4
+      },
+      "unlocks": []
     }
   }
 }

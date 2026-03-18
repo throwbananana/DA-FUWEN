@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "modifiers": [
+    {
+      "id": "quiet_supply",
+      "name": "静稳补给",
+      "weight": 3,
+      "description": "每周结算额外获得 1 点远征进度。",
+      "effects": {
+        "weekly_bonus_season_points": 1
+      }
+    },
+    {
+      "id": "lively_weather",
+      "name": "躁动天气",
+      "weight": 2,
+      "description": "本局赛季修正点总量 +1。",
+      "effects": {
+        "season_adjust_bonus": 1
+      }
+    },
+    {
+      "id": "field_harvest",
+      "name": "丰收地脉",
+      "weight": 2,
+      "description": "每次回合结算额外获得 1 份软苔。",
+      "effects": {
+        "visit_bonus_item": "soft_moss",
+        "visit_bonus_amount": 1
+      }
+    }
+  ]
+}

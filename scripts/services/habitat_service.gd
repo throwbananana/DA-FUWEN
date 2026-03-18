@@ -4,6 +4,10 @@ extends RefCounted
 ## 处理据点驻守、建造、据点成长。
 ## 这里假设存在 DataRepository / GameState 两个 AutoLoad。
 
+const NpcRouteServiceScript = preload("res://scripts/services/npc_route_service.gd")
+
+var npc_route_service = NpcRouteServiceScript.new()
+
 func assign_resident(habitat_id: String, pet_uid: String, as_assistant: bool = false) -> Dictionary:
 	var habitat = DataRepository.get_habitat(habitat_id)
 	if habitat.is_empty():
@@ -101,11 +105,13 @@ func get_visit_summary(habitat_id: String) -> Dictionary:
 	var habitat := DataRepository.get_habitat(habitat_id)
 	var state: Dictionary = GameState.habitats.get(habitat_id, {})
 	var resident_uid := String(state.get("resident_uid", ""))
+	var npc_presence := npc_route_service.get_presence_report(habitat_id)
 	return {
 		"habitat": habitat,
 		"state": state,
 		"buildings": DataRepository.get_buildings_for_habitat(habitat_id),
-		"npcs": DataRepository.get_habitat_npcs(habitat_id),
+		"npcs": npc_presence.get("visible_npcs", []),
+		"npc_presence": npc_presence,
 		"resident": GameState.get_pet(resident_uid) if not resident_uid.is_empty() else {},
 		"access": get_access_report(habitat_id),
 		"dojo": DataRepository.get_dojo(String(habitat.get("dojo_id", ""))),

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "tracks": [
+    {
+      "id": "meta_steady_core",
+      "threshold": 6,
+      "label": "稳态芯片",
+      "description": "新 run 开局额外获得 1 次每周重掷。",
+      "unlock": {
+        "dice_module_id": "steady_core"
+      }
+    },
+    {
+      "id": "meta_trim_edge",
+      "threshold": 12,
+      "label": "校准棱片",
+      "description": "新 run 开局赛季修正点 +1。",
+      "unlock": {
+        "dice_module_id": "trim_edge"
+      }
+    },
+    {
+      "id": "meta_anchor_thread",
+      "threshold": 24,
+      "label": "锚定丝线",
+      "description": "新 run 开局额外获得 1 个锚定点。",
+      "unlock": {
+        "dice_module_id": "anchor_thread"
+      }
+    }
+  ]
+}

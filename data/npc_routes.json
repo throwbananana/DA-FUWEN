@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "routes": [
+    {
+      "npc_id": "stone_trader",
+      "season_ids": ["spring", "autumn"],
+      "cycle": ["crystal_creek", "copper_hammer_bazaar"],
+      "active_turns": [1, 2, 3],
+      "offset": 0
+    },
+    {
+      "npc_id": "traveling_peddler",
+      "season_ids": ["spring", "summer", "autumn"],
+      "cycle": ["sky_post", "ancient_platform", "copper_hammer_bazaar"],
+      "active_turns": [2, 3, 4],
+      "offset": 1
+    },
+    {
+      "npc_id": "parts_vendor",
+      "season_ids": ["spring", "summer"],
+      "cycle": ["copper_hammer_bazaar", "sky_post"],
+      "active_turns": [3, 4, 5],
+      "offset": 0
+    }
+  ]
+}

@@ -4,7 +4,12 @@
     {
       "id": "spring",
       "name": "春芽季",
-      "days": 6,
+      "days": 25,
+      "region_id": "spring_frontier",
+      "weekly_reroll_limit": 1,
+      "season_adjust_points": 3,
+      "season_goal": "稳住据点建设与基础养成，准备第一次阶段压力。",
+      "weekly_summary": "春季每 5 回合进行一次补给与周目标结算。",
       "weather_pool": [
         "clear",
         "drizzle",
@@ -27,12 +32,22 @@
       },
       "dojo_rotation": [
         "spring_bloom_trial"
+      ],
+      "objective_tags": [
+        "build",
+        "bond",
+        "observe"
       ]
     },
     {
       "id": "summer",
       "name": "盛雷季",
-      "days": 6,
+      "days": 25,
+      "region_id": "summer_stormway",
+      "weekly_reroll_limit": 1,
+      "season_adjust_points": 3,
+      "season_goal": "让构筑真正成型，并在高压路线里维持节奏。",
+      "weekly_summary": "盛雷季每周都会刷新挑战路线和补给节奏。",
       "weather_pool": [
         "clear",
         "storm",
@@ -55,12 +70,22 @@
       },
       "dojo_rotation": [
         "summer_storm_trial"
+      ],
+      "objective_tags": [
+        "encounter",
+        "visit",
+        "build"
       ]
     },
     {
       "id": "autumn",
       "name": "赤叶季",
-      "days": 6,
+      "days": 25,
+      "region_id": "autumn_forgepath",
+      "weekly_reroll_limit": 1,
+      "season_adjust_points": 3,
+      "season_goal": "围绕试炼与成长路线，完成中后期 build 验收。",
+      "weekly_summary": "赤叶季每周都应有一次构筑冲刺或试炼尝试。",
       "weather_pool": [
         "clear",
         "windy",
@@ -81,12 +106,22 @@
       },
       "dojo_rotation": [
         "autumn_leaf_dojo"
+      ],
+      "objective_tags": [
+        "dojo",
+        "growth",
+        "social"
       ]
     },
     {
       "id": "winter",
       "name": "霜镜季",
-      "days": 6,
+      "days": 25,
+      "region_id": "winter_mirrorway",
+      "weekly_reroll_limit": 1,
+      "season_adjust_points": 3,
+      "season_goal": "维持终局稳态并完成年度远征。",
+      "weekly_summary": "霜镜季每周都要在恢复与终局推进之间做取舍。",
       "weather_pool": [
         "snow",
         "clear",
@@ -109,6 +144,11 @@
       },
       "dojo_rotation": [
         "winter_mirror_trial"
+      ],
+      "objective_tags": [
+        "observe",
+        "visit",
+        "build"
       ]
     }
   ]

@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "modules": [
+    {
+      "id": "steady_core",
+      "name": "稳态芯片",
+      "description": "每周额外获得 1 次重掷，降低前期坏运气的尖刺。",
+      "unlock_threshold": 0,
+      "effects": {
+        "weekly_reroll_bonus": 1
+      }
+    },
+    {
+      "id": "trim_edge",
+      "name": "校准棱片",
+      "description": "赛季开始时额外获得 1 点掷骰修正。",
+      "unlock_threshold": 12,
+      "effects": {
+        "season_adjust_bonus": 1
+      }
+    },
+    {
+      "id": "anchor_thread",
+      "name": "锚定丝线",
+      "description": "开局额外获得 1 个锚定点，用于救回关键路线。",
+      "unlock_threshold": 24,
+      "effects": {
+        "anchor_bonus": 1
+      }
+    }
+  ]
+}

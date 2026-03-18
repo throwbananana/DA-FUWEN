@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "bosses": [
+    {
+      "id": "spring_spire",
+      "season_id": "spring",
+      "node_id": 6,
+      "habitat_id": "radiant_spire",
+      "name": "裂辉尖塔",
+      "description": "春季终点，强调建设与基础 build 是否成型。",
+      "reward_bundle_id": "season_boss_spring"
+    },
+    {
+      "id": "summer_spire",
+      "season_id": "summer",
+      "node_id": 6,
+      "habitat_id": "radiant_spire",
+      "name": "雷暴尖塔",
+      "description": "夏季终点，强调应对高压精英的能力。",
+      "reward_bundle_id": "season_boss_summer"
+    },
+    {
+      "id": "autumn_dojo_boss",
+      "season_id": "autumn",
+      "node_id": 8,
+      "habitat_id": "autumn_leaf_dojo",
+      "name": "赤叶演武场",
+      "description": "秋季终点，强调试炼与构筑验收。",
+      "reward_bundle_id": "season_boss_autumn"
+    },
+    {
+      "id": "winter_ruins_boss",
+      "season_id": "winter",
+      "node_id": 16,
+      "habitat_id": "moonfen_ruins",
+      "name": "月沼遗迹",
+      "description": "冬季与年度终局，承担最终远征结算。",
+      "reward_bundle_id": "season_boss_winter"
+    }
+  ]
+}

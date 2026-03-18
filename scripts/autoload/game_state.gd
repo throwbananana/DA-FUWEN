@@ -11,6 +11,32 @@ var weather_id := "clear"
 var time_of_day := "day"
 var day_index := 1
 var season_length := DEFAULT_SEASON_LENGTH
+var global_turn := 1
+var season_turn := 1
+var week_index := 1
+var weekly_turn := 1
+var weekly_reroll_count := 0
+var weekly_reroll_limit := 1
+var season_adjust_points := 0
+var anchor_points := 0
+var board_region_id := ""
+var current_board_node_id := 0
+var revealed_board_nodes: Array[int] = []
+var node_danger: Dictionary = {}
+var pending_node_ambushes: Dictionary = {}
+var active_board_threats: Array = []
+var npc_positions: Dictionary = {}
+var run_modifiers: Array = []
+var weekly_objective: Dictionary = {}
+var weekly_progress: Dictionary = {}
+var completed_seasons := 0
+var exploration_points := 0
+var exploration_points_total := 0
+var claimed_season_bosses: Array[String] = []
+var meta_unlocks: Dictionary = {
+	"tracks": [],
+	"dice_modules": [],
+}
 
 var inventory: Dictionary = {}
 var habitats: Dictionary = {}
@@ -40,11 +66,33 @@ func _ready() -> void:
 	reset_for_new_season()
 
 func reset_for_new_season() -> void:
+	_ensure_meta_progression_defaults()
 	season_id = DEFAULT_SEASON_ID
 	weather_id = "clear"
 	time_of_day = "day"
 	day_index = 1
 	season_length = DEFAULT_SEASON_LENGTH
+	global_turn = 1
+	season_turn = 1
+	week_index = 1
+	weekly_turn = 1
+	weekly_reroll_count = 0
+	weekly_reroll_limit = 1
+	season_adjust_points = 0
+	anchor_points = 0
+	board_region_id = ""
+	current_board_node_id = 0
+	revealed_board_nodes.clear()
+	node_danger.clear()
+	pending_node_ambushes.clear()
+	active_board_threats.clear()
+	npc_positions.clear()
+	run_modifiers.clear()
+	weekly_objective.clear()
+	weekly_progress.clear()
+	completed_seasons = 0
+	exploration_points = 0
+	claimed_season_bosses.clear()
 	inventory = _default_inventory()
 	habitats = _default_habitats()
 	pet_states.clear()
@@ -85,6 +133,13 @@ func reset_for_new_season() -> void:
 	_sync_roster_slots()
 	_sync_current_season_rule()
 	refresh_season_unlocks()
+
+func _ensure_meta_progression_defaults() -> void:
+	if meta_unlocks.is_empty():
+		meta_unlocks = {
+			"tracks": [],
+			"dice_modules": [],
+		}
 
 func _default_inventory() -> Dictionary:
 	return {
@@ -430,6 +485,14 @@ func apply_system_rewards(system_rewards: Dictionary) -> void:
 				season_points += int(system_rewards[reward_id])
 			"failed_dojo_streak_relief":
 				failed_dojo_streak = maxi(0, failed_dojo_streak - int(system_rewards[reward_id]))
+			"season_adjust_points":
+				season_adjust_points += int(system_rewards[reward_id])
+			"weekly_reroll_limit":
+				weekly_reroll_limit += int(system_rewards[reward_id])
+			"anchor_points":
+				anchor_points += int(system_rewards[reward_id])
+			"exploration_points":
+				exploration_points += int(system_rewards[reward_id])
 	_recalculate_backpack_capacity()
 	_sync_roster_slots()
 
@@ -459,16 +522,38 @@ func set_daily_conditions(next_weather: String, next_time: String) -> void:
 
 func advance_day() -> void:
 	day_index += 1
+	season_turn = day_index
+	global_turn += 1
+	weekly_turn += 1
+	if weekly_turn > 5:
+		weekly_turn = 1
+		week_index += 1
+		weekly_reroll_count = 0
+	if global_turn % 10 == 0:
+		anchor_points += 1
 
 func advance_to_next_season() -> bool:
 	var current_index := SEASON_ORDER.find(season_id)
 	if current_index == -1 or current_index >= SEASON_ORDER.size() - 1:
 		return false
+	completed_seasons += 1
 	season_id = String(SEASON_ORDER[current_index + 1])
 	day_index = 1
+	season_turn = 1
+	week_index = 1
+	weekly_turn = 1
+	weekly_reroll_count = 0
 	weather_id = "clear"
 	time_of_day = "day"
 	failed_dojo_streak = 0
+	weekly_objective.clear()
+	weekly_progress.clear()
+	current_board_node_id = 0
+	revealed_board_nodes.clear()
+	node_danger.clear()
+	pending_node_ambushes.clear()
+	active_board_threats.clear()
+	npc_positions.clear()
 	_sync_current_season_rule()
 	_sync_roster_slots()
 	refresh_season_unlocks()
@@ -477,9 +562,131 @@ func advance_to_next_season() -> bool:
 func _sync_current_season_rule() -> void:
 	var season_rule := DataRepository.get_season_rule(season_id)
 	season_length = int(season_rule.get("days", DEFAULT_SEASON_LENGTH))
+	weekly_reroll_limit = int(season_rule.get("weekly_reroll_limit", 1))
+	season_adjust_points = int(season_rule.get("season_adjust_points", 0))
+	board_region_id = String(season_rule.get("region_id", ""))
+	_apply_meta_dice_modules()
+
+func _apply_meta_dice_modules() -> void:
+	for module_id in meta_unlocks.get("dice_modules", []):
+		var module: Dictionary = DataRepository.get_dice_module(String(module_id))
+		var effects: Dictionary = module.get("effects", {})
+		weekly_reroll_limit += int(effects.get("weekly_reroll_bonus", 0))
+		season_adjust_points += int(effects.get("season_adjust_bonus", 0))
+		anchor_points += int(effects.get("anchor_bonus", 0))
 
 func get_current_season_rule() -> Dictionary:
 	return DataRepository.get_season_rule(season_id)
+
+func set_run_modifiers(modifiers: Array) -> void:
+	run_modifiers = modifiers.duplicate(true)
+
+func set_board_region(region_id: String, start_node_id: int = 0) -> void:
+	board_region_id = region_id
+	current_board_node_id = start_node_id
+
+func move_to_board_node(node_id: int) -> void:
+	current_board_node_id = node_id
+
+func reveal_board_nodes(node_ids: Array) -> void:
+	for node_id in node_ids:
+		var int_id := int(node_id)
+		if not revealed_board_nodes.has(int_id):
+			revealed_board_nodes.append(int_id)
+
+func get_node_danger(node_id: int) -> int:
+	return int(node_danger.get(node_id, 0))
+
+func add_node_danger(node_id: int, amount: int) -> void:
+	if node_id < 0 or amount == 0:
+		return
+	node_danger[node_id] = clampi(get_node_danger(node_id) + amount, 0, 3)
+
+func reduce_node_danger(node_id: int, amount: int = 1) -> void:
+	if node_id < 0 or amount <= 0:
+		return
+	var next_value := maxi(0, get_node_danger(node_id) - amount)
+	if next_value == 0:
+		node_danger.erase(node_id)
+		return
+	node_danger[node_id] = next_value
+
+func queue_node_ambush(node_id: int, amount: int = 1) -> void:
+	if node_id < 0 or amount <= 0:
+		return
+	pending_node_ambushes[node_id] = int(pending_node_ambushes.get(node_id, 0)) + amount
+
+func has_node_ambush(node_id: int) -> bool:
+	return int(pending_node_ambushes.get(node_id, 0)) > 0
+
+func consume_node_ambush(node_id: int) -> bool:
+	if not has_node_ambush(node_id):
+		return false
+	var next_value := int(pending_node_ambushes.get(node_id, 0)) - 1
+	if next_value <= 0:
+		pending_node_ambushes.erase(node_id)
+	else:
+		pending_node_ambushes[node_id] = next_value
+	return true
+
+func set_active_board_threats(threats: Array) -> void:
+	active_board_threats = threats.duplicate(true)
+
+func get_active_board_threats() -> Array:
+	return active_board_threats.duplicate(true)
+
+func set_npc_positions(positions: Dictionary) -> void:
+	npc_positions = positions.duplicate(true)
+
+func get_npc_positions() -> Dictionary:
+	return npc_positions.duplicate(true)
+
+func set_weekly_objective(objective: Dictionary) -> void:
+	weekly_objective = objective.duplicate(true)
+	weekly_progress.clear()
+
+func add_weekly_progress(metric: String, amount: int = 1) -> void:
+	if metric.is_empty() or amount == 0:
+		return
+	weekly_progress[metric] = int(weekly_progress.get(metric, 0)) + amount
+
+func consume_weekly_reroll() -> bool:
+	if weekly_reroll_count >= weekly_reroll_limit:
+		return false
+	weekly_reroll_count += 1
+	return true
+
+func consume_adjust_point() -> bool:
+	if season_adjust_points <= 0:
+		return false
+	season_adjust_points -= 1
+	return true
+
+func consume_anchor_point() -> bool:
+	if anchor_points <= 0:
+		return false
+	anchor_points -= 1
+	return true
+
+func has_meta_track(track_id: String) -> bool:
+	return meta_unlocks.get("tracks", []).has(track_id)
+
+func register_meta_track(track_id: String, unlock: Dictionary) -> void:
+	if track_id.is_empty() or has_meta_track(track_id):
+		return
+	var tracks: Array = meta_unlocks.get("tracks", []).duplicate()
+	tracks.append(track_id)
+	meta_unlocks["tracks"] = tracks
+	var module_id := String(unlock.get("dice_module_id", ""))
+	if not module_id.is_empty():
+		var modules: Array = meta_unlocks.get("dice_modules", []).duplicate()
+		if not modules.has(module_id):
+			modules.append(module_id)
+			meta_unlocks["dice_modules"] = modules
+
+func add_exploration_points(amount: int) -> void:
+	exploration_points += amount
+	exploration_points_total += amount
 
 func get_total_trust() -> int:
 	var total := 0

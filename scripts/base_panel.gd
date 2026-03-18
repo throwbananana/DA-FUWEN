@@ -47,6 +47,11 @@ func _render_summary(panel_state: Dictionary) -> void:
 		int(season.get("day_index", 1)),
 		int(season.get("season_length", 1)),
 	])
+	if season.has("week_index") or season.has("global_turn"):
+		lines.append("[b]周次[/b] 第 %d 周 ｜ [b]总回合[/b] %d / 100" % [
+			int(season.get("week_index", 1)),
+			int(season.get("global_turn", 1)),
+		])
 	lines.append("[b]天气[/b] %s ｜ [b]时段[/b] %s" % [
 		String(season.get("weather_name", "未知")),
 		String(season.get("time_name", "未知")),
@@ -73,6 +78,11 @@ func _render_summary(panel_state: Dictionary) -> void:
 		lines.append("[b]建筑前置增益[/b] %s" % " / ".join(building_lines))
 	if not battle_bonus_lines.is_empty():
 		lines.append("[b]战斗加成汇总[/b] %s" % " / ".join(battle_bonus_lines))
+	if not String(panel_state.get("weekly_objective_text", "")).is_empty():
+		lines.append("[b]本周目标[/b] %s" % String(panel_state.get("weekly_objective_text", "")))
+	if not panel_state.get("run_modifiers", []).is_empty():
+		lines.append("[b]本局词缀[/b] %s" % " / ".join(panel_state.get("run_modifiers", [])))
+	lines.append("[b]累计探索点[/b] %d" % int(panel_state.get("meta_points", 0)))
 	lines.append("[b]当前委托[/b] %s" % (", ".join(active_quests) if not active_quests.is_empty() else "暂无"))
 	lines.append("[b]库存摘记[/b] %s" % _format_inventory(inventory))
 	summary_label.text = "\n".join(lines)

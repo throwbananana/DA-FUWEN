@@ -1,0 +1,4 @@
+SCRIPT ERROR: Invalid call 'String' constructor: message_board_refresh
+   at: _run_checks (res://scripts/board_threat_smoke_test.gd:80)
+   GDScript backtrace (most recent call first):
+       [0] _run_checks (res://scripts/board_threat_smoke_test.gd:80)

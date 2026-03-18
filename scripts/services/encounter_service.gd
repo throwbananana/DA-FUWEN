@@ -3,10 +3,10 @@ extends RefCounted
 
 ## 负责把“战斗/捕捉”改成“观察/安抚/结缘”的前置流程。
 
-func roll_encounter(habitat_id: String) -> Dictionary:
+func roll_encounter(habitat_id: String, source: String = "observe") -> Dictionary:
 	var valid_entries := build_weighted_entries(habitat_id)
 	if valid_entries.is_empty():
-		return {"ok": false, "reason": "no_encounter"}
+		return {"ok": false, "reason": "no_encounter", "source": source}
 
 	var chosen := _weighted_pick(valid_entries)
 	var species_id := String(chosen.get("species_id", ""))
@@ -17,7 +17,8 @@ func roll_encounter(habitat_id: String) -> Dictionary:
 		"species_id": species_id,
 		"species": DataRepository.get_species(species_id),
 		"mood_id": mood_id,
-		"bond_window": _estimate_bond_window(mood_id)
+		"bond_window": _estimate_bond_window(mood_id),
+		"source": source,
 	}
 
 func build_weighted_entries(habitat_id: String) -> Array:

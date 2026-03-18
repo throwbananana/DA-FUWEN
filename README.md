@@ -3,20 +3,24 @@
 `DA-FUWEN` 当前是一个可直接运行的 Godot 4.6 原型项目，不是“待接入的 JSON 升级包”。  
 仓库主线实现围绕 `scenes/`、`scripts/`、`data/` 展开，核心体验是：
 
-营地准备 -> 选择已开放地点 -> 到点驻守 / 建设 / 交谈 / 观察 / 试炼 -> 回营记录 -> 推进季节轮换
+百回合四季远征 -> 掷骰与选路 -> 落点触发驻守 / 建设 / 交谈 / 观察 / 试炼 -> 周结算 -> 季切换 -> 年度结算
 
 项目窗口名仍为 `dafuwen`，主界面标题为“雾野养成原型”。
 
 ## 当前实现概览
 
+- 4 季 × 25 回合的百回合远征结构
+- 掷骰走格主循环，支持每周重掷、赛季修正点和锚定兜底
 - 季节轮换、天气与时段变化，以及地点开放链
-- 棋盘式地图推进与地点拜访流程
+- 区域棋盘推进、分叉路线与落点拜访流程
 - 固定 `2v2` 双打编成
 - 背包容量随成长曲线提升，按“人口”而非传统格子计算
 - 重复个体 `3 合 1` 升星，并支持场地 / 建筑 / 羁绊条件进化
 - NPC 交谈、委托接取与完成结算
 - 道馆挑战、阶位限制、首通奖励与开放联动
 - 建筑驻守、建筑共鸣、战前增益、访问增产与成长加成
+- 周目标、周结算、本局词缀和赛季高潮奖励
+- 探索点与局内元成长解锁（同一运行会话内保留）
 - MDA120 数据包已并入运行时读取流程，包括物种、建筑、技能、羁绊、进化链、遭遇表与成长曲线
 - JSON 扩展包已补入运行时数据，任务表扩到 20 条，并新增事件、对话树、图鉴与百科条目
 
@@ -41,7 +45,7 @@ godot --path .
 
 ## 基础回归
 
-仓库内保留了 4 组无界面烟测脚本，适合在改动数据表或服务逻辑后快速验证：
+仓库内保留了多组无界面烟测脚本，适合在改动数据表或服务逻辑后快速验证：
 
 ```powershell
 godot --headless --path . -s res://scripts/smoke_test.gd
@@ -49,6 +53,8 @@ godot --headless --path . -s res://scripts/season_upgrade_smoke_test.gd
 godot --headless --path . -s res://scripts/bond_double_smoke_test.gd
 godot --headless --path . -s res://scripts/mda120_upgrade_smoke_test.gd
 godot --headless --path . -s res://scripts/json_expansion_smoke_test.gd
+godot --headless --path . -s res://scripts/run_upgrade_smoke_test.gd
+godot --headless --path . -s res://scripts/strategic_layer_smoke_test.gd
 ```
 
 它们分别覆盖：
@@ -58,6 +64,8 @@ godot --headless --path . -s res://scripts/json_expansion_smoke_test.gd
 - 双打编成、背包人口、升星、羁绊与建筑战前增益
 - MDA120 成长曲线、遭遇权重、访问共鸣与进化链
 - 扩展任务、事件、对话树、图鉴和百科表已被 `DataRepository` 正常读取
+- 百回合升级主循环：区域棋盘、周目标、重掷 / 修正 / 锚定、赛季奖励
+- 策略层升级：节点主玩法收敛、遭遇失败后果、节点危险度与伏击队列
 
 ## 主要目录
 
@@ -84,6 +92,12 @@ godot --headless --path . -s res://scripts/json_expansion_smoke_test.gd
 - `habitat_unlock_rules.json`
 - `dojo_definitions.json`
 - `reward_tables.json`
+- `board_regions.json`
+- `weekly_objectives.json`
+- `dice_modules.json`
+- `run_modifiers.json`
+- `season_boss_rules.json`
+- `meta_progression.json`
 - `quest_templates.json`
 - `events.json`
 - `dialogues.json`

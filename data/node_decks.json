@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "decks": [
+    {
+      "id": "spring_pathing",
+      "season_id": "spring",
+      "summary": "春季以观察、建设和社交为主，适合建立基础 build。",
+      "entries": [
+        { "node_type": "habitat", "risk": "低", "reward": "材料、观察、驻守成长" },
+        { "node_type": "settlement", "risk": "低", "reward": "委托、交易、路线信息" },
+        { "node_type": "anomaly", "risk": "中", "reward": "异常材料、阶段压力" }
+      ]
+    },
+    {
+      "id": "summer_pathing",
+      "season_id": "summer",
+      "summary": "夏季以精英压力与试炼热身为主，强调节奏控制。",
+      "entries": [
+        { "node_type": "habitat", "risk": "中", "reward": "训练、成长与 build 成型" },
+        { "node_type": "settlement", "risk": "低", "reward": "补给、桥头事件、交易" },
+        { "node_type": "anomaly", "risk": "高", "reward": "精英掉落、季末收益" }
+      ]
+    },
+    {
+      "id": "autumn_pathing",
+      "season_id": "autumn",
+      "summary": "秋季强调构筑成型和试炼验证。",
+      "entries": [
+        { "node_type": "habitat", "risk": "中", "reward": "成长冲刺、恢复、素材" },
+        { "node_type": "settlement", "risk": "低", "reward": "路线切换、任务推进" },
+        { "node_type": "dojo", "risk": "高", "reward": "徽章、阶段解锁" }
+      ]
+    },
+    {
+      "id": "winter_pathing",
+      "season_id": "winter",
+      "summary": "冬季强调终局稳态和最终路线修正。",
+      "entries": [
+        { "node_type": "habitat", "risk": "低", "reward": "恢复、终局资源" },
+        { "node_type": "anomaly", "risk": "高", "reward": "终局材料、年度结算" }
+      ]
+    }
+  ]
+}

@@ -73,6 +73,10 @@ func refresh_view(current_pos: int, selectable: Array[int], markers: Dictionary,
 
 func _build_tooltip(node_id: int, node: Dictionary) -> String:
 	var text := "%s\n%s" % [String(node.get("name", "")), String(node.get("description", ""))]
+	if node.has("focus"):
+		text += "\n焦点：%s" % String(node.get("focus", ""))
+	if node.has("reward_hint"):
+		text += "\n预估收益：%s" % String(node.get("reward_hint", ""))
 	if node_markers.has(node_id):
 		text += "\n状态：%s" % String(node_markers[node_id])
 	if node.has("travel_cost"):

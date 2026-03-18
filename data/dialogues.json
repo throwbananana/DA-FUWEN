@@ -1,230 +1,96 @@
 {
-  "version": 1,
+  "version": 2,
   "dialogues": [
     {
-      "id": "dlg_moss_keeper_night_watch",
-      "npc": "moss_keeper",
-      "habitat_id": "mist_moss_cave",
-      "topic": "night_watch",
+      "id": "dlg_anomaly_researcher_after_signal",
+      "npc": "anomaly_researcher",
+      "habitat_id": "radiant_spire",
+      "topic": "signal_marks",
+      "weight": 6,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "尖塔",
+        "撤离线"
+      ],
       "conditions": {
-        "after_event": "evt_moss_night_watch"
+        "after_event": "evt_spire_signal_marks"
       },
       "nodes": [
         {
           "id": "start",
-          "speaker": "moss_keeper",
-          "text": "听见没？苔团睡着的时候，呼吸像在拨一层薄雾。",
+          "speaker": "anomaly_researcher",
+          "text": "安全标记一立起来，尖塔就不像一堵只会吼人的墙了。",
           "choices": [
             {
-              "text": "我刚才差点不敢出声。",
-              "next": "reply_soft"
+              "text": "至少今天知道哪几步能退。",
+              "next": "reply_a"
             },
             {
-              "text": "原来它们真的会跟着哼唱放松。",
-              "next": "reply_hum"
+              "text": "原来稳定窗口最值钱的是这点余裕。",
+              "next": "reply_b"
             }
           ]
         },
         {
-          "id": "reply_soft",
-          "speaker": "moss_keeper",
-          "text": "照料幼体，很多时候不是做得多，而是别惊到它们。",
+          "id": "reply_a",
+          "speaker": "anomaly_researcher",
+          "text": "知道退路，人才敢把前路看清。",
           "end": true
         },
         {
-          "id": "reply_hum",
-          "speaker": "moss_keeper",
-          "text": "会的。你以后来守夜，它们会记得你的声音。",
+          "id": "reply_b",
+          "speaker": "anomaly_researcher",
+          "text": "没错，短短一会儿，够把慌乱变成秩序。",
           "end": true
         }
       ]
     },
     {
-      "id": "dlg_lost_apprentice_notes",
-      "npc": "lost_apprentice",
-      "habitat_id": "mist_moss_cave",
-      "topic": "notes",
+      "id": "dlg_anomaly_researcher_daily_measure",
+      "npc": "anomaly_researcher",
+      "habitat_id": "radiant_spire",
+      "topic": "calm_measure",
+      "weight": 5,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "异常",
+        "测量"
+      ],
       "conditions": {
-        "after_quest": "find_apprentice_notes"
+        "time_in": [
+          "day",
+          "evening",
+          "night"
+        ]
       },
       "nodes": [
         {
           "id": "start",
-          "speaker": "lost_apprentice",
-          "text": "我把找回来的那本笔记重新抄了一遍，这次终于不会再塞进会掉出来的口袋了。",
+          "speaker": "anomaly_researcher",
+          "text": "在尖塔做记录，先量的不是光，是自己还能不能把呼吸放慢。",
           "choices": [
             {
-              "text": "里面最重要的是哪一页？",
-              "next": "page"
+              "text": "人先稳住，表才读得准。",
+              "next": "reply_a"
             },
             {
-              "text": "下次我陪你一起记。",
-              "next": "together"
+              "text": "难怪你每次都先站着不说话。",
+              "next": "reply_b"
             }
           ]
         },
         {
-          "id": "page",
-          "speaker": "lost_apprentice",
-          "text": "是记录“什么时候别去碰幼体”的那页，照料不只是喂和抱。",
+          "id": "reply_a",
+          "speaker": "anomaly_researcher",
+          "text": "没错。手一抖，最先被放大的就是误判。",
           "end": true
         },
         {
-          "id": "together",
-          "speaker": "lost_apprentice",
-          "text": "那太好了，我记得快，你看得细，我们正好互补。",
-          "end": true
-        }
-      ]
-    },
-    {
-      "id": "dlg_washer_grandma_pool",
-      "npc": "washer_grandma",
-      "habitat_id": "crystal_creek",
-      "topic": "pool_reflection",
-      "conditions": {
-        "after_event": "evt_shallow_pool_reflection"
-      },
-      "nodes": [
-        {
-          "id": "start",
-          "speaker": "washer_grandma",
-          "text": "你看那道壳纹，亮得均匀，说明今天心静。",
-          "choices": [
-            {
-              "text": "原来壳纹也能看情绪。",
-              "next": "shell"
-            },
-            {
-              "text": "难怪你总挑晴天来看。",
-              "next": "sun"
-            }
-          ]
-        },
-        {
-          "id": "shell",
-          "speaker": "washer_grandma",
-          "text": "照料久了，连一圈水纹都能告诉你它想不想靠近人。",
-          "end": true
-        },
-        {
-          "id": "sun",
-          "speaker": "washer_grandma",
-          "text": "晴天照得清，雾天就听水声。每种天色都有自己的办法。",
-          "end": true
-        }
-      ]
-    },
-    {
-      "id": "dlg_innkeeper_yun_letters",
-      "npc": "innkeeper_yun",
-      "habitat_id": "sky_post",
-      "topic": "letters",
-      "conditions": {
-        "after_event": "evt_post_storm_layover"
-      },
-      "nodes": [
-        {
-          "id": "start",
-          "speaker": "innkeeper_yun",
-          "text": "雨一大，路就慢，可消息不能慢。驿站最值钱的不是屋檐，是准时。",
-          "choices": [
-            {
-              "text": "所以留信牌得一直有人看着。",
-              "next": "board"
-            },
-            {
-              "text": "寄养栏也会在雨天更忙吧。",
-              "next": "boarding"
-            }
-          ]
-        },
-        {
-          "id": "board",
-          "speaker": "innkeeper_yun",
-          "text": "对。谁先看到消息，谁就先把一条路重新接上。",
-          "end": true
-        },
-        {
-          "id": "boarding",
-          "speaker": "innkeeper_yun",
-          "text": "雨天来的同行宠物更容易累，先稳住它们，人才走得踏实。",
-          "end": true
-        }
-      ]
-    },
-    {
-      "id": "dlg_field_recorder_resonance",
-      "npc": "field_recorder",
-      "habitat_id": "ancient_platform",
-      "topic": "resonance",
-      "conditions": {
-        "after_event": "evt_platform_echo_bloom"
-      },
-      "nodes": [
-        {
-          "id": "start",
-          "speaker": "field_recorder",
-          "text": "你看这道辉尘轨迹，它不是乱飞，是在追一段旧回声。",
-          "choices": [
-            {
-              "text": "像是在读平台留下来的记忆。",
-              "next": "memory"
-            },
-            {
-              "text": "那我们是该先记，还是先修？",
-              "next": "record_or_fix"
-            }
-          ]
-        },
-        {
-          "id": "memory",
-          "speaker": "field_recorder",
-          "text": "没错。很多遗迹不是沉默，只是没人把它们的话记下来。",
-          "end": true
-        },
-        {
-          "id": "record_or_fix",
-          "speaker": "field_recorder",
-          "text": "先记住，再修；不然修完了，你反而不知道自己保住了什么。",
-          "end": true
-        }
-      ]
-    },
-    {
-      "id": "dlg_tinker_bo_night_swap",
-      "npc": "tinker_bo",
-      "habitat_id": "copper_hammer_bazaar",
-      "topic": "night_swap",
-      "conditions": {
-        "after_event": "evt_bazaar_night_swap"
-      },
-      "nodes": [
-        {
-          "id": "start",
-          "speaker": "tinker_bo",
-          "text": "白天卖的是东西，晚上换的多半是故事。旧零件的来路可比价签有意思。",
-          "choices": [
-            {
-              "text": "这块零件原来装在哪？",
-              "next": "origin"
-            },
-            {
-              "text": "那为什么还总有人抢着换？",
-              "next": "why"
-            }
-          ]
-        },
-        {
-          "id": "origin",
-          "speaker": "tinker_bo",
-          "text": "有些从古械平台来，有些从驿路废棚拆下，能不能再派上用场，要看眼力。",
-          "end": true
-        },
-        {
-          "id": "why",
-          "speaker": "tinker_bo",
-          "text": "因为会修的人知道，旧东西里常藏着新办法。",
+          "id": "reply_b",
+          "speaker": "anomaly_researcher",
+          "text": "因为这地方会把慌张放得比回声还大。",
           "end": true
         }
       ]
@@ -265,6 +131,11 @@
           "text": "它们不是不信人，只是不信会突然改变的世界。",
           "end": true
         }
+      ],
+      "weight": 4,
+      "cooldown_days": 4,
+      "tags": [
+        "calm_window"
       ]
     },
     {
@@ -303,6 +174,1076 @@
           "text": "环境一软，心就不那么绷着，吃东西也会更稳。",
           "end": true
         }
+      ],
+      "weight": 4,
+      "cooldown_days": 4,
+      "tags": [
+        "boarding"
+      ]
+    },
+    {
+      "id": "dlg_boarder_liu_daily_blanket",
+      "npc": "boarder_liu",
+      "habitat_id": "sky_post",
+      "topic": "boarding_blanket",
+      "weight": 4,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "寄养",
+        "安抚"
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "boarder_liu",
+          "text": "寄养栏里最先准备的从来不是碗，是带着旧味道的布。",
+          "choices": [
+            {
+              "text": "先让它闻到熟悉感。",
+              "next": "reply_a"
+            },
+            {
+              "text": "那布料要多久换一次？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "boarder_liu",
+          "text": "对，心一松，胃口和睡意才会回来。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "boarder_liu",
+          "text": "脏了就洗，味道散了就补，不能只图干净。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_field_recorder_after_hum",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "panel_hum",
+      "weight": 6,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "回声",
+        "平台"
+      ],
+      "conditions": {
+        "after_event": "evt_platform_panel_hum"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "面板一稳，回声就不再散成一团。你今天帮的是修复，也是翻译。",
+          "choices": [
+            {
+              "text": "翻译平台想留下来的声音。",
+              "next": "reply_a"
+            },
+            {
+              "text": "那这份记录总算像样了。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "field_recorder",
+          "text": "对，先让它别发抖，话才说得完整。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "field_recorder",
+          "text": "像样，而且留住了顺序。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_field_recorder_daily_echo",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "echo_listening",
+      "weight": 5,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "回声",
+        "记录"
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "平台有时候不是在响，是在等人把同一句话听第二遍。",
+          "choices": [
+            {
+              "text": "第二遍和第一遍有什么不同？",
+              "next": "reply_a"
+            },
+            {
+              "text": "所以你总要我先站着别记。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "field_recorder",
+          "text": "第一遍是新奇，第二遍才会开始分辨方向。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "field_recorder",
+          "text": "耳朵先记住，笔才不会把回声写扁。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_field_recorder_resonance",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "resonance",
+      "conditions": {
+        "after_event": "evt_platform_echo_bloom"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "你看这道辉尘轨迹，它不是乱飞，是在追一段旧回声。",
+          "choices": [
+            {
+              "text": "像是在读平台留下来的记忆。",
+              "next": "memory"
+            },
+            {
+              "text": "那我们是该先记，还是先修？",
+              "next": "record_or_fix"
+            }
+          ]
+        },
+        {
+          "id": "memory",
+          "speaker": "field_recorder",
+          "text": "没错。很多遗迹不是沉默，只是没人把它们的话记下来。",
+          "end": true
+        },
+        {
+          "id": "record_or_fix",
+          "speaker": "field_recorder",
+          "text": "先记住，再修；不然修完了，你反而不知道自己保住了什么。",
+          "end": true
+        }
+      ],
+      "weight": 4,
+      "cooldown_days": 4,
+      "tags": [
+        "resonance"
+      ]
+    },
+    {
+      "id": "dlg_innkeeper_yun_after_late_board",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "late_board",
+      "weight": 6,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "夜间留信",
+        "驿站"
+      ],
+      "conditions": {
+        "after_event": "evt_post_late_board"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "夜里把留信牌重新排顺，其实就是替明早少走几段冤枉路。",
+          "choices": [
+            {
+              "text": "怪不得你说驿站也是照料。",
+              "next": "reply_a"
+            },
+            {
+              "text": "今天这活看起来小，倒真省事。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "innkeeper_yun",
+          "text": "是啊，照料的不只是一只宠物，也是一群要赶路的人。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "innkeeper_yun",
+          "text": "小事做稳，整条路都会顺一点。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_innkeeper_yun_daily_board",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "message_board",
+      "weight": 5,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "驿站",
+        "留信"
+      ],
+      "conditions": {
+        "required_building": {
+          "id": "message_board",
+          "min_level": 1
+        }
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "驿站最安静的时候，不是没人来，是每张留信牌都摆在该摆的位置上。",
+          "choices": [
+            {
+              "text": "所以你看板子的速度比看人的速度还快。",
+              "next": "reply_a"
+            },
+            {
+              "text": "我还以为驿站最重要的是热茶。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "innkeeper_yun",
+          "text": "先把消息安顿好，人自然知道该往哪去。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "innkeeper_yun",
+          "text": "热茶管腿脚，消息管方向，两样都不能少。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_innkeeper_yun_letters",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "letters",
+      "conditions": {
+        "after_event": "evt_post_storm_layover"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "雨一大，路就慢，可消息不能慢。驿站最值钱的不是屋檐，是准时。",
+          "choices": [
+            {
+              "text": "所以留信牌得一直有人看着。",
+              "next": "board"
+            },
+            {
+              "text": "寄养栏也会在雨天更忙吧。",
+              "next": "boarding"
+            }
+          ]
+        },
+        {
+          "id": "board",
+          "speaker": "innkeeper_yun",
+          "text": "对。谁先看到消息，谁就先把一条路重新接上。",
+          "end": true
+        },
+        {
+          "id": "boarding",
+          "speaker": "innkeeper_yun",
+          "text": "雨天来的同行宠物更容易累，先稳住它们，人才走得踏实。",
+          "end": true
+        }
+      ],
+      "weight": 4,
+      "cooldown_days": 4,
+      "tags": [
+        "letters"
+      ]
+    },
+    {
+      "id": "dlg_lost_apprentice_daily_notes",
+      "npc": "lost_apprentice",
+      "habitat_id": "mist_moss_cave",
+      "topic": "field_notes",
+      "weight": 4,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "记录",
+        "学徒"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "lost_apprentice",
+          "text": "我现在学会把笔记分成两页了：一页写“看见了什么”，一页写“别立刻去做什么”。",
+          "choices": [
+            {
+              "text": "后面那页听起来更难。",
+              "next": "reply_a"
+            },
+            {
+              "text": "我可以帮你把条目抄得更整齐。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "lost_apprentice",
+          "text": "对，因为人一紧张就喜欢马上伸手。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "lost_apprentice",
+          "text": "那太好了，我负责记快一点，你负责让以后的人看得懂。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_lost_apprentice_notes",
+      "npc": "lost_apprentice",
+      "habitat_id": "mist_moss_cave",
+      "topic": "notes",
+      "conditions": {
+        "after_quest": "find_apprentice_notes"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "lost_apprentice",
+          "text": "我把找回来的那本笔记重新抄了一遍，这次终于不会再塞进会掉出来的口袋了。",
+          "choices": [
+            {
+              "text": "里面最重要的是哪一页？",
+              "next": "page"
+            },
+            {
+              "text": "下次我陪你一起记。",
+              "next": "together"
+            }
+          ]
+        },
+        {
+          "id": "page",
+          "speaker": "lost_apprentice",
+          "text": "是记录“什么时候别去碰幼体”的那页，照料不只是喂和抱。",
+          "end": true
+        },
+        {
+          "id": "together",
+          "speaker": "lost_apprentice",
+          "text": "那太好了，我记得快，你看得细，我们正好互补。",
+          "end": true
+        }
+      ],
+      "weight": 4,
+      "cooldown_days": 4,
+      "tags": [
+        "notes"
+      ]
+    },
+    {
+      "id": "dlg_moss_keeper_after_wipe",
+      "npc": "moss_keeper",
+      "habitat_id": "mist_moss_cave",
+      "topic": "dew_wipe",
+      "weight": 6,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "晨雾",
+        "育幼"
+      ],
+      "conditions": {
+        "after_event": "evt_moss_morning_wipe"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "moss_keeper",
+          "text": "窝口的雾珠一擦干，里面的小家伙连翻身都踏实了些。",
+          "choices": [
+            {
+              "text": "原来只是少一点湿气，差别就这么大。",
+              "next": "reply_a"
+            },
+            {
+              "text": "那今天这活算是做对了。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "moss_keeper",
+          "text": "幼体分不清道理，只分得清舒服和不舒服。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "moss_keeper",
+          "text": "做对了，而且做得不吵。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_moss_keeper_daily_heat",
+      "npc": "moss_keeper",
+      "habitat_id": "mist_moss_cave",
+      "topic": "nest_heat",
+      "weight": 5,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "保温窝",
+        "育幼"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "required_building": {
+          "id": "warm_nest",
+          "min_level": 1
+        }
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "moss_keeper",
+          "text": "白天摸窝边，晚上摸窝心。热不是越多越好，是得让幼体愿意自己靠过去。",
+          "choices": [
+            {
+              "text": "那我以后先看它往哪边拱。",
+              "next": "reply_a"
+            },
+            {
+              "text": "难怪你总要先把手烘暖。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "moss_keeper",
+          "text": "对，先看它自己选哪一边，别急着替它决定。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "moss_keeper",
+          "text": "手太冷，连安慰都会像打扰。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_moss_keeper_night_watch",
+      "npc": "moss_keeper",
+      "habitat_id": "mist_moss_cave",
+      "topic": "night_watch",
+      "conditions": {
+        "after_event": "evt_moss_night_watch"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "moss_keeper",
+          "text": "听见没？苔团睡着的时候，呼吸像在拨一层薄雾。",
+          "choices": [
+            {
+              "text": "我刚才差点不敢出声。",
+              "next": "reply_soft"
+            },
+            {
+              "text": "原来它们真的会跟着哼唱放松。",
+              "next": "reply_hum"
+            }
+          ]
+        },
+        {
+          "id": "reply_soft",
+          "speaker": "moss_keeper",
+          "text": "照料幼体，很多时候不是做得多，而是别惊到它们。",
+          "end": true
+        },
+        {
+          "id": "reply_hum",
+          "speaker": "moss_keeper",
+          "text": "会的。你以后来守夜，它们会记得你的声音。",
+          "end": true
+        }
+      ],
+      "weight": 4,
+      "cooldown_days": 4,
+      "tags": [
+        "night_watch"
+      ]
+    },
+    {
+      "id": "dlg_parts_vendor_daily_salvage",
+      "npc": "parts_vendor",
+      "habitat_id": "copper_hammer_bazaar",
+      "topic": "salvage_bins",
+      "weight": 3,
+      "cooldown_days": 3,
+      "tags": [
+        "日常",
+        "配件",
+        "淘换"
+      ],
+      "conditions": {
+        "season_in": [
+          "spring",
+          "summer"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "parts_vendor",
+          "text": "配件贩最会分的不是价格，是“还能直接用”和“得碰上对的人才有用”。",
+          "choices": [
+            {
+              "text": "所以你箱子上的标签都写得很怪。",
+              "next": "reply_a"
+            },
+            {
+              "text": "那我这种半懂不懂的呢？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "parts_vendor",
+          "text": "不怪怎么分得开？真正会买的人一看就懂。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "parts_vendor",
+          "text": "那就多问两句，别把好东西买回去当垫脚。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_ruin_restorer_daily_panels",
+      "npc": "ruin_restorer",
+      "habitat_id": "ancient_platform",
+      "topic": "panel_repair",
+      "weight": 5,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "修复",
+        "遗迹"
+      ],
+      "conditions": {
+        "required_building": {
+          "id": "repair_bench",
+          "min_level": 1
+        }
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "ruin_restorer",
+          "text": "修遗迹最费的不是零件，是把“先别动”忍住。",
+          "choices": [
+            {
+              "text": "因为先动了，痕迹就没了。",
+              "next": "reply_a"
+            },
+            {
+              "text": "那你什么时候才算肯下手？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "ruin_restorer",
+          "text": "对，很多断口比完整面板更会说话。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "ruin_restorer",
+          "text": "当我知道拆掉这一片，不会顺手把昨天也拆掉。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_smith_ya_daily_hammer",
+      "npc": "smith_ya",
+      "habitat_id": "copper_hammer_bazaar",
+      "topic": "hammer_rhythm",
+      "weight": 4,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "锻打",
+        "节奏"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "smith_ya",
+          "text": "哑叔抬手轻敲两下铁胚，又把耳朵偏过来，像是在听它回话。",
+          "choices": [
+            {
+              "text": "你是在听里面有没有空响？",
+              "next": "reply_a"
+            },
+            {
+              "text": "所以你连安静都要敲出节奏。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "smith_ya",
+          "text": "哑叔点点头，指尖又在台面敲出一个稳稳的节拍。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "smith_ya",
+          "text": "哑叔笑了一下，把锤柄递给你，示意先稳住手，再谈力道。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_stone_trader_daily_route",
+      "npc": "stone_trader",
+      "habitat_id": "crystal_creek",
+      "topic": "road_goods",
+      "weight": 3,
+      "cooldown_days": 3,
+      "tags": [
+        "日常",
+        "行商",
+        "材料"
+      ],
+      "conditions": {
+        "season_in": [
+          "spring",
+          "autumn"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "stone_trader",
+          "text": "石片这种东西，值钱的时候不在摊上，在它被谁握过、在哪条路上磨过。",
+          "choices": [
+            {
+              "text": "所以你卖的不只是材料。",
+              "next": "reply_a"
+            },
+            {
+              "text": "难怪你总先问我要拿去干什么。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "stone_trader",
+          "text": "对，卖的是它适合落到谁手里。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "stone_trader",
+          "text": "问清去处，才知道该给你硬一点还是软一点的。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_tinker_bo_after_demo",
+      "npc": "tinker_bo",
+      "habitat_id": "copper_hammer_bazaar",
+      "topic": "demo_story",
+      "weight": 6,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "夜市",
+        "旧件"
+      ],
+      "conditions": {
+        "after_event": "evt_bazaar_spare_demo"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "tinker_bo",
+          "text": "摊前那一圈人散了以后，留下来的往往才是真想学的人。",
+          "choices": [
+            {
+              "text": "今天那块旧齿轮倒把大家都讲安静了。",
+              "next": "reply_a"
+            },
+            {
+              "text": "你讲故事的时候比修东西还像行家。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "tinker_bo",
+          "text": "因为有人第一次发现，旧东西不是只配被丢。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "tinker_bo",
+          "text": "讲得明白，东西才会有第二次用处。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_tinker_bo_daily_spare",
+      "npc": "tinker_bo",
+      "habitat_id": "copper_hammer_bazaar",
+      "topic": "spare_parts",
+      "weight": 5,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "零件",
+        "修补"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "tinker_bo",
+          "text": "有人看零件只看缺口，我更爱看它还剩下哪点倔劲。",
+          "choices": [
+            {
+              "text": "旧东西也有“脾气”？",
+              "next": "reply_a"
+            },
+            {
+              "text": "所以你修东西像在认人。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "tinker_bo",
+          "text": "当然，有的怎么敲都闷，有的一装上就肯亮。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "tinker_bo",
+          "text": "修久了都一样，先认脾气，再谈办法。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_tinker_bo_night_swap",
+      "npc": "tinker_bo",
+      "habitat_id": "copper_hammer_bazaar",
+      "topic": "night_swap",
+      "conditions": {
+        "after_event": "evt_bazaar_night_swap"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "tinker_bo",
+          "text": "白天卖的是东西，晚上换的多半是故事。旧零件的来路可比价签有意思。",
+          "choices": [
+            {
+              "text": "这块零件原来装在哪？",
+              "next": "origin"
+            },
+            {
+              "text": "那为什么还总有人抢着换？",
+              "next": "why"
+            }
+          ]
+        },
+        {
+          "id": "origin",
+          "speaker": "tinker_bo",
+          "text": "有些从古械平台来，有些从驿路废棚拆下，能不能再派上用场，要看眼力。",
+          "end": true
+        },
+        {
+          "id": "why",
+          "speaker": "tinker_bo",
+          "text": "因为会修的人知道，旧东西里常藏着新办法。",
+          "end": true
+        }
+      ],
+      "weight": 4,
+      "cooldown_days": 4,
+      "tags": [
+        "night_swap"
+      ]
+    },
+    {
+      "id": "dlg_traveling_peddler_daily_rumor",
+      "npc": "traveling_peddler",
+      "habitat_id": "sky_post",
+      "topic": "road_rumor",
+      "weight": 3,
+      "cooldown_days": 3,
+      "tags": [
+        "日常",
+        "行路",
+        "传闻"
+      ],
+      "conditions": {
+        "season_in": [
+          "spring",
+          "summer",
+          "autumn"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "traveling_peddler",
+          "text": "赶路的人最怕的不是绕远，是带着过时的消息往前冲。",
+          "choices": [
+            {
+              "text": "所以你卖东西之前先卖传闻。",
+              "next": "reply_a"
+            },
+            {
+              "text": "那今天哪条路最值得去？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "traveling_peddler",
+          "text": "传闻要是对了，货就自己会找到买家。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "traveling_peddler",
+          "text": "值不值得看你想要什么：稳当，还是稀奇。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_washer_grandma_after_stones",
+      "npc": "washer_grandma",
+      "habitat_id": "crystal_creek",
+      "topic": "warm_stone_sort",
+      "weight": 6,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "暖石",
+        "护理"
+      ],
+      "conditions": {
+        "after_event": "evt_creek_warm_stone_sort"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "washer_grandma",
+          "text": "暖石排得整齐，壳幼自己就会挑。能自己挑，比你替它挑更重要。",
+          "choices": [
+            {
+              "text": "我还以为照料就是替它选最好的。",
+              "next": "reply_a"
+            },
+            {
+              "text": "今天总算看懂你为什么摆三种温度。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "washer_grandma",
+          "text": "最好的，是它愿意靠过去的那个。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "washer_grandma",
+          "text": "懂这个，以后就不会把好意做成催促。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_washer_grandma_daily_shell",
+      "npc": "washer_grandma",
+      "habitat_id": "crystal_creek",
+      "topic": "shell_lines",
+      "weight": 5,
+      "cooldown_days": 2,
+      "tags": [
+        "日常",
+        "壳纹",
+        "护理"
+      ],
+      "conditions": {
+        "weather_in": [
+          "clear",
+          "fog",
+          "mist"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "washer_grandma",
+          "text": "壳幼今天肯把背壳转给你看，说明它不觉得你会突然碰它。",
+          "choices": [
+            {
+              "text": "原来“给看壳纹”也是信任。",
+              "next": "reply_a"
+            },
+            {
+              "text": "那今天是不是适合换一块更暖的石头？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "washer_grandma",
+          "text": "当然，很多小东西先把背交给谁，就是先信谁。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "washer_grandma",
+          "text": "看纹路边上有没有发白，发白才换，别抢它自己的节奏。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_washer_grandma_pool",
+      "npc": "washer_grandma",
+      "habitat_id": "crystal_creek",
+      "topic": "pool_reflection",
+      "conditions": {
+        "after_event": "evt_shallow_pool_reflection"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "washer_grandma",
+          "text": "你看那道壳纹，亮得均匀，说明今天心静。",
+          "choices": [
+            {
+              "text": "原来壳纹也能看情绪。",
+              "next": "shell"
+            },
+            {
+              "text": "难怪你总挑晴天来看。",
+              "next": "sun"
+            }
+          ]
+        },
+        {
+          "id": "shell",
+          "speaker": "washer_grandma",
+          "text": "照料久了，连一圈水纹都能告诉你它想不想靠近人。",
+          "end": true
+        },
+        {
+          "id": "sun",
+          "speaker": "washer_grandma",
+          "text": "晴天照得清，雾天就听水声。每种天色都有自己的办法。",
+          "end": true
+        }
+      ],
+      "weight": 4,
+      "cooldown_days": 4,
+      "tags": [
+        "pool_reflection"
       ]
     }
   ]

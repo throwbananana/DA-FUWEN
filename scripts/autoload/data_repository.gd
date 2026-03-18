@@ -247,6 +247,22 @@ func get_event(event_id: String) -> Dictionary:
 func get_dialogue(dialogue_id: String) -> Dictionary:
 	return dialogues.get(dialogue_id, {})
 
+func get_dialogues_for_npc(npc_id: String) -> Array:
+	var result: Array = []
+	for dialogue in dialogues.values():
+		if String(dialogue.get("npc", "")) != npc_id:
+			continue
+		result.append(Dictionary(dialogue).duplicate(true))
+	return result
+
+func get_events_for_habitat(habitat_id: String) -> Array:
+	var result: Array = []
+	for event_row in events.values():
+		if String(event_row.get("habitat_id", "")) != habitat_id:
+			continue
+		result.append(Dictionary(event_row).duplicate(true))
+	return result
+
 func get_codex_entry(entry_id: String) -> Dictionary:
 	return codex_entries.get(entry_id, {})
 

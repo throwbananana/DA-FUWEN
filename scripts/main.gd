@@ -17,6 +17,7 @@ const RunModifierService = preload("res://scripts/services/run_modifier_service.
 const MetaProgressionService = preload("res://scripts/services/meta_progression_service.gd")
 const NpcRouteService = preload("res://scripts/services/npc_route_service.gd")
 const ThreatService = preload("res://scripts/services/threat_service.gd")
+const DialogueService = preload("res://scripts/services/dialogue_service.gd")
 
 const GAME_TITLE := "百回合远征原型"
 
@@ -100,6 +101,7 @@ var run_modifier_service := RunModifierService.new()
 var meta_progression_service := MetaProgressionService.new()
 var npc_route_service := NpcRouteService.new()
 var threat_service := ThreatService.new()
+var dialogue_service := DialogueService.new()
 
 var season_finished := false
 var awaiting_destination := false
@@ -1020,21 +1022,104 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 	if _can_mark_return(npc_id):
 		GameState.note_return(npc_id)
 	var npc := DataRepository.get_npc(npc_id)
-	var trust_result := npc_service.complete_trust_reward(npc_id, 1)
+	var talk_package := dialogue_service.build_talk_package(npc_id, current_visit_habitat_id)
+	var trust_rewards: Dictionary = talk_package.get("trust_rewards", {})
+	var active_npc_bonus := int(trust_rewards.get(npc_id, 0))
+	var trust_result := npc_service.complete_trust_reward(npc_id, 1 + active_npc_bonus)
+	_apply_talk_side_effects(npc_id, talk_package)
 	var unlocked_lines: Array[String] = []
 	for entry in trust_result.get("unlocked", []):
 		unlocked_lines.append("- 信赖 %d：%s" % [int(entry.get("threshold", 0)), String(entry.get("reward", ""))])
 	var body_lines: Array[String] = []
-	body_lines.append("[b]%s[/b] 对你的照料计划更信任了一点。" % String(npc.get("name", "某人")))
+	body_lines.append("[b]%s[/b] 今天愿意多和你聊一点。" % String(npc.get("name", "某人")))
+	var event_result: Dictionary = talk_package.get("event", {})
+	if not event_result.is_empty():
+		body_lines.append("[b]今日小事：%s[/b]" % String(event_result.get("title", "临时插曲")))
+		for line in event_result.get("stage_lines", []):
+			body_lines.append(String(line))
+		var outcome := String(event_result.get("outcome", ""))
+		if not outcome.is_empty():
+			body_lines.append("结果：%s" % outcome)
+		body_lines.append("")
+	for line in talk_package.get("transcript_lines", []):
+		body_lines.append(String(line))
+	body_lines.append("")
 	body_lines.append("当前信赖：%d" % int(trust_result.get("trust", 0)))
+	var reward_lines := _build_talk_reward_lines(npc_id, talk_package)
+	if not reward_lines.is_empty():
+		body_lines.append("")
+		body_lines.append("[b]这次交谈带来的变化[/b]")
+		body_lines.append("
+".join(reward_lines))
+	var tags: Array = talk_package.get("tags", [])
+	if not tags.is_empty():
+		body_lines.append("")
+		body_lines.append("[b]话题标签[/b] %s" % " / ".join(tags))
 	if not unlocked_lines.is_empty():
 		body_lines.append("")
-		body_lines.append("[b]对话带来的新反馈[/b]")
-		body_lines.append("\n".join(unlocked_lines))
-	_push_log("和 %s 聊了聊，关系更近了一点。" % String(npc.get("name", "某人")))
+		body_lines.append("[b]已达成的信赖反馈[/b]")
+		body_lines.append("
+".join(unlocked_lines))
+	var dialogue_id := String(talk_package.get("dialogue_id", ""))
+	var topic := String(talk_package.get("topic", "daily"))
+	if not dialogue_id.is_empty():
+		GameState.note_dialogue_seen(npc_id, dialogue_id, topic)
+	_push_log("和 %s 聊了聊，这次谈到了%s。" % [String(npc.get("name", "某人")), _talk_topic_label(topic)])
 	_check_active_quests()
 	pending_context = {"kind": "talk_result", "on_close": "arrival"}
-	decision_panel.open_panel("交谈结果", "\n".join(body_lines), [], "返回地点")
+	decision_panel.open_panel("交谈结果", "
+".join(body_lines), [], "返回地点")
+
+func _apply_talk_side_effects(active_npc_id: String, talk_package: Dictionary) -> void:
+	for event_id in talk_package.get("completed_events", []):
+		if not String(event_id).is_empty():
+			GameState.mark_event_completed(String(event_id))
+	for dialogue_id in talk_package.get("unlocked_dialogues", []):
+		if not String(dialogue_id).is_empty():
+			GameState.unlock_dialogue(String(dialogue_id))
+	var items: Dictionary = talk_package.get("items", {})
+	if not items.is_empty():
+		GameState.grant_items(items)
+	for entry in talk_package.get("journal_entries", []):
+		var text := String(entry)
+		if not text.is_empty():
+			GameState.add_journal_entry(text)
+	var trust_rewards: Dictionary = talk_package.get("trust_rewards", {})
+	for npc_id in trust_rewards.keys():
+		var target_id := String(npc_id)
+		if target_id.is_empty() or target_id == active_npc_id:
+			continue
+		GameState.add_trust(target_id, int(trust_rewards[npc_id]))
+
+func _build_talk_reward_lines(active_npc_id: String, talk_package: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var trust_rewards: Dictionary = talk_package.get("trust_rewards", {})
+	for npc_id in trust_rewards.keys():
+		var amount := int(trust_rewards[npc_id])
+		if amount <= 0:
+			continue
+		if String(npc_id) == active_npc_id:
+			lines.append("- 额外信赖 +%d" % amount)
+		else:
+			var npc_name := String(DataRepository.get_npc(String(npc_id)).get("name", String(npc_id)))
+			lines.append("- %s 信赖 +%d" % [npc_name, amount])
+	var items: Dictionary = talk_package.get("items", {})
+	for item_id in items.keys():
+		lines.append("- 获得 %s ×%d" % [String(item_id), int(items[item_id])])
+	for entry in talk_package.get("journal_entries", []):
+		var text := String(entry)
+		if not text.is_empty():
+			lines.append("- 笔记更新：%s" % text)
+	for dialogue_id in talk_package.get("unlocked_dialogues", []):
+		var dialogue := DataRepository.get_dialogue(String(dialogue_id))
+		var topic := String(dialogue.get("topic", "新话题"))
+		lines.append("- 解锁后续话题：%s" % _talk_topic_label(topic))
+	return lines
+
+func _talk_topic_label(topic: String) -> String:
+	if topic.is_empty():
+		return "日常"
+	return topic.replace("_", " / ")
 
 func _try_accept_quest(quest_id: String) -> void:
 	var quest := DataRepository.get_quest(quest_id)

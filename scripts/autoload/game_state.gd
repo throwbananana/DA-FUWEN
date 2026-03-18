@@ -128,6 +128,13 @@ func reset_for_new_season() -> void:
 		"mailed_destinations": {},
 		"returned_npcs": {},
 		"delivered_items": {},
+		"completed_events": {},
+		"event_last_turn": {},
+		"unlocked_dialogues": {},
+		"dialogue_seen_counts": {},
+		"dialogue_last_seen": {},
+		"last_dialogue_by_npc": {},
+		"npc_topic_counts": {},
 	}
 	_pet_serial = 1
 	_seed_companions()
@@ -456,6 +463,62 @@ func note_delivery(item_id: String, count: int) -> void:
 	var delivered: Dictionary = quest_memory["delivered_items"]
 	delivered[item_id] = int(delivered.get(item_id, 0)) + count
 	quest_memory["delivered_items"] = delivered
+
+func has_completed_event(event_id: String) -> bool:
+	return bool(quest_memory["completed_events"].get(event_id, false))
+
+func mark_event_completed(event_id: String) -> void:
+	var completed: Dictionary = quest_memory["completed_events"]
+	completed[event_id] = true
+	quest_memory["completed_events"] = completed
+	var turns: Dictionary = quest_memory["event_last_turn"]
+	turns[event_id] = global_turn
+	quest_memory["event_last_turn"] = turns
+
+func get_event_last_turn(event_id: String) -> int:
+	return int(quest_memory["event_last_turn"].get(event_id, -999))
+
+func unlock_dialogue(dialogue_id: String) -> void:
+	var unlocked: Dictionary = quest_memory["unlocked_dialogues"]
+	unlocked[dialogue_id] = true
+	quest_memory["unlocked_dialogues"] = unlocked
+
+func is_dialogue_unlocked(dialogue_id: String) -> bool:
+	return bool(quest_memory["unlocked_dialogues"].get(dialogue_id, false))
+
+func note_dialogue_seen(npc_id: String, dialogue_id: String, topic: String = "") -> void:
+	if dialogue_id.is_empty():
+		return
+	var counts: Dictionary = quest_memory["dialogue_seen_counts"]
+	counts[dialogue_id] = int(counts.get(dialogue_id, 0)) + 1
+	quest_memory["dialogue_seen_counts"] = counts
+	var last_seen: Dictionary = quest_memory["dialogue_last_seen"]
+	last_seen[dialogue_id] = global_turn
+	quest_memory["dialogue_last_seen"] = last_seen
+	var last_by_npc: Dictionary = quest_memory["last_dialogue_by_npc"]
+	last_by_npc[npc_id] = dialogue_id
+	quest_memory["last_dialogue_by_npc"] = last_by_npc
+	if topic.is_empty():
+		return
+	var topic_counts: Dictionary = quest_memory["npc_topic_counts"]
+	var npc_topics: Dictionary = Dictionary(topic_counts.get(npc_id, {}))
+	npc_topics[topic] = int(npc_topics.get(topic, 0)) + 1
+	topic_counts[npc_id] = npc_topics
+	quest_memory["npc_topic_counts"] = topic_counts
+
+func get_dialogue_seen_count(dialogue_id: String) -> int:
+	return int(quest_memory["dialogue_seen_counts"].get(dialogue_id, 0))
+
+func get_dialogue_last_seen(dialogue_id: String) -> int:
+	return int(quest_memory["dialogue_last_seen"].get(dialogue_id, -999))
+
+func get_last_dialogue_for_npc(npc_id: String) -> String:
+	return String(quest_memory["last_dialogue_by_npc"].get(npc_id, ""))
+
+func get_npc_topic_seen_count(npc_id: String, topic: String) -> int:
+	var topic_counts: Dictionary = quest_memory["npc_topic_counts"]
+	var npc_topics: Dictionary = Dictionary(topic_counts.get(npc_id, {}))
+	return int(npc_topics.get(topic, 0))
 
 func add_trust(npc_id: String, amount: int) -> void:
 	npc_trust[npc_id] = int(npc_trust.get(npc_id, 0)) + amount

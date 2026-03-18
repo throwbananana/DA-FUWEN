@@ -1,6 +1,267 @@
 {
-  "version": 1,
+  "version": 2,
   "events": [
+    {
+      "id": "evt_bazaar_night_swap",
+      "title": "铜锤集夜换会",
+      "category": "market_event",
+      "habitat_id": "copper_hammer_bazaar",
+      "participants": [
+        "tinker_bo",
+        "smith_ya",
+        "parts_vendor"
+      ],
+      "trigger": {
+        "after_quest": "bazaar_repair_stall",
+        "season": "festival"
+      },
+      "summary": "节庆夜里，铜锤集会临时开启夜换会，玩家可以听到配件与装饰的来路故事。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "tinker_bo",
+          "text": "阿铂邀请玩家看新修好的摊位上摆出的旧零件。"
+        },
+        {
+          "type": "talk",
+          "npc": "smith_ya",
+          "text": "哑叔会用敲击声示意每件饰件的用途。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "swap_stories",
+          "text": "听摊主讲零件来历",
+          "outcome": "能解锁更多世界观词条。",
+          "effects": {
+            "unlock_encyclopedia": "ency_copper_hammer_bazaar",
+            "unlock_dialogue": "dlg_tinker_bo_night_swap"
+          }
+        },
+        {
+          "id": "trade_parts",
+          "text": "直接换一些实用材料",
+          "outcome": "得到少量维修与装饰资源。",
+          "effects": {
+            "items": {
+              "parts": 2,
+              "rare_decor_part": 1
+            }
+          }
+        }
+      ],
+      "mode": "ambient_talk",
+      "cooldown_days": 5,
+      "weight": 2,
+      "tags": [
+        "market_event"
+      ]
+    },
+    {
+      "id": "evt_bazaar_spare_demo",
+      "title": "旧件摊前的小演示",
+      "category": "market_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 3,
+      "weight": 4,
+      "habitat_id": "copper_hammer_bazaar",
+      "participants": [
+        "tinker_bo",
+        "smith_ya",
+        "parts_vendor"
+      ],
+      "trigger": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "season_in": [
+          "spring",
+          "summer",
+          "autumn",
+          "winter"
+        ]
+      },
+      "summary": "阿铂偶尔会拿一件看似报废的旧件，当场演示它为什么还值得留。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "tinker_bo",
+          "text": "阿铂把一枚旧齿轮放到掌心里，先不装，只讲它原来为什么会坏。"
+        },
+        {
+          "type": "talk",
+          "npc": "smith_ya",
+          "text": "哑叔在旁边敲了一下台面，提醒大家别只听响亮的那一面。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "listen_story",
+          "text": "先听旧件来路",
+          "outcome": "围观的人散得慢了些，真正想学的人反而留了下来。",
+          "effects": {
+            "trust": {
+              "tinker_bo": 1
+            },
+            "unlock_dialogue": "dlg_tinker_bo_after_demo"
+          }
+        },
+        {
+          "id": "check_teeth",
+          "text": "凑近看磨损边",
+          "outcome": "你学会了分辨哪些缺口只是旧，哪些才是真的不能用。",
+          "effects": {
+            "items": {
+              "parts": 1
+            }
+          }
+        }
+      ],
+      "tags": [
+        "市集",
+        "旧件",
+        "演示"
+      ]
+    },
+    {
+      "id": "evt_creek_warm_stone_sort",
+      "title": "浅滩分暖石",
+      "category": "care_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 3,
+      "weight": 4,
+      "habitat_id": "crystal_creek",
+      "participants": [
+        "washer_grandma",
+        "stone_trader"
+      ],
+      "trigger": {
+        "required_building": {
+          "id": "shallow_pool",
+          "min_level": 1
+        },
+        "weather_in": [
+          "clear",
+          "fog"
+        ],
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "婆婆会把不同温度的暖石排在浅滩边，让壳幼自己挑喜欢靠近的那一块。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "washer_grandma",
+          "text": "婆婆让你别急着抱壳幼，只先看它往哪块石头边停。"
+        },
+        {
+          "type": "talk",
+          "npc": "stone_trader",
+          "text": "阿砾顺手挑出几块更圆滑的薄石，说这样翻身时不容易磕边。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "sort_by_temp",
+          "text": "按温度把石头重新排开",
+          "outcome": "壳幼挑选得更快，观察也更清楚。",
+          "effects": {
+            "trust": {
+              "washer_grandma": 1
+            },
+            "unlock_dialogue": "dlg_washer_grandma_after_stones"
+          }
+        },
+        {
+          "id": "mark_surface",
+          "text": "记下每块石头的表面手感",
+          "outcome": "之后更容易区分适合休息还是适合磨壳。",
+          "effects": {
+            "items": {
+              "warm_stone": 1
+            }
+          }
+        }
+      ],
+      "tags": [
+        "暖石",
+        "浅滩",
+        "护理"
+      ]
+    },
+    {
+      "id": "evt_moss_morning_wipe",
+      "title": "晨雾擦窝口",
+      "category": "care_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 3,
+      "weight": 4,
+      "habitat_id": "mist_moss_cave",
+      "participants": [
+        "moss_keeper",
+        "lost_apprentice"
+      ],
+      "trigger": {
+        "required_building": {
+          "id": "warm_nest",
+          "min_level": 1
+        },
+        "weather_in": [
+          "fog",
+          "mist",
+          "rain"
+        ],
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "窝口挂了细密雾珠，迟叔会顺手叫你一起把最潮的一圈擦掉。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "moss_keeper",
+          "text": "迟叔把布递给你，示意先擦外圈，不碰里面的干草。"
+        },
+        {
+          "type": "talk",
+          "npc": "lost_apprentice",
+          "text": "小禾在旁边小声记着“擦掉的是湿，不是味道”。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "wipe_edges",
+          "text": "先擦窝口外圈",
+          "outcome": "窝内热气没散，幼体也没被惊动。",
+          "effects": {
+            "trust": {
+              "moss_keeper": 1
+            },
+            "unlock_dialogue": "dlg_moss_keeper_after_wipe"
+          }
+        },
+        {
+          "id": "change_cloth",
+          "text": "顺手换一块更干的布",
+          "outcome": "洞口更清爽，小禾也多记下一条照料细节。",
+          "effects": {
+            "journal_entry": "记录：潮雾天气下窝口更换布层的时机"
+          }
+        }
+      ],
+      "tags": [
+        "晨雾",
+        "育幼",
+        "照料"
+      ]
+    },
     {
       "id": "evt_moss_night_watch",
       "title": "雾苔窟的守夜哼唱",
@@ -61,115 +322,12 @@
             "journal_entry": "幼巢低光环境观察"
           }
         }
-      ]
-    },
-    {
-      "id": "evt_shallow_pool_reflection",
-      "title": "浅池映光",
-      "category": "care_event",
-      "habitat_id": "crystal_creek",
-      "participants": [
-        "washer_grandma"
       ],
-      "trigger": {
-        "after_quest": "help_shell_pup_settle",
-        "required_building": {
-          "id": "shallow_pool",
-          "min_level": 1
-        },
-        "weather": "clear"
-      },
-      "summary": "晴朗时，浅池会映出壳幼背壳的花纹变化，婆婆会借此教玩家判断健康状态。",
-      "stages": [
-        {
-          "type": "observe",
-          "species_id": "shell_pup",
-          "text": "壳幼在浅池边慢慢翻动，背壳反光会显示细纹。"
-        },
-        {
-          "type": "talk",
-          "npc": "washer_grandma",
-          "text": "婆婆解释不同纹路对应的温度与心情。"
-        }
-      ],
-      "choices": [
-        {
-          "id": "compare_shell_lines",
-          "text": "对照石纹记录背壳细线",
-          "outcome": "可解锁更细的护理提示。",
-          "effects": {
-            "items": {
-              "warm_stone": 1
-            },
-            "unlock_codex": "codex_shell_pup",
-            "unlock_dialogue": "dlg_washer_grandma_pool"
-          }
-        },
-        {
-          "id": "let_them_play",
-          "text": "先不打扰，让壳幼自己玩水",
-          "outcome": "壳幼心情更稳定，之后更容易结缘。",
-          "effects": {
-            "trust": {
-              "washer_grandma": 1
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "evt_post_storm_layover",
-      "title": "暴雨后的驿站留客",
-      "category": "settlement_event",
-      "habitat_id": "sky_post",
-      "participants": [
-        "innkeeper_yun",
-        "boarder_liu",
-        "traveling_peddler"
-      ],
-      "trigger": {
-        "required_building": {
-          "id": "message_board",
-          "min_level": 1
-        },
-        "weather": "storm"
-      },
-      "summary": "风雨天会有更多巡游商人与照料员停留，云升驿会刷新传闻与跨点委托。",
-      "stages": [
-        {
-          "type": "talk",
-          "npc": "innkeeper_yun",
-          "text": "云伯让玩家帮忙整理新增的留信与寄养请求。"
-        },
-        {
-          "type": "talk",
-          "npc": "traveling_peddler",
-          "text": "青禾会透露下一站可能出现的稀有遭遇。"
-        }
-      ],
-      "choices": [
-        {
-          "id": "sort_letters",
-          "text": "优先整理留信牌上的委托",
-          "outcome": "跨点委托刷新得更快。",
-          "effects": {
-            "unlock_dialogue": "dlg_innkeeper_yun_letters",
-            "unlock_encyclopedia": "ency_boarding_and_mail"
-          }
-        },
-        {
-          "id": "help_boarding",
-          "text": "先去寄养栏安顿同行宠物",
-          "outcome": "柳姐会开放更温和的寄养说明。",
-          "effects": {
-            "trust": {
-              "boarder_liu": 1
-            },
-            "items": {
-              "tea_leaf": 1
-            }
-          }
-        }
+      "mode": "ambient_talk",
+      "cooldown_days": 5,
+      "weight": 2,
+      "tags": [
+        "habitat_story"
       ]
     },
     {
@@ -228,56 +386,270 @@
             }
           }
         }
+      ],
+      "mode": "ambient_talk",
+      "cooldown_days": 5,
+      "weight": 2,
+      "tags": [
+        "ruin_event"
       ]
     },
     {
-      "id": "evt_bazaar_night_swap",
-      "title": "铜锤集夜换会",
-      "category": "market_event",
-      "habitat_id": "copper_hammer_bazaar",
+      "id": "evt_platform_panel_hum",
+      "title": "面板低鸣校准",
+      "category": "ruin_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "ancient_platform",
       "participants": [
-        "tinker_bo",
-        "smith_ya",
-        "parts_vendor"
+        "field_recorder",
+        "ruin_restorer"
       ],
       "trigger": {
-        "after_quest": "bazaar_repair_stall",
-        "season": "festival"
+        "required_building": {
+          "id": "echo_room",
+          "min_level": 1
+        },
+        "time_in": [
+          "evening",
+          "night"
+        ]
       },
-      "summary": "节庆夜里，铜锤集会临时开启夜换会，玩家可以听到配件与装饰的来路故事。",
+      "summary": "回响室边缘偶尔会冒出一阵低鸣，需要一边压稳松动面板，一边重新记录频率。",
       "stages": [
         {
           "type": "talk",
-          "npc": "tinker_bo",
-          "text": "阿铂邀请玩家看新修好的摊位上摆出的旧零件。"
+          "npc": "ruin_restorer",
+          "text": "绛先用手掌压住面板角，示意你别急着拧紧。"
         },
         {
           "type": "talk",
-          "npc": "smith_ya",
-          "text": "哑叔会用敲击声示意每件饰件的用途。"
+          "npc": "field_recorder",
+          "text": "叶衡让你先记下低鸣起伏，再决定该补哪一颗固定钉。"
         }
       ],
       "choices": [
         {
-          "id": "swap_stories",
-          "text": "听摊主讲零件来历",
-          "outcome": "能解锁更多世界观词条。",
+          "id": "hold_then_note",
+          "text": "先稳住面板，再记频率",
+          "outcome": "低鸣没有扩散成刺耳杂响。",
           "effects": {
-            "unlock_encyclopedia": "ency_copper_hammer_bazaar",
-            "unlock_dialogue": "dlg_tinker_bo_night_swap"
+            "trust": {
+              "field_recorder": 1
+            },
+            "unlock_dialogue": "dlg_field_recorder_after_hum"
           }
         },
         {
-          "id": "trade_parts",
-          "text": "直接换一些实用材料",
-          "outcome": "得到少量维修与装饰资源。",
+          "id": "tighten_fast",
+          "text": "先补一颗钉子再说",
+          "outcome": "虽然有些仓促，但总算没让面板继续抖。",
           "effects": {
             "items": {
-              "parts": 2,
-              "rare_decor_part": 1
+              "parts": 1
             }
           }
         }
+      ],
+      "tags": [
+        "夜间",
+        "低鸣",
+        "校准"
+      ]
+    },
+    {
+      "id": "evt_post_late_board",
+      "title": "夜里重排留信牌",
+      "category": "settlement_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 3,
+      "weight": 4,
+      "habitat_id": "sky_post",
+      "participants": [
+        "innkeeper_yun",
+        "boarder_liu",
+        "traveling_peddler"
+      ],
+      "trigger": {
+        "required_building": {
+          "id": "message_board",
+          "min_level": 1
+        },
+        "time_in": [
+          "evening",
+          "night"
+        ],
+        "weather_in": [
+          "clear",
+          "rain",
+          "storm"
+        ]
+      },
+      "summary": "临睡前，云伯会把白天新增的留信和寄养纸条重新排一次，让明天一早的人少走弯路。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "innkeeper_yun",
+          "text": "云伯把最急的两张牌先抽出来，让你帮忙摆到最显眼的位置。"
+        },
+        {
+          "type": "talk",
+          "npc": "boarder_liu",
+          "text": "柳姐顺手把寄养说明压在一旁，免得晨风掀乱。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "sort_urgent",
+          "text": "先把急件往前排",
+          "outcome": "第二天的来客更容易迅速找到要看的内容。",
+          "effects": {
+            "trust": {
+              "innkeeper_yun": 1
+            },
+            "unlock_dialogue": "dlg_innkeeper_yun_after_late_board"
+          }
+        },
+        {
+          "id": "bundle_notes",
+          "text": "把同去向的纸条捆在一起",
+          "outcome": "寄养与传递的流程都更顺。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "journal_entry": "驿站夜间整理：按去向归类更省晨间手忙脚乱"
+          }
+        }
+      ],
+      "tags": [
+        "夜间",
+        "留信",
+        "驿站"
+      ]
+    },
+    {
+      "id": "evt_post_storm_layover",
+      "title": "暴雨后的驿站留客",
+      "category": "settlement_event",
+      "habitat_id": "sky_post",
+      "participants": [
+        "innkeeper_yun",
+        "boarder_liu",
+        "traveling_peddler"
+      ],
+      "trigger": {
+        "required_building": {
+          "id": "message_board",
+          "min_level": 1
+        },
+        "weather": "storm"
+      },
+      "summary": "风雨天会有更多巡游商人与照料员停留，云升驿会刷新传闻与跨点委托。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "innkeeper_yun",
+          "text": "云伯让玩家帮忙整理新增的留信与寄养请求。"
+        },
+        {
+          "type": "talk",
+          "npc": "traveling_peddler",
+          "text": "青禾会透露下一站可能出现的稀有遭遇。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "sort_letters",
+          "text": "优先整理留信牌上的委托",
+          "outcome": "跨点委托刷新得更快。",
+          "effects": {
+            "unlock_dialogue": "dlg_innkeeper_yun_letters",
+            "unlock_encyclopedia": "ency_boarding_and_mail"
+          }
+        },
+        {
+          "id": "help_boarding",
+          "text": "先去寄养栏安顿同行宠物",
+          "outcome": "柳姐会开放更温和的寄养说明。",
+          "effects": {
+            "trust": {
+              "boarder_liu": 1
+            },
+            "items": {
+              "tea_leaf": 1
+            }
+          }
+        }
+      ],
+      "mode": "ambient_talk",
+      "cooldown_days": 5,
+      "weight": 2,
+      "tags": [
+        "settlement_event"
+      ]
+    },
+    {
+      "id": "evt_shallow_pool_reflection",
+      "title": "浅池映光",
+      "category": "care_event",
+      "habitat_id": "crystal_creek",
+      "participants": [
+        "washer_grandma"
+      ],
+      "trigger": {
+        "after_quest": "help_shell_pup_settle",
+        "required_building": {
+          "id": "shallow_pool",
+          "min_level": 1
+        },
+        "weather": "clear"
+      },
+      "summary": "晴朗时，浅池会映出壳幼背壳的花纹变化，婆婆会借此教玩家判断健康状态。",
+      "stages": [
+        {
+          "type": "observe",
+          "species_id": "shell_pup",
+          "text": "壳幼在浅池边慢慢翻动，背壳反光会显示细纹。"
+        },
+        {
+          "type": "talk",
+          "npc": "washer_grandma",
+          "text": "婆婆解释不同纹路对应的温度与心情。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "compare_shell_lines",
+          "text": "对照石纹记录背壳细线",
+          "outcome": "可解锁更细的护理提示。",
+          "effects": {
+            "items": {
+              "warm_stone": 1
+            },
+            "unlock_codex": "codex_shell_pup",
+            "unlock_dialogue": "dlg_washer_grandma_pool"
+          }
+        },
+        {
+          "id": "let_them_play",
+          "text": "先不打扰，让壳幼自己玩水",
+          "outcome": "壳幼心情更稳定，之后更容易结缘。",
+          "effects": {
+            "trust": {
+              "washer_grandma": 1
+            }
+          }
+        }
+      ],
+      "mode": "ambient_talk",
+      "cooldown_days": 5,
+      "weight": 2,
+      "tags": [
+        "care_event"
       ]
     },
     {
@@ -329,6 +701,74 @@
             "unlock_codex": "codex_rift_fawn"
           }
         }
+      ],
+      "mode": "ambient_talk",
+      "cooldown_days": 5,
+      "weight": 2,
+      "tags": [
+        "anomaly_event"
+      ]
+    },
+    {
+      "id": "evt_spire_signal_marks",
+      "title": "稳定窗口里的撤离标记",
+      "category": "anomaly_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "radiant_spire",
+      "participants": [
+        "anomaly_researcher"
+      ],
+      "trigger": {
+        "time_in": [
+          "day",
+          "evening",
+          "night"
+        ],
+        "weather_in": [
+          "fog",
+          "storm",
+          "clear"
+        ]
+      },
+      "summary": "澄会趁短暂的稳定窗口，在地上补画几道更清楚的撤离标记。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "anomaly_researcher",
+          "text": "澄让你站在稍后的位置，只在她点头时递过去新的标记片。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "mark_safe_line",
+          "text": "优先补齐安全线",
+          "outcome": "再退回时少了一点犹豫。",
+          "effects": {
+            "trust": {
+              "anomaly_researcher": 1
+            },
+            "unlock_dialogue": "dlg_anomaly_researcher_after_signal"
+          }
+        },
+        {
+          "id": "check_light",
+          "text": "顺手记下光纹变化",
+          "outcome": "短短几秒，也足够留下可对照的异常样本。",
+          "effects": {
+            "items": {
+              "glow_dust": 1
+            },
+            "journal_entry": "尖塔稳定窗口：撤离线与光纹变化同步记录"
+          }
+        }
+      ],
+      "tags": [
+        "异常",
+        "撤离线",
+        "窗口"
       ]
     }
   ]

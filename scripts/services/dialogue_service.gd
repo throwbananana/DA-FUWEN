@@ -1,0 +1,292 @@
+class_name DialogueService
+extends RefCounted
+
+var rng := RandomNumberGenerator.new()
+
+func _init() -> void:
+	rng.randomize()
+
+func build_talk_package(npc_id: String, habitat_id: String) -> Dictionary:
+	var npc := DataRepository.get_npc(npc_id)
+	if npc.is_empty():
+		return {}
+	var event_result := _pick_ambient_event(npc_id, habitat_id)
+	var dialogue := _pick_dialogue(npc_id, habitat_id)
+	var transcript_lines: Array = []
+	if dialogue.is_empty():
+		transcript_lines = _build_fallback_lines(npc, habitat_id)
+	else:
+		transcript_lines = _build_transcript(dialogue)
+	return {
+		"npc_id": npc_id,
+		"dialogue_id": String(dialogue.get("id", "")),
+		"topic": String(dialogue.get("topic", "daily")),
+		"transcript_lines": transcript_lines,
+		"tags": _build_tags(dialogue, event_result, npc),
+		"event": event_result,
+		"trust_rewards": Dictionary(event_result.get("trust_rewards", {})).duplicate(true),
+		"items": Dictionary(event_result.get("items", {})).duplicate(true),
+		"journal_entries": Array(event_result.get("journal_entries", [])).duplicate(true),
+		"completed_events": Array(event_result.get("completed_events", [])).duplicate(true),
+		"unlocked_dialogues": Array(event_result.get("unlocked_dialogues", [])).duplicate(true),
+	}
+
+func _pick_dialogue(npc_id: String, habitat_id: String) -> Dictionary:
+	var candidates: Array = []
+	for dialogue in DataRepository.get_dialogues_for_npc(npc_id):
+		if String(dialogue.get("habitat_id", habitat_id)) != habitat_id:
+			continue
+		if not _dialogue_is_available(dialogue, npc_id, habitat_id):
+			continue
+		candidates.append(dialogue)
+	if candidates.is_empty():
+		return {}
+	return _pick_weighted_dialogue(candidates, npc_id)
+
+func _pick_ambient_event(npc_id: String, habitat_id: String) -> Dictionary:
+	var candidates: Array = []
+	for event_row in DataRepository.get_events_for_habitat(habitat_id):
+		if String(event_row.get("mode", "")) != "ambient_talk":
+			continue
+		if not Array(event_row.get("participants", [])).has(npc_id):
+			continue
+		if not _event_is_available(event_row, npc_id, habitat_id):
+			continue
+		candidates.append(event_row)
+	if candidates.is_empty():
+		return {}
+	var chosen: Dictionary = _pick_weighted_event(candidates)
+	return _materialize_event(chosen, npc_id)
+
+func _dialogue_is_available(dialogue: Dictionary, npc_id: String, habitat_id: String) -> bool:
+	var dialogue_id := String(dialogue.get("id", ""))
+	if dialogue_id.is_empty():
+		return false
+	if String(dialogue.get("habitat_id", habitat_id)) != habitat_id:
+		return false
+	if bool(dialogue.get("once", false)) and GameState.get_dialogue_seen_count(dialogue_id) > 0:
+		return false
+	var cooldown_days := int(dialogue.get("cooldown_days", 0))
+	if cooldown_days > 0 and GameState.global_turn - GameState.get_dialogue_last_seen(dialogue_id) < cooldown_days:
+		return false
+	var conditions: Dictionary = dialogue.get("conditions", {})
+	return _conditions_match(conditions, npc_id, habitat_id)
+
+func _event_is_available(event_row: Dictionary, npc_id: String, habitat_id: String) -> bool:
+	var event_id := String(event_row.get("id", ""))
+	if event_id.is_empty() or String(event_row.get("habitat_id", habitat_id)) != habitat_id:
+		return false
+	var repeatable := bool(event_row.get("repeatable", false))
+	if GameState.has_completed_event(event_id) and not repeatable:
+		return false
+	var cooldown_days := int(event_row.get("cooldown_days", 0))
+	if cooldown_days > 0 and GameState.global_turn - GameState.get_event_last_turn(event_id) < cooldown_days:
+		return false
+	var trigger: Dictionary = event_row.get("trigger", {})
+	if not _conditions_match(trigger, npc_id, habitat_id):
+		return false
+	var chance := float(trigger.get("chance", 1.0))
+	if chance < 1.0 and rng.randf() > chance:
+		return false
+	return true
+
+func _conditions_match(conditions: Dictionary, npc_id: String, habitat_id: String) -> bool:
+	if conditions.is_empty():
+		return true
+	if conditions.has("after_event") and not _all_events_completed(conditions.get("after_event")):
+		return false
+	if conditions.has("after_quest") and not _all_quests_completed(conditions.get("after_quest")):
+		return false
+	if conditions.has("season") and String(conditions.get("season", "")) != GameState.season_id:
+		return false
+	if conditions.has("season_in") and not Array(conditions.get("season_in", [])).has(GameState.season_id):
+		return false
+	if conditions.has("weather") and String(conditions.get("weather", "")) != GameState.weather_id:
+		return false
+	if conditions.has("weather_in") and not Array(conditions.get("weather_in", [])).has(GameState.weather_id):
+		return false
+	if conditions.has("time") and String(conditions.get("time", "")) != GameState.time_of_day:
+		return false
+	if conditions.has("time_in") and not Array(conditions.get("time_in", [])).has(GameState.time_of_day):
+		return false
+	if conditions.has("min_trust") and int(GameState.npc_trust.get(npc_id, 0)) < int(conditions.get("min_trust", 0)):
+		return false
+	if conditions.has("max_trust") and int(GameState.npc_trust.get(npc_id, 0)) > int(conditions.get("max_trust", 0)):
+		return false
+	if conditions.has("required_building"):
+		var requirement: Dictionary = conditions.get("required_building", {})
+		var building_id := String(requirement.get("id", ""))
+		var min_level := int(requirement.get("min_level", 1))
+		if building_id.is_empty() or GameState.get_building_level(habitat_id, building_id) < min_level:
+			return false
+	return true
+
+func _all_events_completed(raw_value) -> bool:
+	if raw_value is Array:
+		for raw_id in raw_value:
+			if not GameState.has_completed_event(String(raw_id)):
+				return false
+		return true
+	return GameState.has_completed_event(String(raw_value))
+
+func _all_quests_completed(raw_value) -> bool:
+	if raw_value is Array:
+		for raw_id in raw_value:
+			if not GameState.completed_quests.has(String(raw_id)):
+				return false
+		return true
+	return GameState.completed_quests.has(String(raw_value))
+
+func _dialogue_weight(dialogue: Dictionary, npc_id: String) -> int:
+	var weight := maxi(1, int(dialogue.get("weight", 1)))
+	var dialogue_id := String(dialogue.get("id", ""))
+	if GameState.get_dialogue_seen_count(dialogue_id) == 0:
+		weight += 3
+	if GameState.get_last_dialogue_for_npc(npc_id) == dialogue_id:
+		weight = maxi(1, int(weight / 4))
+	var topic := String(dialogue.get("topic", "daily"))
+	weight = maxi(1, weight - mini(GameState.get_npc_topic_seen_count(npc_id, topic), weight - 1))
+	return weight
+
+func _pick_weighted_dialogue(rows: Array, npc_id: String) -> Dictionary:
+	var total := 0
+	var buckets: Array = []
+	for row in rows:
+		var score := _dialogue_weight(row, npc_id)
+		total += score
+		buckets.append({"threshold": total, "row": row})
+	var roll := rng.randi_range(1, maxi(1, total))
+	for bucket in buckets:
+		if roll <= int(bucket.get("threshold", 0)):
+			return Dictionary(bucket.get("row", {})).duplicate(true)
+	return Dictionary(rows[0]).duplicate(true)
+
+func _pick_weighted_event(rows: Array) -> Dictionary:
+	var total := 0
+	var buckets: Array = []
+	for row in rows:
+		var score := maxi(1, int(row.get("weight", 1)))
+		total += score
+		buckets.append({"threshold": total, "row": row})
+	var roll := rng.randi_range(1, maxi(1, total))
+	for bucket in buckets:
+		if roll <= int(bucket.get("threshold", 0)):
+			return Dictionary(bucket.get("row", {})).duplicate(true)
+	return Dictionary(rows[0]).duplicate(true)
+
+func _materialize_event(event_row: Dictionary, npc_id: String) -> Dictionary:
+	var stage_lines: Array = []
+	for stage in event_row.get("stages", []):
+		var stage_npc := String(stage.get("npc", ""))
+		if not stage_npc.is_empty() and stage_npc != npc_id:
+			continue
+		var text := String(stage.get("text", ""))
+		if text.is_empty():
+			continue
+		stage_lines.append(text)
+		if stage_lines.size() >= 2:
+			break
+	if stage_lines.is_empty() and not String(event_row.get("summary", "")).is_empty():
+		stage_lines.append(String(event_row.get("summary", "")))
+	var choice := {}
+	var choices: Array = event_row.get("choices", [])
+	if not choices.is_empty():
+		choice = choices[rng.randi_range(0, choices.size() - 1)]
+	var effects: Dictionary = choice.get("effects", {})
+	var journal_entries: Array = []
+	var journal_entry := String(effects.get("journal_entry", ""))
+	if not journal_entry.is_empty():
+		journal_entries.append(journal_entry)
+	var unlocked_dialogues: Array = []
+	var unlock_dialogue = effects.get("unlock_dialogue", "")
+	if unlock_dialogue is Array:
+		for dialogue_id in unlock_dialogue:
+			unlocked_dialogues.append(String(dialogue_id))
+	elif not String(unlock_dialogue).is_empty():
+		unlocked_dialogues.append(String(unlock_dialogue))
+	return {
+		"id": String(event_row.get("id", "")),
+		"title": String(event_row.get("title", "")),
+		"summary": String(event_row.get("summary", "")),
+		"stage_lines": stage_lines,
+		"outcome": String(choice.get("outcome", "")),
+		"trust_rewards": Dictionary(effects.get("trust", {})).duplicate(true),
+		"items": Dictionary(effects.get("items", {})).duplicate(true),
+		"journal_entries": journal_entries,
+		"completed_events": [String(event_row.get("id", ""))],
+		"unlocked_dialogues": unlocked_dialogues,
+		"tags": Array(event_row.get("tags", [])).duplicate(true),
+	}
+
+func _build_transcript(dialogue: Dictionary) -> Array:
+	var lines: Array = []
+	var nodes_by_id := {}
+	for node in dialogue.get("nodes", []):
+		nodes_by_id[String(node.get("id", ""))] = node
+	var current_id := "start"
+	var guard := 0
+	while guard < 8 and nodes_by_id.has(current_id):
+		guard += 1
+		var node: Dictionary = nodes_by_id[current_id]
+		var speaker := _speaker_name(String(node.get("speaker", "")))
+		var text := String(node.get("text", ""))
+		if not text.is_empty():
+			lines.append("%s：%s" % [speaker, text])
+		var choices: Array = node.get("choices", [])
+		if choices.is_empty():
+			break
+		var choice: Dictionary = choices[rng.randi_range(0, choices.size() - 1)]
+		lines.append("你：%s" % String(choice.get("text", "…")))
+		current_id = String(choice.get("next", ""))
+		if current_id.is_empty():
+			break
+	return lines
+
+func _build_fallback_lines(npc: Dictionary, habitat_id: String) -> Array:
+	var name := String(npc.get("name", "某人"))
+	var tags: Array = npc.get("tags", [])
+	var habitat_name := String(DataRepository.get_habitat(habitat_id).get("name", habitat_id))
+	if tags.has("care"):
+		return [
+			"%s先看了看你手上有没有沾到会惊到幼体的冷气和水。" % name,
+			"%s：今天先别急，照料很多时候是把动作放轻。" % name,
+		]
+	if tags.has("trade"):
+		return [
+			"%s把随身的小包重新系紧，像是在确认每样东西都待在该待的位置。" % name,
+			"%s：路上最值钱的不是货，是知道什么该在 %s 留下。" % [name, habitat_name],
+		]
+	return [
+		"%s抬头看了你一眼，像是在确认你今天是来赶路，还是来认真待一会儿。" % name,
+		"%s：这里每天都不太一样，先看看今天肯跟我们说什么吧。" % name,
+	]
+
+func _build_tags(dialogue: Dictionary, event_result: Dictionary, npc: Dictionary) -> Array:
+	var tags: Array = []
+	for raw_tag in dialogue.get("tags", []):
+		var tag := String(raw_tag)
+		if tag.is_empty() or tags.has(tag):
+			continue
+		tags.append(tag)
+	for raw_tag in event_result.get("tags", []):
+		var tag := String(raw_tag)
+		if tag.is_empty() or tags.has(tag):
+			continue
+		tags.append(tag)
+	if tags.is_empty():
+		for raw_tag in npc.get("tags", []):
+			var tag := String(raw_tag)
+			if tag.is_empty() or tags.has(tag):
+				continue
+			tags.append(tag)
+			if tags.size() >= 3:
+				break
+	return tags
+
+func _speaker_name(speaker_id: String) -> String:
+	if speaker_id.is_empty() or speaker_id == "player":
+		return "你"
+	var npc := DataRepository.get_npc(speaker_id)
+	if not npc.is_empty():
+		return String(npc.get("name", speaker_id))
+	return speaker_id

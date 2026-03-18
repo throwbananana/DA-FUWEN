@@ -114,6 +114,9 @@ var last_encounter_action_id := ""
 var pending_context := {}
 var pending_roll := {}
 var reachable_paths := {}
+var board_anim_locked := false
+var pending_travel_path: Array[int] = []
+var pending_travel_target := -1
 var anchor_override_active := false
 
 func _ready() -> void:
@@ -139,6 +142,7 @@ func _connect_signals() -> void:
 	base_button.pressed.connect(_on_base_pressed)
 	new_game_button.pressed.connect(start_new_game)
 	board_view.node_chosen.connect(_on_board_node_chosen)
+	board_view.travel_finished.connect(_on_board_travel_finished)
 	decision_panel.choice_selected.connect(_on_decision_choice_selected)
 	decision_panel.closed.connect(_on_decision_closed)
 	base_panel.manage_requested.connect(_on_base_manage_requested)
@@ -219,6 +223,7 @@ func _refresh_board_region(reset_position: bool) -> void:
 		GameState.reveal_board_nodes(region.get("revealed_nodes", []))
 		GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(start_node_id))
 	current_node_id = GameState.current_board_node_id
+	board_view.set_current_node(current_node_id, true)
 	_initialize_board_threats()
 
 func _initialize_board_threats() -> void:
@@ -465,13 +470,21 @@ func _on_base_pressed() -> void:
 	})
 
 func _on_board_node_chosen(node_id: int) -> void:
-	if season_finished or _is_modal_open():
+	if season_finished or _is_modal_open() or board_anim_locked:
 		return
 	if not awaiting_destination or not _get_selectable_nodes().has(node_id):
 		return
 	awaiting_destination = false
-	var path_preview: Array = reachable_paths.get(node_id, [])
 	pending_roll.clear()
+	pending_travel_target = node_id
+	pending_travel_path = reachable_paths.get(node_id, []).duplicate()
+	if pending_travel_path.is_empty():
+		pending_travel_path = [current_node_id, node_id]
+	board_anim_locked = true
+	board_view.play_travel(pending_travel_path)
+
+func _on_board_travel_finished(node_id: int) -> void:
+	board_anim_locked = false
 	current_node_id = node_id
 	GameState.move_to_board_node(node_id)
 	GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(node_id))
@@ -480,7 +493,7 @@ func _on_board_node_chosen(node_id: int) -> void:
 	GameState.add_weekly_progress("visit_count", 1)
 	_push_log("掷骰后前往 %s。路径：%s。" % [
 		String(node.get("name", "未知地点")),
-		_format_path_preview(path_preview),
+		_format_path_preview(pending_travel_path),
 	])
 	GameState.note_visit(current_visit_habitat_id)
 	_check_active_quests()

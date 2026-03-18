@@ -872,8 +872,6 @@ func _on_visit_finished(_report: Dictionary) -> void:
 	var is_week_end := GameState.weekly_turn >= 5
 	if is_week_end:
 		_resolve_weekly_settlement()
-	var day_synergy_report := synergy_service.build_synergy_report()
-	GameState.set_trait_runtime_bonus(synergy_service.build_runtime_bonus(day_synergy_report))
 	var day_report := GameState.advance_day()
 	for line in day_report.get("lines", []):
 		_push_log(line)
@@ -1582,6 +1580,7 @@ func _update_summaries() -> void:
 		int(treasury.get("wallet_gold", 0)),
 		int(treasury.get("bank_gold", 0)),
 	]
+	GameState.set_trait_runtime_bonus(synergy_service.build_runtime_bonus(synergy_report))
 	var season_goal := String(GameState.get_current_season_rule().get("season_goal", "维持推进感。"))
 	ai_summary_label.text = "[b]本季节奏[/b]\n区域：%s\n目标：%s\n推荐：%s" % [
 		board_progression_service.get_region_name(),

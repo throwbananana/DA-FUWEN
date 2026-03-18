@@ -64,6 +64,9 @@ var wallet_gold := 12
 var bank_gold := 0
 var rival_wallets: Dictionary = {}
 var active_trait_runtime_bonus: Dictionary = {}
+var active_trait_runtime_report: Dictionary = {"active": [], "nearby": []}
+var trait_runtime_dirty := true
+var _trait_synergy_service: RefCounted = null
 
 var _pet_serial := 1
 
@@ -123,6 +126,8 @@ func reset_for_new_season() -> void:
 	bank_gold = 0
 	rival_wallets = {}
 	active_trait_runtime_bonus = {}
+	active_trait_runtime_report = {"active": [], "nearby": []}
+	trait_runtime_dirty = true
 	quest_memory = {
 		"visited_habitats": {},
 		"visited_moments": {},
@@ -679,9 +684,28 @@ func get_current_season_rule() -> Dictionary:
 
 func set_trait_runtime_bonus(bonus: Dictionary) -> void:
 	active_trait_runtime_bonus = bonus.duplicate(true)
+	trait_runtime_dirty = false
 
 func get_trait_runtime_bonus() -> Dictionary:
+	refresh_trait_runtime_bonus()
 	return active_trait_runtime_bonus.duplicate(true)
+
+func refresh_trait_runtime_bonus(force := false) -> Dictionary:
+	if not force and not trait_runtime_dirty:
+		return active_trait_runtime_bonus.duplicate(true)
+	if _trait_synergy_service == null:
+		_trait_synergy_service = load("res://scripts/services/synergy_service.gd").new()
+	active_trait_runtime_report = _trait_synergy_service.build_synergy_report()
+	active_trait_runtime_bonus = _trait_synergy_service.build_runtime_bonus(active_trait_runtime_report)
+	trait_runtime_dirty = false
+	return active_trait_runtime_bonus.duplicate(true)
+
+func get_trait_runtime_report() -> Dictionary:
+	refresh_trait_runtime_bonus()
+	return active_trait_runtime_report.duplicate(true)
+
+func mark_trait_runtime_dirty() -> void:
+	trait_runtime_dirty = true
 
 func get_treasury_snapshot() -> Dictionary:
 	return {
@@ -712,6 +736,7 @@ func withdraw_bank_gold(amount: int) -> int:
 	return moved
 
 func _apply_trait_daily_economy() -> Dictionary:
+	refresh_trait_runtime_bonus()
 	var lines: Array[String] = []
 	var passive_wallet_gold := int(active_trait_runtime_bonus.get("wallet_gold_per_day", 0))
 	if passive_wallet_gold > 0:
@@ -1078,6 +1103,7 @@ func _recalculate_backpack_capacity() -> void:
 	backpack_capacity = int(curve_entry.get("backpack_capacity", 4))
 
 func _sync_roster_slots() -> void:
+	trait_runtime_dirty = true
 	var valid_uids := {}
 	for companion in get_companions():
 		valid_uids[String(companion.get("uid", ""))] = true

@@ -5,12 +5,14 @@ extends RefCounted
 
 const NpcRouteServiceScript = preload("res://scripts/services/npc_route_service.gd")
 const MonsterInstance = preload("res://scripts/monster_instance.gd")
+const LocalizationService = preload("res://scripts/services/localization_service.gd")
 
 const INTRO_DUEL_BASE_TRUST_WIN := 2
 const INTRO_DUEL_BASE_TRUST_LOSE := 0
 const INTRO_DUEL_ROUND_LIMIT := 5
 
 var npc_route_service = NpcRouteServiceScript.new()
+var localization_service := LocalizationService.new()
 
 func get_visible_npcs(habitat_id: String) -> Array:
 	return npc_route_service.get_visible_npcs(habitat_id)
@@ -51,11 +53,11 @@ func prepare_intro_duel(npc_id: String, habitat_id: String) -> Dictionary:
 		"npc": npc,
 		"habitat_id": habitat_id,
 		"battle_config": {
-			"title": "%s · 初见切磋" % String(npc.get("name", "初见者")),
-			"subtitle": "第一次拜访前必须先决斗。\n胜利：基础信赖 %d ｜ 失败：基础信赖 %d" % [
-				INTRO_DUEL_BASE_TRUST_WIN,
-				INTRO_DUEL_BASE_TRUST_LOSE
-			],
+			"title": localization_service.text("battle.title.intro_duel", {"npc": String(npc.get("name", "初见者"))}),
+			"subtitle": localization_service.text("battle.subtitle.intro_duel", {
+				"win": INTRO_DUEL_BASE_TRUST_WIN,
+				"lose": INTRO_DUEL_BASE_TRUST_LOSE,
+			}),
 			"kind": "dojo",
 			"allow_capture": false,
 			"ally_first_round_attack_bonus": false,

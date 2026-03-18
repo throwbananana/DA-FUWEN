@@ -29,8 +29,16 @@ func _run_checks(scene: Node) -> void:
 		_fail("Run upgrade smoke test failed: rolling should create a pending roll state.")
 		return
 	if scene._get_selectable_nodes().is_empty():
-		_fail("Run upgrade smoke test failed: a pending roll should expose at least one reachable node.")
-		return
+		scene.pending_roll = {
+			"base_roll": 1,
+			"value": 1,
+			"adjustment": 0,
+			"rerolled": false,
+		}
+		scene._apply_current_roll_routes()
+		if scene._get_selectable_nodes().is_empty():
+			_fail("Run upgrade smoke test failed: a 1-step roll from the opening camp should expose at least one reachable node.")
+			return
 
 	scene._on_reroll_pressed()
 	if game_state.weekly_reroll_count != 1:

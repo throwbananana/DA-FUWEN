@@ -1,10 +1,13 @@
 extends Control
 
 const GameData = preload("res://scripts/game_data.gd")
+const MonsterInstance = preload("res://scripts/monster_instance.gd")
 const BoardView = preload("res://scripts/board_view.gd")
 const BattlePanel = preload("res://scripts/battle_panel.gd")
+const DiceRollPanel = preload("res://scripts/dice_roll_panel.gd")
 const DecisionPanel = preload("res://scripts/decision_panel.gd")
 const BasePanel = preload("res://scripts/base_panel.gd")
+const SystemPanel = preload("res://scripts/system_panel.gd")
 const VisitFlowController = preload("res://scripts/services/visit_flow_controller.gd")
 const HabitatService = preload("res://scripts/services/habitat_service.gd")
 const NpcService = preload("res://scripts/services/npc_service.gd")
@@ -17,9 +20,11 @@ const RunModifierService = preload("res://scripts/services/run_modifier_service.
 const MetaProgressionService = preload("res://scripts/services/meta_progression_service.gd")
 const NpcRouteService = preload("res://scripts/services/npc_route_service.gd")
 const ThreatService = preload("res://scripts/services/threat_service.gd")
+const AIPlayerService = preload("res://scripts/services/ai_player_service.gd")
 const DialogueService = preload("res://scripts/services/dialogue_service.gd")
+const LocalizationService = preload("res://scripts/services/localization_service.gd")
 
-const GAME_TITLE := "百回合远征原型"
+const GAME_TITLE := "雾野远征"
 
 const WEATHER_ORDER := ["clear", "fog", "rain", "storm"]
 const WEATHER_NAMES := {
@@ -42,6 +47,12 @@ const TIME_NAMES := {
 	"night": "夜晚",
 }
 
+const STARTER_SPECIES_IDS := ["steam_otter_1", "moss_deer_1", "spark_mouse_1"]
+const TUTORIAL_ORDER := ["run_intro", "management_intro", "battle_intro"]
+const EVENT_LOG_TYPEWRITER_SPEED := 0.016
+const EVENT_LOG_TYPEWRITER_MIN_DURATION := 0.18
+const EVENT_LOG_TYPEWRITER_MAX_DURATION := 0.82
+
 const NODE_TEMPLATES := [
 	{"id": 0, "name": "营地", "type": "camp", "description": "整理材料、查看笔记，然后决定今天去看望谁。", "position": Vector2(80, 280), "edges": [1, 2, 3], "travel_cost": 0, "habitat_id": ""},
 	{"id": 1, "name": "雾苔窟", "type": "habitat", "description": "湿冷又安静的巢居据点，适合慢慢照料。", "position": Vector2(280, 130), "edges": [4], "travel_cost": 1, "habitat_id": "mist_moss_cave"},
@@ -63,13 +74,20 @@ const NODE_TEMPLATES := [
 ]
 
 @onready var title_label: Label = %TitleLabel
+@onready var meta_label: Label = %MetaLabel
 @onready var round_label: Label = %RoundLabel
+@onready var weather_label: Label = %WeatherLabel
 @onready var objective_label: Label = %ObjectiveLabel
+@onready var root_margin: MarginContainer = $RootMargin
+@onready var overlay: Control = $Overlay
 @onready var player_summary_label: RichTextLabel = %PlayerSummaryLabel
 @onready var ai_summary_label: RichTextLabel = %AISummaryLabel
 @onready var control_summary_label: RichTextLabel = %ControlSummaryLabel
 @onready var dice_label: Label = %DiceLabel
+@onready var dice_meta_label: Label = %DiceMetaLabel
 @onready var action_hint_label: RichTextLabel = %ActionHintLabel
+@onready var board_status_label: Label = %BoardStatusLabel
+@onready var board_route_label: Label = %BoardRouteLabel
 @onready var map_hint_label: RichTextLabel = %MapHintLabel
 @onready var roster_label: RichTextLabel = %RosterLabel
 @onready var event_log_label: RichTextLabel = %EventLogLabel
@@ -82,8 +100,31 @@ const NODE_TEMPLATES := [
 @onready var new_game_button: Button = %NewGameButton
 @onready var board_view: BoardView = %BoardView
 @onready var battle_panel: BattlePanel = %BattlePanel
+@onready var dice_roll_panel: DiceRollPanel = %DiceRollPanel
 @onready var decision_panel: DecisionPanel = %DecisionPanel
 @onready var base_panel: BasePanel = %BasePanel
+@onready var system_panel: SystemPanel = %SystemPanel
+@onready var menu_backdrop: ColorRect = %MenuBackdrop
+@onready var main_menu_panel: PanelContainer = %MainMenuPanel
+@onready var menu_title_label: Label = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuTitleLabel
+@onready var menu_subtitle_label: Label = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuSubtitleLabel
+@onready var continue_button: Button = %ContinueButton
+@onready var menu_new_game_button: Button = %MenuNewGameButton
+@onready var settings_button: Button = %SettingsButton
+@onready var menu_action_hint_label: RichTextLabel = %MenuActionHintLabel
+@onready var menu_run_summary_label: RichTextLabel = %MenuRunSummaryLabel
+@onready var menu_meta_summary_label: RichTextLabel = %MenuMetaSummaryLabel
+@onready var board_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel
+@onready var board_top_strip: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip
+@onready var board_stage_panel: PanelContainer = %BoardStagePanel
+@onready var node_detail_card: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard
+@onready var status_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel
+@onready var player_card: PanelContainer = %PlayerCard
+@onready var rival_card: PanelContainer = %RivalCard
+@onready var control_card: PanelContainer = %ControlCard
+@onready var dice_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/SideColumn/DicePanel
+@onready var roster_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/SideColumn/RosterPanel
+@onready var log_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/SideColumn/LogPanel
 
 var rng := RandomNumberGenerator.new()
 var world_nodes: Array = []
@@ -101,7 +142,9 @@ var run_modifier_service := RunModifierService.new()
 var meta_progression_service := MetaProgressionService.new()
 var npc_route_service := NpcRouteService.new()
 var threat_service := ThreatService.new()
+var ai_player_service := AIPlayerService.new()
 var dialogue_service := DialogueService.new()
+var localization_service := LocalizationService.new()
 
 var season_finished := false
 var awaiting_destination := false
@@ -110,6 +153,7 @@ var current_visit_habitat_id := ""
 var current_encounter := {}
 var pending_npc_duel_id := ""
 var pending_battle_source := ""
+var pending_environment_battle := {}
 var last_encounter_action_id := ""
 var pending_context := {}
 var pending_roll := {}
@@ -117,15 +161,52 @@ var reachable_paths := {}
 var board_anim_locked := false
 var pending_travel_path: Array[int] = []
 var pending_travel_target := -1
+var _queued_auto_travel_target := -1
 var anchor_override_active := false
+var camp_panel_requires_finish := false
+var starter_choice_pending := false
+var starter_choice_done := false
+var starter_companion_uid := ""
+var pending_tutorial_battle_config := {}
+var pending_tutorial_battle_source := ""
+var pending_tutorial_battle_log := ""
+var _active_synergy_snapshot: Array[String] = []
+var _synergy_fx_ready := false
+var _synergy_banner: PanelContainer
+var _synergy_banner_label: RichTextLabel
+var _synergy_unit_glow_host: CenterContainer
+var _synergy_unit_glow_row: HBoxContainer
+var _synergy_banner_tween: Tween
+var _synergy_unit_glow_tween: Tween
+var _stage_transition_layer: Control
+var _stage_transition_backdrop: ColorRect
+var _stage_transition_panel: PanelContainer
+var _stage_transition_title: Label
+var _stage_transition_subtitle: RichTextLabel
+var _stage_transition_tween: Tween
+var _event_log_typewriter_tween: Tween
+var _event_log_snapshot: Array[String] = []
+var runtime_session_started := false
+var ai_turn_in_progress := false
+var _active_ai_observation_line := ""
+var _post_travel_resolution_in_progress := false
 
 func _ready() -> void:
 	rng.randomize()
 	title_label.text = GAME_TITLE
+	base_button.hide()
+	plus_button.hide()
+	minus_button.hide()
+	reroll_button.hide()
 	_connect_signals()
 	_apply_basic_styles()
+	_ensure_synergy_banner()
+	_ensure_stage_transition_overlay()
 	install_visit_flow()
-	start_new_game()
+	if _should_show_boot_menu():
+		_show_main_menu()
+	else:
+		start_new_game()
 
 func install_visit_flow() -> void:
 	visit_flow = VisitFlowController.new()
@@ -140,13 +221,22 @@ func _connect_signals() -> void:
 	reroll_button.pressed.connect(_on_reroll_pressed)
 	support_button.pressed.connect(_on_support_pressed)
 	base_button.pressed.connect(_on_base_pressed)
-	new_game_button.pressed.connect(start_new_game)
+	new_game_button.pressed.connect(_on_main_menu_requested)
+	continue_button.pressed.connect(_on_continue_pressed)
+	menu_new_game_button.pressed.connect(_on_menu_new_game_pressed)
+	settings_button.pressed.connect(_on_settings_pressed)
+	dice_roll_panel.confirmed.connect(_on_dice_roll_confirmed)
+	dice_roll_panel.closed.connect(_on_dice_roll_panel_closed)
+	dice_roll_panel.plus_requested.connect(_on_dice_roll_plus_requested)
+	dice_roll_panel.minus_requested.connect(_on_dice_roll_minus_requested)
+	dice_roll_panel.reroll_requested.connect(_on_dice_roll_reroll_requested)
 	board_view.node_chosen.connect(_on_board_node_chosen)
 	board_view.travel_finished.connect(_on_board_travel_finished)
 	decision_panel.choice_selected.connect(_on_decision_choice_selected)
 	decision_panel.closed.connect(_on_decision_closed)
 	base_panel.manage_requested.connect(_on_base_manage_requested)
 	base_panel.closed.connect(_on_base_closed)
+	system_panel.closed.connect(_on_system_panel_closed)
 	battle_panel.battle_finished.connect(_on_battle_finished)
 
 func _apply_basic_styles() -> void:
@@ -162,8 +252,451 @@ func _apply_basic_styles() -> void:
 	panel_style.corner_radius_top_right = 12
 	panel_style.corner_radius_bottom_left = 12
 	panel_style.corner_radius_bottom_right = 12
-	for panel in [battle_panel, decision_panel, base_panel]:
+	for panel in [battle_panel, dice_roll_panel, decision_panel, base_panel, system_panel, main_menu_panel]:
 		panel.add_theme_stylebox_override("panel", panel_style)
+	var surface_style := StyleBoxFlat.new()
+	surface_style.bg_color = Color(0.07, 0.11, 0.17, 0.96)
+	surface_style.border_color = Color(0.23, 0.31, 0.43, 0.95)
+	surface_style.border_width_left = 2
+	surface_style.border_width_top = 2
+	surface_style.border_width_right = 2
+	surface_style.border_width_bottom = 2
+	surface_style.corner_radius_top_left = 18
+	surface_style.corner_radius_top_right = 18
+	surface_style.corner_radius_bottom_left = 18
+	surface_style.corner_radius_bottom_right = 18
+	for panel in [board_panel, board_top_strip, board_stage_panel, node_detail_card, status_panel, dice_panel, roster_panel, log_panel]:
+		panel.add_theme_stylebox_override("panel", surface_style.duplicate())
+	var subcard_style := StyleBoxFlat.new()
+	subcard_style.bg_color = Color(0.10, 0.15, 0.23, 0.96)
+	subcard_style.border_color = Color(0.31, 0.42, 0.58, 0.92)
+	subcard_style.border_width_left = 1
+	subcard_style.border_width_top = 1
+	subcard_style.border_width_right = 1
+	subcard_style.border_width_bottom = 1
+	subcard_style.corner_radius_top_left = 14
+	subcard_style.corner_radius_top_right = 14
+	subcard_style.corner_radius_bottom_left = 14
+	subcard_style.corner_radius_bottom_right = 14
+	for panel in [player_card, rival_card, control_card]:
+		panel.add_theme_stylebox_override("panel", subcard_style.duplicate())
+	var chip_style := StyleBoxFlat.new()
+	chip_style.bg_color = Color(0.12, 0.18, 0.28, 0.94)
+	chip_style.border_color = Color(0.34, 0.52, 0.74, 0.92)
+	chip_style.border_width_left = 1
+	chip_style.border_width_top = 1
+	chip_style.border_width_right = 1
+	chip_style.border_width_bottom = 1
+	chip_style.corner_radius_top_left = 999
+	chip_style.corner_radius_top_right = 999
+	chip_style.corner_radius_bottom_left = 999
+	chip_style.corner_radius_bottom_right = 999
+	for path in [
+		"RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/RoundChip",
+		"RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/WeatherChip",
+		"RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/ObjectiveChip",
+	]:
+		var chip := get_node_or_null(path)
+		if chip is PanelContainer:
+			chip.add_theme_stylebox_override("panel", chip_style.duplicate())
+	title_label.modulate = Color(0.98, 0.98, 1.0, 1.0)
+	meta_label.modulate = Color(0.72, 0.82, 0.92, 0.96)
+	round_label.modulate = Color(0.86, 0.92, 1.0, 1.0)
+	weather_label.modulate = Color(0.86, 0.92, 1.0, 1.0)
+	objective_label.modulate = Color(0.95, 0.93, 0.82, 1.0)
+
+func _ensure_synergy_banner() -> void:
+	if _synergy_banner != null:
+		return
+	_synergy_banner = PanelContainer.new()
+	_synergy_banner.name = "SynergyBanner"
+	_synergy_banner.visible = false
+	_synergy_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_synergy_banner.custom_minimum_size = Vector2(520, 120)
+	_synergy_banner.anchors_preset = Control.PRESET_CENTER_TOP
+	_synergy_banner.anchor_left = 0.5
+	_synergy_banner.anchor_top = 0.0
+	_synergy_banner.anchor_right = 0.5
+	_synergy_banner.anchor_bottom = 0.0
+	_synergy_banner.offset_left = -260.0
+	_synergy_banner.offset_top = 28.0
+	_synergy_banner.offset_right = 260.0
+	_synergy_banner.offset_bottom = 148.0
+	_synergy_banner.modulate = Color(1, 1, 1, 0)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.98, 0.62, 0.16, 0.94)
+	style.border_color = Color(1.0, 0.89, 0.62, 1.0)
+	style.border_width_left = 3
+	style.border_width_top = 3
+	style.border_width_right = 3
+	style.border_width_bottom = 3
+	style.corner_radius_top_left = 18
+	style.corner_radius_top_right = 18
+	style.corner_radius_bottom_left = 18
+	style.corner_radius_bottom_right = 18
+	_synergy_banner.add_theme_stylebox_override("panel", style)
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 18)
+	margin.add_theme_constant_override("margin_top", 14)
+	margin.add_theme_constant_override("margin_right", 18)
+	margin.add_theme_constant_override("margin_bottom", 14)
+	margin.anchors_preset = Control.PRESET_FULL_RECT
+	margin.anchor_right = 1.0
+	margin.anchor_bottom = 1.0
+	_synergy_banner.add_child(margin)
+	_synergy_banner_label = RichTextLabel.new()
+	_synergy_banner_label.bbcode_enabled = true
+	_synergy_banner_label.scroll_active = false
+	_synergy_banner_label.fit_content = false
+	_synergy_banner_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_synergy_banner_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	margin.add_child(_synergy_banner_label)
+	overlay.add_child(_synergy_banner)
+	_synergy_unit_glow_host = CenterContainer.new()
+	_synergy_unit_glow_host.name = "SynergyUnitGlowHost"
+	_synergy_unit_glow_host.visible = false
+	_synergy_unit_glow_host.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_synergy_unit_glow_host.anchors_preset = Control.PRESET_CENTER_TOP
+	_synergy_unit_glow_host.anchor_left = 0.5
+	_synergy_unit_glow_host.anchor_top = 0.0
+	_synergy_unit_glow_host.anchor_right = 0.5
+	_synergy_unit_glow_host.anchor_bottom = 0.0
+	_synergy_unit_glow_host.offset_left = -280.0
+	_synergy_unit_glow_host.offset_top = 154.0
+	_synergy_unit_glow_host.offset_right = 280.0
+	_synergy_unit_glow_host.offset_bottom = 246.0
+	overlay.add_child(_synergy_unit_glow_host)
+	_synergy_unit_glow_row = HBoxContainer.new()
+	_synergy_unit_glow_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_synergy_unit_glow_row.add_theme_constant_override("separation", 16)
+	_synergy_unit_glow_host.add_child(_synergy_unit_glow_row)
+
+func _ensure_stage_transition_overlay() -> void:
+	if _stage_transition_layer != null:
+		return
+	_stage_transition_layer = Control.new()
+	_stage_transition_layer.name = "StageTransitionLayer"
+	_stage_transition_layer.visible = false
+	_stage_transition_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage_transition_layer.anchors_preset = Control.PRESET_FULL_RECT
+	_stage_transition_layer.anchor_right = 1.0
+	_stage_transition_layer.anchor_bottom = 1.0
+	overlay.add_child(_stage_transition_layer)
+	_stage_transition_backdrop = ColorRect.new()
+	_stage_transition_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage_transition_backdrop.color = Color(0.04, 0.07, 0.12, 0.0)
+	_stage_transition_backdrop.anchors_preset = Control.PRESET_FULL_RECT
+	_stage_transition_backdrop.anchor_right = 1.0
+	_stage_transition_backdrop.anchor_bottom = 1.0
+	_stage_transition_layer.add_child(_stage_transition_backdrop)
+	var center := CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.anchors_preset = Control.PRESET_FULL_RECT
+	center.anchor_right = 1.0
+	center.anchor_bottom = 1.0
+	_stage_transition_layer.add_child(center)
+	_stage_transition_panel = PanelContainer.new()
+	_stage_transition_panel.custom_minimum_size = Vector2(720, 240)
+	center.add_child(_stage_transition_panel)
+	var margin := MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 28)
+	margin.add_theme_constant_override("margin_top", 24)
+	margin.add_theme_constant_override("margin_right", 28)
+	margin.add_theme_constant_override("margin_bottom", 24)
+	_stage_transition_panel.add_child(margin)
+	var box := VBoxContainer.new()
+	box.alignment = BoxContainer.ALIGNMENT_CENTER
+	box.add_theme_constant_override("separation", 12)
+	margin.add_child(box)
+	_stage_transition_title = Label.new()
+	_stage_transition_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_stage_transition_title.add_theme_font_size_override("font_size", 34)
+	box.add_child(_stage_transition_title)
+	_stage_transition_subtitle = RichTextLabel.new()
+	_stage_transition_subtitle.bbcode_enabled = true
+	_stage_transition_subtitle.scroll_active = false
+	_stage_transition_subtitle.fit_content = false
+	_stage_transition_subtitle.custom_minimum_size = Vector2(0, 104)
+	_stage_transition_subtitle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	box.add_child(_stage_transition_subtitle)
+
+func _should_show_boot_menu() -> bool:
+	return DisplayServer.get_name() != "headless"
+
+func _should_skip_runtime_tutorials() -> bool:
+	return DisplayServer.get_name() == "headless" or not GameState.tutorials_enabled()
+
+func _show_main_menu() -> void:
+	_refresh_main_menu()
+	root_margin.hide()
+	menu_backdrop.show()
+	menu_backdrop.move_to_front()
+	main_menu_panel.show()
+	main_menu_panel.move_to_front()
+
+func _hide_main_menu() -> void:
+	menu_backdrop.hide()
+	main_menu_panel.hide()
+	root_margin.show()
+	_update_ui()
+	_resume_onboarding_flow()
+
+func _refresh_main_menu() -> void:
+	var has_run_save := GameState.has_run_save()
+	menu_title_label.text = localization_service.text("menu.title")
+	if runtime_session_started:
+		menu_subtitle_label.text = localization_service.text("menu.subtitle.runtime")
+		continue_button.text = localization_service.text("menu.continue.season_end") if season_finished else localization_service.text("menu.continue.run")
+		menu_new_game_button.text = localization_service.text("menu.new_run")
+		menu_new_game_button.disabled = false
+		menu_action_hint_label.text = localization_service.text("menu.hint.runtime")
+		menu_run_summary_label.text = _build_main_menu_run_summary()
+	else:
+		menu_subtitle_label.text = localization_service.text("menu.subtitle.start")
+		continue_button.text = localization_service.text("menu.start_game")
+		menu_new_game_button.text = localization_service.text("menu.load_save")
+		menu_new_game_button.disabled = not has_run_save
+		menu_action_hint_label.text = localization_service.text("menu.hint.start")
+		menu_run_summary_label.text = _build_saved_run_summary()
+	settings_button.text = localization_service.text("menu.settings")
+	menu_meta_summary_label.text = "%s\n\n%s" % [_build_main_menu_meta_summary(), _build_settings_summary()]
+
+func _build_saved_run_summary() -> String:
+	var payload := GameState.load_run_payload()
+	if payload.is_empty():
+		return localization_service.text("menu.save.none")
+	var summary: Dictionary = payload.get("summary", {})
+	if summary.is_empty():
+		return localization_service.text("menu.save.old")
+	var battle_slots: Array[String] = []
+	for entry in summary.get("battle_slots", []):
+		battle_slots.append(String(entry))
+	if battle_slots.is_empty():
+		battle_slots.append(localization_service.text("menu.summary.unassigned"))
+	var lines: Array[String] = [
+		localization_service.text("menu.save.latest"),
+		"%s · 第 %d / %d 回合 · 第 %d 周 · 总回合 %d / 100" % [
+			String(summary.get("season_name", "未知季节")),
+			int(summary.get("season_turn", 1)),
+			int(summary.get("season_length", 1)),
+			int(summary.get("week_index", 1)),
+			int(summary.get("global_turn", 1)),
+		],
+		localization_service.text("menu.summary.position", {"node": String(summary.get("node_name", localization_service.text("menu.summary.camp")))}),
+		localization_service.text("menu.summary.battle_slots", {"value": " / ".join(battle_slots)}),
+		localization_service.text("menu.summary.weekly_objective", {"value": String(summary.get("objective_summary", localization_service.text("menu.summary.no_objective")))}),
+	]
+	return "\n".join(lines)
+
+func _build_settings_summary() -> String:
+	var window_mode := localization_service.text("settings.window.fullscreen") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.windowed")
+	var motion_mode := localization_service.text("settings.motion.reduced") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.standard")
+	var tutorial_mode := localization_service.text("settings.tutorials.on") if GameState.tutorials_enabled() else localization_service.text("settings.tutorials.off")
+	var language_name := localization_service.language_name(GameState.current_language())
+	return "\n".join([
+		localization_service.text("settings.summary.title"),
+		localization_service.text("settings.summary.window", {"value": window_mode}),
+		localization_service.text("settings.summary.motion", {"value": motion_mode}),
+		localization_service.text("settings.summary.tutorials", {"value": tutorial_mode}),
+		localization_service.text("settings.summary.language", {"value": language_name}),
+	])
+
+func _open_settings_menu() -> void:
+	var window_label := localization_service.text("settings.window.to_windowed") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.to_fullscreen")
+	var motion_label := localization_service.text("settings.motion.to_standard") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.to_reduced")
+	var tutorial_label := localization_service.text("settings.tutorials.enable") if not GameState.tutorials_enabled() else localization_service.text("settings.tutorials.disable")
+	var choices := [
+		{
+			"id": "toggle_fullscreen",
+			"label": window_label,
+			"summary": localization_service.text("settings.current", {"value": localization_service.text("settings.window.fullscreen") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.windowed")}),
+		},
+		{
+			"id": "toggle_motion",
+			"label": motion_label,
+			"summary": localization_service.text("settings.current", {"value": localization_service.text("settings.motion.reduced") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.standard")}),
+		},
+		{
+			"id": "toggle_tutorials",
+			"label": tutorial_label,
+			"summary": localization_service.text("settings.current", {"value": localization_service.text("settings.tutorials.on") if GameState.tutorials_enabled() else localization_service.text("settings.tutorials.off")}),
+		},
+		{
+			"id": "set_language_zh_cn",
+			"label": localization_service.text("settings.language.zh_cn"),
+			"summary": localization_service.text("settings.current", {"value": localization_service.language_name("zh_cn")}),
+		},
+		{
+			"id": "set_language_ja_jp",
+			"label": localization_service.text("settings.language.ja_jp"),
+			"summary": localization_service.text("settings.current", {"value": localization_service.language_name("ja_jp")}),
+		},
+		{
+			"id": "set_language_en_us",
+			"label": localization_service.text("settings.language.en_us"),
+			"summary": localization_service.text("settings.current", {"value": localization_service.language_name("en_us")}),
+		},
+	]
+	pending_context = {"kind": "menu_settings"}
+	decision_panel.open_panel(localization_service.text("settings.title"), localization_service.text("settings.body"), choices, localization_service.text("settings.back"))
+
+func _apply_menu_setting(choice_id: String) -> void:
+	match choice_id:
+		"toggle_fullscreen":
+			GameState.set_setting("fullscreen", not bool(GameState.settings.get("fullscreen", false)))
+		"toggle_motion":
+			GameState.set_setting("reduced_motion", not GameState.prefers_reduced_motion())
+		"toggle_tutorials":
+			GameState.set_setting("tutorials_enabled", not GameState.tutorials_enabled())
+		"set_language_zh_cn":
+			GameState.set_setting("language", "zh_cn")
+		"set_language_ja_jp":
+			GameState.set_setting("language", "ja_jp")
+		"set_language_en_us":
+			GameState.set_setting("language", "en_us")
+		_:
+			return
+	_refresh_main_menu()
+	_open_settings_menu()
+
+func _resume_onboarding_flow() -> void:
+	if _should_skip_runtime_tutorials() or season_finished:
+		return
+	if starter_choice_pending:
+		_open_starter_selection()
+		return
+	if not GameState.has_completed_tutorial("run_intro"):
+		_show_tutorial_popup("run_intro")
+
+func _open_starter_selection() -> void:
+	var choices := []
+	for species_id in STARTER_SPECIES_IDS:
+		var species := DataRepository.get_species(species_id)
+		if species.is_empty():
+			continue
+		var profile := GameData.get_species_synergy_profile(species_id)
+		choices.append({
+			"id": species_id,
+			"label": String(species.get("name", species_id)),
+			"summary": "%s ｜ %s ｜ 会直接替换到 1 号双打位" % [
+				_format_type_tags(profile.get("elements", [])),
+				_format_role_tags(profile.get("job_tags", [])),
+			],
+		})
+	pending_context = {"kind": "starter_select", "on_close": "starter_random"}
+	decision_panel.open_panel("起始伙伴选择", "新远征开始前，从后备里再挑 1 只起始伙伴。被选中的伙伴会直接放入 1 号双打位，帮助你决定这轮前期节奏。", choices, "随机分配")
+
+func _apply_starter_choice(species_id: String, random_choice := false) -> void:
+	if species_id.is_empty() or starter_choice_done:
+		return
+	var species := DataRepository.get_species(species_id)
+	if species.is_empty():
+		return
+	starter_choice_pending = false
+	starter_choice_done = true
+	starter_companion_uid = GameState.add_companion(species_id)
+	GameState.set_battle_slot(0, starter_companion_uid)
+	var profile := GameData.get_species_synergy_profile(species_id)
+	var mode_text := "随机分配" if random_choice else "已选择"
+	var body_lines: Array[String] = [
+		"[b]%s[/b] %s" % [mode_text, String(species.get("name", species_id))],
+		"属性：%s ｜ 职能：%s" % [
+			_format_type_tags(profile.get("elements", [])),
+			_format_role_tags(profile.get("job_tags", [])),
+		],
+		"它已经进入 1 号双打位，前期路线和第一场战斗会围绕它展开。",
+	]
+	_push_log("起始伙伴确定为 %s，本轮开局会更偏向它的战斗与经营节奏。" % String(species.get("name", species_id)))
+	_save_run_state()
+	pending_context = {"kind": "starter_result", "on_close": "show_run_intro"}
+	decision_panel.open_panel("起始伙伴已定", "\n".join(body_lines), [], "开始远征")
+
+func _show_tutorial_popup(tutorial_id: String, on_close: String = "none") -> void:
+	var tutorial := _tutorial_entry(tutorial_id)
+	if tutorial.is_empty():
+		return
+	GameState.mark_tutorial_completed(tutorial_id)
+	pending_context = {"kind": "tutorial_popup", "tutorial_id": tutorial_id, "on_close": on_close}
+	decision_panel.open_panel(
+		String(tutorial.get("title", "教学")),
+		String(tutorial.get("body", "")),
+		[],
+		String(tutorial.get("close_text", "知道了"))
+	)
+
+func _tutorial_entry(tutorial_id: String) -> Dictionary:
+	match tutorial_id:
+		"run_intro":
+			return {
+				"title": "远征教学",
+				"close_text": "开始掷骰",
+				"body": "[b]主循环[/b]\n掷骰 -> 选路 -> 落点内容 -> 周结算 -> 季切换。\n\n[b]主界面减负后怎么找信息[/b]\n常驻区只保留全局值；任务、战斗构筑、经营状态和教学都收进了 [b]系统手册[/b]。\n\n[b]第一周建议[/b]\n先掷一次骰，找一个低压地点落脚；路过营地时会自动弹出营地总览。"
+			}
+		"management_intro":
+			return {
+				"title": "经营教学",
+				"close_text": "继续整理",
+				"body": "[b]营地总览[/b]\n只有路过营地时才会自动弹出，这里处理队伍整备、驻守、建筑与留信。\n\n[b]经营重点[/b]\n双打位决定当前战斗核心；背包位补羁绊；驻守会影响据点建设和建筑共鸣。\n\n[b]信息入口[/b]\n平时随时能在 [b]系统手册 -> 经营[/b] 里看库存、金钱和地点状态。"
+			}
+		"battle_intro":
+			return {
+				"title": "战斗教学",
+				"close_text": "进入战斗",
+				"body": "[b]双打战斗[/b]\n我方固定 2v2。轮到己方行动时，先点头像选目标，再点技能。\n\n[b]看什么最关键[/b]\n速度决定先后手；护盾与建筑减伤会写在单位状态上；回合上限到了会按剩余战力结算。\n\n[b]战前准备[/b]\n如果想补羁绊、双打位或驻守增益，先去 [b]系统手册 -> 战斗[/b] 或营地整备。"
+			}
+		_:
+			return {}
+
+func _open_pending_tutorial_battle() -> void:
+	if pending_tutorial_battle_config.is_empty():
+		return
+	var battle_config := pending_tutorial_battle_config.duplicate(true)
+	var battle_source := pending_tutorial_battle_source
+	var battle_log := pending_tutorial_battle_log
+	pending_tutorial_battle_config.clear()
+	pending_tutorial_battle_source = ""
+	pending_tutorial_battle_log = ""
+	if not battle_log.is_empty():
+		_push_log(battle_log)
+	pending_battle_source = battle_source
+	battle_panel.start_battle(battle_config)
+
+func _start_battle_with_tutorial(battle_config: Dictionary, battle_source: String, battle_log: String) -> void:
+	if battle_config.is_empty():
+		return
+	decision_panel.hide()
+	if _should_skip_runtime_tutorials() or GameState.has_completed_tutorial("battle_intro"):
+		if not battle_log.is_empty():
+			_push_log(battle_log)
+		pending_battle_source = battle_source
+		battle_panel.start_battle(battle_config)
+		return
+	pending_tutorial_battle_config = battle_config.duplicate(true)
+	pending_tutorial_battle_source = battle_source
+	pending_tutorial_battle_log = battle_log
+	_show_tutorial_popup("battle_intro", "start_pending_battle")
+
+func _on_main_menu_requested() -> void:
+	if _is_modal_open():
+		return
+	_show_main_menu()
+
+func _on_continue_pressed() -> void:
+	if runtime_session_started:
+		_hide_main_menu()
+		return
+	start_new_game()
+	_hide_main_menu()
+
+func _on_menu_new_game_pressed() -> void:
+	if not runtime_session_started:
+		_load_run_state_from_save()
+		return
+	start_new_game()
+	_hide_main_menu()
+
+func _on_settings_pressed() -> void:
+	_open_settings_menu()
 
 func start_new_game() -> void:
 	DataRepository.load_all()
@@ -171,6 +704,7 @@ func start_new_game() -> void:
 	GameState.set_run_modifiers(run_modifier_service.choose_run_modifiers(1))
 	GameState.apply_system_rewards(run_modifier_service.apply_starting_bonus(GameState.run_modifiers))
 	_refresh_board_region(true)
+	runtime_session_started = true
 	season_finished = false
 	awaiting_destination = false
 	current_node_id = GameState.current_board_node_id
@@ -178,18 +712,118 @@ func start_new_game() -> void:
 	current_encounter.clear()
 	pending_npc_duel_id = ""
 	pending_battle_source = ""
+	pending_environment_battle.clear()
 	last_encounter_action_id = ""
 	pending_context.clear()
 	pending_roll.clear()
 	reachable_paths.clear()
+	_queued_auto_travel_target = -1
 	anchor_override_active = false
+	starter_choice_pending = not _should_skip_runtime_tutorials()
+	starter_choice_done = false
+	starter_companion_uid = ""
+	pending_tutorial_battle_config.clear()
+	pending_tutorial_battle_source = ""
+	pending_tutorial_battle_log = ""
 	decision_panel.hide()
 	base_panel.hide()
+	system_panel.hide()
+	_active_synergy_snapshot.clear()
+	_synergy_fx_ready = false
+	if _synergy_unit_glow_host != null:
+		_synergy_unit_glow_host.visible = false
+	if _stage_transition_layer != null:
+		_stage_transition_layer.visible = false
 	_assign_weekly_objective()
 	_push_log("%s远征开始。目标是用 4 个赛季的 100 回合，把路线、养成和战斗重新缝成一个主循环。" % _season_name())
 	for modifier_line in run_modifier_service.format_lines(GameState.run_modifiers):
 		_push_log("本局词缀：%s" % modifier_line)
+	for line in ai_player_service.build_status_lines(board_lookup, 3):
+		_push_log("其他远征队：%s" % line)
 	_begin_next_day()
+
+func _load_run_state_from_save() -> void:
+	var payload := GameState.load_run_payload()
+	if payload.is_empty():
+		pending_context.clear()
+		decision_panel.open_panel("没有存档", "当前没有可读取的运行存档。开始游戏会创建一局新的远征。", [], "返回开始界面")
+		return
+	DataRepository.load_all()
+	GameState.apply_runtime_snapshot(payload.get("game_state", {}))
+	_restore_scene_runtime_state(payload.get("scene_state", {}))
+	runtime_session_started = true
+	_refresh_board_region(true)
+	current_node_id = GameState.current_board_node_id
+	_update_ui()
+	_hide_main_menu()
+	_push_log("已读取最近一次日初存档。")
+
+func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
+	season_finished = bool(scene_state.get("season_finished", false))
+	awaiting_destination = bool(scene_state.get("awaiting_destination", false))
+	current_visit_habitat_id = String(scene_state.get("current_visit_habitat_id", ""))
+	current_encounter = {}
+	pending_npc_duel_id = ""
+	pending_battle_source = ""
+	pending_environment_battle.clear()
+	last_encounter_action_id = ""
+	pending_context.clear()
+	pending_roll.clear()
+	reachable_paths.clear()
+	board_anim_locked = false
+	pending_travel_path.clear()
+	pending_travel_target = -1
+	_queued_auto_travel_target = -1
+	anchor_override_active = false
+	camp_panel_requires_finish = false
+	starter_choice_pending = bool(scene_state.get("starter_choice_pending", false))
+	starter_choice_done = bool(scene_state.get("starter_choice_done", false))
+	starter_companion_uid = String(scene_state.get("starter_companion_uid", ""))
+	pending_tutorial_battle_config.clear()
+	pending_tutorial_battle_source = ""
+	pending_tutorial_battle_log = ""
+	decision_panel.hide()
+	base_panel.hide()
+	system_panel.hide()
+	_active_synergy_snapshot.clear()
+	_synergy_fx_ready = false
+	if _synergy_unit_glow_host != null:
+		_synergy_unit_glow_host.visible = false
+	if _stage_transition_layer != null:
+		_stage_transition_layer.visible = false
+
+func _save_run_state() -> void:
+	if DisplayServer.get_name() == "headless" or not runtime_session_started or season_finished:
+		return
+	GameState.save_run_payload(_build_run_save_payload())
+
+func _build_run_save_payload() -> Dictionary:
+	return {
+		"version": 1,
+		"summary": _build_run_save_summary(),
+		"scene_state": {
+			"season_finished": season_finished,
+			"awaiting_destination": awaiting_destination,
+			"current_visit_habitat_id": current_visit_habitat_id,
+			"starter_choice_pending": starter_choice_pending,
+			"starter_choice_done": starter_choice_done,
+			"starter_companion_uid": starter_companion_uid,
+		},
+		"game_state": GameState.build_runtime_snapshot(),
+	}
+
+func _build_run_save_summary() -> Dictionary:
+	var node: Dictionary = board_lookup.get(current_node_id, {})
+	return {
+		"season_name": _season_name(),
+		"season_turn": GameState.season_turn,
+		"season_length": GameState.season_length,
+		"week_index": GameState.week_index,
+		"global_turn": GameState.global_turn,
+		"node_name": String(node.get("name", "营地")),
+		"battle_slots": _battle_slot_names(),
+		"objective_summary": weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress),
+	}
 
 func _build_world_nodes() -> Array:
 	var nodes := board_progression_service.get_nodes()
@@ -285,6 +919,7 @@ func _begin_next_day() -> void:
 		if GameState.advance_to_next_season():
 			_refresh_board_region(true)
 			_assign_weekly_objective()
+			_play_stage_transition("%s来临" % _season_name(), "区域棋盘、周目标与路线分叉已经刷新。", _season_fx_color(GameState.season_id))
 			_push_log("%s来临，区域棋盘、周目标与路线分叉已刷新。" % _season_name())
 		else:
 			_finish_season()
@@ -295,9 +930,11 @@ func _begin_next_day() -> void:
 	current_encounter.clear()
 	pending_npc_duel_id = ""
 	pending_battle_source = ""
+	pending_environment_battle.clear()
 	last_encounter_action_id = ""
 	pending_roll.clear()
 	reachable_paths.clear()
+	_queued_auto_travel_target = -1
 	anchor_override_active = false
 	var weather_pool: Array = GameState.get_current_season_rule().get("weather_pool", WEATHER_ORDER)
 	var next_weather: String = String(weather_pool[rng.randi_range(0, weather_pool.size() - 1)]) if not weather_pool.is_empty() else "clear"
@@ -318,6 +955,7 @@ func _begin_next_day() -> void:
 		_time_name(GameState.time_of_day),
 	])
 	_update_ui()
+	_save_run_state()
 
 func _sync_npc_routes_for_day() -> void:
 	var report := npc_route_service.sync_daily_positions()
@@ -330,8 +968,11 @@ func _on_start_day_pressed() -> void:
 	if awaiting_destination:
 		return
 	pending_roll = dice_service.roll()
+	_queued_auto_travel_target = -1
 	_apply_current_roll_routes()
 	_update_ui()
+	if DisplayServer.get_name() != "headless":
+		dice_roll_panel.open_panel(pending_roll, _build_dice_roll_panel_state(), "roll")
 
 func _on_plus_pressed() -> void:
 	if pending_roll.is_empty() or not awaiting_destination:
@@ -345,6 +986,8 @@ func _on_plus_pressed() -> void:
 	pending_roll = result.get("roll", {}).duplicate(true)
 	_apply_current_roll_routes()
 	_update_ui()
+	if dice_roll_panel.visible:
+		dice_roll_panel.refresh_panel(pending_roll, _build_dice_roll_panel_state(), "adjust")
 
 func _on_minus_pressed() -> void:
 	if pending_roll.is_empty() or not awaiting_destination:
@@ -358,6 +1001,8 @@ func _on_minus_pressed() -> void:
 	pending_roll = result.get("roll", {}).duplicate(true)
 	_apply_current_roll_routes()
 	_update_ui()
+	if dice_roll_panel.visible:
+		dice_roll_panel.refresh_panel(pending_roll, _build_dice_roll_panel_state(), "adjust")
 
 func _on_reroll_pressed() -> void:
 	if pending_roll.is_empty() or not awaiting_destination:
@@ -367,25 +1012,79 @@ func _on_reroll_pressed() -> void:
 	pending_roll = dice_service.reroll(pending_roll)
 	_apply_current_roll_routes()
 	_update_ui()
+	if dice_roll_panel.visible:
+		dice_roll_panel.refresh_panel(pending_roll, _build_dice_roll_panel_state(), "reroll")
+
+func _build_dice_roll_panel_state() -> Dictionary:
+	var selectable_nodes := _get_selectable_nodes()
+	var reachable_names: Array[String] = []
+	for node_id in selectable_nodes.slice(0, 4):
+		reachable_names.append(String(board_lookup.get(int(node_id), {}).get("name", "未知节点")))
+	var remaining_rerolls := maxi(0, GameState.weekly_reroll_limit - GameState.weekly_reroll_count)
+	var body_lines: Array[String] = [
+		"[b]当前骰面[/b] %s" % dice_service.describe_roll(pending_roll),
+		"[b]剩余修正点[/b] %d ｜ [b]剩余周重掷[/b] %d" % [GameState.season_adjust_points, remaining_rerolls],
+	]
+	if awaiting_destination and selectable_nodes.size() == 1:
+		body_lines.append("[b]精确落点[/b] %s" % String(board_lookup.get(int(selectable_nodes[0]), {}).get("name", "未知节点")))
+		body_lines.append("确认后会自动前进；只有出现分叉时才需要手动选路。")
+	elif awaiting_destination and not reachable_names.is_empty():
+		body_lines.append("[b]当前可达落点[/b] %s" % " / ".join(reachable_names))
+		body_lines.append("确认后地图会保持高亮，你再从这些落点里选一个。")
+	elif anchor_override_active:
+		body_lines.append("[b]锚定改线已触发[/b] 当前路线来自已显露节点，不是常规步数落点。")
+	else:
+		body_lines.append("[b]当前没有安全落点[/b] 这次结果只作为展示，你可以关掉面板后等待下一次掷骰。")
+	return {
+		"title": "掷骰完成",
+		"subtitle": "本回合步数已经结算",
+		"body": "\n".join(body_lines),
+		"confirm_text": "确认并前进" if awaiting_destination and selectable_nodes.size() == 1 else "查看落点" if awaiting_destination else "收起结果",
+		"can_plus": awaiting_destination and GameState.season_adjust_points > 0 and int(pending_roll.get("value", 0)) < 6,
+		"can_minus": awaiting_destination and GameState.season_adjust_points > 0 and int(pending_roll.get("value", 0)) > 1,
+		"can_reroll": awaiting_destination and GameState.weekly_reroll_count < GameState.weekly_reroll_limit,
+	}
+
+func _on_dice_roll_confirmed() -> void:
+	_queued_auto_travel_target = _get_auto_travel_target()
+
+func _on_dice_roll_panel_closed() -> void:
+	_update_ui()
+	if _queued_auto_travel_target < 0 or _is_modal_open():
+		return
+	var target_id := _queued_auto_travel_target
+	_queued_auto_travel_target = -1
+	if _get_selectable_nodes().has(target_id):
+		_begin_travel_to_node(target_id)
+
+func _on_dice_roll_plus_requested() -> void:
+	_on_plus_pressed()
+
+func _on_dice_roll_minus_requested() -> void:
+	_on_minus_pressed()
+
+func _on_dice_roll_reroll_requested() -> void:
+	_on_reroll_pressed()
 
 func _apply_current_roll_routes() -> void:
+	_queued_auto_travel_target = -1
 	reachable_paths = board_progression_service.get_reachable_paths(current_node_id, int(pending_roll.get("value", 0)))
 	anchor_override_active = false
 	var blocked_before_anchor := _get_blocked_reachable_nodes()
 	var selectable := _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
-	if selectable.is_empty() and GameState.anchor_points > 0 and GameState.consume_anchor_point():
+	var anchor_target := -1
+	if selectable.is_empty() and GameState.anchor_points > 0:
+		anchor_target = _pick_anchor_override_target()
+	if anchor_target >= 0 and GameState.consume_anchor_point():
 		anchor_override_active = true
 		reachable_paths.clear()
-		for node_id in GameState.revealed_board_nodes:
-			if int(node_id) == current_node_id:
-				continue
-			reachable_paths[int(node_id)] = [current_node_id, int(node_id)]
+		reachable_paths[anchor_target] = board_progression_service.get_shortest_path(current_node_id, anchor_target)
 		selectable = _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
 		if not reachable_paths.is_empty():
 			if not blocked_before_anchor.is_empty():
-				_push_log("原路线被敌对群占据，自动消耗 1 个锚定点，改为从已显露节点里选路。")
+				_push_log("原路线被敌对群占据，自动消耗 1 个锚定点，改为自动锚定到最近的安全显露节点。")
 			else:
-				_push_log("当前掷骰没有安全落点，自动消耗 1 个锚定点，改为从已显露节点里选路。")
+				_push_log("当前掷骰没有安全落点，自动消耗 1 个锚定点，改为自动锚定到最近的安全显露节点。")
 	awaiting_destination = not selectable.is_empty()
 	if not awaiting_destination:
 		if not _get_blocked_reachable_nodes().is_empty():
@@ -393,44 +1092,83 @@ func _apply_current_roll_routes() -> void:
 		else:
 			_push_log("这次掷骰没有形成可用路线，先调整队伍或等待下一回合。")
 
+func _pick_anchor_override_target() -> int:
+	var blocked := _blocked_node_ids()
+	var candidates: Array = []
+	for raw_node_id in GameState.revealed_board_nodes:
+		var node_id := int(raw_node_id)
+		if node_id == current_node_id or blocked.has(node_id):
+			continue
+		var node: Dictionary = board_lookup.get(node_id, {})
+		if String(node.get("type", "")) == "camp":
+			var camp_path := board_progression_service.get_shortest_path(current_node_id, node_id)
+			if camp_path.size() >= 2:
+				candidates.append({
+					"node_id": node_id,
+					"path": camp_path,
+				})
+			continue
+		var habitat_id := String(node.get("habitat_id", ""))
+		if habitat_id.is_empty() or not GameState.is_habitat_unlocked(habitat_id):
+			continue
+		var path := board_progression_service.get_shortest_path(current_node_id, node_id)
+		if path.size() < 2:
+			continue
+		candidates.append({
+			"node_id": node_id,
+			"path": path,
+		})
+	if candidates.is_empty():
+		return -1
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var a_path: Array = a.get("path", [])
+		var b_path: Array = b.get("path", [])
+		if a_path.size() != b_path.size():
+			return a_path.size() < b_path.size()
+		return int(a.get("node_id", -1)) < int(b.get("node_id", -1))
+	)
+	return int(candidates[0].get("node_id", -1))
+
+func _get_auto_travel_target() -> int:
+	if not awaiting_destination:
+		return -1
+	var selectable := _get_selectable_nodes()
+	if selectable.size() != 1:
+		return -1
+	return int(selectable[0])
+
+func _begin_travel_to_node(node_id: int) -> void:
+	if season_finished or _is_modal_open() or board_anim_locked:
+		return
+	if not awaiting_destination or not _get_selectable_nodes().has(node_id):
+		return
+	awaiting_destination = false
+	_queued_auto_travel_target = -1
+	pending_roll.clear()
+	pending_travel_target = node_id
+	pending_travel_path.clear()
+	for path_node_id in reachable_paths.get(node_id, []):
+		pending_travel_path.append(int(path_node_id))
+	if pending_travel_path.is_empty():
+		pending_travel_path.append(current_node_id)
+		pending_travel_path.append(node_id)
+	board_anim_locked = true
+	_update_ui()
+	board_view.play_travel(pending_travel_path)
+
 func _reachable_selectable_nodes() -> Array[int]:
 	var selectable: Array[int] = []
 	for node_id in reachable_paths.keys():
 		var target_id := int(node_id)
-		var node: Dictionary = board_lookup.get(target_id, {})
-		var habitat_id := String(node.get("habitat_id", ""))
-		if habitat_id.is_empty():
-			continue
-		if GameState.is_habitat_unlocked(habitat_id):
+		if board_lookup.has(target_id):
 			selectable.append(target_id)
 	return selectable
 
 func _on_support_pressed() -> void:
-	var lines: Array[String] = []
-	if not GameState.weekly_objective.is_empty():
-		lines.append("[b]本周目标[/b] %s" % String(GameState.weekly_objective.get("title", "本周目标")))
-		lines.append(String(GameState.weekly_objective.get("description", "")))
-		for line in weekly_cycle_service.build_progress_lines(GameState.weekly_objective, GameState.weekly_progress):
-			lines.append("- %s" % line)
-		lines.append("")
-	if GameState.active_quests.is_empty():
-		lines.append("今天没有挂在手边的生活委托。")
-	else:
-		lines.append("[b]当前委托[/b]")
-		for quest_id in GameState.active_quests:
-			lines.append("- %s" % _quest_title(quest_id))
-	if not GameState.completed_quests.is_empty():
-		lines.append("")
-		lines.append("[b]已完成[/b] %d 件" % GameState.completed_quests.size())
-	if not GameState.run_modifiers.is_empty():
-		lines.append("")
-		lines.append("[b]本局词缀[/b]")
-		for line in run_modifier_service.format_lines(GameState.run_modifiers):
-			lines.append("- %s" % line)
-	pending_context = {"kind": "quest_journal", "on_close": "none"}
-	decision_panel.open_panel("周目标与委托", "\n".join(lines), [], "关闭")
+	system_panel.open_panel("系统手册", _build_system_sections(), "quest")
 
-func _on_base_pressed() -> void:
+func _on_base_pressed(opened_from_travel: bool = false) -> void:
+	camp_panel_requires_finish = camp_panel_requires_finish or opened_from_travel
 	var synergy_report := synergy_service.build_synergy_report()
 	var facility_bonus := synergy_service.build_facility_bonus()
 	var battle_bonus := synergy_service.merge_battle_bonus([
@@ -468,20 +1206,11 @@ func _on_base_pressed() -> void:
 		"building_lines": facility_bonus.get("lines", []),
 		"battle_bonus_lines": synergy_service.describe_battle_bonus(battle_bonus),
 	})
+	if not _should_skip_runtime_tutorials() and not GameState.has_completed_tutorial("management_intro"):
+		_show_tutorial_popup("management_intro")
 
 func _on_board_node_chosen(node_id: int) -> void:
-	if season_finished or _is_modal_open() or board_anim_locked:
-		return
-	if not awaiting_destination or not _get_selectable_nodes().has(node_id):
-		return
-	awaiting_destination = false
-	pending_roll.clear()
-	pending_travel_target = node_id
-	pending_travel_path = reachable_paths.get(node_id, []).duplicate()
-	if pending_travel_path.is_empty():
-		pending_travel_path = [current_node_id, node_id]
-	board_anim_locked = true
-	board_view.play_travel(pending_travel_path)
+	_begin_travel_to_node(node_id)
 
 func _on_board_travel_finished(node_id: int) -> void:
 	board_anim_locked = false
@@ -495,7 +1224,26 @@ func _on_board_travel_finished(node_id: int) -> void:
 		String(node.get("name", "未知地点")),
 		_format_path_preview(pending_travel_path),
 	])
-	GameState.note_visit(current_visit_habitat_id)
+	var type_id := String(node.get("type", ""))
+	if type_id == "camp":
+		_push_log("你路过营地，顺手整理队伍、驻守和留信。")
+		_on_base_pressed(true)
+		_update_ui()
+		return
+	if type_id in ["empty", "environment"]:
+		_resolve_environment_node(node)
+		_update_ui()
+		return
+	if not current_visit_habitat_id.is_empty() and not GameState.is_habitat_unlocked(current_visit_habitat_id) and type_id != "event":
+		_show_locked_board_stop(node)
+		_update_ui()
+		return
+	if not current_visit_habitat_id.is_empty():
+		GameState.note_visit(current_visit_habitat_id)
+	if type_id == "event":
+		_resolve_board_event_node(node)
+		_update_ui()
+		return
 	_check_active_quests()
 	if _should_trigger_prearrival_ambush(node_id):
 		_push_log("%s 附近残留着躁动痕迹，本次需要先处理袭扰。" % String(node.get("name", "未知地点")))
@@ -560,12 +1308,8 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 		choices.append({
 			"id": primary_action,
 			"label": _primary_content_label(primary_action),
-			"summary": _primary_content_summary(primary_action),
+			"summary": "%s\n今天在这里就处理这一件事。" % _primary_content_summary(primary_action),
 		})
-	if String(habitat.get("type", "")) == "habitat" and primary_action == "build_menu":
-		choices.append({"id": "assign_resident", "label": "安排驻守", "summary": "作为轻交互，只调整这里的主驻守伙伴。"})
-	elif String(habitat.get("type", "")) == "settlement" and primary_action == "npc_menu" and not _pending_mail_targets().is_empty():
-		choices.append({"id": "mail_menu", "label": "寄送留信", "summary": "作为轻交互，顺手处理跨点消息。"})
 	pending_context = {"kind": "visit_arrival", "on_close": "finish_visit"}
 	decision_panel.open_panel(String(habitat.get("name", "地点")), "\n".join(lines), choices, "结束拜访")
 
@@ -574,12 +1318,12 @@ func _should_trigger_prearrival_ambush(node_id: int) -> bool:
 
 func _primary_content_action(node: Dictionary, habitat: Dictionary, buildings: Array, npcs: Array) -> String:
 	var requested := String(node.get("primary_content", ""))
-	if _is_primary_action_available(requested, habitat, buildings, npcs):
-		return requested
-	for fallback_action in ["dojo_menu", "build_menu", "npc_menu", "observe", "mail_menu"]:
-		if _is_primary_action_available(fallback_action, habitat, buildings, npcs):
-			return fallback_action
-	return ""
+	if requested.is_empty():
+		for fallback_action in ["dojo_menu", "build_menu", "npc_menu", "observe", "mail_menu"]:
+			if _is_primary_action_available(fallback_action, habitat, buildings, npcs):
+				return fallback_action
+		return ""
+	return requested if _is_primary_action_available(requested, habitat, buildings, npcs) else ""
 
 func _is_primary_action_available(action_id: String, habitat: Dictionary, buildings: Array, npcs: Array) -> bool:
 	match action_id:
@@ -651,14 +1395,22 @@ func _show_build_menu(payload: Dictionary) -> void:
 func _show_build_result(payload: Dictionary) -> void:
 	if bool(payload.get("ok", false)):
 		var building_name := String(DataRepository.get_building(String(payload.get("building_id", ""))).get("name", "建设"))
+		var effects: Array = payload.get("effects", [])
+		var effect_lines: Array[String] = []
+		for entry in effects:
+			effect_lines.append(String(entry))
 		GameState.add_weekly_progress("build_count", 1)
 		_push_log("%s 的 %s 升到了 Lv.%d。" % [_habitat_name(current_visit_habitat_id), building_name, int(payload.get("level", 0))])
 		_check_active_quests()
-		pending_context = {"kind": "build_result", "on_close": "arrival"}
-		decision_panel.open_panel("建设完成", "[b]%s[/b] 升到 Lv.%d\n%s" % [building_name, int(payload.get("level", 0)), "\n".join(payload.get("effects", []))], [], "返回地点")
+		var transition_text := "%s · Lv.%d" % [building_name, int(payload.get("level", 0))]
+		if not effect_lines.is_empty():
+			transition_text += "\n%s" % " / ".join(effect_lines.slice(0, 2))
+		_play_stage_transition("建设完成", transition_text, Color(0.98, 0.74, 0.34, 1.0))
+		pending_context = {"kind": "build_result", "on_close": "finish_visit"}
+		decision_panel.open_panel("建设完成", "[b]%s[/b] 升到 Lv.%d\n%s" % [building_name, int(payload.get("level", 0)), "\n".join(effect_lines)], [], "结束拜访")
 		return
-	pending_context = {"kind": "build_result", "on_close": "arrival"}
-	decision_panel.open_panel("建设受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "返回地点")
+	pending_context = {"kind": "build_result", "on_close": "finish_visit"}
+	decision_panel.open_panel("建设受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "结束拜访")
 
 func _show_npc_menu(payload: Dictionary) -> void:
 	var choices := []
@@ -712,8 +1464,8 @@ func _show_dojo_menu(payload: Dictionary) -> void:
 
 func _show_dojo_result(payload: Dictionary) -> void:
 	if not bool(payload.get("ok", false)):
-		pending_context = {"kind": "dojo_result", "on_close": "arrival"}
-		decision_panel.open_panel("试炼受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "返回地点")
+		pending_context = {"kind": "dojo_result", "on_close": "finish_visit"}
+		decision_panel.open_panel("试炼受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "结束拜访")
 		return
 	var dojo: Dictionary = payload.get("dojo", {})
 	var tier := String(payload.get("tier", "tier_1"))
@@ -743,28 +1495,29 @@ func _show_dojo_result(payload: Dictionary) -> void:
 		if not reward_text.is_empty():
 			lines.append("[b]安慰奖励[/b] %s" % reward_text)
 		_push_log("%s 暂时没能通过 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
-	pending_context = {"kind": "dojo_result", "on_close": "arrival"}
-	decision_panel.open_panel("试炼结果", "\n".join(lines), [], "返回地点")
+	pending_context = {"kind": "dojo_result", "on_close": "finish_visit"}
+	decision_panel.open_panel("试炼结果", "\n".join(lines), [], "结束拜访")
 
 func _start_dojo_battle(payload: Dictionary) -> void:
 	var battle_config: Dictionary = payload.get("battle_config", {})
 	if battle_config.is_empty():
 		_show_dojo_result({"ok": false, "reason": "battle_config_missing"})
 		return
-	decision_panel.hide()
-	_push_log("进入 %s，准备进行双打验证。" % String(battle_config.get("title", "试炼")))
-	pending_battle_source = "dojo"
-	battle_panel.start_battle(battle_config)
+	_start_battle_with_tutorial(
+		battle_config,
+		"dojo",
+		"进入 %s，准备进行双打验证。" % String(battle_config.get("title", "试炼"))
+	)
 
 func _show_encounter_preview(payload: Dictionary) -> void:
 	current_encounter = payload.duplicate(true)
 	var source := String(payload.get("source", "observe"))
 	if not bool(payload.get("ok", false)):
-		pending_context = {"kind": "encounter_preview", "on_close": "arrival"}
+		pending_context = {"kind": "encounter_preview", "on_close": "finish_visit"}
 		var empty_text := "今天没有遇到特别愿意停留的个体。"
 		if source == "ambush":
 			empty_text = "你先察觉到了躁动，但这次没有真的爆发袭扰。"
-		decision_panel.open_panel("今天的野外", empty_text, [], "返回地点")
+		decision_panel.open_panel("今天的野外", empty_text, [], "结束拜访")
 		return
 	var species: Dictionary = payload.get("species", {})
 	var species_id := String(payload.get("species_id", ""))
@@ -786,8 +1539,8 @@ func _show_encounter_preview(payload: Dictionary) -> void:
 
 func _show_encounter_result(payload: Dictionary) -> void:
 	var outcome_text := _handle_encounter_result_effects(payload)
-	pending_context = {"kind": "encounter_result", "on_close": "arrival"}
-	decision_panel.open_panel("相遇结果", outcome_text, [], "返回地点")
+	pending_context = {"kind": "encounter_result", "on_close": "finish_visit"}
+	decision_panel.open_panel("相遇结果", outcome_text, [], "结束拜访")
 
 func _on_decision_choice_selected(choice_id: String) -> void:
 	if pending_context.is_empty():
@@ -795,6 +1548,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 	var context := pending_context.duplicate(true)
 	pending_context.clear()
 	match String(context.get("kind", "")):
+		"starter_select":
+			_apply_starter_choice(choice_id)
 		"visit_arrival":
 			match choice_id:
 				"assign_resident":
@@ -830,19 +1585,31 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 					_open_battle_slot_picker(1)
 				"backpack":
 					_open_backpack_picker()
+				"resident_sites":
+					_open_camp_resident_site_picker()
+				"mail_menu":
+					_show_camp_mail_menu()
 		"team_battle_slot":
 			GameState.set_battle_slot(int(context.get("slot_index", 0)), choice_id)
 			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
-			decision_panel.open_panel("队伍已更新", "%s 已被放到双打位 %d。" % [GameState.get_pet_display_name(choice_id), int(context.get("slot_index", 0)) + 1], [], "返回总览")
+			decision_panel.open_panel("队伍已更新", "%s 已被放到双打位 %d。" % [GameState.get_pet_display_name(choice_id), int(context.get("slot_index", 0)) + 1], [], "返回营地")
 		"team_backpack_slot":
 			GameState.toggle_backpack_slot(choice_id)
 			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
-			decision_panel.open_panel("背包已更新", "已切换 %s 的背包状态。" % GameState.get_pet_display_name(choice_id), [], "返回总览")
+			decision_panel.open_panel("背包已更新", "已切换 %s 的背包状态。" % GameState.get_pet_display_name(choice_id), [], "返回营地")
+		"camp_resident_site":
+			_open_camp_resident_picker(choice_id)
+		"camp_resident_select":
+			_assign_resident_to_habitat(String(context.get("habitat_id", "")), choice_id)
 		"encounter_preview":
 			last_encounter_action_id = choice_id
 			visit_flow.choose_encounter_action(choice_id)
 		"mail_menu":
 			_handle_mail_selection(choice_id)
+		"camp_mail_menu":
+			_handle_camp_mail_selection(choice_id)
+		"menu_settings":
+			_apply_menu_setting(choice_id)
 
 func _on_decision_closed() -> void:
 	if pending_context.is_empty():
@@ -850,8 +1617,26 @@ func _on_decision_closed() -> void:
 	var context := pending_context.duplicate(true)
 	pending_context.clear()
 	match String(context.get("on_close", "none")):
+		"starter_random":
+			var starter_pool := STARTER_SPECIES_IDS.duplicate()
+			if starter_pool.is_empty():
+				return
+			_apply_starter_choice(String(starter_pool[rng.randi_range(0, starter_pool.size() - 1)]), true)
+		"show_run_intro":
+			if not GameState.has_completed_tutorial("run_intro"):
+				_show_tutorial_popup("run_intro")
+			else:
+				_update_ui()
+		"start_pending_battle":
+			_open_pending_tutorial_battle()
+		"start_environment_battle":
+			_open_pending_environment_battle()
 		"finish_visit":
 			_finish_current_visit()
+		"finish_board_event":
+			_finish_board_event_visit()
+		"finish_transit_stop":
+			_finish_transit_stop()
 		"arrival":
 			if not current_visit_habitat_id.is_empty():
 				visit_flow.start_visit(current_visit_habitat_id)
@@ -864,20 +1649,337 @@ func _on_decision_closed() -> void:
 
 func _on_visit_finished(_report: Dictionary) -> void:
 	_resolve_visit_yield(current_visit_habitat_id)
+	current_visit_habitat_id = ""
+	_advance_after_travel_stop()
+
+func _resolve_board_event_node(node: Dictionary) -> void:
+	var event_package := dialogue_service.build_board_event_package(current_visit_habitat_id)
+	var body_lines: Array[String] = [
+		"[b]%s[/b]" % String(node.get("name", "事件格")),
+		String(node.get("description", "沿途突然冒出了一段小插曲。")),
+	]
+	if event_package.is_empty():
+		body_lines.append("")
+		body_lines.append("这格今天没有额外剧情，只留下了一点沿途见闻。")
+		_push_log("路过事件格，但今天没有触发额外插曲。")
+	else:
+		var event_title := String(event_package.get("title", "沿途插曲"))
+		var npc_id := String(event_package.get("npc_id", ""))
+		var npc_name := String(DataRepository.get_npc(npc_id).get("name", ""))
+		body_lines.append("")
+		body_lines.append("[b]%s[/b]" % event_title)
+		if not npc_name.is_empty():
+			body_lines.append("遇到：%s" % npc_name)
+		for line in event_package.get("stage_lines", []):
+			body_lines.append(String(line))
+		if Array(event_package.get("stage_lines", [])).is_empty():
+			var summary := String(event_package.get("summary", ""))
+			if not summary.is_empty():
+				body_lines.append(summary)
+		var outcome := String(event_package.get("outcome", ""))
+		if not outcome.is_empty():
+			body_lines.append("结果：%s" % outcome)
+		var reward_lines := _build_board_event_reward_lines(event_package)
+		if not reward_lines.is_empty():
+			body_lines.append("")
+			body_lines.append("[b]这次插曲带来的变化[/b]")
+			body_lines.append("\n".join(reward_lines))
+		_apply_board_event_package(event_package)
+		_push_log("沿途插曲：%s。" % event_title)
+		_check_active_quests()
+	pending_context = {"kind": "board_event", "on_close": "finish_board_event"}
+	decision_panel.open_panel("事件格", "\n".join(body_lines), [], "继续前进")
+
+func _apply_board_event_package(event_package: Dictionary) -> void:
+	for event_id in event_package.get("completed_events", []):
+		if not String(event_id).is_empty():
+			GameState.mark_event_completed(String(event_id))
+	for dialogue_id in event_package.get("unlocked_dialogues", []):
+		if not String(dialogue_id).is_empty():
+			GameState.unlock_dialogue(String(dialogue_id))
+	var items: Dictionary = event_package.get("items", {})
+	if not items.is_empty():
+		GameState.grant_items(items)
+	for entry in event_package.get("journal_entries", []):
+		var text := String(entry)
+		if not text.is_empty():
+			GameState.add_journal_entry(text)
+	var trust_rewards: Dictionary = event_package.get("trust_rewards", {})
+	for npc_id in trust_rewards.keys():
+		var target_id := String(npc_id)
+		if target_id.is_empty():
+			continue
+		GameState.add_trust(target_id, int(trust_rewards[npc_id]))
+
+func _build_board_event_reward_lines(event_package: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var trust_rewards: Dictionary = event_package.get("trust_rewards", {})
+	for npc_id in trust_rewards.keys():
+		var amount := int(trust_rewards[npc_id])
+		if amount <= 0:
+			continue
+		var npc_name := String(DataRepository.get_npc(String(npc_id)).get("name", String(npc_id)))
+		lines.append("- %s 信赖 +%d" % [npc_name, amount])
+	var items: Dictionary = event_package.get("items", {})
+	for item_id in items.keys():
+		lines.append("- 获得 %s ×%d" % [_item_name(String(item_id)), int(items[item_id])])
+	for entry in event_package.get("journal_entries", []):
+		var text := String(entry)
+		if not text.is_empty():
+			lines.append("- 笔记更新：%s" % text)
+	for dialogue_id in event_package.get("unlocked_dialogues", []):
+		var dialogue := DataRepository.get_dialogue(String(dialogue_id))
+		var topic := String(dialogue.get("topic", "新话题"))
+		lines.append("- 解锁后续话题：%s" % _talk_topic_label(topic))
+	return lines
+
+func _resolve_environment_node(node: Dictionary) -> void:
+	match String(node.get("environment_kind", "forage")):
+		"wild_battle":
+			_prepare_environment_battle(node)
+		"scout":
+			_show_environment_scout_stop(node)
+		_:
+			_show_environment_forage_stop(node)
+
+func _show_empty_board_stop(node: Dictionary) -> void:
+	_show_environment_forage_stop(node)
+
+func _show_environment_forage_stop(node: Dictionary) -> void:
+	var reward := _environment_travel_reward(node)
+	var body_lines: Array[String] = [
+		"[b]%s[/b]" % String(node.get("name", "沿途环境")),
+		String(node.get("description", "这是一段会产生沿途内容的环境路段。")),
+		"",
+		"这里没有固定据点，但能顺手收一波路上的资源。",
+	]
+	if not reward.is_empty():
+		GameState.grant_items(reward)
+		body_lines.append("[b]沿途收获[/b] %s" % _format_item_cost(reward))
+		_push_log("穿过 %s，顺手带回了 %s。" % [String(node.get("name", "沿途环境")), _format_item_cost(reward)])
+	else:
+		_push_log("穿过 %s，主要是在调整队伍行进节奏。" % String(node.get("name", "沿途环境")))
+	pending_context = {"kind": "transit_stop", "on_close": "finish_transit_stop"}
+	decision_panel.open_panel("环境路段", "\n".join(body_lines), [], "继续前进")
+
+func _show_environment_scout_stop(node: Dictionary) -> void:
+	var reveal_target := mini(_current_boss_node_id(), current_node_id + 4)
+	GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(reveal_target))
+	var reward := _environment_travel_reward(node)
+	var body_lines: Array[String] = [
+		"[b]%s[/b]" % String(node.get("name", "侦察路段")),
+		String(node.get("description", "这是一段适合先看清地形的环境。")),
+		"",
+		"你在这里多停了一会儿，把前方几格的路况先看清了。",
+	]
+	if not reward.is_empty():
+		GameState.grant_items(reward)
+		body_lines.append("[b]沿途收获[/b] %s" % _format_item_cost(reward))
+	body_lines.append("[b]额外侦察[/b] 前方路线显露得更远了。")
+	_push_log("在 %s 提前看清了后续路况。" % String(node.get("name", "侦察路段")))
+	pending_context = {"kind": "transit_stop", "on_close": "finish_transit_stop"}
+	decision_panel.open_panel("环境侦察", "\n".join(body_lines), [], "继续前进")
+
+func _prepare_environment_battle(node: Dictionary) -> void:
+	var battle_config := _build_environment_battle_config(node)
+	if battle_config.is_empty():
+		_show_environment_forage_stop(node)
+		return
+	var enemy_names: Array[String] = []
+	for enemy in battle_config.get("enemies", []):
+		enemy_names.append(String(enemy.display_name))
+	pending_environment_battle = {
+		"node_name": String(node.get("name", "沿途环境")),
+		"battle_config": battle_config,
+		"reward": _environment_travel_reward(node),
+	}
+	var body_lines: Array[String] = [
+		"[b]%s[/b]" % String(node.get("name", "野外遭遇")),
+		String(node.get("description", "这里潜伏着躁动的野生个体。")),
+		"",
+		"你刚靠近这里，就把附近游荡的个体惊了出来。",
+	]
+	if not enemy_names.is_empty():
+		body_lines.append("[b]出现个体[/b] %s" % " / ".join(enemy_names))
+	body_lines.append("这次会直接进入遭遇战，胜利后还能尝试捕缚。")
+	_push_log("%s 出现了近距离野外遭遇。" % String(node.get("name", "野外遭遇")))
+	pending_context = {"kind": "environment_battle_intro", "on_close": "start_environment_battle"}
+	decision_panel.open_panel("环境遭遇", "\n".join(body_lines), [], "迎战")
+
+func _open_pending_environment_battle() -> void:
+	if pending_environment_battle.is_empty():
+		_finish_transit_stop()
+		return
+	var battle_config: Dictionary = pending_environment_battle.get("battle_config", {})
+	if battle_config.is_empty():
+		pending_environment_battle.clear()
+		_finish_transit_stop()
+		return
+	decision_panel.hide()
+	_start_battle_with_tutorial(
+		battle_config,
+		"environment_wild",
+		"穿过 %s 时惊动了附近的野生个体。" % String(pending_environment_battle.get("node_name", "沿途环境"))
+	)
+
+func _build_environment_battle_config(node: Dictionary) -> Dictionary:
+	var habitat_id := String(node.get("source_habitat_id", ""))
+	if habitat_id.is_empty() or GameState.get_battle_party_uids().size() < 2:
+		return {}
+	var first_encounter := encounter_service.roll_encounter(habitat_id, "environment")
+	if not bool(first_encounter.get("ok", false)):
+		return {}
+	var second_encounter := encounter_service.roll_encounter(habitat_id, "environment")
+	var enemy_level := clampi(GameState.get_progression_rank() + 1, 1, 6)
+	var first_species_id := String(first_encounter.get("species_id", ""))
+	var second_species_id := String(second_encounter.get("species_id", first_species_id))
+	return {
+		"title": "%s · 野外遭遇" % String(node.get("name", "沿途环境")),
+		"subtitle": "环境：%s\n情绪：%s" % [String(node.get("focus", "行进 / 缓冲")), String(first_encounter.get("mood_id", "wild"))],
+		"kind": "wild",
+		"allow_capture": true,
+		"ally_first_round_attack_bonus": false,
+		"ally_attack_bonus": 0,
+		"ally_speed_bonus": 0,
+		"ally_hp_bonus": 0,
+		"ally_heal_bonus": 0,
+		"ally_guard_bonus": 0.0,
+		"enemy_attack_penalty": 0,
+		"round_limit": 6,
+		"allies": _build_player_battle_team(),
+		"enemies": [
+			MonsterInstance.new(first_species_id, enemy_level, 1),
+			MonsterInstance.new(second_species_id, enemy_level, 1),
+		],
+	}
+
+func _build_player_battle_team() -> Array:
+	var allies: Array = []
+	for pet_uid in GameState.get_battle_party_uids():
+		var pet := GameState.get_pet(String(pet_uid))
+		if pet.is_empty():
+			continue
+		var star_level := int(pet.get("star_level", 1))
+		var level := clampi(1 + int(GameState.get_habitat_rank_total() / 2) + int(pet.get("bond_level", 1)) - 1, 1, 6)
+		var unit := MonsterInstance.new(String(pet.get("species_id", "")), level, star_level)
+		unit.display_name = String(pet.get("display_name", unit.display_name))
+		allies.append(unit)
+	return allies
+
+func _resolve_environment_battle(result: Dictionary) -> void:
+	var payload := pending_environment_battle.duplicate(true)
+	pending_environment_battle.clear()
+	var node_name := String(payload.get("node_name", "沿途环境"))
+	var body_lines: Array[String] = []
+	if bool(result.get("player_won", false)):
+		body_lines.append("[b]%s[/b] 已经被稳定下来。" % node_name)
+		var captured_species := String(result.get("captured_species", ""))
+		if not captured_species.is_empty():
+			var acquisition := _acquire_companion(captured_species)
+			body_lines.append(String(acquisition.get("body", "%s 愿意靠近。" % captured_species)))
+			_check_active_quests()
+		var reward: Dictionary = payload.get("reward", {}).duplicate(true)
+		if not reward.is_empty():
+			GameState.grant_items(reward)
+			body_lines.append("[b]沿途收获[/b] %s" % _format_item_cost(reward))
+			_push_log("处理完 %s 的遭遇后，顺手带回了 %s。" % [node_name, _format_item_cost(reward)])
+		else:
+			_push_log("%s 的野外遭遇已经处理完毕。" % node_name)
+	else:
+		GameState.add_node_danger(current_node_id, 1)
+		body_lines.append("[b]%s[/b] 把你逼退了。" % node_name)
+		body_lines.append("这里的危险度上升到 %d / 3。" % GameState.get_node_danger(current_node_id))
+		_push_log("%s 的野外遭遇把队伍逼退了，危险度继续上升。" % node_name)
+	pending_context = {"kind": "environment_battle_result", "on_close": "finish_transit_stop"}
+	decision_panel.open_panel("环境遭遇结果", "\n".join(body_lines), [], "继续前进")
+
+func _environment_travel_reward(node: Dictionary) -> Dictionary:
+	var habitat_id := String(node.get("source_habitat_id", ""))
+	if habitat_id.is_empty():
+		return {}
+	var base_reward := _base_visit_reward(habitat_id)
+	if base_reward.is_empty():
+		return {}
+	var item_ids: Array[String] = []
+	for item_id in base_reward.keys():
+		item_ids.append(String(item_id))
+	item_ids.sort()
+	var chosen_id := item_ids[0]
+	return {chosen_id: maxi(1, int(base_reward[chosen_id]))}
+
+func _show_locked_board_stop(node: Dictionary) -> void:
+	var habitat_id := String(node.get("habitat_id", ""))
+	var body_lines: Array[String] = [
+		"[b]%s[/b]" % String(node.get("name", "未开放据点")),
+		String(node.get("description", "这里暂时还不能展开正式拜访。")),
+		"",
+		"%s" % _unlock_marker_text(habitat_id),
+		"这次你只能路过这里，等条件满足后再回来深入处理。",
+	]
+	_push_log("路过 %s，但这里还没开放正式拜访流程。" % String(node.get("name", "未开放据点")))
+	pending_context = {"kind": "locked_stop", "on_close": "finish_transit_stop"}
+	decision_panel.open_panel("暂时只能路过", "\n".join(body_lines), [], "继续前进")
+
+func _finish_board_event_visit() -> void:
+	current_visit_habitat_id = ""
+	_advance_after_travel_stop()
+
+func _finish_transit_stop() -> void:
+	current_visit_habitat_id = ""
+	_advance_after_travel_stop()
+
+func _advance_after_travel_stop() -> void:
+	if _post_travel_resolution_in_progress:
+		return
+	_post_travel_resolution_in_progress = true
 	_resolve_season_boss_reward()
 	_resolve_board_threat_turn()
-	current_visit_habitat_id = ""
 	if season_finished:
+		_post_travel_resolution_in_progress = false
 		return
 	var is_week_end := GameState.weekly_turn >= 5
 	if is_week_end:
 		_resolve_weekly_settlement()
+	await _run_ai_turns()
 	var day_report := GameState.advance_day()
 	for line in day_report.get("lines", []):
 		_push_log(line)
 	_begin_next_day()
+	_post_travel_resolution_in_progress = false
+
+func _run_ai_turns() -> void:
+	if not runtime_session_started:
+		return
+	var reports: Array = ai_player_service.simulate_turns(board_lookup).get("reports", [])
+	if reports.is_empty():
+		return
+	ai_turn_in_progress = true
+	_active_ai_observation_line = "你腾出片刻观察其他远征队的推进。"
+	_update_ui()
+	if not GameState.should_skip_animations():
+		_play_stage_transition("对手回合", "你空出手来观察其他远征队的推进、抢点和遭遇。", Color(0.95, 0.74, 0.38, 1.0))
+		await get_tree().create_timer(0.28).timeout
+	for report in reports:
+		var line := String(report.get("line", ""))
+		if line.is_empty():
+			continue
+		_active_ai_observation_line = line
+		_push_log("对手回合：%s" % line)
+		_update_ui()
+		if not GameState.should_skip_animations():
+			await get_tree().create_timer(0.42).timeout
+	ai_turn_in_progress = false
+	_active_ai_observation_line = ""
+	_update_ui()
 
 func _on_base_closed() -> void:
+	if camp_panel_requires_finish:
+		camp_panel_requires_finish = false
+		_finish_camp_visit()
+		return
+	_update_ui()
+
+func _on_system_panel_closed() -> void:
 	_update_ui()
 
 func _on_base_manage_requested() -> void:
@@ -886,6 +1988,8 @@ func _on_base_manage_requested() -> void:
 func _on_battle_finished(result: Dictionary) -> void:
 	if pending_battle_source == "npc_intro_duel":
 		_resolve_npc_intro_duel(result)
+	elif pending_battle_source == "environment_wild":
+		_resolve_environment_battle(result)
 	else:
 		visit_flow.resolve_dojo_battle(result)
 	pending_battle_source = ""
@@ -897,9 +2001,11 @@ func _open_team_manage_menu() -> void:
 		{"id": "battle_0", "label": "双打位 1", "summary": "当前：%s" % _battle_slot_name_at(0)},
 		{"id": "battle_1", "label": "双打位 2", "summary": "当前：%s" % _battle_slot_name_at(1)},
 		{"id": "backpack", "label": "调整背包", "summary": "当前：%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity]},
+		{"id": "resident_sites", "label": "安排驻守", "summary": "在营地统一调整各据点的主驻守。"},
+		{"id": "mail_menu", "label": "处理留信", "summary": "当前待处理：%d 处" % _pending_mail_targets().size(), "disabled": _pending_mail_targets().is_empty()},
 	]
 	pending_context = {"kind": "team_manage", "on_close": "reopen_base"}
-	decision_panel.open_panel("整备队伍", "双打位决定本场直接战斗，背包位提供羁绊与生态支持；元素/生态/职能仍按独特物种计数，但特性羁绊会按实际单位叠层。", choices, "返回总览")
+	decision_panel.open_panel("营地整备", "营地只在路过时弹出；队伍、驻守和留信都改到这里统一处理。", choices, "返回营地")
 
 func _open_battle_slot_picker(slot_index: int) -> void:
 	var choices := []
@@ -926,6 +2032,80 @@ func _open_backpack_picker() -> void:
 		})
 	pending_context = {"kind": "team_backpack_slot", "on_close": "team_manage"}
 	decision_panel.open_panel("调整背包位", "背包位不上场，但会提供羁绊；每只会占用不同人口值，上阵位无法直接切到背包。元素/生态/职能按独特物种计数，特性羁绊按实际单位计数。", choices, "返回整备")
+
+func _open_camp_resident_site_picker() -> void:
+	var choices := []
+	for habitat_id in GameState.habitats.keys():
+		var habitat := DataRepository.get_habitat(String(habitat_id))
+		if habitat.is_empty() or String(habitat.get("type", "")) != "habitat":
+			continue
+		if not GameState.is_habitat_unlocked(String(habitat_id)):
+			continue
+		var state: Dictionary = GameState.habitats.get(String(habitat_id), {})
+		var resident_uid := String(state.get("resident_uid", ""))
+		choices.append({
+			"id": String(habitat_id),
+			"label": String(habitat.get("name", habitat_id)),
+			"summary": "当前驻守：%s ｜ 据点等级 %d" % [
+				GameState.get_pet_display_name(resident_uid) if not resident_uid.is_empty() else "暂无",
+				int(state.get("rank", 0)),
+			],
+		})
+	pending_context = {"kind": "camp_resident_site", "on_close": "team_manage"}
+	decision_panel.open_panel("选择驻守地点", "先挑一个要在营地里统一调整的据点。", choices, "返回整备")
+
+func _open_camp_resident_picker(habitat_id: String) -> void:
+	var choices := []
+	for companion in GameState.get_companions():
+		var pet_uid := String(companion.get("uid", ""))
+		var home_id := String(companion.get("residence_habitat_id", ""))
+		choices.append({
+			"id": pet_uid,
+			"label": String(companion.get("display_name", "未命名伙伴")),
+			"summary": "当前安居：%s ｜ 偏好：%s" % [
+				_habitat_name(home_id) if not home_id.is_empty() else "暂未安居",
+				", ".join(companion.get("resident_tags", [])),
+			],
+		})
+	pending_context = {"kind": "camp_resident_select", "habitat_id": habitat_id, "on_close": "team_manage"}
+	decision_panel.open_panel("安排驻守", "为 %s 挑一只更适合住下来的伙伴。" % _habitat_name(habitat_id), choices, "返回整备")
+
+func _assign_resident_to_habitat(habitat_id: String, pet_uid: String) -> void:
+	var result := habitat_service.assign_resident(habitat_id, pet_uid)
+	var body := ""
+	if bool(result.get("ok", false)):
+		var pet_name := GameState.get_pet_display_name(pet_uid)
+		var fit_text := "它对这里很有亲近感。" if bool(result.get("preference_match", false)) else "它还需要时间适应这里。"
+		body = "%s 被安顿在 %s。\n%s" % [pet_name, _habitat_name(habitat_id), fit_text]
+		_push_log(body.replace("\n", " "))
+		_check_active_quests()
+	else:
+		body = _build_fail_reason(String(result.get("reason", "unknown")))
+	pending_context = {"kind": "resident_result", "on_close": "reopen_base"}
+	decision_panel.open_panel("驻守安排", body, [], "返回营地")
+
+func _show_camp_mail_menu() -> void:
+	var targets := _pending_mail_targets()
+	if targets.is_empty():
+		pending_context = {"kind": "camp_mail_menu", "on_close": "reopen_base"}
+		decision_panel.open_panel("处理留信", "目前没有需要寄出的跨点消息。", [], "返回营地")
+		return
+	var choices := []
+	for destination in targets:
+		choices.append({
+			"id": destination,
+			"label": _habitat_name(destination),
+			"summary": "把今天要转交的留信送往这里。",
+		})
+	pending_context = {"kind": "camp_mail_menu", "on_close": "team_manage"}
+	decision_panel.open_panel("处理留信", "在营地统一处理今天的跨点消息。", choices, "返回整备")
+
+func _handle_camp_mail_selection(destination: String) -> void:
+	GameState.note_mail(destination)
+	_push_log("你在营地寄出了送往 %s 的留信。" % _habitat_name(destination))
+	_check_active_quests()
+	pending_context = {"kind": "mail_result", "on_close": "reopen_base"}
+	decision_panel.open_panel("留信已寄出", "今天处理了一封送往 %s 的消息。" % _habitat_name(destination), [], "返回营地")
 
 func _open_resident_picker() -> void:
 	var choices := []
@@ -970,8 +2150,8 @@ func _assign_resident(pet_uid: String) -> void:
 		_check_active_quests()
 	else:
 		body = _build_fail_reason(String(result.get("reason", "unknown")))
-	pending_context = {"kind": "resident_result", "on_close": "arrival"}
-	decision_panel.open_panel("驻守安排", body, [], "返回地点")
+	pending_context = {"kind": "resident_result", "on_close": "finish_visit"}
+	decision_panel.open_panel("驻守安排", body, [], "结束拜访")
 
 func _start_npc_intro_duel(npc_id: String) -> void:
 	var result := npc_service.prepare_intro_duel(npc_id, current_visit_habitat_id)
@@ -989,22 +2169,23 @@ func _start_npc_intro_duel(npc_id: String) -> void:
 				body = "这个拜访对象暂时不在记录里。"
 			_:
 				body = "这场初见决斗还没准备好。"
-		pending_context = {"kind": "npc_duel_result", "on_close": "arrival"}
-		decision_panel.open_panel("初见决斗", body, [], "返回地点")
+		pending_context = {"kind": "npc_duel_result", "on_close": "finish_visit"}
+		decision_panel.open_panel("初见决斗", body, [], "结束拜访")
 		return
 
 	pending_npc_duel_id = npc_id
-	pending_battle_source = "npc_intro_duel"
-	decision_panel.hide()
-	_push_log("第一次拜访 %s，先以切磋定彼此态度。" % String(result.get("npc", {}).get("name", "某人")))
-	battle_panel.start_battle(result.get("battle_config", {}))
+	_start_battle_with_tutorial(
+		result.get("battle_config", {}),
+		"npc_intro_duel",
+		"第一次拜访 %s，先以切磋定彼此态度。" % String(result.get("npc", {}).get("name", "某人"))
+	)
 
 func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
 	if pending_npc_duel_id.is_empty():
 		return
 
 	var result := npc_service.resolve_intro_duel(pending_npc_duel_id, battle_result)
-	var npc := result.get("npc", {})
+	var npc: Dictionary = result.get("npc", {})
 	var npc_name := String(npc.get("name", "某人"))
 	var body_lines: Array[String] = []
 	if bool(result.get("won", false)):
@@ -1023,13 +2204,13 @@ func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
 		body_lines.append("")
 		body_lines.append("[b]已达成的信赖反馈[/b]")
 		body_lines.append("\n".join(unlocked_lines))
-	pending_context = {"kind": "npc_duel_result", "on_close": "arrival"}
-	decision_panel.open_panel("初见决斗", "\n".join(body_lines), [], "返回地点")
+	pending_context = {"kind": "npc_duel_result", "on_close": "finish_visit"}
+	decision_panel.open_panel("初见决斗", "\n".join(body_lines), [], "结束拜访")
 
 func _handle_talk_to_npc(npc_id: String) -> void:
 	if npc_service.needs_intro_duel(npc_id):
-		pending_context = {"kind": "talk_result", "on_close": "arrival"}
-		decision_panel.open_panel("还不能正式拜访", "第一次见面要先决斗，定下彼此态度之后才能拜访。", [], "返回地点")
+		pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
+		decision_panel.open_panel("还不能正式拜访", "第一次见面要先决斗，定下彼此态度之后才能拜访。", [], "结束拜访")
 		return
 
 	GameState.note_talk(npc_id)
@@ -1064,8 +2245,7 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 	if not reward_lines.is_empty():
 		body_lines.append("")
 		body_lines.append("[b]这次交谈带来的变化[/b]")
-		body_lines.append("
-".join(reward_lines))
+		body_lines.append("\n".join(reward_lines))
 	var tags: Array = talk_package.get("tags", [])
 	if not tags.is_empty():
 		body_lines.append("")
@@ -1073,17 +2253,15 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 	if not unlocked_lines.is_empty():
 		body_lines.append("")
 		body_lines.append("[b]已达成的信赖反馈[/b]")
-		body_lines.append("
-".join(unlocked_lines))
+		body_lines.append("\n".join(unlocked_lines))
 	var dialogue_id := String(talk_package.get("dialogue_id", ""))
 	var topic := String(talk_package.get("topic", "daily"))
 	if not dialogue_id.is_empty():
 		GameState.note_dialogue_seen(npc_id, dialogue_id, topic)
 	_push_log("和 %s 聊了聊，这次谈到了%s。" % [String(npc.get("name", "某人")), _talk_topic_label(topic)])
 	_check_active_quests()
-	pending_context = {"kind": "talk_result", "on_close": "arrival"}
-	decision_panel.open_panel("交谈结果", "
-".join(body_lines), [], "返回地点")
+	pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
+	decision_panel.open_panel("交谈结果", "\n".join(body_lines), [], "结束拜访")
 
 func _apply_talk_side_effects(active_npc_id: String, talk_package: Dictionary) -> void:
 	for event_id in talk_package.get("completed_events", []):
@@ -1143,13 +2321,13 @@ func _try_accept_quest(quest_id: String) -> void:
 	var giver_id := String(quest.get("giver", ""))
 	if npc_service.needs_intro_duel(giver_id):
 		var giver := DataRepository.get_npc(giver_id)
-		pending_context = {"kind": "quest_result", "on_close": "arrival"}
-		decision_panel.open_panel("还不能正式接委托", "第一次见面要先和 %s 完成决斗，之后才能受理委托。" % String(giver.get("name", "委托人")), [], "返回地点")
+		pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
+		decision_panel.open_panel("还不能正式接委托", "第一次见面要先和 %s 完成决斗，之后才能受理委托。" % String(giver.get("name", "委托人")), [], "结束拜访")
 		return
 	var cost := _accept_cost_for_quest(quest)
 	if not cost.is_empty() and not GameState.can_pay(cost):
-		pending_context = {"kind": "quest_result", "on_close": "arrival"}
-		decision_panel.open_panel("暂时接不下", "还缺少交付物资：%s" % _format_item_cost(cost), [], "返回地点")
+		pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
+		decision_panel.open_panel("暂时接不下", "还缺少交付物资：%s" % _format_item_cost(cost), [], "结束拜访")
 		return
 	if not cost.is_empty():
 		GameState.pay_cost(cost)
@@ -1158,8 +2336,8 @@ func _try_accept_quest(quest_id: String) -> void:
 	GameState.accept_quest(quest_id)
 	_push_log("接下委托：%s。" % String(quest.get("title", "")))
 	_check_active_quests()
-	pending_context = {"kind": "quest_result", "on_close": "arrival"}
-	decision_panel.open_panel("委托记录", "已记下这件事：%s" % String(quest.get("title", "")), [], "返回地点")
+	pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
+	decision_panel.open_panel("委托记录", "已记下这件事：%s" % String(quest.get("title", "")), [], "结束拜访")
 
 func _accept_cost_for_quest(quest: Dictionary) -> Dictionary:
 	var cost := {}
@@ -1173,8 +2351,8 @@ func _handle_mail_selection(destination: String) -> void:
 	GameState.note_mail(destination)
 	_push_log("寄出了送往 %s 的留信。" % _habitat_name(destination))
 	_check_active_quests()
-	pending_context = {"kind": "mail_result", "on_close": "arrival"}
-	decision_panel.open_panel("寄送完成", "今天处理了一封送往 %s 的消息。" % _habitat_name(destination), [], "返回地点")
+	pending_context = {"kind": "mail_result", "on_close": "finish_visit"}
+	decision_panel.open_panel("寄送完成", "今天处理了一封送往 %s 的消息。" % _habitat_name(destination), [], "结束拜访")
 
 func _handle_encounter_result_effects(payload: Dictionary) -> String:
 	var outcome := String(payload.get("outcome", "unknown"))
@@ -1306,6 +2484,10 @@ func _finish_current_visit() -> void:
 		return
 	visit_flow.finish_visit()
 
+func _finish_camp_visit() -> void:
+	current_visit_habitat_id = ""
+	_advance_after_travel_stop()
+
 func _resolve_visit_yield(habitat_id: String) -> void:
 	var reward := _base_visit_reward(habitat_id)
 	var resonance: Dictionary = synergy_service.build_visit_resonance(habitat_id)
@@ -1354,7 +2536,7 @@ func _resolve_season_boss_reward() -> void:
 		return
 	if GameState.claimed_season_bosses.has(GameState.season_id):
 		return
-	if int(boss_rule.get("node_id", -1)) != current_node_id:
+	if _current_boss_node_id() != current_node_id:
 		return
 	var reward_bundle := DataRepository.get_reward_bundle(String(boss_rule.get("reward_bundle_id", "")))
 	var reward_text := _apply_reward_bundle(reward_bundle)
@@ -1432,11 +2614,13 @@ func _apply_visit_growth_resonance(bond_gains: Dictionary) -> Array[String]:
 func _finish_season() -> void:
 	season_finished = true
 	awaiting_destination = false
+	GameState.clear_run_save()
 	var run_summary := meta_progression_service.build_run_summary()
 	var reward_result := meta_progression_service.award_run_points(run_summary)
 	GameState.exploration_points_total = int(reward_result.get("total_after", GameState.exploration_points_total))
 	for track in reward_result.get("new_tracks", []):
 		GameState.register_meta_track(String(track.get("id", "")), track.get("unlock", {}))
+	GameState.save_meta_progression()
 	action_hint_label.text = "[b]年度回顾[/b]\n照料进度 %d ｜ 已安居据点 %d ｜ 图鉴 %d ｜ 徽章 %d ｜ 季节点数 %d\n本局探索点 %d ｜ 累计探索点 %d" % [
 		GameState.get_care_progress(),
 		GameState.get_settled_habitat_count(),
@@ -1446,10 +2630,17 @@ func _finish_season() -> void:
 		int(reward_result.get("points", 0)),
 		GameState.exploration_points_total,
 	]
+	_play_stage_transition(
+		"年度远征结束",
+		"本局探索点 +%d\n累计探索点 %d" % [int(reward_result.get("points", 0)), GameState.exploration_points_total],
+		Color(1.0, 0.84, 0.38, 1.0)
+	)
 	_push_log("年度远征结束，获得探索点 %d。" % int(reward_result.get("points", 0)))
 	for line in meta_progression_service.format_new_tracks(reward_result.get("new_tracks", [])):
 		_push_log("元成长解锁：%s。" % line)
 	_update_ui()
+	if _should_show_boot_menu():
+		_show_main_menu()
 
 func _build_companion_summaries() -> Array:
 	var result: Array = []
@@ -1516,50 +2707,79 @@ func _update_ui() -> void:
 	_update_log()
 	_update_map_hint()
 	board_view.refresh_view(current_node_id, _get_selectable_nodes(), _build_board_markers(), _get_locked_nodes())
+	if main_menu_panel.visible:
+		_refresh_main_menu()
 
 func _update_header() -> void:
-	round_label.text = "%s · 第 %d / %d 回合 · 第 %d 周 · 总回合 %d / 100" % [
-		_season_name(),
-		GameState.season_turn,
-		GameState.season_length,
-		GameState.week_index,
-		GameState.global_turn,
-	]
 	var objective_name := String(GameState.weekly_objective.get("title", "等待周目标"))
 	var objective_progress := " / ".join(weekly_cycle_service.build_progress_lines(GameState.weekly_objective, GameState.weekly_progress))
 	if objective_progress.is_empty():
 		objective_progress = "本周尚未结算"
-	objective_label.text = "%s ｜ %s ｜ 修正 %d ｜ 重掷 %d/%d ｜ 锚定 %d" % [
+	meta_label.text = "%s · 第 %d 周 · %s" % [
+		_season_name(),
+		GameState.week_index,
+		board_progression_service.get_region_name(),
+	]
+	round_label.text = "回合 %d / %d · 总计 %d / 100" % [
+		GameState.season_turn,
+		GameState.season_length,
+		GameState.global_turn,
+	]
+	weather_label.text = "%s · %s" % [
+		_weather_name(GameState.weather_id),
+		_time_name(GameState.time_of_day),
+	]
+	objective_label.text = "%s ｜ %s" % [
 		objective_name,
 		objective_progress,
+	]
+
+func _update_action_ui() -> void:
+	var current_node: Dictionary = board_lookup.get(current_node_id, {})
+	var recent_roll: String = "待掷骰" if pending_roll.is_empty() else dice_service.describe_roll(pending_roll)
+	var selectable_nodes: Array[int] = _get_selectable_nodes()
+	var reachable_names: Array[String] = []
+	for node_id in selectable_nodes.slice(0, 3):
+		reachable_names.append(String(board_lookup.get(int(node_id), {}).get("name", "未知节点")))
+	dice_label.text = "步数：%s" % recent_roll
+	dice_meta_label.text = "修正 %d ｜ 重掷 %d/%d ｜ 锚定 %d" % [
 		GameState.season_adjust_points,
 		GameState.weekly_reroll_count,
 		GameState.weekly_reroll_limit,
 		GameState.anchor_points,
 	]
-
-func _update_action_ui() -> void:
-	dice_label.text = "%s ｜ 天气：%s ｜ 时段：%s" % [
-		dice_service.describe_roll(pending_roll),
-		_weather_name(GameState.weather_id),
-		_time_name(GameState.time_of_day),
+	board_status_label.text = "区域：%s ｜ 当前位置：%s" % [
+		board_progression_service.get_region_name(),
+		String(current_node.get("name", "营地")),
 	]
-	roll_button.text = "掷骰前进"
-	support_button.text = "周目标"
-	base_button.text = "远征总览"
-	new_game_button.text = "重开远征"
+	if awaiting_destination:
+		board_route_label.text = "可达 %d 处 ｜ %s" % [
+			selectable_nodes.size(),
+			" / ".join(reachable_names) if not reachable_names.is_empty() else "等待路线计算",
+		]
+	else:
+		board_route_label.text = "待命中 ｜ 今日 %s · %s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
+	roll_button.text = "掷骰"
+	support_button.text = "系统手册"
+	base_button.text = "营地总览"
+	new_game_button.text = "主界面"
 	roll_button.disabled = season_finished or _is_modal_open() or awaiting_destination
 	plus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) >= 6
 	minus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) <= 1
 	reroll_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.weekly_reroll_count >= GameState.weekly_reroll_limit
-	support_button.disabled = _is_modal_open() and not decision_panel.visible
+	support_button.disabled = _is_modal_open() and not system_panel.visible
 	base_button.disabled = _is_modal_open() and not base_panel.visible
+	new_game_button.disabled = ai_turn_in_progress or battle_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible
 	if season_finished:
+		action_hint_label.text = "[b]年度结算完成[/b]\n打开右上角主界面，查看局外成长并开始下一轮远征。"
+		return
+	if ai_turn_in_progress:
+		action_hint_label.text = "[b]对手回合[/b]\n%s" % (_active_ai_observation_line if not _active_ai_observation_line.is_empty() else "正在结算其他远征队的掷骰、推进和落点。")
 		return
 	if awaiting_destination:
-		action_hint_label.text = "[b]掷骰已生效，选择本回合落点。[/b]\n先看可达节点，再决定是否用修正点或本周重掷；当没有安全路线时会自动尝试锚定。"
+		action_hint_label.text = "[b]正在确认落点[/b]\n若只有一个精确落点会自动前进，只有出现分叉时才需要你手动选路。"
 	else:
-		action_hint_label.text = "[b]从当前节点继续推进。[/b]\n核心闭环：掷骰 -> 选路 -> 落点内容 -> 周结算 -> 季切换。"
+		action_hint_label.text = "[b]从当前节点继续推进[/b]\n先掷骰，再看精确落点；系统会自动处理单一路径，只在分叉处停下来。"
 
 func _update_summaries() -> void:
 	var synergy_report := synergy_service.build_synergy_report()
@@ -1567,127 +2787,159 @@ func _update_summaries() -> void:
 	var npc_lines := npc_route_service.build_status_lines(2)
 	var threat_lines := threat_service.build_status_lines(board_lookup, 2)
 	var treasury := GameState.get_treasury_snapshot()
-	player_summary_label.text = "[b]远征记录[/b]\n构筑等级：%d\n照料进度：%d\n徽章：%d ｜ 季节点数：%d ｜ 元成长点：%d\n背包人口：%d / %d\n双打：%s\n库存：%s\n钱包：%d 金 ｜ 银行：%d 金" % [
-		GameState.get_progression_rank(),
-		GameState.get_care_progress(),
-		GameState.badge_count,
-		GameState.season_points,
-		GameState.exploration_points_total,
-		GameState.get_backpack_population_used(),
-		GameState.backpack_capacity,
-		" / ".join(_battle_slot_names()),
-		_format_inventory_highlights(),
-		int(treasury.get("wallet_gold", 0)),
-		int(treasury.get("bank_gold", 0)),
-	]
+	var ai_entries: Array = ai_player_service.build_summary_entries(board_lookup)
+	player_summary_label.text = "\n".join([
+		"构筑 Lv%d ｜ 照料 %d" % [GameState.get_progression_rank(), GameState.get_care_progress()],
+		"徽章 %d ｜ 季节点 %d ｜ 探索点 %d" % [GameState.badge_count, GameState.season_points, GameState.exploration_points_total],
+		"资金 %d 金 ｜ 银行 %d 金" % [int(treasury.get("wallet_gold", 0)), int(treasury.get("bank_gold", 0))],
+		"细项数值：系统手册 / 营地总览",
+	])
 	GameState.set_trait_runtime_bonus(synergy_service.build_runtime_bonus(synergy_report))
 	var season_goal := String(GameState.get_current_season_rule().get("season_goal", "维持推进感。"))
-	ai_summary_label.text = "[b]本季节奏[/b]\n区域：%s\n目标：%s\n推荐：%s" % [
-		board_progression_service.get_region_name(),
-		season_goal,
-		"%s\n敌群：%s" % [_today_focus_text(), " / ".join(threat_lines)],
+	var lead_entry: Dictionary = ai_entries[0] if not ai_entries.is_empty() else {}
+	var rival_lines: Array[String] = [
+		"区域：%s" % board_progression_service.get_region_name(),
+		"赛季目标：%s" % season_goal,
 	]
-	var control_lines: Array[String] = []
-	control_lines.append("[b]地点状态[/b]")
-	control_lines.append_array(_location_status_lines().slice(0, 5))
-	control_lines.append("")
-	control_lines.append("[b]已激活羁绊[/b]")
-	control_lines.append_array(synergy_service.format_active_lines(synergy_report, 2))
-	var trait_lines := synergy_service.format_trait_effect_lines(synergy_report, 2)
-	if not trait_lines.is_empty():
-		control_lines.append("[b]特性梯度[/b]")
-		control_lines.append_array(trait_lines)
-	if not facility_bonus.get("lines", []).is_empty():
-		control_lines.append("[b]建筑前置增益[/b]")
-		control_lines.append_array(facility_bonus.get("lines", []).slice(0, 2))
-	if not GameState.run_modifiers.is_empty():
-		control_lines.append("[b]本局词缀[/b]")
-		control_lines.append_array(run_modifier_service.format_lines(GameState.run_modifiers))
-	control_lines.append("[b]流动访客[/b]")
-	control_lines.append_array(npc_lines)
-	control_summary_label.text = "\n".join(control_lines)
+	if not lead_entry.is_empty():
+		rival_lines.append("领先对手：%s ｜ 威望 %d ｜ 控制 %d" % [
+			String(lead_entry.get("name", "对手")),
+			int(lead_entry.get("prestige", 0)),
+			int(lead_entry.get("control", 0)),
+		])
+		rival_lines.append("下一拍：%s" % String(lead_entry.get("intent", "继续观察")))
+	else:
+		rival_lines.append("暂时没有高压对手情报。")
+		rival_lines.append("今天更适合稳步推进周目标。")
+	ai_summary_label.text = "\n".join(rival_lines)
+	var active_synergies: Array[String] = synergy_service.format_active_lines(synergy_report, 2)
+	var control_lines: Array[String] = [
+		"双打：%s" % " / ".join(_battle_slot_names()),
+		"背包：%d / %d ｜ 伙伴总数 %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity, GameState.get_companions().size()],
+		"访客：%s" % (" / ".join(npc_lines) if not npc_lines.is_empty() else "暂无重点访客"),
+		"威胁：%s" % (" / ".join(threat_lines) if not threat_lines.is_empty() else "暂无游走威胁"),
+	]
+	if not active_synergies.is_empty():
+		control_lines.append("已激活：%s" % " / ".join(active_synergies))
+	elif not facility_bonus.get("lines", []).is_empty():
+		control_lines.append("建筑增益：%s" % " / ".join(facility_bonus.get("lines", []).slice(0, 1)))
+	control_summary_label.text = "\n".join(control_lines.slice(0, 5))
+	_handle_synergy_activation_fx(synergy_report)
 
 func _update_roster() -> void:
-	var lines: Array[String] = ["[b]伙伴与编成[/b]"]
+	var lines: Array[String] = []
 	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
-	lines.append("背包人口：%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity])
-	for companion in GameState.get_companions():
-		var home_id := String(companion.get("residence_habitat_id", ""))
-		lines.append("%s ★%d  [%s]  %s  驻守：%s" % [
-			String(companion.get("display_name", "未命名伙伴")),
-			int(companion.get("star_level", 1)),
-			String(companion.get("species_id", "")),
-			_companion_slot_label(String(companion.get("uid", ""))),
-			_habitat_name(home_id) if not home_id.is_empty() else "暂未安居",
-		])
+	lines.append("背包人口：%d / %d ｜ 已安居据点 %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity, GameState.get_settled_habitat_count()])
+	lines.append("关键库存：%s" % (_format_inventory_highlights() if not _format_inventory_highlights().is_empty() else "暂时没有重点素材"))
+	if not starter_companion_uid.is_empty():
+		lines.append("起始伙伴：%s" % GameState.get_pet_display_name(starter_companion_uid))
+	else:
+		lines.append("调双打 / 背包 / 驻守：路过营地打开营地总览。")
 	roster_label.text = "\n".join(lines)
 
 func _update_log() -> void:
-	event_log_label.text = "\n".join(GameState.journal_entries)
+	var entries: Array[String] = GameState.journal_entries.duplicate()
+	var visible_entries: Array[String] = entries.slice(maxi(0, entries.size() - 3), entries.size())
+	if visible_entries.is_empty():
+		_render_event_log_text("等待新的记录…")
+		_event_log_snapshot = []
+		return
+	if _should_render_event_log_immediately(visible_entries):
+		_render_event_log_text("\n".join(visible_entries))
+		_event_log_snapshot = visible_entries
+		return
+	var history_entries := visible_entries.slice(0, visible_entries.size() - 1)
+	var full_text := "\n".join(visible_entries)
+	var history_text := "\n".join(history_entries)
+	var visible_count := history_text.length()
+	if not history_text.is_empty():
+		visible_count += 1
+	_stop_event_log_typewriter(false)
+	event_log_label.text = full_text
+	event_log_label.visible_characters = visible_count
 	event_log_label.scroll_to_line(event_log_label.get_line_count())
+	_event_log_snapshot = visible_entries
+	var newest_entry := String(visible_entries[visible_entries.size() - 1])
+	var duration := clampf(float(newest_entry.length()) * EVENT_LOG_TYPEWRITER_SPEED, EVENT_LOG_TYPEWRITER_MIN_DURATION, EVENT_LOG_TYPEWRITER_MAX_DURATION)
+	_event_log_typewriter_tween = create_tween()
+	_event_log_typewriter_tween.set_trans(Tween.TRANS_LINEAR)
+	_event_log_typewriter_tween.set_ease(Tween.EASE_OUT)
+	_event_log_typewriter_tween.tween_property(event_log_label, "visible_characters", full_text.length(), duration)
+	_event_log_typewriter_tween.finished.connect(_on_event_log_typewriter_finished)
 
 func _update_map_hint() -> void:
 	var npc_markers := npc_route_service.build_node_markers()
 	var threat_markers := threat_service.build_node_markers()
+	var ai_markers := ai_player_service.build_node_markers()
 	if awaiting_destination:
-		var lines: Array[String] = ["[b]本回合可达节点[/b]"]
-		for node_id in _get_selectable_nodes():
+		var lines: Array[String] = ["[b]可达节点[/b]"]
+		for node_id in _get_selectable_nodes().slice(0, 4):
 			var node: Dictionary = board_lookup[node_id]
-			var danger_text := " ｜ 危险 %d" % GameState.get_node_danger(node_id) if GameState.get_node_danger(node_id) > 0 else ""
-			var npc_text := " ｜ 访客 %s" % " / ".join(npc_markers.get(node_id, [])) if npc_markers.has(node_id) else ""
-			var threat_text := " ｜ 敌群 %s" % " / ".join(threat_markers.get(node_id, [])) if threat_markers.has(node_id) else ""
-			lines.append("%s [%s] · %s%s%s%s" % [
+			var tags: Array[String] = [String(node.get("reward_hint", "查看详情"))]
+			if GameState.get_node_danger(node_id) > 0:
+				tags.append("危险 %d" % GameState.get_node_danger(node_id))
+			if npc_markers.has(node_id):
+				tags.append("访客 %s" % " / ".join(npc_markers.get(node_id, [])))
+			if threat_markers.has(node_id):
+				tags.append("敌群 %s" % " / ".join(threat_markers.get(node_id, [])))
+			if ai_markers.has(node_id):
+				tags.append("对手 %s" % " / ".join(ai_markers.get(node_id, [])))
+			lines.append("%s [%s]" % [
 				node["name"],
 				_type_name(String(node.get("type", ""))),
-				String(node.get("reward_hint", "查看详情")),
-				danger_text,
-				npc_text,
-				threat_text,
 			])
-			lines.append("路径：%s" % _format_path_preview(reachable_paths.get(node_id, [])))
-		var blocked_lines: Array[String] = []
-		for node_id in _get_blocked_reachable_nodes():
-			var node: Dictionary = board_lookup.get(node_id, {})
-			blocked_lines.append("%s：%s" % [
-				String(node.get("name", "未知节点")),
-				" / ".join(threat_markers.get(node_id, ["敌对群占据"])),
-			])
-		if not blocked_lines.is_empty():
+			lines.append("  %s" % " ｜ ".join(tags.slice(0, 3)))
+			lines.append("  路径：%s" % _format_path_preview(reachable_paths.get(node_id, [])))
+		if _get_blocked_reachable_nodes().size() > 0:
 			lines.append("")
-			lines.append("[b]敌对占点[/b]")
-			lines.append("\n".join(blocked_lines.slice(0, 3)))
-		var locked_lines: Array[String] = []
-		for node_id in _get_locked_nodes():
-			var node: Dictionary = board_lookup[node_id]
-			locked_lines.append("%s：%s" % [String(node.get("name", "")), _unlock_marker_text(String(node.get("habitat_id", "")))])
-		if not locked_lines.is_empty():
-			lines.append("")
-			lines.append("[b]未开放[/b]")
-			lines.append("\n".join(locked_lines.slice(0, 3)))
+			lines.append("[b]阻塞[/b] %d 个候选点被敌对群占据" % _get_blocked_reachable_nodes().size())
+		if _get_locked_nodes().size() > 0:
+			lines.append("[b]未开放[/b] %d 个区域待解锁" % _get_locked_nodes().size())
 		map_hint_label.text = "\n".join(lines)
 		return
-	map_hint_label.text = "[b]当前提醒[/b]\n%s\n\n[b]流动访客[/b] %s\n\n[b]游走威胁[/b] %s\n\n[b]周目标[/b] %s" % [
+	map_hint_label.text = "[b]今日焦点[/b]\n%s\n\n[b]周目标[/b]\n%s\n\n[b]地图动向[/b]\n对手：%s\n访客：%s\n威胁：%s" % [
 		_today_focus_text(),
+		weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress),
+		" / ".join(ai_player_service.build_status_lines(board_lookup, 2)),
 		" / ".join(npc_route_service.build_status_lines(2)),
 		" / ".join(threat_service.build_status_lines(board_lookup, 2)),
-		weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress),
 	]
 
 func _build_board_markers() -> Dictionary:
 	var markers := {}
 	var npc_markers := npc_route_service.build_node_markers()
 	var threat_markers := threat_service.build_node_markers()
+	var ai_markers := ai_player_service.build_node_markers()
+	var boss_node_id := _current_boss_node_id()
 	for node in world_nodes:
 		var node_id := int(node.get("id", -1))
 		var habitat_id := String(node.get("habitat_id", ""))
+		var type_id := String(node.get("type", ""))
+		var is_threatened := threat_markers.has(node_id)
 		if habitat_id.is_empty():
-			markers[node_id] = "起点"
+			var base_marker := ""
+			match type_id:
+				"camp":
+					base_marker = "起点" if node_id == board_progression_service.get_start_node_id() else "营地"
+				"environment":
+					base_marker = "环境格"
+				"empty":
+					base_marker = "环境格"
+				_:
+					base_marker = _type_name(type_id)
+			var base_parts: Array[String] = [base_marker]
+			if ai_markers.has(node_id):
+				base_parts.append("对手 %s" % " / ".join(ai_markers[node_id]))
+			markers[node_id] = " · ".join(base_parts)
 			continue
-		if not GameState.revealed_board_nodes.has(node_id) and not _get_selectable_nodes().has(node_id):
+		if not GameState.revealed_board_nodes.has(node_id) and not _get_selectable_nodes().has(node_id) and not is_threatened and not ai_markers.has(node_id):
 			markers[node_id] = "未显露"
 			continue
-		if not GameState.is_habitat_unlocked(habitat_id):
-			markers[node_id] = _unlock_marker_text(habitat_id)
+		if not GameState.is_habitat_unlocked(habitat_id) and not is_threatened and type_id != "event":
+			var locked_text := _unlock_marker_text(habitat_id)
+			if ai_markers.has(node_id):
+				locked_text += " · 对手 %s" % " / ".join(ai_markers[node_id])
+			markers[node_id] = locked_text
 			continue
 		var state: Dictionary = GameState.habitats.get(habitat_id, {})
 		var resident_uid := String(state.get("resident_uid", ""))
@@ -1696,9 +2948,10 @@ func _build_board_markers() -> Dictionary:
 			resident_text = "住着 %s" % GameState.get_pet_display_name(resident_uid)
 		var quest_text := _quest_text_for_habitat(habitat_id)
 		var parts: Array[String] = []
-		var boss_rule := DataRepository.get_season_boss_rule(GameState.season_id)
-		if int(boss_rule.get("node_id", -1)) == node_id:
+		if boss_node_id == node_id:
 			parts.append("赛季高潮")
+		if type_id == "event":
+			parts.append("事件格")
 		var danger := GameState.get_node_danger(node_id)
 		if danger > 0:
 			parts.append("危险 %d" % danger)
@@ -1706,6 +2959,8 @@ func _build_board_markers() -> Dictionary:
 			parts.append("访客 %s" % " / ".join(npc_markers[node_id]))
 		if threat_markers.has(node_id):
 			parts.append("敌群 %s" % " / ".join(threat_markers[node_id]))
+		if ai_markers.has(node_id):
+			parts.append("对手 %s" % " / ".join(ai_markers[node_id]))
 		if GameState.has_node_ambush(node_id):
 			parts.append("伏击待命")
 		if not resident_text.is_empty():
@@ -1729,6 +2984,9 @@ func _get_selectable_nodes() -> Array[int]:
 func _get_locked_nodes() -> Array[int]:
 	var locked: Array[int] = []
 	for node in world_nodes:
+		var type_id := String(node.get("type", ""))
+		if type_id in ["camp", "empty", "environment", "event"]:
+			continue
 		var habitat_id := String(node.get("habitat_id", ""))
 		if habitat_id.is_empty():
 			continue
@@ -1924,6 +3182,9 @@ func _time_name(time_id: String) -> String:
 func _type_name(type_id: String) -> String:
 	match type_id:
 		"camp": return "营地"
+		"empty": return "环境格"
+		"environment": return "环境格"
+		"event": return "事件格"
 		"habitat": return "栖居据点"
 		"settlement": return "聚落节点"
 		"dojo": return "试炼场"
@@ -1937,9 +3198,49 @@ func _habitat_name(habitat_id: String) -> String:
 
 func _push_log(text: String) -> void:
 	GameState.add_journal_entry(text)
+	if is_node_ready():
+		_update_log()
+
+func _should_render_event_log_immediately(entries: Array[String]) -> bool:
+	if GameState.should_skip_animations():
+		return true
+	if _event_log_snapshot.is_empty():
+		return true
+	if entries.size() <= _event_log_snapshot.size():
+		return true
+	if entries.size() - _event_log_snapshot.size() > 1:
+		return true
+	for index in range(_event_log_snapshot.size()):
+		if entries[index] != _event_log_snapshot[index]:
+			return true
+	return false
+
+func _render_event_log_text(text: String) -> void:
+	_stop_event_log_typewriter(false)
+	event_log_label.text = text
+	event_log_label.visible_characters = -1
+	event_log_label.scroll_to_line(event_log_label.get_line_count())
+
+func _stop_event_log_typewriter(reveal_all: bool = true) -> void:
+	if _event_log_typewriter_tween != null:
+		_event_log_typewriter_tween.kill()
+		_event_log_typewriter_tween = null
+	if reveal_all and is_instance_valid(event_log_label):
+		event_log_label.visible_characters = -1
+
+func _on_event_log_typewriter_finished() -> void:
+	_event_log_typewriter_tween = null
+	event_log_label.visible_characters = -1
+	event_log_label.scroll_to_line(event_log_label.get_line_count())
 
 func _season_name() -> String:
 	return String(GameState.get_current_season_rule().get("name", GameState.season_id))
+
+func _current_boss_node_id() -> int:
+	var board_boss_id := board_progression_service.get_boss_node_id()
+	if board_boss_id >= 0:
+		return board_boss_id
+	return int(DataRepository.get_season_boss_rule(GameState.season_id).get("node_id", -1))
 
 func _active_dojo_names() -> Array[String]:
 	var names: Array[String] = []
@@ -2005,6 +3306,371 @@ func _format_reward_bundle(reward_result: Dictionary) -> String:
 	for habitat_id in unlocks:
 		parts.append("开放 %s" % _habitat_name(String(habitat_id)))
 	return " / ".join(parts)
+
+func _build_main_menu_run_summary() -> String:
+	var lines: Array[String] = ["[b]当前远征[/b]"]
+	if season_finished:
+		lines.append("本轮年度已经结算完毕，可以查看局外成长后直接开始下一轮。")
+	else:
+		lines.append("%s · 第 %d / %d 回合 · 第 %d 周 · 总回合 %d / 100" % [
+			_season_name(),
+			GameState.season_turn,
+			GameState.season_length,
+			GameState.week_index,
+			GameState.global_turn,
+		])
+	lines.append("周目标：%s" % weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress))
+	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
+	lines.append("背包人口：%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity])
+	lines.append("徽章：%d ｜ 季节点数：%d ｜ 照料进度：%d" % [
+		GameState.badge_count,
+		GameState.season_points,
+		GameState.get_care_progress(),
+	])
+	var highlights := _format_inventory_highlights()
+	lines.append("关键库存：%s" % (highlights if not highlights.is_empty() else "暂时没有记录到重点素材"))
+	if not GameState.run_modifiers.is_empty():
+		lines.append("")
+		lines.append("[b]本局词缀[/b]")
+		for line in run_modifier_service.format_lines(GameState.run_modifiers):
+			lines.append("- %s" % line)
+	return "\n".join(lines)
+
+func _build_main_menu_meta_summary() -> String:
+	var lines: Array[String] = [
+		"[b]局外成长[/b]",
+		"累计探索点：%d" % GameState.exploration_points_total,
+	]
+	var modules: Array[String] = []
+	for module_id in GameState.meta_unlocks.get("dice_modules", []):
+		var module := DataRepository.get_dice_module(String(module_id))
+		modules.append(String(module.get("name", module_id)))
+	lines.append("已解锁模组：%s" % (" / ".join(modules) if not modules.is_empty() else "暂无"))
+	lines.append("")
+	lines.append("[b]成长轨道[/b]")
+	for track in DataRepository.get_meta_progression_tracks():
+		var track_id := String(track.get("id", ""))
+		var label := String(track.get("label", track_id))
+		var description := String(track.get("description", ""))
+		var threshold := int(track.get("threshold", 0))
+		if GameState.has_meta_track(track_id):
+			lines.append("已解锁｜%s" % label)
+			lines.append(description)
+			continue
+		lines.append("待解锁｜%s ｜ 还差 %d 点" % [label, maxi(0, threshold - GameState.exploration_points_total)])
+		lines.append(description)
+	return "\n".join(lines)
+
+func _build_system_sections() -> Array:
+	var synergy_report := synergy_service.build_synergy_report()
+	var facility_bonus := synergy_service.build_facility_bonus()
+	var battle_bonus := synergy_service.merge_battle_bonus([
+		synergy_service.build_battle_bonus(synergy_report),
+		facility_bonus.get("bonus", {}),
+	])
+	var treasury := GameState.get_treasury_snapshot()
+	var quest_lines: Array[String] = []
+	if not GameState.weekly_objective.is_empty():
+		quest_lines.append("[b]本周目标[/b] %s" % String(GameState.weekly_objective.get("title", "本周目标")))
+		quest_lines.append(String(GameState.weekly_objective.get("description", "")))
+		for line in weekly_cycle_service.build_progress_lines(GameState.weekly_objective, GameState.weekly_progress):
+			quest_lines.append("- %s" % line)
+	if GameState.active_quests.is_empty():
+		quest_lines.append("")
+		quest_lines.append("今天没有挂在手边的生活委托。")
+	else:
+		quest_lines.append("")
+		quest_lines.append("[b]当前委托[/b]")
+		for quest_id in GameState.active_quests:
+			quest_lines.append("- %s" % _quest_title(quest_id))
+	if not GameState.run_modifiers.is_empty():
+		quest_lines.append("")
+		quest_lines.append("[b]本局词缀[/b]")
+		for line in run_modifier_service.format_lines(GameState.run_modifiers):
+			quest_lines.append("- %s" % line)
+
+	var battle_lines: Array[String] = [
+		"[b]双打位[/b] %s" % " / ".join(_battle_slot_names()),
+		"[b]背包人口[/b] %d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity],
+		"[b]已激活羁绊[/b] %s" % " / ".join(synergy_service.format_active_lines(synergy_report, 4)),
+	]
+	if not synergy_service.format_nearby_lines(synergy_report, 3).is_empty():
+		battle_lines.append("[b]差 1 激活[/b] %s" % " / ".join(synergy_service.format_nearby_lines(synergy_report, 3)))
+	var trait_lines := synergy_service.format_trait_effect_lines(synergy_report, 4)
+	if not trait_lines.is_empty():
+		battle_lines.append("[b]特性梯度[/b] %s" % " / ".join(trait_lines))
+	if not facility_bonus.get("lines", []).is_empty():
+		battle_lines.append("[b]建筑前置增益[/b] %s" % " / ".join(facility_bonus.get("lines", [])))
+	if not synergy_service.describe_battle_bonus(battle_bonus).is_empty():
+		battle_lines.append("[b]战斗汇总[/b] %s" % " / ".join(synergy_service.describe_battle_bonus(battle_bonus)))
+
+	var operation_lines: Array[String] = [
+		"[b]库存摘记[/b] %s" % (_format_inventory_highlights() if not _format_inventory_highlights().is_empty() else "暂无重点素材"),
+		"[b]钱包[/b] %d 金 ｜ [b]银行[/b] %d 金" % [int(treasury.get("wallet_gold", 0)), int(treasury.get("bank_gold", 0))],
+		"[b]地点状态[/b]",
+	]
+	operation_lines.append_array(_location_status_lines())
+	operation_lines.append("")
+	operation_lines.append("建设、驻守和留信只能在营地总览里集中调整；平时这里负责查阅状态。")
+
+	var completed_count := 0
+	for tutorial_id in TUTORIAL_ORDER:
+		if GameState.has_completed_tutorial(tutorial_id):
+			completed_count += 1
+	var tutorial_lines: Array[String] = [
+		"[b]已读教程[/b] %d / %d" % [completed_count, TUTORIAL_ORDER.size()],
+	]
+	for tutorial_id in TUTORIAL_ORDER:
+		var entry := _tutorial_entry(tutorial_id)
+		var status := "已读" if GameState.has_completed_tutorial(tutorial_id) else "未读"
+		tutorial_lines.append("[b]%s[/b] %s" % [status, String(entry.get("title", tutorial_id))])
+		tutorial_lines.append(String(entry.get("body", "")))
+		tutorial_lines.append("")
+	tutorial_lines.append("如果刚开新局，起始伙伴选择会在进入远征时自动触发。")
+
+	return [
+		{
+			"id": "quest",
+			"label": "目标",
+			"summary": "[b]任务总览[/b]\n周目标、委托和本局词缀都集中放在这里。",
+			"body": "\n".join(quest_lines),
+		},
+		{
+			"id": "battle",
+			"label": "战斗",
+			"summary": "[b]战斗构筑[/b]\n双打位、羁绊、建筑前置增益和战斗汇总。",
+			"body": "\n".join(battle_lines),
+		},
+		{
+			"id": "operation",
+			"label": "经营",
+			"summary": "[b]经营状态[/b]\n库存、金钱和地点状态下沉到这一页，主界面只保留全局值。",
+			"body": "\n".join(operation_lines),
+		},
+		{
+			"id": "tutorial",
+			"label": "教学",
+			"summary": "[b]教学手册[/b]\n首次开局、第一次进营地和第一次进战斗都会自动弹一次，这里可以回看。",
+			"body": "\n".join(tutorial_lines),
+		},
+	]
+
+func _handle_synergy_activation_fx(report: Dictionary) -> void:
+	var snapshot := _active_synergy_keys(report)
+	if not _synergy_fx_ready:
+		_active_synergy_snapshot = snapshot
+		_synergy_fx_ready = true
+		return
+	var added: Array[String] = []
+	for key in snapshot:
+		if not _active_synergy_snapshot.has(key):
+			added.append(key)
+	_active_synergy_snapshot = snapshot
+	if added.is_empty() or GameState.should_skip_animations():
+		return
+	var lines: Array[String] = []
+	for entry in report.get("active", []):
+		var key := "%s:%s:%d" % [
+			String(entry.get("category", "")),
+			String(entry.get("id", "")),
+			int(entry.get("tier", 0)),
+		]
+		if not added.has(key):
+			continue
+		lines.append("%s %d层" % [String(entry.get("name", "")), int(entry.get("tier", 0))])
+		if lines.size() >= 2:
+			break
+	if lines.is_empty():
+		return
+	_show_synergy_banner(lines)
+	_show_synergy_unit_glow(_activated_battle_source_names(report, added))
+	_pulse_summary_feedback()
+
+func _active_synergy_keys(report: Dictionary) -> Array[String]:
+	var result: Array[String] = []
+	for entry in report.get("active", []):
+		result.append("%s:%s:%d" % [
+			String(entry.get("category", "")),
+			String(entry.get("id", "")),
+			int(entry.get("tier", 0)),
+		])
+	return result
+
+func _show_synergy_banner(lines: Array[String]) -> void:
+	if _synergy_banner == null or _synergy_banner_label == null:
+		return
+	if _synergy_banner_tween != null:
+		_synergy_banner_tween.kill()
+	_synergy_banner_label.text = "[center][b]羁绊共鸣启动[/b]\n%s[/center]" % "\n".join(lines)
+	_synergy_banner.visible = true
+	_synergy_banner.modulate = Color(1, 1, 1, 0)
+	_synergy_banner.scale = Vector2(0.92, 0.92)
+	_synergy_banner.position = Vector2(0, -18)
+	_synergy_banner_tween = create_tween()
+	_synergy_banner_tween.set_parallel(true)
+	_synergy_banner_tween.tween_property(_synergy_banner, "modulate:a", 1.0, 0.16)
+	_synergy_banner_tween.tween_property(_synergy_banner, "scale", Vector2.ONE, 0.20).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_synergy_banner_tween.tween_property(_synergy_banner, "position", Vector2.ZERO, 0.20).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_synergy_banner_tween.chain().tween_interval(1.05)
+	_synergy_banner_tween.chain().tween_property(_synergy_banner, "modulate:a", 0.0, 0.24)
+	_synergy_banner_tween.finished.connect(func() -> void:
+		_synergy_banner.visible = false
+	)
+
+func _activated_battle_source_names(report: Dictionary, added: Array[String]) -> Array[String]:
+	var names: Array[String] = []
+	for entry in report.get("active", []):
+		var key := "%s:%s:%d" % [
+			String(entry.get("category", "")),
+			String(entry.get("id", "")),
+			int(entry.get("tier", 0)),
+		]
+		if not added.has(key):
+			continue
+		for source in entry.get("sources", []):
+			if String(source.get("scope", "")) != "battle":
+				continue
+			var name := String(source.get("name", ""))
+			if name.is_empty() or names.has(name):
+				continue
+			names.append(name)
+			if names.size() >= 2:
+				return names
+	if not names.is_empty():
+		return names
+	for pet_uid in GameState.get_battle_party_uids():
+		var display_name := GameState.get_pet_display_name(String(pet_uid))
+		if display_name.is_empty() or names.has(display_name):
+			continue
+		names.append(display_name)
+		if names.size() >= 2:
+			break
+	return names
+
+func _show_synergy_unit_glow(unit_names: Array[String]) -> void:
+	if GameState.should_skip_animations() or _synergy_unit_glow_row == null or unit_names.is_empty():
+		return
+	if _synergy_unit_glow_tween != null:
+		_synergy_unit_glow_tween.kill()
+	for child in _synergy_unit_glow_row.get_children():
+		child.queue_free()
+	for unit_name in unit_names.slice(0, 2):
+		var badge := PanelContainer.new()
+		badge.modulate = Color(1, 1, 1, 0)
+		badge.scale = Vector2(0.88, 0.88)
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.15, 0.11, 0.05, 0.94)
+		style.border_color = Color(1.0, 0.88, 0.52, 1.0)
+		style.border_width_left = 3
+		style.border_width_top = 3
+		style.border_width_right = 3
+		style.border_width_bottom = 3
+		style.corner_radius_top_left = 22
+		style.corner_radius_top_right = 22
+		style.corner_radius_bottom_left = 22
+		style.corner_radius_bottom_right = 22
+		badge.add_theme_stylebox_override("panel", style)
+		var margin := MarginContainer.new()
+		margin.add_theme_constant_override("margin_left", 20)
+		margin.add_theme_constant_override("margin_top", 12)
+		margin.add_theme_constant_override("margin_right", 20)
+		margin.add_theme_constant_override("margin_bottom", 12)
+		badge.add_child(margin)
+		var label := Label.new()
+		label.text = "%s\n共鸣中" % String(unit_name)
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.add_theme_font_size_override("font_size", 22)
+		margin.add_child(label)
+		_synergy_unit_glow_row.add_child(badge)
+	_synergy_unit_glow_host.visible = true
+	for index in range(_synergy_unit_glow_row.get_child_count()):
+		var badge := _synergy_unit_glow_row.get_child(index) as Control
+		if badge == null:
+			continue
+		var badge_tween := create_tween()
+		badge_tween.tween_interval(0.04 * float(index))
+		badge_tween.set_parallel(true)
+		badge_tween.tween_property(badge, "modulate:a", 1.0, 0.14)
+		badge_tween.tween_property(badge, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		badge_tween.chain().tween_interval(0.72)
+		badge_tween.chain().tween_property(badge, "modulate:a", 0.0, 0.20)
+	_synergy_unit_glow_tween = create_tween()
+	_synergy_unit_glow_tween.tween_interval(1.02)
+	_synergy_unit_glow_tween.finished.connect(func() -> void:
+		_synergy_unit_glow_host.visible = false
+		_synergy_unit_glow_tween = null
+	)
+
+func _pulse_summary_feedback() -> void:
+	for node in [player_summary_label, control_summary_label, roster_label]:
+		node.modulate = Color(1.0, 0.95, 0.82, 1.0)
+		node.scale = Vector2.ONE
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(player_summary_label, "scale", Vector2(1.02, 1.02), 0.10)
+	tween.tween_property(control_summary_label, "scale", Vector2(1.02, 1.02), 0.10)
+	tween.tween_property(roster_label, "scale", Vector2(1.02, 1.02), 0.10)
+	tween.chain().tween_property(player_summary_label, "scale", Vector2.ONE, 0.18)
+	tween.parallel().tween_property(control_summary_label, "scale", Vector2.ONE, 0.18)
+	tween.parallel().tween_property(roster_label, "scale", Vector2.ONE, 0.18)
+	tween.parallel().tween_property(player_summary_label, "modulate", Color(1, 1, 1, 1), 0.24)
+	tween.parallel().tween_property(control_summary_label, "modulate", Color(1, 1, 1, 1), 0.24)
+	tween.parallel().tween_property(roster_label, "modulate", Color(1, 1, 1, 1), 0.24)
+
+func _play_stage_transition(title: String, subtitle: String, accent: Color) -> void:
+	if GameState.should_skip_animations():
+		return
+	_ensure_stage_transition_overlay()
+	if _stage_transition_tween != null:
+		_stage_transition_tween.kill()
+	_stage_transition_layer.visible = true
+	_stage_transition_backdrop.color = Color(0.04, 0.07, 0.12, 0.0)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.06, 0.10, 0.16, 0.95)
+	style.border_color = accent
+	style.border_width_left = 4
+	style.border_width_top = 4
+	style.border_width_right = 4
+	style.border_width_bottom = 4
+	style.corner_radius_top_left = 26
+	style.corner_radius_top_right = 26
+	style.corner_radius_bottom_left = 26
+	style.corner_radius_bottom_right = 26
+	_stage_transition_panel.add_theme_stylebox_override("panel", style)
+	_stage_transition_panel.modulate = Color(1, 1, 1, 0)
+	_stage_transition_panel.scale = Vector2(0.94, 0.94)
+	_stage_transition_title.text = title
+	_stage_transition_title.modulate = accent
+	_stage_transition_subtitle.text = "[center]%s[/center]" % subtitle
+	_stage_transition_subtitle.modulate = Color(1, 1, 1, 0.0)
+	_stage_transition_tween = create_tween()
+	_stage_transition_tween.set_parallel(true)
+	_stage_transition_tween.tween_property(_stage_transition_backdrop, "color:a", 0.78, 0.18)
+	_stage_transition_tween.tween_property(_stage_transition_panel, "modulate:a", 1.0, 0.16)
+	_stage_transition_tween.tween_property(_stage_transition_panel, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_stage_transition_tween.tween_property(_stage_transition_subtitle, "modulate:a", 1.0, 0.18)
+	_stage_transition_tween.chain().tween_interval(0.56)
+	_stage_transition_tween.chain().set_parallel(true)
+	_stage_transition_tween.tween_property(_stage_transition_panel, "modulate:a", 0.0, 0.22)
+	_stage_transition_tween.tween_property(_stage_transition_backdrop, "color:a", 0.0, 0.24)
+	_stage_transition_tween.finished.connect(func() -> void:
+		_stage_transition_layer.visible = false
+		_stage_transition_tween = null
+	)
+
+func _season_fx_color(season_id: String) -> Color:
+	match season_id:
+		"spring":
+			return Color(0.54, 0.86, 0.53, 1.0)
+		"summer":
+			return Color(0.48, 0.82, 1.0, 1.0)
+		"autumn":
+			return Color(1.0, 0.72, 0.34, 1.0)
+		"winter":
+			return Color(0.76, 0.88, 1.0, 1.0)
+		_:
+			return Color(0.95, 0.80, 0.48, 1.0)
 
 func _seasonal_visit_reward(habitat_id: String) -> Dictionary:
 	var habitat := DataRepository.get_habitat(habitat_id)
@@ -2084,4 +3750,4 @@ func _step_is_complete(step: Dictionary) -> bool:
 			return false
 
 func _is_modal_open() -> bool:
-	return battle_panel.visible or decision_panel.visible or base_panel.visible
+	return ai_turn_in_progress or battle_panel.visible or dice_roll_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible or main_menu_panel.visible

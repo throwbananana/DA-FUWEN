@@ -3,8 +3,10 @@ extends RefCounted
 
 const MonsterInstance = preload("res://scripts/monster_instance.gd")
 const SynergyService = preload("res://scripts/services/synergy_service.gd")
+const LocalizationService = preload("res://scripts/services/localization_service.gd")
 
 var synergy_service := SynergyService.new()
+var localization_service := LocalizationService.new()
 
 func get_dojo_for_habitat(habitat_id: String) -> Dictionary:
 	var habitat := DataRepository.get_habitat(habitat_id)
@@ -27,21 +29,21 @@ func get_dojo_menu(habitat_id: String) -> Dictionary:
 		var required_rank := _required_rank(dojo, tier)
 		var affordable := GameState.can_pay(dojo.get("entry_cost", {}))
 		var locked_by_progress := not previous_cleared
-		var summary := "推荐据点等级 %d ｜ 对手：%s" % [
-			required_rank,
-			" / ".join(_enemy_names(round_def.get("enemy_pool", []))),
+		var summary_parts := [
+			localization_service.text("dojo.summary.recommended_rank", {"value": required_rank}),
+			localization_service.text("dojo.summary.opponents", {"value": " / ".join(_enemy_names(round_def.get("enemy_pool", [])))}),
 		]
 		if already_cleared:
-			summary += " ｜ 已首通"
+			summary_parts.append(localization_service.text("dojo.summary.first_clear"))
 		elif locked_by_progress:
-			summary += " ｜ 需先通过前一阶"
+			summary_parts.append(localization_service.text("dojo.summary.require_previous"))
 		elif not affordable:
-			summary += " ｜ 缺少门票材料"
+			summary_parts.append(localization_service.text("dojo.summary.ticket_missing"))
 		rounds.append({
 			"id": tier,
 			"label": _tier_name(tier),
-			"summary": summary,
-			"tooltip": "修正：%s" % " / ".join(round_def.get("modifiers", [])),
+			"summary": " ｜ ".join(summary_parts),
+			"tooltip": localization_service.text("dojo.summary.modifiers", {"value": " / ".join(round_def.get("modifiers", []))}),
 			"disabled": locked_by_progress,
 		})
 		previous_cleared = already_cleared
@@ -133,15 +135,15 @@ func prepare_dojo_battle(dojo_id: String, tier: String) -> Dictionary:
 	])
 	var battle_bonus_lines := synergy_service.describe_battle_bonus(battle_bonus)
 	var subtitle_lines: Array[String] = []
-	subtitle_lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
+	subtitle_lines.append(localization_service.text("battle.subtitle.slots", {"value": " / ".join(_battle_slot_names())}))
 	var active_lines := synergy_service.format_active_lines(synergy_report, 3)
 	if not active_lines.is_empty():
-		subtitle_lines.append("羁绊：%s" % " / ".join(active_lines))
+		subtitle_lines.append(localization_service.text("battle.subtitle.synergy", {"value": " / ".join(active_lines)}))
 	var facility_lines: Array = facility_bonus.get("lines", [])
 	if not facility_lines.is_empty():
-		subtitle_lines.append("建筑：%s" % " / ".join(facility_lines.slice(0, 2)))
+		subtitle_lines.append(localization_service.text("battle.subtitle.buildings", {"value": " / ".join(facility_lines.slice(0, 2))}))
 	if not battle_bonus_lines.is_empty():
-		subtitle_lines.append("战前增益：%s" % " / ".join(battle_bonus_lines))
+		subtitle_lines.append(localization_service.text("battle.subtitle.prebattle", {"value": " / ".join(battle_bonus_lines)}))
 	return {
 		"ok": true,
 		"dojo": dojo,
@@ -263,11 +265,11 @@ func _tier_index(tier: String) -> int:
 func _tier_name(tier: String) -> String:
 	match tier:
 		"tier_1":
-			return "试炼一阶"
+			return localization_service.text("dojo.tier_1")
 		"tier_2":
-			return "试炼二阶"
+			return localization_service.text("dojo.tier_2")
 		"tier_3":
-			return "试炼三阶"
+			return localization_service.text("dojo.tier_3")
 		_:
 			return tier
 

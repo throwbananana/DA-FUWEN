@@ -149,10 +149,15 @@ func _blocked_habitat_ids() -> Array[String]:
 	return blocked
 
 func _node_id_for_habitat(habitat_id: String) -> int:
+	var fallback_node_id := -1
 	for node in _region_node_lookup().values():
 		if String(node.get("habitat_id", "")) == habitat_id:
-			return int(node.get("id", -1))
-	return -1
+			var node_id := int(node.get("id", -1))
+			if String(node.get("primary_content", "")) == "npc_menu":
+				return node_id
+			if fallback_node_id < 0:
+				fallback_node_id = node_id
+	return fallback_node_id
 
 func _region_node_lookup() -> Dictionary:
 	var lookup := {}

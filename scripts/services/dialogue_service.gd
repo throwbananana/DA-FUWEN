@@ -31,6 +31,36 @@ func build_talk_package(npc_id: String, habitat_id: String) -> Dictionary:
 		"unlocked_dialogues": Array(event_result.get("unlocked_dialogues", [])).duplicate(true),
 	}
 
+func build_board_event_package(habitat_id: String) -> Dictionary:
+	var candidates: Array = []
+	for event_row in DataRepository.get_events_for_habitat(habitat_id):
+		if String(event_row.get("mode", "")) != "ambient_talk":
+			continue
+		var participants: Array = event_row.get("participants", [])
+		if participants.is_empty():
+			continue
+		var candidate: Dictionary = Dictionary(event_row).duplicate(true)
+		var available_participants: Array[String] = []
+		for raw_npc_id in participants:
+			var npc_id := String(raw_npc_id)
+			if npc_id.is_empty():
+				continue
+			if _event_is_available(event_row, npc_id, habitat_id):
+				available_participants.append(npc_id)
+		if available_participants.is_empty():
+			continue
+		candidate["board_npc_id"] = available_participants[rng.randi_range(0, available_participants.size() - 1)]
+		candidates.append(candidate)
+	if candidates.is_empty():
+		return {}
+	var chosen: Dictionary = _pick_weighted_event(candidates)
+	var npc_id := String(chosen.get("board_npc_id", ""))
+	if npc_id.is_empty():
+		return {}
+	var result := _materialize_event(chosen, npc_id)
+	result["npc_id"] = npc_id
+	return result
+
 func _pick_dialogue(npc_id: String, habitat_id: String) -> Dictionary:
 	var candidates: Array = []
 	for dialogue in DataRepository.get_dialogues_for_npc(npc_id):

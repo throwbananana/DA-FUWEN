@@ -3,24 +3,59 @@
   "routes": [
     {
       "npc_id": "stone_trader",
-      "season_ids": ["spring", "autumn"],
+      "season_ids": ["spring"],
       "cycle": ["crystal_creek", "copper_hammer_bazaar"],
       "active_turns": [1, 2, 3],
       "offset": 0
     },
     {
+      "npc_id": "stone_trader",
+      "season_ids": ["autumn"],
+      "cycle": ["sky_post", "copper_hammer_bazaar", "reed_mire"],
+      "active_turns": [1, 2, 3],
+      "offset": 0
+    },
+    {
       "npc_id": "traveling_peddler",
-      "season_ids": ["spring", "summer", "autumn"],
+      "season_ids": ["spring"],
       "cycle": ["sky_post", "ancient_platform", "copper_hammer_bazaar"],
       "active_turns": [2, 3, 4],
       "offset": 1
     },
     {
+      "npc_id": "traveling_peddler",
+      "season_ids": ["summer"],
+      "cycle": ["sky_post", "ancient_platform", "thunder_meadow"],
+      "active_turns": [2, 3, 4],
+      "offset": 1
+    },
+    {
+      "npc_id": "traveling_peddler",
+      "season_ids": ["autumn"],
+      "cycle": ["sky_post", "greenbark_grove", "copper_hammer_bazaar"],
+      "active_turns": [2, 3, 4],
+      "offset": 1
+    },
+    {
       "npc_id": "parts_vendor",
-      "season_ids": ["spring", "summer"],
+      "season_ids": ["spring"],
       "cycle": ["copper_hammer_bazaar", "sky_post"],
       "active_turns": [3, 4, 5],
       "offset": 0
+    },
+    {
+      "npc_id": "parts_vendor",
+      "season_ids": ["summer"],
+      "cycle": ["copper_hammer_bazaar", "ember_crater", "sky_post"],
+      "active_turns": [3, 4, 5],
+      "offset": 0
+    },
+    {
+      "npc_id": "parts_vendor",
+      "season_ids": ["winter"],
+      "cycle": ["sky_post", "ancient_platform", "copper_hammer_bazaar"],
+      "active_turns": [2, 3, 4],
+      "offset": 1
     }
   ]
 }

@@ -9,7 +9,7 @@ func _initialize() -> void:
 func _run_checks(scene: Node) -> void:
 	var game_state := root.get_node("GameState")
 
-	scene.current_node_id = 4
+	scene.current_node_id = 5
 	scene.current_visit_habitat_id = "ancient_platform"
 	var arrival_payload: Dictionary = scene.habitat_service.get_visit_summary("ancient_platform")
 	scene._show_arrival_menu(arrival_payload)
@@ -17,11 +17,15 @@ func _run_checks(scene: Node) -> void:
 	if scene.decision_panel.current_choices.is_empty():
 		_fail("Strategic layer smoke test failed: arrival menu should still expose a primary node action.")
 		return
-	if scene.decision_panel.current_choices.size() > 2:
-		_fail("Strategic layer smoke test failed: arrival menu should no longer expose all content at one point.")
+	if scene.decision_panel.current_choices.size() != 1:
+		_fail("Strategic layer smoke test failed: arrival menu should expose exactly one node action.")
 		return
 	if String(scene.decision_panel.current_choices[0].get("id", "")) != "build_menu":
 		_fail("Strategic layer smoke test failed: ancient_platform should prioritize build_menu as its primary content.")
+		return
+	scene._show_build_result({"ok": false, "reason": "max_level"})
+	if String(scene.pending_context.get("on_close", "")) != "finish_visit":
+		_fail("Strategic layer smoke test failed: finishing a node action should end the visit instead of reopening the node menu.")
 		return
 
 	scene.current_node_id = 1
@@ -38,6 +42,15 @@ func _run_checks(scene: Node) -> void:
 		return
 	if not game_state.has_node_ambush(1):
 		_fail("Strategic layer smoke test failed: alert_rise should queue a follow-up ambush on the same node.")
+		return
+
+	scene._on_board_travel_finished(0)
+	await process_frame
+	if not scene.base_panel.visible:
+		_fail("Strategic layer smoke test failed: camp nodes should auto-open the camp panel on arrival.")
+		return
+	if scene.base_button.visible:
+		_fail("Strategic layer smoke test failed: the camp panel should no longer be exposed as a permanent side button.")
 		return
 
 	await create_timer(0.05).timeout

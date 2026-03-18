@@ -5,6 +5,9 @@ const GameData = preload("res://scripts/game_data.gd")
 const DEFAULT_SEASON_ID := "spring"
 const DEFAULT_SEASON_LENGTH := 6
 const SEASON_ORDER := ["spring", "summer", "autumn", "winter"]
+const META_SAVE_PATH := "user://meta_progression.save"
+const RUN_SAVE_PATH := "user://run_state.save"
+const SETTINGS_SAVE_PATH := "user://settings.save"
 
 var season_id := DEFAULT_SEASON_ID
 var weather_id := "clear"
@@ -32,11 +35,13 @@ var weekly_progress: Dictionary = {}
 var completed_seasons := 0
 var exploration_points := 0
 var exploration_points_total := 0
+var completed_tutorials: Array[String] = []
 var claimed_season_bosses: Array[String] = []
 var meta_unlocks: Dictionary = {
 	"tracks": [],
 	"dice_modules": [],
 }
+var settings: Dictionary = {}
 
 var inventory: Dictionary = {}
 var habitats: Dictionary = {}
@@ -63,6 +68,7 @@ var backpack_capacity := 4
 var wallet_gold := 12
 var bank_gold := 0
 var rival_wallets: Dictionary = {}
+var ai_players: Array = []
 var active_trait_runtime_bonus: Dictionary = {}
 var active_trait_runtime_report: Dictionary = {"active": [], "nearby": []}
 var trait_runtime_dirty := true
@@ -71,6 +77,9 @@ var _trait_synergy_service: RefCounted = null
 var _pet_serial := 1
 
 func _ready() -> void:
+	load_meta_progression()
+	load_settings()
+	apply_settings()
 	reset_for_new_season()
 
 func reset_for_new_season() -> void:
@@ -125,6 +134,7 @@ func reset_for_new_season() -> void:
 	wallet_gold = 12
 	bank_gold = 0
 	rival_wallets = {}
+	ai_players = _build_default_ai_players()
 	active_trait_runtime_bonus = {}
 	active_trait_runtime_report = {"active": [], "nearby": []}
 	trait_runtime_dirty = true
@@ -155,6 +165,7 @@ func reset_for_new_season() -> void:
 	_sync_roster_slots()
 	_sync_current_season_rule()
 	refresh_season_unlocks()
+	_sync_rival_wallets_from_ai_players()
 
 func _ensure_meta_progression_defaults() -> void:
 	if meta_unlocks.is_empty():
@@ -162,6 +173,303 @@ func _ensure_meta_progression_defaults() -> void:
 			"tracks": [],
 			"dice_modules": [],
 		}
+
+func _default_settings() -> Dictionary:
+	return {
+		"fullscreen": false,
+		"reduced_motion": false,
+		"tutorials_enabled": true,
+		"language": "zh_cn",
+	}
+
+func _ensure_settings_defaults() -> void:
+	if settings.is_empty():
+		settings = _default_settings()
+	settings["fullscreen"] = bool(settings.get("fullscreen", false))
+	settings["reduced_motion"] = bool(settings.get("reduced_motion", false))
+	settings["tutorials_enabled"] = bool(settings.get("tutorials_enabled", true))
+	var language_id := String(settings.get("language", "zh_cn"))
+	settings["language"] = language_id if language_id in ["zh_cn", "ja_jp", "en_us"] else "zh_cn"
+
+func load_meta_progression() -> void:
+	_ensure_meta_progression_defaults()
+	exploration_points_total = 0
+	meta_unlocks = {
+		"tracks": [],
+		"dice_modules": [],
+	}
+	completed_tutorials.clear()
+	if not FileAccess.file_exists(META_SAVE_PATH):
+		return
+	var raw := FileAccess.get_file_as_string(META_SAVE_PATH)
+	var parsed = JSON.parse_string(raw)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_warning("GameState: invalid meta progression save, ignoring %s" % META_SAVE_PATH)
+		return
+	exploration_points_total = maxi(0, int(parsed.get("exploration_points_total", 0)))
+	var saved_unlocks = parsed.get("meta_unlocks", {})
+	if typeof(saved_unlocks) != TYPE_DICTIONARY:
+		return
+	meta_unlocks = {
+		"tracks": _coerce_string_array(saved_unlocks.get("tracks", [])),
+		"dice_modules": _coerce_string_array(saved_unlocks.get("dice_modules", [])),
+	}
+	completed_tutorials = _coerce_string_array(parsed.get("completed_tutorials", []))
+
+func save_meta_progression() -> void:
+	_ensure_meta_progression_defaults()
+	var file := FileAccess.open(META_SAVE_PATH, FileAccess.WRITE)
+	if file == null:
+		push_error("GameState: failed to open meta progression save -> %s" % META_SAVE_PATH)
+		return
+	file.store_string(JSON.stringify({
+		"exploration_points_total": exploration_points_total,
+		"completed_tutorials": completed_tutorials.duplicate(),
+		"meta_unlocks": {
+			"tracks": meta_unlocks.get("tracks", []).duplicate(),
+			"dice_modules": meta_unlocks.get("dice_modules", []).duplicate(),
+		},
+	}, "\t"))
+
+func load_settings() -> void:
+	settings = _default_settings()
+	if not FileAccess.file_exists(SETTINGS_SAVE_PATH):
+		return
+	var raw := FileAccess.get_file_as_string(SETTINGS_SAVE_PATH)
+	var parsed = JSON.parse_string(raw)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_warning("GameState: invalid settings save, ignoring %s" % SETTINGS_SAVE_PATH)
+		return
+	settings["fullscreen"] = bool(parsed.get("fullscreen", settings.get("fullscreen", false)))
+	settings["reduced_motion"] = bool(parsed.get("reduced_motion", settings.get("reduced_motion", false)))
+	settings["tutorials_enabled"] = bool(parsed.get("tutorials_enabled", settings.get("tutorials_enabled", true)))
+	settings["language"] = String(parsed.get("language", settings.get("language", "zh_cn")))
+	_ensure_settings_defaults()
+
+func save_settings() -> void:
+	_ensure_settings_defaults()
+	var file := FileAccess.open(SETTINGS_SAVE_PATH, FileAccess.WRITE)
+	if file == null:
+		push_error("GameState: failed to open settings save -> %s" % SETTINGS_SAVE_PATH)
+		return
+	file.store_string(JSON.stringify(settings.duplicate(true), "\t"))
+
+func apply_settings() -> void:
+	_ensure_settings_defaults()
+	if DisplayServer.get_name() == "headless":
+		return
+	var window := get_window()
+	if window == null:
+		return
+	window.mode = Window.MODE_FULLSCREEN if bool(settings.get("fullscreen", false)) else Window.MODE_WINDOWED
+
+func set_setting(key: String, value: Variant) -> void:
+	_ensure_settings_defaults()
+	settings[key] = value
+	_ensure_settings_defaults()
+	apply_settings()
+	save_settings()
+
+func prefers_reduced_motion() -> bool:
+	_ensure_settings_defaults()
+	return bool(settings.get("reduced_motion", false))
+
+func tutorials_enabled() -> bool:
+	_ensure_settings_defaults()
+	return bool(settings.get("tutorials_enabled", true))
+
+func current_language() -> String:
+	_ensure_settings_defaults()
+	return String(settings.get("language", "zh_cn"))
+
+func should_skip_animations() -> bool:
+	return DisplayServer.get_name() == "headless" or prefers_reduced_motion()
+
+func has_run_save() -> bool:
+	return FileAccess.file_exists(RUN_SAVE_PATH)
+
+func save_run_payload(payload: Dictionary) -> void:
+	var file := FileAccess.open(RUN_SAVE_PATH, FileAccess.WRITE)
+	if file == null:
+		push_error("GameState: failed to open run save -> %s" % RUN_SAVE_PATH)
+		return
+	file.store_string(JSON.stringify(payload, "\t"))
+
+func load_run_payload() -> Dictionary:
+	if not FileAccess.file_exists(RUN_SAVE_PATH):
+		return {}
+	var raw := FileAccess.get_file_as_string(RUN_SAVE_PATH)
+	var parsed = JSON.parse_string(raw)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_warning("GameState: invalid run save, ignoring %s" % RUN_SAVE_PATH)
+		return {}
+	return Dictionary(parsed).duplicate(true)
+
+func clear_run_save() -> void:
+	if not FileAccess.file_exists(RUN_SAVE_PATH):
+		return
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(RUN_SAVE_PATH))
+
+func _coerce_string_array(values: Variant) -> Array[String]:
+	var result: Array[String] = []
+	if typeof(values) != TYPE_ARRAY:
+		return result
+	for value in values:
+		var text := String(value)
+		if text.is_empty() or result.has(text):
+			continue
+		result.append(text)
+	return result
+
+func _coerce_int_array(values: Variant) -> Array[int]:
+	var result: Array[int] = []
+	if typeof(values) != TYPE_ARRAY:
+		return result
+	for value in values:
+		result.append(int(value))
+	return result
+
+func _duplicate_dictionary(value: Variant) -> Dictionary:
+	if typeof(value) != TYPE_DICTIONARY:
+		return {}
+	return Dictionary(value).duplicate(true)
+
+func _duplicate_array(value: Variant) -> Array:
+	if typeof(value) != TYPE_ARRAY:
+		return []
+	return Array(value).duplicate(true)
+
+func build_runtime_snapshot() -> Dictionary:
+	return {
+		"season_id": season_id,
+		"weather_id": weather_id,
+		"time_of_day": time_of_day,
+		"day_index": day_index,
+		"season_length": season_length,
+		"global_turn": global_turn,
+		"season_turn": season_turn,
+		"week_index": week_index,
+		"weekly_turn": weekly_turn,
+		"weekly_reroll_count": weekly_reroll_count,
+		"weekly_reroll_limit": weekly_reroll_limit,
+		"season_adjust_points": season_adjust_points,
+		"anchor_points": anchor_points,
+		"board_region_id": board_region_id,
+		"current_board_node_id": current_board_node_id,
+		"revealed_board_nodes": revealed_board_nodes.duplicate(),
+		"node_danger": node_danger.duplicate(true),
+		"pending_node_ambushes": pending_node_ambushes.duplicate(true),
+		"active_board_threats": active_board_threats.duplicate(true),
+		"npc_positions": npc_positions.duplicate(true),
+		"run_modifiers": run_modifiers.duplicate(true),
+		"weekly_objective": weekly_objective.duplicate(true),
+		"weekly_progress": weekly_progress.duplicate(true),
+		"completed_seasons": completed_seasons,
+		"exploration_points": exploration_points,
+		"claimed_season_bosses": claimed_season_bosses.duplicate(),
+		"inventory": inventory.duplicate(true),
+		"habitats": habitats.duplicate(true),
+		"pet_states": pet_states.duplicate(true),
+		"npc_trust": npc_trust.duplicate(true),
+		"npc_duel_records": npc_duel_records.duplicate(true),
+		"active_quests": active_quests.duplicate(),
+		"completed_quests": completed_quests.duplicate(),
+		"discovered_species": discovered_species.duplicate(),
+		"bonded_species": bonded_species.duplicate(),
+		"observed_species": observed_species.duplicate(),
+		"journal_entries": journal_entries.duplicate(),
+		"visit_history": visit_history.duplicate(true),
+		"quest_memory": quest_memory.duplicate(true),
+		"dojo_clear_flags": dojo_clear_flags.duplicate(true),
+		"season_unlock_history": season_unlock_history.duplicate(true),
+		"season_points": season_points,
+		"badge_count": badge_count,
+		"failed_dojo_streak": failed_dojo_streak,
+		"battle_slots": battle_slots.duplicate(),
+		"backpack_slots": backpack_slots.duplicate(),
+		"backpack_capacity": backpack_capacity,
+		"wallet_gold": wallet_gold,
+		"bank_gold": bank_gold,
+		"rival_wallets": rival_wallets.duplicate(true),
+		"ai_players": ai_players.duplicate(true),
+		"pet_serial": _pet_serial,
+	}
+
+func apply_runtime_snapshot(snapshot: Dictionary) -> void:
+	if snapshot.is_empty():
+		return
+	season_id = String(snapshot.get("season_id", DEFAULT_SEASON_ID))
+	weather_id = String(snapshot.get("weather_id", "clear"))
+	time_of_day = String(snapshot.get("time_of_day", "day"))
+	day_index = int(snapshot.get("day_index", 1))
+	season_length = int(snapshot.get("season_length", DEFAULT_SEASON_LENGTH))
+	global_turn = int(snapshot.get("global_turn", 1))
+	season_turn = int(snapshot.get("season_turn", 1))
+	week_index = int(snapshot.get("week_index", 1))
+	weekly_turn = int(snapshot.get("weekly_turn", 1))
+	weekly_reroll_count = int(snapshot.get("weekly_reroll_count", 0))
+	weekly_reroll_limit = int(snapshot.get("weekly_reroll_limit", 1))
+	season_adjust_points = int(snapshot.get("season_adjust_points", 0))
+	anchor_points = int(snapshot.get("anchor_points", 0))
+	board_region_id = String(snapshot.get("board_region_id", ""))
+	current_board_node_id = int(snapshot.get("current_board_node_id", 0))
+	revealed_board_nodes = _coerce_int_array(snapshot.get("revealed_board_nodes", []))
+	node_danger = _duplicate_dictionary(snapshot.get("node_danger", {}))
+	pending_node_ambushes = _duplicate_dictionary(snapshot.get("pending_node_ambushes", {}))
+	active_board_threats = _duplicate_array(snapshot.get("active_board_threats", []))
+	npc_positions = _duplicate_dictionary(snapshot.get("npc_positions", {}))
+	run_modifiers = _duplicate_array(snapshot.get("run_modifiers", []))
+	weekly_objective = _duplicate_dictionary(snapshot.get("weekly_objective", {}))
+	weekly_progress = _duplicate_dictionary(snapshot.get("weekly_progress", {}))
+	completed_seasons = int(snapshot.get("completed_seasons", 0))
+	exploration_points = int(snapshot.get("exploration_points", 0))
+	claimed_season_bosses = _coerce_string_array(snapshot.get("claimed_season_bosses", []))
+	inventory = _duplicate_dictionary(snapshot.get("inventory", {}))
+	habitats = _duplicate_dictionary(snapshot.get("habitats", {}))
+	pet_states = _duplicate_dictionary(snapshot.get("pet_states", {}))
+	npc_trust = _duplicate_dictionary(snapshot.get("npc_trust", {}))
+	npc_duel_records = _duplicate_dictionary(snapshot.get("npc_duel_records", {}))
+	active_quests = _coerce_string_array(snapshot.get("active_quests", []))
+	completed_quests = _coerce_string_array(snapshot.get("completed_quests", []))
+	discovered_species = _coerce_string_array(snapshot.get("discovered_species", []))
+	bonded_species = _coerce_string_array(snapshot.get("bonded_species", []))
+	observed_species = _coerce_string_array(snapshot.get("observed_species", []))
+	journal_entries = _coerce_string_array(snapshot.get("journal_entries", []))
+	visit_history = _duplicate_array(snapshot.get("visit_history", []))
+	quest_memory = _duplicate_dictionary(snapshot.get("quest_memory", {}))
+	dojo_clear_flags = _duplicate_dictionary(snapshot.get("dojo_clear_flags", {}))
+	season_unlock_history = _duplicate_dictionary(snapshot.get("season_unlock_history", {}))
+	season_points = int(snapshot.get("season_points", 0))
+	badge_count = int(snapshot.get("badge_count", 0))
+	failed_dojo_streak = int(snapshot.get("failed_dojo_streak", 0))
+	battle_slots = _coerce_string_array(snapshot.get("battle_slots", []))
+	backpack_slots = _coerce_string_array(snapshot.get("backpack_slots", []))
+	backpack_capacity = int(snapshot.get("backpack_capacity", 4))
+	wallet_gold = int(snapshot.get("wallet_gold", 12))
+	bank_gold = int(snapshot.get("bank_gold", 0))
+	rival_wallets = _duplicate_dictionary(snapshot.get("rival_wallets", {}))
+	ai_players = _duplicate_array(snapshot.get("ai_players", []))
+	if ai_players.is_empty():
+		ai_players = _build_default_ai_players()
+	_pet_serial = int(snapshot.get("pet_serial", 1))
+	current_available_habitats_cache.clear()
+	active_trait_runtime_bonus = {}
+	active_trait_runtime_report = {"active": [], "nearby": []}
+	trait_runtime_dirty = true
+	_sync_current_season_rule()
+	refresh_season_unlocks()
+	_recalculate_backpack_capacity()
+	_sync_roster_slots()
+	_sync_rival_wallets_from_ai_players()
+
+func has_completed_tutorial(tutorial_id: String) -> bool:
+	return completed_tutorials.has(tutorial_id)
+
+func mark_tutorial_completed(tutorial_id: String) -> void:
+	if tutorial_id.is_empty() or has_completed_tutorial(tutorial_id):
+		return
+	completed_tutorials.append(tutorial_id)
+	save_meta_progression()
 
 func _default_inventory() -> Dictionary:
 	return {
@@ -658,6 +966,7 @@ func advance_to_next_season() -> bool:
 	pending_node_ambushes.clear()
 	active_board_threats.clear()
 	npc_positions.clear()
+	_reset_ai_players_for_new_season()
 	_sync_current_season_rule()
 	_sync_roster_slots()
 	refresh_season_unlocks()
@@ -714,6 +1023,13 @@ func get_treasury_snapshot() -> Dictionary:
 		"rival_wallets": rival_wallets.duplicate(true),
 	}
 
+func get_ai_players() -> Array:
+	return _duplicate_array(ai_players)
+
+func set_ai_players(players: Array) -> void:
+	ai_players = _duplicate_array(players)
+	_sync_rival_wallets_from_ai_players()
+
 func add_wallet_gold(amount: int) -> void:
 	if amount <= 0:
 		return
@@ -754,7 +1070,22 @@ func _apply_trait_daily_economy() -> Dictionary:
 		bank_gold += interest
 		lines.append("守财奴：银行结算利息 +%d 金。" % interest)
 	var rival_tax_ratio := clampf(float(active_trait_runtime_bonus.get("rival_tax_ratio", 0.0)), 0.0, 0.9)
-	if rival_tax_ratio > 0.0 and not rival_wallets.is_empty():
+	if rival_tax_ratio > 0.0 and not ai_players.is_empty():
+		var total_tax := 0
+		for index in range(ai_players.size()):
+			var rival: Dictionary = Dictionary(ai_players[index]).duplicate(true)
+			var current_gold := int(rival.get("gold", 0))
+			if current_gold <= 0:
+				continue
+			var tax := mini(current_gold, maxi(1, int(floor(float(current_gold) * rival_tax_ratio))))
+			rival["gold"] = current_gold - tax
+			ai_players[index] = rival
+			total_tax += tax
+		_sync_rival_wallets_from_ai_players()
+		if total_tax > 0:
+			wallet_gold += total_tax
+			lines.append("守财奴：向全部对手征税，共收取 %d 金。" % total_tax)
+	elif rival_tax_ratio > 0.0 and not rival_wallets.is_empty():
 		var total_tax := 0
 		for rival_id in rival_wallets.keys():
 			var current_gold := int(rival_wallets.get(rival_id, 0))
@@ -781,6 +1112,67 @@ func set_board_region(region_id: String, start_node_id: int = 0) -> void:
 
 func move_to_board_node(node_id: int) -> void:
 	current_board_node_id = node_id
+
+func _build_default_ai_players() -> Array:
+	var players: Array = []
+	var personality_ids: Array[String] = []
+	for personality_id in GameData.AI_PERSONALITIES.keys():
+		personality_ids.append(String(personality_id))
+	personality_ids.sort()
+	for index in range(personality_ids.size()):
+		var personality_id := personality_ids[index]
+		var personality: Dictionary = GameData.AI_PERSONALITIES.get(personality_id, {})
+		players.append({
+			"id": "rival_%s" % personality_id,
+			"display_name": String(personality.get("name", personality_id)),
+			"personality_id": personality_id,
+			"description": String(personality.get("description", "")),
+			"lineup": _coerce_string_array(personality.get("lineup", [])),
+			"current_node_id": 0,
+			"gold": 10 + index * 2,
+			"prestige": 0,
+			"intel": 0,
+			"control": 0,
+			"battle_wins": 0,
+			"season_distance": 0,
+			"turns_taken": 0,
+			"last_roll": 0,
+			"tactical_rerolls": 1,
+			"latest_action": "正在营地观察本季路线。",
+			"latest_action_short": "营地观察",
+			"intent": "准备切入主线",
+		})
+	return players
+
+func _reset_ai_players_for_new_season() -> void:
+	if ai_players.is_empty():
+		ai_players = _build_default_ai_players()
+	else:
+		for index in range(ai_players.size()):
+			var rival: Dictionary = Dictionary(ai_players[index]).duplicate(true)
+			rival["current_node_id"] = 0
+			rival["season_distance"] = 0
+			rival["turns_taken"] = 0
+			rival["last_roll"] = 0
+			rival["tactical_rerolls"] = 1
+			rival["gold"] = int(rival.get("gold", 0)) + 2
+			rival["latest_action"] = "%s 正在为 %s 重整队伍。" % [
+				String(rival.get("display_name", "对手")),
+				String(get_current_season_rule().get("name", season_id)),
+			]
+			rival["latest_action_short"] = "重整队伍"
+			rival["intent"] = "准备切入新赛季"
+			ai_players[index] = rival
+	_sync_rival_wallets_from_ai_players()
+
+func _sync_rival_wallets_from_ai_players() -> void:
+	rival_wallets.clear()
+	for rival in ai_players:
+		var state := Dictionary(rival)
+		var rival_id := String(state.get("id", ""))
+		if rival_id.is_empty():
+			continue
+		rival_wallets[rival_id] = int(state.get("gold", 0))
 
 func reveal_board_nodes(node_ids: Array) -> void:
 	for node_id in node_ids:

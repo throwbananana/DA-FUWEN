@@ -188,6 +188,166 @@
       }
     },
     {
+      "id": "grove_patrol",
+      "name": "林巡人 青岚",
+      "role": "resident",
+      "home": "greenbark_grove",
+      "tags": [
+        "patrol",
+        "growth",
+        "herb"
+      ],
+      "trust_rewards": {
+        "1": "开放草棚建造",
+        "3": "共享巡林捷径",
+        "5": "带来稀有林地足迹"
+      }
+    },
+    {
+      "id": "mire_guide",
+      "name": "泽向导 芦娘",
+      "role": "resident",
+      "home": "reed_mire",
+      "tags": [
+        "wetland",
+        "purify",
+        "route"
+      ],
+      "trust_rewards": {
+        "1": "开放净池建造",
+        "3": "指明低风险涉水线",
+        "5": "净化收益额外提升"
+      }
+    },
+    {
+      "id": "coast_keeper",
+      "name": "海岸看守 砺潮",
+      "role": "resident",
+      "home": "saltglass_coast",
+      "tags": [
+        "shore",
+        "trade",
+        "tempo"
+      ],
+      "trust_rewards": {
+        "1": "开放潮汐晒架",
+        "3": "获得回流补给折扣",
+        "5": "提示高机动短路"
+      }
+    },
+    {
+      "id": "storm_mentor",
+      "name": "雷训师 霁岚",
+      "role": "resident",
+      "home": "thunder_meadow",
+      "tags": [
+        "storm",
+        "training",
+        "speed"
+      ],
+      "trust_rewards": {
+        "1": "开放引雷桩",
+        "3": "试炼准备度额外 +1",
+        "5": "门票素材消耗减少"
+      }
+    },
+    {
+      "id": "kiln_warden",
+      "name": "窑守 炽伯",
+      "role": "resident",
+      "home": "ember_crater",
+      "tags": [
+        "fire",
+        "forge",
+        "burst"
+      ],
+      "trust_rewards": {
+        "1": "开放余烬坑建造",
+        "3": "火系素材产出提升",
+        "5": "挑战收益更稳定"
+      }
+    },
+    {
+      "id": "bridge_scout",
+      "name": "桥路探子 迟桥",
+      "role": "resident",
+      "home": "echo_broken_bridge",
+      "tags": [
+        "bridge",
+        "rumor",
+        "routing"
+      ],
+      "trust_rewards": {
+        "1": "揭示桥头安全线",
+        "3": "获得下一次来访预告",
+        "5": "短路路径额外显露"
+      }
+    },
+    {
+      "id": "leaf_master",
+      "name": "叶宗师 栖迟",
+      "role": "resident",
+      "home": "autumn_leaf_dojo",
+      "tags": [
+        "dojo",
+        "precision",
+        "duel"
+      ],
+      "trust_rewards": {
+        "1": "试炼失败安慰奖励提升",
+        "3": "第一层试炼评分要求下降",
+        "5": "秋季试炼额外奖励解锁"
+      }
+    },
+    {
+      "id": "mirror_keeper",
+      "name": "镜守 冰珀",
+      "role": "resident",
+      "home": "frost_mirror_lake",
+      "tags": [
+        "ice",
+        "calm",
+        "reflection"
+      ],
+      "trust_rewards": {
+        "1": "开放保温窝棚",
+        "3": "恢复事件更容易出现",
+        "5": "冬季观察奖励追加"
+      }
+    },
+    {
+      "id": "tower_astronomer",
+      "name": "观星师 望舒",
+      "role": "resident",
+      "home": "radiant_observatory",
+      "tags": [
+        "observatory",
+        "anomaly",
+        "forecast"
+      ],
+      "trust_rewards": {
+        "1": "开放共振框架建造",
+        "3": "提前 1 天预告高压节点",
+        "5": "异常观测奖励提升"
+      }
+    },
+    {
+      "id": "ruin_diviner",
+      "name": "遗迹卜者 玄沼",
+      "role": "resident",
+      "home": "moonfen_ruins",
+      "tags": [
+        "ruin",
+        "shadow",
+        "challenge"
+      ],
+      "trust_rewards": {
+        "1": "开放月井建造",
+        "3": "终局节点危险增长减缓",
+        "5": "年度远征奖励追加"
+      }
+    },
+    {
       "id": "anomaly_researcher",
       "name": "异常观察员 澄",
       "role": "resident",

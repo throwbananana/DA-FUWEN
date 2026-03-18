@@ -33,13 +33,14 @@ func open_panel(title_text: String, body_text: String, choices: Array, cancel_te
 	_stop_close_animation(false)
 	_stop_typewriter(false)
 	show()
+	move_to_front()
 	current_choices = choices.duplicate(true)
 	title_label.text = title_text
 	body_label.text = body_text
 	_pending_cancel_text = cancel_text
 	cancel_button.text = cancel_text
 	_queued_close_signal = false
-	_is_info_popup = current_choices.is_empty() and not body_text.is_empty()
+	_is_info_popup = not body_text.is_empty()
 
 	for child in button_container.get_children():
 		child.queue_free()

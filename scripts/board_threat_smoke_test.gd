@@ -45,6 +45,7 @@ func _run_checks(scene: Node) -> void:
 		_fail("Board threat smoke test failed: occupied nodes should expose a threat marker.")
 		return
 
+	scene.current_node_id = 8
 	scene.pending_roll = {"value": 1}
 	scene._apply_current_roll_routes()
 	if scene._get_selectable_nodes().has(occupied_node):

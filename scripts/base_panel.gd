@@ -13,23 +13,80 @@ signal manage_requested
 @onready var building_list: VBoxContainer = $MarginContainer/VBoxContainer/BuildingScroll/BuildingList
 @onready var close_button: Button = $MarginContainer/VBoxContainer/HeaderRow/CloseButton
 
+var _panel_tween: Tween
+
 func _ready() -> void:
 	hide()
+	modulate.a = 1.0
+	scale = Vector2.ONE
 	manage_button.pressed.connect(_on_manage_pressed)
 	close_button.pressed.connect(_on_close_pressed)
 
 func open_panel(panel_state: Dictionary) -> void:
 	show()
-	header_label.text = "驻点总览"
+	move_to_front()
+	header_label.text = "营地总览"
+	manage_button.text = "营地整备"
 	monster_title.text = "同行伙伴"
-	building_title.text = "地点与委托"
+	building_title.text = "驻守与委托"
 	_render_summary(panel_state)
 	_render_companions(panel_state)
 	_render_habitats(panel_state)
+	_play_open_animation()
 
 func close_panel() -> void:
-	hide()
-	closed.emit()
+	if GameState.should_skip_animations():
+		hide()
+		closed.emit()
+		return
+	_stop_panel_tween()
+	_panel_tween = create_tween()
+	_panel_tween.set_parallel(true)
+	_panel_tween.tween_property(self, "modulate:a", 0.0, 0.14)
+	_panel_tween.tween_property(self, "scale", Vector2(0.97, 0.97), 0.14)
+	_panel_tween.finished.connect(func() -> void:
+		hide()
+		modulate.a = 1.0
+		scale = Vector2.ONE
+		closed.emit()
+	)
+
+func _play_open_animation() -> void:
+	if GameState.should_skip_animations():
+		modulate.a = 1.0
+		scale = Vector2.ONE
+		return
+	_stop_panel_tween()
+	modulate.a = 0.0
+	scale = Vector2(0.97, 0.97)
+	_panel_tween = create_tween()
+	_panel_tween.set_parallel(true)
+	_panel_tween.tween_property(self, "modulate:a", 1.0, 0.18)
+	_panel_tween.tween_property(self, "scale", Vector2.ONE, 0.20).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_animate_entries(monster_list, 0.03)
+	_animate_entries(building_list, 0.05)
+
+func _stop_panel_tween() -> void:
+	if _panel_tween != null:
+		_panel_tween.kill()
+		_panel_tween = null
+
+func _animate_entries(container: VBoxContainer, base_delay: float) -> void:
+	if GameState.should_skip_animations():
+		return
+	var index := 0
+	for child in container.get_children():
+		var control := child as Control
+		if control == null:
+			continue
+		control.modulate = Color(1, 1, 1, 0)
+		control.scale = Vector2(0.985, 0.985)
+		var tween := create_tween()
+		tween.tween_interval(base_delay * float(index))
+		tween.set_parallel(true)
+		tween.tween_property(control, "modulate:a", 1.0, 0.16)
+		tween.tween_property(control, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		index += 1
 
 func _render_summary(panel_state: Dictionary) -> void:
 	var season: Dictionary = panel_state.get("season", {})
@@ -170,8 +227,7 @@ func _format_inventory(inventory: Dictionary) -> String:
 	return " / ".join(parts)
 
 func _on_close_pressed() -> void:
-	hide()
-	closed.emit()
+	close_panel()
 
 func _on_manage_pressed() -> void:
 	hide()

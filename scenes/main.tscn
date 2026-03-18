@@ -1,10 +1,12 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/board_view.gd" id="2"]
 [ext_resource type="Script" path="res://scripts/battle_panel.gd" id="3"]
 [ext_resource type="Script" path="res://scripts/decision_panel.gd" id="4"]
 [ext_resource type="Script" path="res://scripts/base_panel.gd" id="5"]
+[ext_resource type="Script" path="res://scripts/system_panel.gd" id="6"]
+[ext_resource type="Script" path="res://scripts/dice_roll_panel.gd" id="7"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -44,36 +46,91 @@ theme_override_constants/separation = 14
 
 [node name="HeaderBar" type="HBoxContainer" parent="RootMargin/MainVBox"]
 layout_mode = 2
-theme_override_constants/separation = 16
+custom_minimum_size = Vector2(0, 86)
+theme_override_constants/separation = 18
 
 [node name="HeaderLeft" type="VBoxContainer" parent="RootMargin/MainVBox/HeaderBar"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_constants/separation = 4
 
 [node name="TitleLabel" type="Label" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
-text = "雾野领主"
+text = "雾野远征"
 
-[node name="RoundLabel" type="Label" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft"]
+[node name="MetaLabel" type="Label" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 15
+text = "春季巡礼 · 第 1 周 · 雾苔区域"
+
+[node name="RunStatusRow" type="HBoxContainer" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RoundChip" type="PanelContainer" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/RoundChip"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="RoundLabel" type="Label" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/RoundChip/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
 text = "第 1 / 8 回合"
 
-[node name="ObjectiveLabel" type="Label" parent="RootMargin/MainVBox/HeaderBar"]
+[node name="WeatherChip" type="PanelContainer" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/WeatherChip"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="WeatherLabel" type="Label" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/WeatherChip/MarginContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "晴日 · 白昼"
+
+[node name="ObjectiveChip" type="PanelContainer" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/ObjectiveChip"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="ObjectiveLabel" type="Label" parent="RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/ObjectiveChip/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_alignment = 2
-vertical_alignment = 1
+theme_override_font_sizes/font_size = 15
 text = "目标威望 10"
 
-[node name="NewGameButton" type="Button" parent="RootMargin/MainVBox/HeaderBar"]
+[node name="HeaderActions" type="VBoxContainer" parent="RootMargin/MainVBox/HeaderBar"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 6
+
+[node name="NewGameButton" type="Button" parent="RootMargin/MainVBox/HeaderBar/HeaderActions"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(120, 44)
+custom_minimum_size = Vector2(138, 44)
 text = "重新开局"
 
 [node name="ContentRow" type="HBoxContainer" parent="RootMargin/MainVBox"]
@@ -91,18 +148,66 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 12
 
-[node name="ActionHintLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox"]
+[node name="BoardTopStrip" type="PanelContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 84)
+
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="TopStripRow" type="HBoxContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ActionHintLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 92)
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 60)
 bbcode_enabled = true
 fit_content = false
 scroll_active = false
-text = "[b]先管理基地，再掷骰开路。[/b]"
+text = "[b]掷骰前进，路过营地时会自动打开营地总览。[/b]"
 
-[node name="BoardView" type="Control" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox"]
+[node name="BoardMetaColumn" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(240, 0)
+theme_override_constants/separation = 6
+
+[node name="BoardStatusLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow/BoardMetaColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 2
+text = "当前区域：雾苔区域"
+
+[node name="BoardRouteLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow/BoardMetaColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 2
+text = "可达 0 个节点"
+
+[node name="BoardStagePanel" type="PanelContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardStagePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="BoardView" type="Control" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardStagePanel/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -110,10 +215,30 @@ size_flags_vertical = 3
 custom_minimum_size = Vector2(0, 520)
 script = ExtResource("2")
 
-[node name="MapHintLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox"]
+[node name="NodeDetailCard" type="PanelContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 172)
+
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="NodeDetailTitleLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "节点详情"
+
+[node name="MapHintLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 120)
+size_flags_vertical = 3
 bbcode_enabled = true
 scroll_active = false
 text = "[b]提示[/b]"
@@ -128,95 +253,212 @@ theme_override_constants/separation = 12
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="StatusVBox" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="StatusVBox" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="PlayerSummaryLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/StatusVBox"]
+[node name="StatusTitleLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "态势摘要"
+
+[node name="PlayerCard" type="PanelContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 110)
+
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/PlayerCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/PlayerCard/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PlayerCardTitle" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/PlayerCard/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "我方态势"
+
+[node name="PlayerSummaryLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/PlayerCard/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 84)
 bbcode_enabled = true
 scroll_active = false
 
-[node name="AISummaryLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/StatusVBox"]
+[node name="RivalCard" type="PanelContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 110)
+
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/RivalCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/RivalCard/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="RivalCardTitle" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/RivalCard/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "对手态势"
+
+[node name="AISummaryLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/RivalCard/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 84)
 bbcode_enabled = true
 scroll_active = false
 
-[node name="ControlSummaryLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/StatusVBox"]
+[node name="ControlCard" type="PanelContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 116)
+
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/ControlCard"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/ControlCard/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ControlCardTitle" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/ControlCard/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "区域控制"
+
+[node name="ControlSummaryLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/StatusPanel/MarginContainer/StatusVBox/ControlCard/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 90)
 bbcode_enabled = true
 scroll_active = false
 
 [node name="DicePanel" type="PanelContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn"]
 layout_mode = 2
 
-[node name="DiceVBox" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel"]
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="DiceVBox" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="DiceLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/DiceVBox"]
+[node name="ConsoleTitleLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "行动控制台"
+
+[node name="DiceLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 24
 text = "当前步数：未掷骰"
 
-[node name="RollRow" type="HBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/DiceVBox"]
+[node name="DiceMetaLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "修正 0 ｜ 重掷 0/0 ｜ 锚定 0"
+
+[node name="RollRow" type="HBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="RollButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/DiceVBox/RollRow"]
+[node name="RollButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox/RollRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 48)
 text = "掷骰"
 
-[node name="PlusButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/DiceVBox/RollRow"]
+[node name="RerollButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox/RollRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "+1"
-
-[node name="MinusButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/DiceVBox/RollRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "-1"
-
-[node name="RerollButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/DiceVBox/RollRow"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 48)
 text = "重掷"
 
-[node name="SupportRow" type="HBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/DiceVBox"]
+[node name="PlusButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox/RollRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 48)
+text = "+1"
+
+[node name="MinusButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox/RollRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 48)
+text = "-1"
+
+[node name="ActionConsoleHintLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "先掷骰，再看精确落点；只有分叉时才会停下来选路。"
+
+[node name="SupportRow" type="HBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="SupportButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/DiceVBox/SupportRow"]
+[node name="SupportButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox/SupportRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "基地支援"
+custom_minimum_size = Vector2(0, 44)
+text = "周目标"
 
-[node name="BaseButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/DiceVBox/SupportRow"]
+[node name="BaseButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox/SupportRow"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "基地管理"
+custom_minimum_size = Vector2(0, 44)
+text = "营地总览"
 
 [node name="RosterPanel" type="PanelContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn"]
 layout_mode = 2
 
-[node name="RosterLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/RosterPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/RosterPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/RosterPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="RosterTitleLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/RosterPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "伙伴概览"
+
+[node name="RosterLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/RosterPanel/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-custom_minimum_size = Vector2(0, 220)
+custom_minimum_size = Vector2(0, 150)
 bbcode_enabled = true
 scroll_active = false
 
@@ -224,7 +466,24 @@ scroll_active = false
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="EventLogLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/LogPanel"]
+[node name="MarginContainer" type="MarginContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/LogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBoxContainer" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/SideColumn/LogPanel/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="LogTitleLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/SideColumn/LogPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "最近记录"
+
+[node name="EventLogLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/SideColumn/LogPanel/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
@@ -239,6 +498,86 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="DiceRollPanel" type="PanelContainer" parent="Overlay"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(560, 460)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = -230.0
+offset_right = 280.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("7")
+
+[node name="MarginContainer" type="MarginContainer" parent="Overlay/DiceRollPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/DiceRollPanel/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "掷骰"
+
+[node name="SubtitleLabel" type="Label" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "确认本回合步数"
+
+[node name="ValueLabel" type="Label" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 96
+horizontal_alignment = 1
+text = "0"
+
+[node name="DetailLabel" type="RichTextLabel" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_active = false
+
+[node name="ButtonRow" type="HBoxContainer" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="MinusButton" type="Button" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 48)
+text = "-1"
+
+[node name="PlusButton" type="Button" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 48)
+text = "+1"
+
+[node name="RerollButton" type="Button" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer/ButtonRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 48)
+text = "重掷"
+
+[node name="ConfirmButton" type="Button" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 52)
+text = "查看落点"
 
 [node name="BattlePanel" type="PanelContainer" parent="Overlay"]
 unique_name_in_owner = true
@@ -284,6 +623,10 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "第 1 轮"
 
+[node name="TurnOrderBar" type="HBoxContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
 [node name="TeamsRow" type="HBoxContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -298,6 +641,32 @@ theme_override_constants/separation = 6
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 6
+
+[node name="ActionPreviewPanel" type="PanelContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 72)
+
+[node name="MarginContainer" type="MarginContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/ActionPreviewPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/ActionPreviewPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="ActionPreviewLabel" type="Label" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/ActionPreviewPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "等待行动"
+
+[node name="ActionPreviewDetailLabel" type="Label" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/ActionPreviewPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 14
+text = "选择技能后在这里显示动作预览。"
 
 [node name="BattleLog" type="RichTextLabel" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -395,7 +764,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "基地管理"
+text = "营地总览"
 
 [node name="ManageButton" type="Button" parent="Overlay/BasePanel/MarginContainer/VBoxContainer/HeaderRow"]
 layout_mode = 2
@@ -440,3 +809,171 @@ size_flags_vertical = 3
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 8
+
+[node name="MenuBackdrop" type="ColorRect" parent="Overlay"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.72)
+
+[node name="MainMenuPanel" type="PanelContainer" parent="Overlay"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(980, 680)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -490.0
+offset_top = -340.0
+offset_right = 490.0
+offset_bottom = 340.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="Overlay/MainMenuPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 22
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/MainMenuPanel/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="MenuTitleLabel" type="Label" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "雾野远征"
+
+[node name="MenuSubtitleLabel" type="Label" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "主界面与局外成长"
+
+[node name="MenuContentRow" type="HBoxContainer" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="ActionColumn" type="VBoxContainer" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(260, 0)
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="ContinueButton" type="Button" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 54)
+text = "继续当前远征"
+
+[node name="MenuNewGameButton" type="Button" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 54)
+text = "开启新远征"
+
+[node name="SettingsButton" type="Button" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 54)
+text = "设置"
+
+[node name="MenuActionHintLabel" type="RichTextLabel" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_active = false
+text = "[b]局外成长[/b]\n年度结算后会自动保存探索点与已解锁模组。"
+
+[node name="SummaryColumn" type="VBoxContainer" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="MenuRunSummaryLabel" type="RichTextLabel" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/SummaryColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 248)
+size_flags_horizontal = 3
+bbcode_enabled = true
+scroll_active = false
+
+[node name="MenuMetaSummaryLabel" type="RichTextLabel" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/SummaryColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[node name="SystemPanel" type="PanelContainer" parent="Overlay"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(900, 680)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -450.0
+offset_top = -340.0
+offset_right = 450.0
+offset_bottom = 340.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("6")
+
+[node name="MarginContainer" type="MarginContainer" parent="Overlay/SystemPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/SystemPanel/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="HeaderRow" type="HBoxContainer" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="HeaderLabel" type="Label" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "系统手册"
+
+[node name="CloseButton" type="Button" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer/HeaderRow"]
+layout_mode = 2
+text = "关闭"
+
+[node name="SectionRow" type="HBoxContainer" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SummaryLabel" type="RichTextLabel" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 100)
+bbcode_enabled = true
+scroll_active = false
+
+[node name="DetailLabel" type="RichTextLabel" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true

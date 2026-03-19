@@ -3,7 +3,7 @@
   "npcs": [
     {
       "id": "moss_keeper",
-      "name": "守窟人 迟叔",
+      "name": "保育员 迟叔",
       "role": "resident",
       "home": "mist_moss_cave",
       "tags": [
@@ -12,14 +12,14 @@
         "teaching"
       ],
       "trust_rewards": {
-        "1": "开放苔床建造",
-        "3": "解锁保温窝委托",
+        "1": "开放康复床位区建造",
+        "3": "解锁恒温护理室委托",
         "5": "引荐稀有幼体"
       }
     },
     {
       "id": "lost_apprentice",
-      "name": "迷路学徒 小禾",
+      "name": "见习助理 小禾",
       "role": "resident",
       "home": "mist_moss_cave",
       "tags": [
@@ -28,7 +28,7 @@
       ],
       "trust_rewards": {
         "2": "采集路线标记",
-        "4": "共享育幼笔记"
+        "4": "共享幼护笔记"
       }
     },
     {
@@ -41,7 +41,7 @@
         "waterside"
       ],
       "trust_rewards": {
-        "1": "开放浅池建造",
+        "1": "开放亲水互动池建造",
         "3": "获得温石配方",
         "5": "引来罕见壳幼"
       }
@@ -66,7 +66,7 @@
     },
     {
       "id": "innkeeper_yun",
-      "name": "驿长 云伯",
+      "name": "站务长 云伯",
       "role": "resident",
       "home": "sky_post",
       "tags": [
@@ -74,14 +74,14 @@
         "logistics"
       ],
       "trust_rewards": {
-        "1": "开放茶棚",
+        "1": "开放便民咖啡站",
         "3": "邮件功能升级",
-        "5": "寄养位+1"
+        "5": "托管位+1"
       }
     },
     {
       "id": "boarder_liu",
-      "name": "寄养员 柳姐",
+      "name": "托管员 柳姐",
       "role": "resident",
       "home": "sky_post",
       "tags": [
@@ -89,8 +89,8 @@
         "care"
       ],
       "trust_rewards": {
-        "2": "短期寄养",
-        "4": "寄养期间心情不降"
+        "2": "短期托管",
+        "4": "托管期间心情不降"
       }
     },
     {
@@ -114,7 +114,7 @@
     },
     {
       "id": "ruin_restorer",
-      "name": "遗迹修复师 绛",
+      "name": "设施维护员 绛",
       "role": "resident",
       "home": "ancient_platform",
       "tags": [
@@ -123,14 +123,14 @@
         "machine"
       ],
       "trust_rewards": {
-        "1": "开放观测台",
-        "3": "开放修理间",
-        "5": "回响室草图"
+        "1": "开放城市监测塔",
+        "3": "开放设备维护间",
+        "5": "信号回放室草图"
       }
     },
     {
       "id": "field_recorder",
-      "name": "记录员 叶衡",
+      "name": "现场记录员 叶衡",
       "role": "resident",
       "home": "ancient_platform",
       "tags": [
@@ -144,7 +144,7 @@
     },
     {
       "id": "tinker_bo",
-      "name": "修补匠 阿铂",
+      "name": "快修师 阿铂",
       "role": "resident",
       "home": "copper_hammer_bazaar",
       "tags": [
@@ -152,13 +152,13 @@
         "repair"
       ],
       "trust_rewards": {
-        "1": "开放修理台",
+        "1": "开放快修前台",
         "3": "装饰槽+1"
       }
     },
     {
       "id": "smith_ya",
-      "name": "锻匠 哑叔",
+      "name": "机修师 哑叔",
       "role": "resident",
       "home": "copper_hammer_bazaar",
       "tags": [
@@ -172,7 +172,7 @@
     },
     {
       "id": "parts_vendor",
-      "name": "配件贩 小轮",
+      "name": "配件商 小轮",
       "role": "traveler",
       "home": "copper_hammer_bazaar",
       "route": [
@@ -310,7 +310,7 @@
         "reflection"
       ],
       "trust_rewards": {
-        "1": "开放保温窝棚",
+        "1": "开放恒温护理室棚",
         "3": "恢复事件更容易出现",
         "5": "冬季观察奖励追加"
       }
@@ -333,7 +333,7 @@
     },
     {
       "id": "ruin_diviner",
-      "name": "遗迹卜者 玄沼",
+      "name": "旧站区卜者 玄沼",
       "role": "resident",
       "home": "moonfen_ruins",
       "tags": [
@@ -349,7 +349,7 @@
     },
     {
       "id": "anomaly_researcher",
-      "name": "异常观察员 澄",
+      "name": "应急观察员 澄",
       "role": "resident",
       "home": "radiant_spire",
       "tags": [

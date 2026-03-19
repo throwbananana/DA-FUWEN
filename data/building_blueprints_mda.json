@@ -4,7 +4,7 @@
   "buildings": [
     {
       "id": "warm_nest",
-      "name": "温巢台",
+      "name": "恒温护理室",
       "site": "mist_moss_cave",
       "category": "resonance_building",
       "construction_cost": {
@@ -47,7 +47,7 @@
     },
     {
       "id": "moss_bed",
-      "name": "苔绒床",
+      "name": "康复床位区",
       "site": "mist_moss_cave",
       "category": "resonance_building",
       "construction_cost": {
@@ -91,7 +91,7 @@
     },
     {
       "id": "nursery_corner",
-      "name": "育芽角",
+      "name": "幼护观察室",
       "site": "mist_moss_cave",
       "category": "resonance_building",
       "construction_cost": {
@@ -132,7 +132,7 @@
     },
     {
       "id": "shallow_pool",
-      "name": "浅池",
+      "name": "亲水互动池",
       "site": "crystal_creek",
       "category": "resonance_building",
       "construction_cost": {
@@ -175,7 +175,7 @@
     },
     {
       "id": "sun_drying_rack",
-      "name": "晒石架",
+      "name": "河岸处理台",
       "site": "crystal_creek",
       "category": "resonance_building",
       "construction_cost": {
@@ -218,7 +218,7 @@
     },
     {
       "id": "reed_shed",
-      "name": "芦棚",
+      "name": "滨水补给棚",
       "site": "crystal_creek",
       "category": "resonance_building",
       "construction_cost": {
@@ -263,7 +263,7 @@
     },
     {
       "id": "watch_tower",
-      "name": "望衡塔",
+      "name": "城市监测塔",
       "site": "ancient_platform",
       "category": "resonance_building",
       "construction_cost": {
@@ -306,7 +306,7 @@
     },
     {
       "id": "repair_bench",
-      "name": "修造台",
+      "name": "设备维护间",
       "site": "ancient_platform",
       "category": "resonance_building",
       "construction_cost": {
@@ -349,7 +349,7 @@
     },
     {
       "id": "echo_room",
-      "name": "回响室",
+      "name": "信号回放室",
       "site": "ancient_platform",
       "category": "resonance_building",
       "construction_cost": {
@@ -392,7 +392,7 @@
     },
     {
       "id": "tea_shed",
-      "name": "茶棚",
+      "name": "便民咖啡站",
       "site": "sky_post",
       "category": "resonance_building",
       "construction_cost": {
@@ -434,7 +434,7 @@
     },
     {
       "id": "boarding_pen",
-      "name": "驿栏",
+      "name": "临时托管中心",
       "site": "sky_post",
       "category": "resonance_building",
       "construction_cost": {
@@ -477,7 +477,7 @@
     },
     {
       "id": "message_board",
-      "name": "告示板",
+      "name": "社区信息屏",
       "site": "sky_post",
       "category": "resonance_building",
       "construction_cost": {
@@ -520,7 +520,7 @@
     },
     {
       "id": "forge_hearth",
-      "name": "锻炉",
+      "name": "机修动力间",
       "site": "copper_hammer_bazaar",
       "category": "resonance_building",
       "construction_cost": {
@@ -563,7 +563,7 @@
     },
     {
       "id": "tool_shelf",
-      "name": "工具架",
+      "name": "工具租赁柜",
       "site": "copper_hammer_bazaar",
       "category": "resonance_building",
       "construction_cost": {
@@ -604,7 +604,7 @@
     },
     {
       "id": "repair_counter",
-      "name": "修配柜",
+      "name": "快修前台",
       "site": "copper_hammer_bazaar",
       "category": "resonance_building",
       "construction_cost": {

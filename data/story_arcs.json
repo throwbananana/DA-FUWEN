@@ -2,7 +2,7 @@
   "story_arcs": [
     {
       "id": "arc_mist_moss_guardianship",
-      "title": "雾苔窟的守护节奏",
+      "title": "雾岚镇保育中心的照护流程",
       "priority": 10,
       "start_conditions": {
         "habitat_id": "mist_moss_cave",
@@ -52,7 +52,7 @@
     },
     {
       "id": "arc_sky_post_care_route",
-      "title": "云升驿的照料接力",
+      "title": "云升转运镇的托管接力",
       "priority": 20,
       "start_conditions": {
         "habitat_id": "sky_post"
@@ -103,7 +103,7 @@
     },
     {
       "id": "arc_ancient_platform_resonance_log",
-      "title": "古械平台的回响记录",
+      "title": "北城城市监测站的回传日志",
       "priority": 30,
       "start_conditions": {
         "habitat_id": "ancient_platform"
@@ -154,7 +154,7 @@
     },
     {
       "id": "arc_radiant_spire_safe_window",
-      "title": "裂辉尖塔的安静撤离线",
+      "title": "裂辉封控塔区的静默疏散线",
       "priority": 40,
       "start_conditions": {
         "habitat_id": "radiant_spire"

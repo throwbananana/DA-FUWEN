@@ -3,7 +3,7 @@
   "habitats": [
     {
       "id": "mist_moss_cave",
-      "name": "雾苔窟",
+      "name": "雾岚镇保育中心",
       "type": "habitat",
       "biome": "cold_cave",
       "mood_tags": [
@@ -57,7 +57,7 @@
     },
     {
       "id": "crystal_creek",
-      "name": "晶溪滩",
+      "name": "晶溪滨河区",
       "type": "habitat",
       "biome": "waterside",
       "mood_tags": [
@@ -99,7 +99,7 @@
       },
       "seasonal_hooks": {
         "summer": [
-          "晒石台产出提升"
+          "河岸处理台产出提升"
         ],
         "fog": [
           "稀有个体更易出现"
@@ -108,7 +108,7 @@
     },
     {
       "id": "sky_post",
-      "name": "云升驿",
+      "name": "云升转运镇",
       "type": "settlement",
       "biome": "highroad",
       "mood_tags": [
@@ -149,7 +149,7 @@
     },
     {
       "id": "ancient_platform",
-      "name": "古械平台",
+      "name": "北城城市监测站",
       "type": "habitat",
       "biome": "ruin",
       "mood_tags": [
@@ -192,13 +192,13 @@
       },
       "seasonal_hooks": {
         "aurora": [
-          "回响室事件概率提升"
+          "信号回放室事件概率提升"
         ]
       }
     },
     {
       "id": "copper_hammer_bazaar",
-      "name": "铜锤集",
+      "name": "铜锤机修市",
       "type": "settlement",
       "biome": "workshop",
       "mood_tags": [
@@ -239,7 +239,7 @@
     },
     {
       "id": "radiant_spire",
-      "name": "裂辉尖塔",
+      "name": "裂辉封控塔区",
       "type": "anomaly",
       "biome": "anomaly",
       "mood_tags": [
@@ -277,7 +277,7 @@
     },
     {
       "id": "thunder_meadow",
-      "name": "鸣雷草场",
+      "name": "雷驰训练公园",
       "type": "habitat",
       "biome": "storm_field",
       "mood_tags": [
@@ -331,7 +331,7 @@
     },
     {
       "id": "autumn_leaf_dojo",
-      "name": "赤叶演武场",
+      "name": "赤叶竞技馆",
       "type": "dojo",
       "biome": "red_forest",
       "mood_tags": [
@@ -377,7 +377,7 @@
     },
     {
       "id": "frost_mirror_lake",
-      "name": "霜镜湖",
+      "name": "霜镜静养中心",
       "type": "habitat",
       "biome": "ice_lake",
       "mood_tags": [
@@ -431,7 +431,7 @@
     },
     {
       "id": "echo_broken_bridge",
-      "name": "回声断桥",
+      "name": "回声中转桥区",
       "type": "settlement",
       "biome": "broken_bridge",
       "mood_tags": [
@@ -479,7 +479,7 @@
     },
     {
       "id": "radiant_observatory",
-      "name": "裂辉观测台",
+      "name": "裂辉观测中心",
       "type": "anomaly",
       "biome": "observatory",
       "mood_tags": [
@@ -521,7 +521,7 @@
       "mda_role": "mastery",
       "seasonal_hooks": {
         "autumn": [
-          "观测台会放大季末异常波动"
+          "城市监测塔会放大季末异常波动"
         ],
         "winter": [
           "高阶救助与观测事件更容易出现"

@@ -3,7 +3,7 @@
   "buildings": [
     {
       "id": "warm_nest",
-      "name": "保温窝",
+      "name": "恒温护理室",
       "habitat_types": [
         "habitat"
       ],
@@ -47,7 +47,7 @@
     },
     {
       "id": "moss_bed",
-      "name": "苔床区",
+      "name": "康复床位区",
       "habitat_types": [
         "habitat"
       ],
@@ -88,7 +88,7 @@
     },
     {
       "id": "nursery_corner",
-      "name": "育幼角",
+      "name": "幼护观察室",
       "habitat_types": [
         "habitat"
       ],
@@ -119,7 +119,7 @@
     },
     {
       "id": "shallow_pool",
-      "name": "浅池",
+      "name": "亲水互动池",
       "site": "crystal_creek",
       "max_level": 3,
       "levels": [
@@ -157,7 +157,7 @@
     },
     {
       "id": "sun_drying_rack",
-      "name": "晒石台",
+      "name": "河岸处理台",
       "site": "crystal_creek",
       "max_level": 3,
       "levels": [
@@ -195,7 +195,7 @@
     },
     {
       "id": "reed_shed",
-      "name": "水草棚",
+      "name": "滨水补给棚",
       "site": "crystal_creek",
       "max_level": 2,
       "levels": [
@@ -223,7 +223,7 @@
     },
     {
       "id": "tea_shed",
-      "name": "茶棚",
+      "name": "便民咖啡站",
       "site": "sky_post",
       "max_level": 2,
       "levels": [
@@ -251,7 +251,7 @@
     },
     {
       "id": "boarding_pen",
-      "name": "寄养栏",
+      "name": "临时托管中心",
       "site": "sky_post",
       "max_level": 2,
       "levels": [
@@ -262,7 +262,7 @@
             "fiber": 4
           },
           "effects": [
-            "寄养位+1"
+            "托管位+1"
           ]
         },
         {
@@ -272,14 +272,14 @@
             "cloth": 3
           },
           "effects": [
-            "寄养期间心情不降"
+            "托管期间心情不降"
           ]
         }
       ]
     },
     {
       "id": "message_board",
-      "name": "留信牌",
+      "name": "社区信息屏",
       "site": "sky_post",
       "max_level": 2,
       "levels": [
@@ -307,7 +307,7 @@
     },
     {
       "id": "watch_tower",
-      "name": "观测台",
+      "name": "城市监测塔",
       "site": "ancient_platform",
       "max_level": 3,
       "levels": [
@@ -345,7 +345,7 @@
     },
     {
       "id": "repair_bench",
-      "name": "修理间",
+      "name": "设备维护间",
       "site": "ancient_platform",
       "max_level": 3,
       "levels": [
@@ -383,7 +383,7 @@
     },
     {
       "id": "echo_room",
-      "name": "回响室",
+      "name": "信号回放室",
       "site": "ancient_platform",
       "max_level": 2,
       "levels": [

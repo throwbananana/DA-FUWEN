@@ -4,7 +4,7 @@
   "habitats": [
     {
       "id": "mist_moss_cave",
-      "name": "雾苔窟",
+      "name": "雾岚镇保育中心",
       "type": "habitat",
       "biome": "cold_cave",
       "mood_tags": [
@@ -63,7 +63,7 @@
     },
     {
       "id": "crystal_creek",
-      "name": "晶溪滩",
+      "name": "晶溪滨河区",
       "type": "habitat",
       "biome": "waterside",
       "mood_tags": [
@@ -122,7 +122,7 @@
     },
     {
       "id": "sky_post",
-      "name": "云升驿",
+      "name": "云升转运镇",
       "type": "settlement",
       "biome": "highroad",
       "mood_tags": [
@@ -174,7 +174,7 @@
     },
     {
       "id": "ancient_platform",
-      "name": "古械平台",
+      "name": "北城城市监测站",
       "type": "habitat",
       "biome": "ruin",
       "mood_tags": [
@@ -222,7 +222,7 @@
       },
       "seasonal_hooks": {
         "aurora": [
-          "回响室事件概率提升"
+          "信号回放室事件概率提升"
         ]
       },
       "recommended_rank": 2,
@@ -231,7 +231,7 @@
     },
     {
       "id": "copper_hammer_bazaar",
-      "name": "铜锤集",
+      "name": "铜锤机修市",
       "type": "settlement",
       "biome": "workshop",
       "mood_tags": [
@@ -283,7 +283,7 @@
     },
     {
       "id": "radiant_spire",
-      "name": "裂辉尖塔",
+      "name": "裂辉封控塔区",
       "type": "anomaly",
       "biome": "anomaly",
       "mood_tags": [
@@ -333,7 +333,7 @@
     },
     {
       "id": "thunder_meadow",
-      "name": "鸣雷草场",
+      "name": "雷驰训练公园",
       "type": "habitat",
       "biome": "storm_field",
       "mood_tags": [
@@ -390,7 +390,7 @@
     },
     {
       "id": "autumn_leaf_dojo",
-      "name": "赤叶演武场",
+      "name": "赤叶竞技馆",
       "type": "dojo",
       "biome": "red_forest",
       "mood_tags": [
@@ -438,7 +438,7 @@
     },
     {
       "id": "frost_mirror_lake",
-      "name": "霜镜湖",
+      "name": "霜镜静养中心",
       "type": "habitat",
       "biome": "ice_lake",
       "mood_tags": [
@@ -495,7 +495,7 @@
     },
     {
       "id": "echo_broken_bridge",
-      "name": "回声断桥",
+      "name": "回声中转桥区",
       "type": "settlement",
       "biome": "broken_bridge",
       "mood_tags": [
@@ -544,7 +544,7 @@
     },
     {
       "id": "radiant_observatory",
-      "name": "裂辉观测台",
+      "name": "裂辉观测中心",
       "type": "anomaly",
       "biome": "observatory",
       "mood_tags": [
@@ -587,7 +587,7 @@
     },
     {
       "id": "ember_crater",
-      "name": "烬火盆地",
+      "name": "余烬能源园区",
       "type": "habitat",
       "biome": "volcanic",
       "mood_tags": [
@@ -642,7 +642,7 @@
     },
     {
       "id": "greenbark_grove",
-      "name": "青栎林",
+      "name": "青栎社区公园",
       "type": "habitat",
       "biome": "forest",
       "mood_tags": [
@@ -697,7 +697,7 @@
     },
     {
       "id": "reed_mire",
-      "name": "芦泽沼",
+      "name": "芦泽湿地公园",
       "type": "habitat",
       "biome": "wetland",
       "mood_tags": [
@@ -753,7 +753,7 @@
     },
     {
       "id": "saltglass_coast",
-      "name": "盐镜海岸",
+      "name": "盐镜海滨区",
       "type": "habitat",
       "biome": "shore",
       "mood_tags": [
@@ -812,7 +812,7 @@
     },
     {
       "id": "moonfen_ruins",
-      "name": "月沼遗迹",
+      "name": "月沼旧城遗址区",
       "type": "anomaly",
       "biome": "ruin",
       "mood_tags": [

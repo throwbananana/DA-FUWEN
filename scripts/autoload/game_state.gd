@@ -8,6 +8,13 @@ const SEASON_ORDER := ["spring", "summer", "autumn", "winter"]
 const META_SAVE_PATH := "user://meta_progression.save"
 const RUN_SAVE_PATH := "user://run_state.save"
 const SETTINGS_SAVE_PATH := "user://settings.save"
+const WINDOWED_RESOLUTION_PRESETS := [
+	{"id": "1280x720", "size": Vector2i(1280, 720), "label": "720p (1280 x 720)"},
+	{"id": "1600x900", "size": Vector2i(1600, 900), "label": "900p (1600 x 900)"},
+	{"id": "1920x1080", "size": Vector2i(1920, 1080), "label": "1080p (1920 x 1080)"},
+	{"id": "2560x1440", "size": Vector2i(2560, 1440), "label": "1440p (2560 x 1440)"},
+]
+const DEFAULT_WINDOWED_RESOLUTION_ID := "1600x900"
 
 var season_id := DEFAULT_SEASON_ID
 var weather_id := "clear"
@@ -175,6 +182,10 @@ func _default_quest_memory() -> Dictionary:
 		"dialogue_last_seen": {},
 		"last_dialogue_by_npc": {},
 		"npc_topic_counts": {},
+		"active_story_arcs": {},
+		"completed_story_arcs": {},
+		"story_flags": {},
+		"story_beat_history": {},
 		"map_effect_flags": {},
 	}
 
@@ -197,6 +208,7 @@ func _ensure_quest_memory_defaults() -> void:
 func _default_settings() -> Dictionary:
 	return {
 		"fullscreen": false,
+		"window_resolution": _best_fit_window_resolution_id(),
 		"reduced_motion": false,
 		"tutorials_enabled": true,
 		"language": "zh_cn",
@@ -206,6 +218,8 @@ func _ensure_settings_defaults() -> void:
 	if settings.is_empty():
 		settings = _default_settings()
 	settings["fullscreen"] = bool(settings.get("fullscreen", false))
+	var resolution_id := String(settings.get("window_resolution", _best_fit_window_resolution_id()))
+	settings["window_resolution"] = resolution_id if is_valid_window_resolution_id(resolution_id) else _best_fit_window_resolution_id()
 	settings["reduced_motion"] = bool(settings.get("reduced_motion", false))
 	settings["tutorials_enabled"] = bool(settings.get("tutorials_enabled", true))
 	var language_id := String(settings.get("language", "zh_cn"))
@@ -261,6 +275,7 @@ func load_settings() -> void:
 		push_warning("GameState: invalid settings save, ignoring %s" % SETTINGS_SAVE_PATH)
 		return
 	settings["fullscreen"] = bool(parsed.get("fullscreen", settings.get("fullscreen", false)))
+	settings["window_resolution"] = String(parsed.get("window_resolution", settings.get("window_resolution", _best_fit_window_resolution_id())))
 	settings["reduced_motion"] = bool(parsed.get("reduced_motion", settings.get("reduced_motion", false)))
 	settings["tutorials_enabled"] = bool(parsed.get("tutorials_enabled", settings.get("tutorials_enabled", true)))
 	settings["language"] = String(parsed.get("language", settings.get("language", "zh_cn")))
@@ -281,7 +296,14 @@ func apply_settings() -> void:
 	var window := get_window()
 	if window == null:
 		return
-	window.mode = Window.MODE_FULLSCREEN if bool(settings.get("fullscreen", false)) else Window.MODE_WINDOWED
+	if bool(settings.get("fullscreen", false)):
+		window.mode = Window.MODE_FULLSCREEN
+		return
+	window.mode = Window.MODE_WINDOWED
+	var target_size := _clamp_windowed_resolution(current_window_resolution_size())
+	if window.size != target_size:
+		window.size = target_size
+	_center_window(window, target_size)
 
 func set_setting(key: String, value: Variant) -> void:
 	_ensure_settings_defaults()
@@ -301,6 +323,43 @@ func tutorials_enabled() -> bool:
 func current_language() -> String:
 	_ensure_settings_defaults()
 	return String(settings.get("language", "zh_cn"))
+
+func get_window_resolution_presets() -> Array[Dictionary]:
+	var presets: Array[Dictionary] = []
+	for preset in WINDOWED_RESOLUTION_PRESETS:
+		presets.append(Dictionary(preset).duplicate(true))
+	return presets
+
+func get_available_window_resolution_presets() -> Array[Dictionary]:
+	var presets: Array[Dictionary] = []
+	var usable_size := _current_screen_usable_size()
+	for preset in WINDOWED_RESOLUTION_PRESETS:
+		var preset_size := Vector2i(preset.get("size", Vector2i(0, 0)))
+		if usable_size == Vector2i.ZERO or (preset_size.x <= usable_size.x and preset_size.y <= usable_size.y):
+			presets.append(Dictionary(preset).duplicate(true))
+	if presets.is_empty():
+		var fallback := _window_resolution_preset_from_id(DEFAULT_WINDOWED_RESOLUTION_ID)
+		if not fallback.is_empty():
+			presets.append(fallback)
+	return presets
+
+func is_valid_window_resolution_id(resolution_id: String) -> bool:
+	return not _window_resolution_preset_from_id(resolution_id).is_empty()
+
+func current_window_resolution_id() -> String:
+	_ensure_settings_defaults()
+	return String(settings.get("window_resolution", DEFAULT_WINDOWED_RESOLUTION_ID))
+
+func current_window_resolution_size() -> Vector2i:
+	var preset := _window_resolution_preset_from_id(current_window_resolution_id())
+	return Vector2i(preset.get("size", Vector2i(1600, 900)))
+
+func current_window_resolution_label() -> String:
+	var preset := _window_resolution_preset_from_id(current_window_resolution_id())
+	if not preset.is_empty():
+		return String(preset.get("label", current_window_resolution_id()))
+	var size := current_window_resolution_size()
+	return "%d x %d" % [size.x, size.y]
 
 func should_skip_animations() -> bool:
 	return DisplayServer.get_name() == "headless" or prefers_reduced_motion()
@@ -358,6 +417,51 @@ func _duplicate_array(value: Variant) -> Array:
 	if typeof(value) != TYPE_ARRAY:
 		return []
 	return Array(value).duplicate(true)
+
+func _window_resolution_preset_from_id(resolution_id: String) -> Dictionary:
+	for preset in WINDOWED_RESOLUTION_PRESETS:
+		if String(preset.get("id", "")) == resolution_id:
+			return Dictionary(preset).duplicate(true)
+	return {}
+
+func _best_fit_window_resolution_id() -> String:
+	var screen_size := _current_screen_usable_size()
+	if screen_size == Vector2i.ZERO:
+		return DEFAULT_WINDOWED_RESOLUTION_ID
+	var best_id := DEFAULT_WINDOWED_RESOLUTION_ID
+	var best_area := 0
+	for preset in WINDOWED_RESOLUTION_PRESETS:
+		var preset_size := Vector2i(preset.get("size", Vector2i(0, 0)))
+		if preset_size.x > screen_size.x or preset_size.y > screen_size.y:
+			continue
+		var area := preset_size.x * preset_size.y
+		if area > best_area:
+			best_area = area
+			best_id = String(preset.get("id", DEFAULT_WINDOWED_RESOLUTION_ID))
+	return best_id
+
+func _current_screen_usable_size() -> Vector2i:
+	if DisplayServer.get_name() == "headless":
+		return Vector2i.ZERO
+	var usable_rect := DisplayServer.screen_get_usable_rect()
+	return usable_rect.size
+
+func _clamp_windowed_resolution(size: Vector2i) -> Vector2i:
+	var usable_size := _current_screen_usable_size()
+	if usable_size == Vector2i.ZERO:
+		return size
+	return Vector2i(mini(size.x, usable_size.x), mini(size.y, usable_size.y))
+
+func _center_window(window: Window, size: Vector2i) -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var usable_rect := DisplayServer.screen_get_usable_rect()
+	if usable_rect.size == Vector2i.ZERO:
+		return
+	window.position = usable_rect.position + Vector2i(
+		maxi((usable_rect.size.x - size.x) / 2, 0),
+		maxi((usable_rect.size.y - size.y) / 2, 0)
+	)
 
 func build_runtime_snapshot() -> Dictionary:
 	return {
@@ -837,6 +941,50 @@ func unlock_dialogue(dialogue_id: String) -> void:
 
 func is_dialogue_unlocked(dialogue_id: String) -> bool:
 	return bool(quest_memory["unlocked_dialogues"].get(dialogue_id, false))
+
+
+func activate_story_arc(arc_id: String) -> void:
+	if arc_id.is_empty():
+		return
+	var active: Dictionary = quest_memory["active_story_arcs"]
+	active[arc_id] = true
+	quest_memory["active_story_arcs"] = active
+
+func is_story_arc_active(arc_id: String) -> bool:
+	return bool(quest_memory["active_story_arcs"].get(arc_id, false))
+
+func complete_story_arc(arc_id: String) -> void:
+	if arc_id.is_empty():
+		return
+	var active: Dictionary = quest_memory["active_story_arcs"]
+	active.erase(arc_id)
+	quest_memory["active_story_arcs"] = active
+	var completed: Dictionary = quest_memory["completed_story_arcs"]
+	completed[arc_id] = true
+	quest_memory["completed_story_arcs"] = completed
+
+func has_completed_story_arc(arc_id: String) -> bool:
+	return bool(quest_memory["completed_story_arcs"].get(arc_id, false))
+
+func set_story_flag(flag_id: String, enabled: bool = true) -> void:
+	if flag_id.is_empty():
+		return
+	var flags: Dictionary = quest_memory["story_flags"]
+	flags[flag_id] = enabled
+	quest_memory["story_flags"] = flags
+
+func has_story_flag(flag_id: String) -> bool:
+	return bool(quest_memory["story_flags"].get(flag_id, false))
+
+func mark_story_beat_seen(arc_id: String, beat_id: String) -> void:
+	if arc_id.is_empty() or beat_id.is_empty():
+		return
+	var history: Dictionary = quest_memory["story_beat_history"]
+	history["%s:%s" % [arc_id, beat_id]] = true
+	quest_memory["story_beat_history"] = history
+
+func has_story_beat_seen(arc_id: String, beat_id: String) -> bool:
+	return bool(quest_memory["story_beat_history"].get("%s:%s" % [arc_id, beat_id], false))
 
 func note_dialogue_seen(npc_id: String, dialogue_id: String, topic: String = "") -> void:
 	if dialogue_id.is_empty():

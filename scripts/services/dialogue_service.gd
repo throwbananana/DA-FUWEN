@@ -1,17 +1,28 @@
 class_name DialogueService
 extends RefCounted
 
+const StoryService = preload("res://scripts/services/story_service.gd")
+
 var rng := RandomNumberGenerator.new()
+var story_service := StoryService.new()
 
 func _init() -> void:
 	rng.randomize()
 
-func build_talk_package(npc_id: String, habitat_id: String) -> Dictionary:
+func build_talk_package(npc_id: String, habitat_id: String, context: Dictionary = {}) -> Dictionary:
 	var npc := DataRepository.get_npc(npc_id)
 	if npc.is_empty():
 		return {}
+	var forced_dialogue_id := String(context.get("forced_dialogue_id", ""))
+	if forced_dialogue_id.is_empty():
+		var story_beat := story_service.claim_story_dialogue(npc_id, habitat_id)
+		forced_dialogue_id = String(story_beat.get("dialogue_id", ""))
 	var event_result := _pick_ambient_event(npc_id, habitat_id)
-	var dialogue := _pick_dialogue(npc_id, habitat_id)
+	var dialogue := {}
+	if not forced_dialogue_id.is_empty():
+		dialogue = DataRepository.get_dialogue(forced_dialogue_id)
+	if dialogue.is_empty():
+		dialogue = _pick_dialogue(npc_id, habitat_id)
 	var transcript_lines: Array = []
 	if dialogue.is_empty():
 		transcript_lines = _build_fallback_lines(npc, habitat_id)
@@ -94,6 +105,8 @@ func _dialogue_is_available(dialogue: Dictionary, npc_id: String, habitat_id: St
 		return false
 	if String(dialogue.get("habitat_id", habitat_id)) != habitat_id:
 		return false
+	if bool(dialogue.get("requires_unlock", false)) and not GameState.is_dialogue_unlocked(dialogue_id):
+		return false
 	if bool(dialogue.get("once", false)) and GameState.get_dialogue_seen_count(dialogue_id) > 0:
 		return false
 	var cooldown_days := int(dialogue.get("cooldown_days", 0))
@@ -126,6 +139,26 @@ func _conditions_match(conditions: Dictionary, npc_id: String, habitat_id: Strin
 	if conditions.has("after_event") and not _all_events_completed(conditions.get("after_event")):
 		return false
 	if conditions.has("after_quest") and not _all_quests_completed(conditions.get("after_quest")):
+		return false
+	if conditions.has("story_flag") and not GameState.has_story_flag(String(conditions.get("story_flag", ""))):
+		return false
+	if conditions.has("story_flags"):
+		for raw_flag in conditions.get("story_flags", []):
+			if not GameState.has_story_flag(String(raw_flag)):
+				return false
+	if conditions.has("active_story_arc") and not GameState.is_story_arc_active(String(conditions.get("active_story_arc", ""))):
+		return false
+	if conditions.has("completed_story_arc") and not GameState.has_completed_story_arc(String(conditions.get("completed_story_arc", ""))):
+		return false
+	if conditions.has("week_index") and GameState.week_index != int(conditions.get("week_index", 0)):
+		return false
+	if conditions.has("week_index_min") and GameState.week_index < int(conditions.get("week_index_min", 0)):
+		return false
+	if conditions.has("week_index_max") and GameState.week_index > int(conditions.get("week_index_max", 9999)):
+		return false
+	if conditions.has("global_turn_min") and GameState.global_turn < int(conditions.get("global_turn_min", 0)):
+		return false
+	if conditions.has("global_turn_max") and GameState.global_turn > int(conditions.get("global_turn_max", 999999)):
 		return false
 	if conditions.has("season") and String(conditions.get("season", "")) != GameState.season_id:
 		return false

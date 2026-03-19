@@ -1,0 +1,51 @@
+{
+  "story_arcs": [
+    {
+      "id": "arc_mist_moss_guardianship",
+      "title": "雾苔窟的守护节奏",
+      "priority": 10,
+      "start_conditions": {
+        "habitat_id": "mist_moss_cave",
+        "season": "spring",
+        "week_index_max": 2
+      },
+      "beats": [
+        {
+          "id": "intro",
+          "habitat_id": "mist_moss_cave",
+          "npc_id": "lost_apprentice",
+          "dialogue_id": "dlg_story_moss_intro",
+          "time_in": [
+            "day",
+            "evening"
+          ]
+        },
+        {
+          "id": "after_wipe",
+          "habitat_id": "mist_moss_cave",
+          "npc_id": "moss_keeper",
+          "dialogue_id": "dlg_story_moss_after_wipe",
+          "requires_events": [
+            "evt_moss_morning_wipe"
+          ],
+          "set_story_flags": [
+            "story_moss_wipe_done"
+          ]
+        },
+        {
+          "id": "resolve",
+          "habitat_id": "mist_moss_cave",
+          "npc_id": "lost_apprentice",
+          "dialogue_id": "dlg_story_moss_resolve",
+          "requires_events": [
+            "evt_moss_night_watch"
+          ],
+          "story_flags": [
+            "story_moss_wipe_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    }
+  ]
+}

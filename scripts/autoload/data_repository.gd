@@ -24,6 +24,7 @@ var evolution_by_species: Dictionary = {}
 var progression_curves: Dictionary = {}
 var events: Dictionary = {}
 var dialogues: Dictionary = {}
+var story_arcs: Dictionary = {}
 var codex_entries: Dictionary = {}
 var encyclopedia_entries: Dictionary = {}
 var npc_routes: Array = []
@@ -56,6 +57,8 @@ func load_all() -> void:
 	items = _index_by_id(_read_json("%s/items.json" % DATA_ROOT).get("items", []))
 	events = _index_by_id(_read_json("%s/events.json" % DATA_ROOT).get("events", []))
 	dialogues = _index_by_id(_read_json("%s/dialogues.json" % DATA_ROOT).get("dialogues", []))
+	dialogues = _merge_indexed_rows(dialogues, _read_json("%s/story_dialogues.json" % DATA_ROOT).get("dialogues", []))
+	story_arcs = _index_by_id(_read_json("%s/story_arcs.json" % DATA_ROOT).get("story_arcs", []))
 	codex_entries = _index_by_id(_read_json("%s/codex_entries.json" % DATA_ROOT).get("codex_entries", []))
 	encyclopedia_entries = _index_by_id(_read_json("%s/encyclopedia_entries.json" % DATA_ROOT).get("encyclopedia_entries", []))
 	_load_npc_routes(_read_json("%s/npc_routes.json" % DATA_ROOT).get("routes", []))
@@ -263,6 +266,23 @@ func get_events_for_habitat(habitat_id: String) -> Array:
 		if String(event_row.get("habitat_id", "")) != habitat_id:
 			continue
 		result.append(Dictionary(event_row).duplicate(true))
+	return result
+
+
+func get_story_arc(story_arc_id: String) -> Dictionary:
+	return Dictionary(story_arcs.get(story_arc_id, {})).duplicate(true)
+
+func get_story_arcs() -> Array:
+	var result: Array = []
+	for arc in story_arcs.values():
+		result.append(Dictionary(arc).duplicate(true))
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var priority_a := int(a.get("priority", 1000))
+		var priority_b := int(b.get("priority", 1000))
+		if priority_a == priority_b:
+			return String(a.get("id", "")) < String(b.get("id", ""))
+		return priority_a < priority_b
+	)
 	return result
 
 func get_codex_entry(entry_id: String) -> Dictionary:

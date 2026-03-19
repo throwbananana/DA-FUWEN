@@ -1,0 +1,127 @@
+{
+  "dialogues": [
+    {
+      "id": "dlg_story_moss_intro",
+      "npc": "lost_apprentice",
+      "habitat_id": "mist_moss_cave",
+      "topic": "story_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "雾苔窟",
+        "学徒"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "lost_apprentice",
+          "text": "迟叔让我把最近照料幼体的顺序记下来，可我总觉得光写步骤不够。",
+          "choices": [
+            {
+              "text": "你想把“为什么这么做”也记进去？",
+              "next": "reason"
+            },
+            {
+              "text": "那就把你犹豫的地方也记上。",
+              "next": "hesitate"
+            }
+          ]
+        },
+        {
+          "id": "reason",
+          "speaker": "lost_apprentice",
+          "text": "对。要是以后有人只学动作，不懂分寸，照料就会变成打扰。",
+          "end": true
+        },
+        {
+          "id": "hesitate",
+          "speaker": "lost_apprentice",
+          "text": "这主意好。雾苔窟最难学的本来就不是手快，是知道什么时候该慢一点。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_moss_after_wipe",
+      "npc": "moss_keeper",
+      "habitat_id": "mist_moss_cave",
+      "topic": "story_after_wipe",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "晨雾",
+        "照料"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "moss_keeper",
+          "text": "你今天擦窝口的时候，小家伙们连翻身都稳了些。照料这种事，往往先从不让它们难受开始。",
+          "choices": [
+            {
+              "text": "原来“少一点潮气”也算大事。",
+              "next": "comfort"
+            },
+            {
+              "text": "我还以为自己只是帮了点杂活。",
+              "next": "care"
+            }
+          ]
+        },
+        {
+          "id": "comfort",
+          "speaker": "moss_keeper",
+          "text": "对幼体来说，舒服和不舒服，比什么道理都更早被记住。",
+          "end": true
+        },
+        {
+          "id": "care",
+          "speaker": "moss_keeper",
+          "text": "杂活做得安稳，就是照料里最要紧的那一层分寸。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_moss_resolve",
+      "npc": "lost_apprentice",
+      "habitat_id": "mist_moss_cave",
+      "topic": "story_resolve",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "守夜",
+        "成长"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "lost_apprentice",
+          "text": "我把这几天的记录整理成三句话了：先别惊到它们，再慢慢让它们安心，最后才轮到我们说自己做了什么。",
+          "choices": [
+            {
+              "text": "这三句已经像雾苔窟自己的规矩了。",
+              "next": "rule"
+            },
+            {
+              "text": "你现在记下来的，不只是笔记了。",
+              "next": "memory"
+            }
+          ]
+        },
+        {
+          "id": "rule",
+          "speaker": "lost_apprentice",
+          "text": "嗯，等以后再有人来帮忙，我就先把这三句念给他听。",
+          "end": true
+        },
+        {
+          "id": "memory",
+          "speaker": "lost_apprentice",
+          "text": "是啊，像把迟叔教我的分寸，慢慢留成了这里会传下去的东西。",
+          "end": true
+        }
+      ]
+    }
+  ]
+}

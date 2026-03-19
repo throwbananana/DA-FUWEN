@@ -218,6 +218,8 @@ func _ready() -> void:
 	reroll_button.hide()
 	_connect_signals()
 	_apply_basic_styles()
+	_configure_safe_ui_bounds()
+	_configure_text_overflow_guards()
 	_apply_responsive_layout()
 	_ensure_menu_custom_background()
 	_setup_asset_import_dialog()
@@ -362,11 +364,64 @@ func _apply_basic_styles() -> void:
 func _on_window_size_changed() -> void:
 	_apply_responsive_layout()
 
+func _configure_safe_ui_bounds() -> void:
+	clip_contents = true
+	root_margin.clip_contents = true
+	overlay.clip_contents = true
+	for control in [
+		board_panel,
+		board_top_strip,
+		board_stage_panel,
+		node_detail_card,
+		status_panel,
+		player_card,
+		rival_card,
+		control_card,
+		dice_panel,
+		roster_panel,
+		log_panel,
+		main_menu_panel,
+		battle_panel,
+		dice_roll_panel,
+		decision_panel,
+		base_panel,
+		system_panel,
+	]:
+		control.clip_contents = true
+
+func _configure_text_overflow_guards() -> void:
+	for label in [
+		meta_label,
+		round_label,
+		weather_label,
+		objective_label,
+		dice_meta_label,
+		board_status_label,
+		board_route_label,
+		menu_subtitle_label,
+	]:
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	for button in [
+		new_game_button,
+		continue_button,
+		menu_new_game_button,
+		settings_button,
+		roll_button,
+		reroll_button,
+		plus_button,
+		minus_button,
+		support_button,
+		base_button,
+	]:
+		button.clip_text = true
+	menu_meta_summary_label.scroll_active = true
+
 func _apply_responsive_layout() -> void:
 	var window_size := get_window().size
 	var compact_width := window_size.x < 1440
 	var short_height := window_size.y < 820
 	var tight_height := window_size.y < 760
+	var narrow_width := window_size.x < 1320
 	var portrait := window_size.y > window_size.x
 	var outer_margin := 10 if tight_height else (12 if compact_width or short_height else 18)
 	var main_separation := 8 if tight_height else (10 if compact_width or short_height else 14)
@@ -382,6 +437,7 @@ func _apply_responsive_layout() -> void:
 	header_bar.custom_minimum_size = Vector2(0, 72 if short_height else 86)
 	header_bar.vertical = portrait
 	run_status_row.add_theme_constant_override("separation", 6 if compact_width else 8)
+	run_status_row.vertical = compact_width or narrow_width
 	content_row.add_theme_constant_override("separation", 10 if compact_width else 14)
 	content_row.vertical = portrait
 	top_strip_row.add_theme_constant_override("separation", 10 if compact_width else 12)
@@ -400,12 +456,12 @@ func _apply_responsive_layout() -> void:
 
 	new_game_button.custom_minimum_size = Vector2(120, 40 if tight_height else 44)
 	board_top_strip.custom_minimum_size = Vector2(0, 64 if tight_height else (72 if compact_width else 84))
-	board_meta_column.custom_minimum_size = Vector2(0, 0) if top_strip_row.vertical else Vector2(180 if compact_width else 240, 0)
+	board_meta_column.custom_minimum_size = Vector2(0, 0) if top_strip_row.vertical else Vector2(160 if compact_width else 240, 0)
 	board_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if top_strip_row.vertical else HORIZONTAL_ALIGNMENT_RIGHT
 	board_route_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if top_strip_row.vertical else HORIZONTAL_ALIGNMENT_RIGHT
 	action_hint_label.custom_minimum_size = Vector2(0, 44 if tight_height else 60)
-	action_hint_label.fit_content = not short_height
-	action_hint_label.scroll_active = short_height
+	action_hint_label.fit_content = false
+	action_hint_label.scroll_active = true
 
 	board_view.custom_minimum_size = Vector2(0, 360 if tight_height else (430 if short_height else 520))
 	node_detail_card.custom_minimum_size = Vector2(0, 108 if tight_height else (132 if short_height else 172))
@@ -426,12 +482,13 @@ func _apply_responsive_layout() -> void:
 	for button in [continue_button, menu_new_game_button, settings_button]:
 		button.custom_minimum_size = Vector2(0, 48 if tight_height else 54)
 
-	main_menu_panel.custom_minimum_size = Vector2(680, 460) if tight_height else (Vector2(720, 500) if compact_width or short_height else Vector2(760, 520))
+	var main_menu_size := Vector2(680, 460) if tight_height else (Vector2(720, 500) if compact_width or short_height else Vector2(760, 520))
+	main_menu_panel.custom_minimum_size = _clamp_panel_size(main_menu_size, window_size, outer_margin * 6)
 	menu_action_column.custom_minimum_size = Vector2(0, 0) if menu_content_row.vertical else Vector2(200 if compact_width else 220, 0)
 	menu_run_summary_label.custom_minimum_size = Vector2(0, 148 if menu_content_row.vertical else (180 if compact_width else 200))
 
 	if is_instance_valid(_synergy_banner):
-		var banner_width := 420.0 if compact_width else 520.0
+		var banner_width := minf(420.0 if compact_width else 520.0, maxf(window_size.x - outer_margin * 6.0, 280.0))
 		var banner_height := 96.0 if tight_height else 120.0
 		_synergy_banner.custom_minimum_size = Vector2(banner_width, banner_height)
 		_synergy_banner.offset_left = -banner_width * 0.5
@@ -443,12 +500,18 @@ func _apply_responsive_layout() -> void:
 		_synergy_unit_glow_host.offset_left = -glow_half_width
 		_synergy_unit_glow_host.offset_right = glow_half_width
 	if is_instance_valid(_stage_transition_panel):
-		_stage_transition_panel.custom_minimum_size = Vector2(520, 180) if tight_height else (Vector2(620, 210) if compact_width or short_height else Vector2(720, 240))
+		var stage_panel_size := Vector2(520, 180) if tight_height else (Vector2(620, 210) if compact_width or short_height else Vector2(720, 240))
+		_stage_transition_panel.custom_minimum_size = _clamp_panel_size(stage_panel_size, window_size, outer_margin * 6)
 
 func _configure_summary_label(label: RichTextLabel, compact: bool, compact_height: int, regular_height: int) -> void:
-	label.fit_content = not compact
-	label.scroll_active = compact
+	label.fit_content = false
+	label.scroll_active = true
 	label.custom_minimum_size = Vector2(0, compact_height if compact else regular_height)
+
+func _clamp_panel_size(desired_size: Vector2, window_size: Vector2i, padding: int) -> Vector2:
+	var safe_width := maxf(window_size.x - float(padding), 320.0)
+	var safe_height := maxf(window_size.y - float(padding), 220.0)
+	return Vector2(minf(desired_size.x, safe_width), minf(desired_size.y, safe_height))
 
 func _ensure_synergy_banner() -> void:
 	if _synergy_banner != null:
@@ -573,6 +636,7 @@ func _should_skip_runtime_tutorials() -> bool:
 	return DisplayServer.get_name() == "headless" or not GameState.tutorials_enabled()
 
 func _show_main_menu() -> void:
+	CustomAssetRepository.sync_external_library()
 	_refresh_main_menu()
 	root_margin.hide()
 	if is_instance_valid(_menu_custom_background):
@@ -641,6 +705,7 @@ func _build_saved_run_summary() -> String:
 
 func _build_settings_summary() -> String:
 	var window_mode := localization_service.text("settings.window.fullscreen") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.windowed")
+	var resolution_label := GameState.current_window_resolution_label()
 	var motion_mode := localization_service.text("settings.motion.reduced") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.standard")
 	var tutorial_mode := localization_service.text("settings.tutorials.on") if GameState.tutorials_enabled() else localization_service.text("settings.tutorials.off")
 	var language_name := localization_service.language_name(GameState.current_language())
@@ -648,6 +713,7 @@ func _build_settings_summary() -> String:
 	return "\n".join([
 		localization_service.text("settings.summary.title"),
 		localization_service.text("settings.summary.window", {"value": window_mode}),
+		localization_service.text("settings.summary.resolution", {"value": resolution_label}),
 		localization_service.text("settings.summary.motion", {"value": motion_mode}),
 		localization_service.text("settings.summary.tutorials", {"value": tutorial_mode}),
 		localization_service.text("settings.summary.language", {"value": language_name}),
@@ -656,16 +722,28 @@ func _build_settings_summary() -> String:
 	])
 
 func _open_settings_menu() -> void:
+	CustomAssetRepository.sync_external_library()
 	var window_label := localization_service.text("settings.window.to_windowed") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.to_fullscreen")
 	var motion_label := localization_service.text("settings.motion.to_standard") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.to_reduced")
 	var tutorial_label := localization_service.text("settings.tutorials.enable") if not GameState.tutorials_enabled() else localization_service.text("settings.tutorials.disable")
 	var imported_count := CustomAssetRepository.get_image_count()
+	var resolution_choices: Array = []
+	for preset in GameState.get_available_window_resolution_presets():
+		var resolution_id := String(preset.get("id", ""))
+		var resolution_label := String(preset.get("label", resolution_id))
+		resolution_choices.append({
+			"id": "set_window_resolution:%s" % resolution_id,
+			"label": localization_service.text("settings.resolution.set", {"value": resolution_label}),
+			"summary": localization_service.text("settings.current", {"value": resolution_label}),
+			"disabled": resolution_id == GameState.current_window_resolution_id(),
+		})
 	var choices := [
 		{
 			"id": "toggle_fullscreen",
 			"label": window_label,
 			"summary": localization_service.text("settings.current", {"value": localization_service.text("settings.window.fullscreen") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.windowed")}),
 		},
+	] + resolution_choices + [
 		{
 			"id": "toggle_motion",
 			"label": motion_label,
@@ -737,7 +815,12 @@ func _apply_menu_setting(choice_id: String) -> void:
 			reopen_settings = false
 			_clear_main_menu_background_binding()
 		_:
-			return
+			if choice_id.begins_with("set_window_resolution:"):
+				var resolution_id := choice_id.substr("set_window_resolution:".length())
+				if GameState.is_valid_window_resolution_id(resolution_id):
+					GameState.set_setting("window_resolution", resolution_id)
+			else:
+				return
 	_refresh_main_menu()
 	if reopen_settings:
 		_open_settings_menu()
@@ -798,6 +881,7 @@ func _on_asset_files_selected(paths: PackedStringArray) -> void:
 	decision_panel.open_panel("素材导入完成", "\n".join(body_lines), choices, "返回设置")
 
 func _open_main_menu_background_picker() -> void:
+	CustomAssetRepository.sync_external_library()
 	var images := CustomAssetRepository.list_images()
 	if images.is_empty():
 		pending_context = {"kind": "custom_asset_picker", "on_close": "reopen_settings"}

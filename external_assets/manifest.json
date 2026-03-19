@@ -1,0 +1,12 @@
+{
+	"bindings": {
+		"main_menu_bg": "ext_smoke_asset_sync"
+	},
+	"images": {
+		"ext_smoke_asset_sync": {
+			"filename": "ext_smoke_asset_sync.png",
+			"id": "ext_smoke_asset_sync",
+			"label": "smoke_asset"
+		}
+	}
+}

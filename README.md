@@ -43,6 +43,26 @@ godot --path .
 
 如果本机 Godot 已加入环境变量，也可以直接用编辑器打开 [project.godot](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\project.godot)。
 
+## 外置素材编辑器
+
+项目现在内置了一个不依赖 Godot 编辑器的外置素材链路：
+
+- 外置素材目录：`external_assets/images/`
+- 外置素材元数据：`external_assets/manifest.json`
+- 外置编辑器启动脚本：`tools/launch_asset_editor.bat`
+- 编辑器源码：`tools/asset_editor.py`
+
+使用方式：
+
+```powershell
+tools\launch_asset_editor.bat
+```
+
+或直接把图片放进 `external_assets/images/`。  
+支持格式：`png`、`jpg`、`jpeg`、`webp`、`bmp`。
+
+游戏启动时会自动同步该目录；如果游戏已经在运行，重新打开一次开始菜单的“设置”页即可触发同步，不需要进入 Godot 编辑器执行导入。
+
 ## 基础回归
 
 仓库内保留了多组无界面烟测脚本，适合在改动数据表或服务逻辑后快速验证：
@@ -55,6 +75,7 @@ godot --headless --path . -s res://scripts/mda120_upgrade_smoke_test.gd
 godot --headless --path . -s res://scripts/json_expansion_smoke_test.gd
 godot --headless --path . -s res://scripts/run_upgrade_smoke_test.gd
 godot --headless --path . -s res://scripts/strategic_layer_smoke_test.gd
+godot --headless --path . -s res://scripts/custom_asset_sync_smoke_test.gd
 ```
 
 它们分别覆盖：
@@ -66,6 +87,7 @@ godot --headless --path . -s res://scripts/strategic_layer_smoke_test.gd
 - 扩展任务、事件、对话树、图鉴和百科表已被 `DataRepository` 正常读取
 - 百回合升级主循环：区域棋盘、周目标、重掷 / 修正 / 锚定、赛季奖励
 - 策略层升级：节点主玩法收敛、遭遇失败后果、节点危险度与伏击队列
+- 外置素材目录扫描、运行时同步和自定义背景绑定
 
 ## 主要目录
 

@@ -26,6 +26,8 @@ const DialogueService = preload("res://scripts/services/dialogue_service.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
 
 const GAME_TITLE := "雾野远征"
+const BACKPACK_RESOURCE_TYPES := ["material", "rare_material"]
+const BACKPACK_SUPPLY_TYPES := ["consumable", "tool", "trophy"]
 
 const WEATHER_ORDER := ["clear", "fog", "rain", "storm"]
 const WEATHER_NAMES := {
@@ -1006,7 +1008,7 @@ func _tutorial_entry(tutorial_id: String) -> Dictionary:
 			return {
 				"title": "经营教学",
 				"close_text": "继续整理",
-				"body": "[b]营地总览[/b]\n只有路过营地时才会自动弹出，这里处理队伍整备、驻守、建筑与留信。\n\n[b]经营重点[/b]\n双打位决定当前战斗核心；背包位补羁绊；驻守会影响据点建设和建筑共鸣。\n\n[b]信息入口[/b]\n平时随时能在 [b]系统手册 -> 经营[/b] 里看库存、金钱和地点状态。"
+				"body": "[b]营地总览[/b]\n只有路过营地时才会自动弹出，这里处理队伍整备、驻守、建筑与留信。\n\n[b]经营重点[/b]\n双打位决定当前战斗核心；背包位补羁绊；驻守会影响据点建设和建筑共鸣。\n\n[b]信息入口[/b]\n平时随时能在 [b]系统手册 -> 背包[/b] 里看饥饿、库存、金钱和地点状态。"
 			}
 		"battle_intro":
 			return {
@@ -1541,7 +1543,7 @@ func _on_support_pressed() -> void:
 	if sections.is_empty():
 		return
 	var title := "系统手册"
-	var initial_section_id := "quest"
+	var initial_section_id := "backpack"
 	if not _last_ai_turn_report.is_empty() and String(sections[0].get("id", "")).begins_with("ai_"):
 		title = "系统手册 / AI 观察"
 		initial_section_id = String(sections[0].get("id", "ai_0"))
@@ -1712,6 +1714,11 @@ func _format_signed_int(value: int) -> String:
 
 func _on_base_pressed(opened_from_travel: bool = false) -> void:
 	camp_panel_requires_finish = camp_panel_requires_finish or opened_from_travel
+	if opened_from_travel:
+		var hunger_before := GameState.hunger
+		var hunger_after := GameState.restore_hunger(GameState.camp_hunger_restore)
+		if hunger_after > hunger_before:
+			_push_log("营地热食让饥饿恢复到 %d / %d。" % [hunger_after, GameState.max_hunger])
 	var synergy_report := synergy_service.build_synergy_report()
 	var facility_bonus := synergy_service.build_facility_bonus()
 	var battle_bonus := synergy_service.merge_battle_bonus([
@@ -1763,10 +1770,12 @@ func _on_board_travel_finished(node_id: int) -> void:
 	var node: Dictionary = board_lookup[node_id]
 	current_visit_habitat_id = String(node.get("habitat_id", ""))
 	GameState.add_weekly_progress("visit_count", 1)
+	var hunger_after_move := GameState.consume_hunger(GameState.hunger_cost_per_travel)
 	_push_log("掷骰后前往 %s。路径：%s。" % [
 		String(node.get("name", "未知地点")),
 		_format_path_preview(pending_travel_path),
 	])
+	_push_log("移动消耗饥饿 %d，当前 %d / %d。" % [GameState.hunger_cost_per_travel, hunger_after_move, GameState.max_hunger])
 	var type_id := String(node.get("type", ""))
 	if type_id == "camp":
 		_push_log("你路过营地，顺手整理队伍、驻守和留信。")
@@ -3103,11 +3112,13 @@ func _resolve_weekly_settlement() -> void:
 		return
 	var objective := GameState.weekly_objective.duplicate(true)
 	var progress := GameState.weekly_progress.duplicate(true)
+	var hunger_after_week := GameState.consume_hunger(GameState.hunger_cost_per_week)
 	var completed := weekly_cycle_service.is_complete(objective, progress)
 	var summary_lines := weekly_cycle_service.build_progress_lines(objective, progress)
 	_push_log("第 %d 周结算：%s。" % [GameState.week_index, String(objective.get("title", "本周目标"))])
 	for line in summary_lines:
 		_push_log("周进度：%s。" % line)
+	_push_log("周结算额外消耗饥饿 %d，当前 %d / %d。" % [GameState.hunger_cost_per_week, hunger_after_week, GameState.max_hunger])
 	if completed:
 		var reward_bundle := DataRepository.get_reward_bundle(weekly_cycle_service.get_reward_bundle_id(objective))
 		var reward_text := _apply_reward_bundle(reward_bundle)
@@ -3318,9 +3329,11 @@ func _update_header() -> void:
 		GameState.season_length,
 		GameState.global_turn,
 	]
-	weather_label.text = "%s · %s" % [
+	weather_label.text = "%s · %s · 饥饿 %d/%d" % [
 		_weather_name(GameState.weather_id),
 		_time_name(GameState.time_of_day),
+		GameState.hunger,
+		GameState.max_hunger,
 	]
 	objective_label.text = "%s ｜ %s" % [
 		objective_name,
@@ -3353,7 +3366,7 @@ func _update_action_ui() -> void:
 	else:
 		board_route_label.text = "待命中 ｜ 今日 %s · %s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
 	roll_button.text = "掷骰"
-	support_button.text = "系统手册"
+	support_button.text = "背包 / 手册"
 	base_button.text = "营地总览"
 	new_game_button.text = "主界面"
 	roll_button.disabled = season_finished or _is_modal_open() or awaiting_destination
@@ -3373,6 +3386,8 @@ func _update_action_ui() -> void:
 		action_hint_label.text = "[b]正在确认落点[/b]\n若只有一个精确落点会自动前进，只有出现分叉时才需要你手动选路。"
 	else:
 		action_hint_label.text = "[b]从当前节点继续推进[/b]\n先掷骰，再看精确落点；系统会自动处理单一路径，只在分叉处停下来。"
+	if GameState.is_hunger_low() and not season_finished and not ai_turn_in_progress:
+		action_hint_label.text = "[b]饥饿偏低[/b]\n路过营地会自动恢复一部分饱腹感；详细补给请打开背包 / 手册。"
 
 func _update_summaries() -> void:
 	var synergy_report := synergy_service.build_synergy_report()
@@ -3385,7 +3400,7 @@ func _update_summaries() -> void:
 		"构筑 Lv%d ｜ 照料 %d" % [GameState.get_progression_rank(), GameState.get_care_progress()],
 		"徽章 %d ｜ 季节点 %d ｜ 探索点 %d" % [GameState.badge_count, GameState.season_points, GameState.exploration_points_total],
 		"资金 %d 金 ｜ 银行 %d 金" % [int(treasury.get("wallet_gold", 0)), int(treasury.get("bank_gold", 0))],
-		"细项数值：系统手册 / 营地总览",
+		"饥饿 %d / %d ｜ 资源与补给请看背包 / 手册" % [GameState.hunger, GameState.max_hunger],
 	])
 	GameState.set_trait_runtime_bonus(synergy_service.build_runtime_bonus(synergy_report))
 	var season_goal := String(GameState.get_current_season_rule().get("season_goal", "维持推进感。"))
@@ -3423,7 +3438,7 @@ func _update_roster() -> void:
 	var lines: Array[String] = []
 	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
 	lines.append("背包人口：%d / %d ｜ 已安居据点 %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity, GameState.get_settled_habitat_count()])
-	lines.append("关键库存：%s" % (_format_inventory_highlights() if not _format_inventory_highlights().is_empty() else "暂时没有重点素材"))
+	lines.append("生存：饥饿 %d / %d ｜ 资源与补给请看背包 / 手册" % [GameState.hunger, GameState.max_hunger])
 	if not starter_companion_uid.is_empty():
 		lines.append("起始伙伴：%s" % GameState.get_pet_display_name(starter_companion_uid))
 	else:
@@ -3759,13 +3774,67 @@ func _build_fail_reason(reason: String) -> String:
 		_: return "这一步今天还做不了。"
 
 func _format_inventory_highlights() -> String:
-	var highlights := ["soft_moss", "stone_chip", "parts", "wood", "spark_reed", "tea_leaf", "amber_resin", "glow_dust", "ice_glass"]
+	var rows := _collect_inventory_rows(BACKPACK_RESOURCE_TYPES)
+	if rows.is_empty():
+		return ""
 	var parts: Array[String] = []
-	for item_id in highlights:
-		if int(GameState.inventory.get(item_id, 0)) <= 0:
-			continue
-		parts.append("%s x%d" % [_item_name(item_id), int(GameState.inventory[item_id])])
+	for row in rows.slice(0, 4):
+		parts.append(String(row).trim_prefix("- "))
 	return " / ".join(parts)
+
+func _collect_inventory_rows(types: Array[String]) -> Array[String]:
+	var item_ids: Array[String] = []
+	for item_id in DataRepository.items.keys():
+		item_ids.append(String(item_id))
+	item_ids.sort()
+	var rows: Array[String] = []
+	for item_id in item_ids:
+		var item_data: Dictionary = DataRepository.items.get(item_id, {})
+		if item_data.is_empty():
+			continue
+		if not types.has(String(item_data.get("type", ""))):
+			continue
+		var amount := int(GameState.inventory.get(item_id, 0))
+		if amount <= 0:
+			continue
+		rows.append("- %s x%d" % [String(item_data.get("name", item_id)), amount])
+	return rows
+
+func _build_backpack_section_lines() -> Array[String]:
+	var lines: Array[String] = [
+		"[b]饥饿[/b] %d / %d ｜ %s" % [GameState.hunger, GameState.max_hunger, _hunger_status_text()],
+		"移动 -%d ｜ 周结算 -%d ｜ 路过营地 +%d" % [GameState.hunger_cost_per_travel, GameState.hunger_cost_per_week, GameState.camp_hunger_restore],
+		"",
+		"[b]资源材料[/b]",
+	]
+	var resource_rows := _collect_inventory_rows(BACKPACK_RESOURCE_TYPES)
+	if resource_rows.is_empty():
+		lines.append("- 暂无资源")
+	else:
+		lines.append_array(resource_rows)
+	lines.append("")
+	lines.append("[b]消耗 / 工具 / 纪念[/b]")
+	var supply_rows := _collect_inventory_rows(BACKPACK_SUPPLY_TYPES)
+	if supply_rows.is_empty():
+		lines.append("- 暂无补给")
+	else:
+		lines.append_array(supply_rows)
+	lines.append("")
+	lines.append("[b]钱包[/b] %d 金 ｜ [b]银行[/b] %d 金" % [GameState.wallet_gold, GameState.bank_gold])
+	lines.append("[b]地点状态[/b]")
+	lines.append_array(_location_status_lines())
+	lines.append("")
+	lines.append("资源与补给已经从主界面移走，统一放到这一页查看。")
+	return lines
+
+func _hunger_status_text() -> String:
+	if GameState.hunger <= 0:
+		return "见底"
+	if GameState.is_hunger_low():
+		return "偏低"
+	if GameState.hunger >= int(round(float(GameState.max_hunger) * 0.75)):
+		return "充足"
+	return "平稳"
 
 func _item_name(item_id: String) -> String:
 	return String(DataRepository.items.get(item_id, {}).get("name", item_id))
@@ -3919,13 +3988,13 @@ func _build_main_menu_run_summary() -> String:
 	lines.append("周目标：%s" % weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress))
 	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
 	lines.append("背包人口：%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity])
+	lines.append("饥饿：%d / %d" % [GameState.hunger, GameState.max_hunger])
 	lines.append("徽章：%d ｜ 季节点数：%d ｜ 照料进度：%d" % [
 		GameState.badge_count,
 		GameState.season_points,
 		GameState.get_care_progress(),
 	])
-	var highlights := _format_inventory_highlights()
-	lines.append("关键库存：%s" % (highlights if not highlights.is_empty() else "暂时没有记录到重点素材"))
+	lines.append("资源与补给：打开背包 / 手册查看")
 	if not GameState.run_modifiers.is_empty():
 		lines.append("")
 		lines.append("[b]本局词缀[/b]")
@@ -3965,7 +4034,6 @@ func _build_system_sections() -> Array:
 		synergy_service.build_battle_bonus(synergy_report),
 		facility_bonus.get("bonus", {}),
 	])
-	var treasury := GameState.get_treasury_snapshot()
 	var quest_lines: Array[String] = []
 	if not GameState.weekly_objective.is_empty():
 		quest_lines.append("[b]本周目标[/b] %s" % String(GameState.weekly_objective.get("title", "本周目标")))
@@ -4001,14 +4069,7 @@ func _build_system_sections() -> Array:
 	if not synergy_service.describe_battle_bonus(battle_bonus).is_empty():
 		battle_lines.append("[b]战斗汇总[/b] %s" % " / ".join(synergy_service.describe_battle_bonus(battle_bonus)))
 
-	var operation_lines: Array[String] = [
-		"[b]库存摘记[/b] %s" % (_format_inventory_highlights() if not _format_inventory_highlights().is_empty() else "暂无重点素材"),
-		"[b]钱包[/b] %d 金 ｜ [b]银行[/b] %d 金" % [int(treasury.get("wallet_gold", 0)), int(treasury.get("bank_gold", 0))],
-		"[b]地点状态[/b]",
-	]
-	operation_lines.append_array(_location_status_lines())
-	operation_lines.append("")
-	operation_lines.append("建设、驻守和留信只能在营地总览里集中调整；平时这里负责查阅状态。")
+	var backpack_lines := _build_backpack_section_lines()
 
 	var completed_count := 0
 	for tutorial_id in TUTORIAL_ORDER:
@@ -4039,10 +4100,10 @@ func _build_system_sections() -> Array:
 			"body": "\n".join(battle_lines),
 		},
 		{
-			"id": "operation",
-			"label": "经营",
-			"summary": "[b]经营状态[/b]\n库存、金钱和地点状态下沉到这一页，主界面只保留全局值。",
-			"body": "\n".join(operation_lines),
+			"id": "backpack",
+			"label": "背包",
+			"summary": "[b]背包与生存[/b]\n饥饿、资源、补给和金钱统一收口到这一页查看。",
+			"body": "\n".join(backpack_lines),
 		},
 		{
 			"id": "tutorial",

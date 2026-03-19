@@ -74,6 +74,12 @@ var backpack_slots: Array[String] = []
 var backpack_capacity := 4
 var wallet_gold := 12
 var bank_gold := 0
+var max_hunger := 100
+var hunger := 100
+var hunger_warning_threshold := 30
+var hunger_cost_per_travel := 6
+var hunger_cost_per_week := 10
+var camp_hunger_restore := 18
 var rival_wallets: Dictionary = {}
 var ai_players: Array = []
 var active_trait_runtime_bonus: Dictionary = {}
@@ -140,6 +146,7 @@ func reset_for_new_season() -> void:
 	backpack_capacity = 4
 	wallet_gold = 12
 	bank_gold = 0
+	hunger = max_hunger
 	rival_wallets = {}
 	ai_players = _build_default_ai_players()
 	active_trait_runtime_bonus = {}
@@ -514,6 +521,8 @@ func build_runtime_snapshot() -> Dictionary:
 		"backpack_capacity": backpack_capacity,
 		"wallet_gold": wallet_gold,
 		"bank_gold": bank_gold,
+		"max_hunger": max_hunger,
+		"hunger": hunger,
 		"rival_wallets": rival_wallets.duplicate(true),
 		"ai_players": ai_players.duplicate(true),
 		"pet_serial": _pet_serial,
@@ -572,6 +581,8 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	backpack_capacity = int(snapshot.get("backpack_capacity", 4))
 	wallet_gold = int(snapshot.get("wallet_gold", 12))
 	bank_gold = int(snapshot.get("bank_gold", 0))
+	max_hunger = maxi(1, int(snapshot.get("max_hunger", 100)))
+	hunger = clampi(int(snapshot.get("hunger", max_hunger)), 0, max_hunger)
 	rival_wallets = _duplicate_dictionary(snapshot.get("rival_wallets", {}))
 	ai_players = _duplicate_array(snapshot.get("ai_players", []))
 	if ai_players.is_empty():
@@ -1064,6 +1075,25 @@ func pay_cost(cost: Dictionary) -> bool:
 func grant_items(reward_items: Dictionary) -> void:
 	for item_id in reward_items.keys():
 		inventory[item_id] = int(inventory.get(item_id, 0)) + int(reward_items[item_id])
+
+func consume_hunger(amount: int) -> int:
+	hunger = maxi(0, hunger - maxi(amount, 0))
+	return hunger
+
+func restore_hunger(amount: int) -> int:
+	hunger = mini(max_hunger, hunger + maxi(amount, 0))
+	return hunger
+
+func is_hunger_low() -> bool:
+	return hunger <= hunger_warning_threshold
+
+func get_hunger_snapshot() -> Dictionary:
+	return {
+		"value": hunger,
+		"max": max_hunger,
+		"warning_threshold": hunger_warning_threshold,
+		"ratio": float(hunger) / float(max_hunger),
+	}
 
 func apply_system_rewards(system_rewards: Dictionary) -> void:
 	for reward_id in system_rewards.keys():

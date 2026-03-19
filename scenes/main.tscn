@@ -430,7 +430,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 custom_minimum_size = Vector2(0, 44)
-text = "周目标"
+text = "背包 / 手册"
 
 [node name="BaseButton" type="Button" parent="RootMargin/MainVBox/ContentRow/SideColumn/DicePanel/MarginContainer/DiceVBox/SupportRow"]
 unique_name_in_owner = true

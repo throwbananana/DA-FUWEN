@@ -238,6 +238,16 @@ func _schedule_enemy_action(actor: MonsterInstance) -> void:
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var skill_id := _choose_enemy_skill(actor)
+	if skill_id.is_empty():
+		info.text = _tr("battle.prompt.enemy_thinking", {"actor": actor.display_name})
+		action_box.add_child(info)
+		_set_action_preview(actor.uid)
+		_render_rosters()
+		_update_selection_summary(actor)
+		_show_battle_banner(_tr("battle.turn.enemy"), actor.display_name, Color(1.0, 0.55, 0.47, 1.0))
+		var wait_timer := get_tree().create_timer(0.05 if GameState.should_skip_animations() else ENEMY_THINK_DELAY)
+		wait_timer.timeout.connect(_on_enemy_wait_timeout.bind(actor), CONNECT_ONE_SHOT)
+		return
 	var skill := GameData.get_skill(skill_id)
 	var skill_name := _skill_name(skill_id, skill)
 	var target_uid := _choose_target_uid(actor, skill)
@@ -259,6 +269,11 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		_apply_responsive_layout()
 
+func _on_enemy_wait_timeout(actor: MonsterInstance) -> void:
+	if result_sent or not actor.is_alive() or actor.uid != active_actor_uid:
+		return
+	_end_actor_turn()
+
 func _on_enemy_timer_timeout(actor: MonsterInstance, skill_id: String, target_uid: String) -> void:
 	if result_sent or not actor.is_alive():
 		return
@@ -270,22 +285,59 @@ func _choose_enemy_skill(actor: MonsterInstance) -> String:
 		if int(temp_state[actor.uid]["cooldowns"].get(skill_id, 0)) <= 0:
 			available.append(skill_id)
 	if available.is_empty():
-		return actor.skills[0]
-	available.sort_custom(func(a: String, b: String) -> bool:
-		return int(GameData.get_skill(a).get("power", 0)) > int(GameData.get_skill(b).get("power", 0))
-	)
-	var wounded_allies := _team_lowest_health(_get_team_for(actor))
-	if not wounded_allies.is_empty():
-		for skill_id in available:
-			if GameData.get_skill(skill_id).get("effect", "") == "heal":
-				var target: MonsterInstance = wounded_allies[0]
-				if target.current_hp < target.max_hp / 2:
-					selected_ally_uid = target.uid
-					return skill_id
+		return ""
+	var best_skill_id := available[0]
+	var best_score := _score_enemy_skill(actor, best_skill_id)
 	for skill_id in available:
-		if GameData.get_skill(skill_id).get("effect", "") == "guard" and actor.current_hp < actor.max_hp / 2:
-			return skill_id
-	return available[0]
+		var score := _score_enemy_skill(actor, skill_id)
+		if score > best_score:
+			best_score = score
+			best_skill_id = skill_id
+	var chosen_skill := GameData.get_skill(best_skill_id)
+	if String(chosen_skill.get("effect", "")) == "heal":
+		var wounded_allies := _team_lowest_health(_get_team_for(actor))
+		if not wounded_allies.is_empty():
+			selected_ally_uid = wounded_allies[0].uid
+	return best_skill_id
+
+func _score_enemy_skill(actor: MonsterInstance, skill_id: String) -> float:
+	var skill := GameData.get_skill(skill_id)
+	var effect := String(skill.get("effect", ""))
+	var target_mode := String(skill.get("target", "enemy"))
+	var score := float(int(skill.get("power", 0)) + int(skill.get("effect_value", 0)))
+	if effect == "heal":
+		var wounded_allies := _team_lowest_health(_get_team_for(actor))
+		if wounded_allies.is_empty():
+			return -1.0
+		var target: MonsterInstance = wounded_allies[0]
+		var missing_ratio := 1.0 - (float(target.current_hp) / max(1.0, float(target.max_hp)))
+		score += 14.0 * missing_ratio
+		if target.current_hp < target.max_hp / 2:
+			score += 8.0
+		return score
+	if effect == "guard":
+		var hp_ratio := float(actor.current_hp) / max(1.0, float(actor.max_hp))
+		if hp_ratio < 0.45:
+			score += 11.0
+		if float(temp_state[actor.uid].get("guard", 0.0)) > 0.0:
+			score -= 6.0
+		return score
+	if effect == "haste":
+		if temp_state[actor.uid]["statuses"].has("haste"):
+			score -= 6.0
+		else:
+			score += 3.0
+	if target_mode == "enemy_all":
+		score += float(_get_opponents(actor).size()) * 4.0
+	var best_multiplier := 1.0
+	for foe in _get_opponents(actor):
+		if not foe.is_alive():
+			continue
+		best_multiplier = max(best_multiplier, GameData.type_multiplier(String(skill.get("type", actor.type)), foe.type))
+		if effect in ["slow", "weaken", "vulnerable"] and not temp_state[foe.uid]["statuses"].has(effect):
+			score += 1.5
+	score += (best_multiplier - 1.0) * 10.0
+	return score
 
 func _on_skill_pressed(actor_uid: String, skill_id: String) -> void:
 	var actor := _get_unit_by_uid(actor_uid)
@@ -367,9 +419,12 @@ func _perform_skill(actor: MonsterInstance, skill_id: String, forced_target_uid:
 	if target_mode == "enemy_all":
 		for foe in _get_opponents(actor):
 			if foe.is_alive():
-				var aoe_damage := int(skill.get("effect_value", 0)) + int(round(actor.attack * 0.4))
+				var aoe_damage := _calculate_damage(actor, foe, skill)
 				_apply_damage(actor, foe, aoe_damage, String(skill.get("type", actor.type)), skill_name)
+				_apply_status_if_needed(foe, skill)
 		_log(_tr("battle.log.enemy_all", {"actor": actor.display_name, "skill": skill_name}))
+		_end_actor_turn()
+		return
 	else:
 		var target := _resolve_target(actor, skill, forced_target_uid)
 		if target == null:
@@ -453,6 +508,8 @@ func _calculate_damage(actor: MonsterInstance, target: MonsterInstance, skill: D
 	if round_index == 1 and _is_ally(actor) and bool(battle_config.get("ally_first_round_attack_bonus", false)):
 		attack_value += 2
 	var power := int(skill.get("power", 0))
+	if String(skill.get("effect", "")) == "damage_all":
+		power += int(skill.get("effect_value", 0))
 	var raw_damage := attack_value + power
 	var multiplier := GameData.type_multiplier(String(skill.get("type", actor.type)), target.type)
 	var vulnerable: Dictionary = temp_state[target.uid]["statuses"].get("vulnerable", {})
@@ -498,10 +555,13 @@ func _apply_status_if_needed(target: MonsterInstance, skill: Dictionary) -> void
 		var recipient := target
 		if String(skill.get("effect_target", "target")) == "self":
 			recipient = _get_unit_by_uid(active_actor_uid)
-		temp_state[recipient.uid]["statuses"][effect] = {
+		var status_payload := {
 			"turns": int(skill.get("effect_turns", 1)),
 			"value": int(skill.get("effect_value", 3)),
 		}
+		if effect == "haste":
+			status_payload["rounds_before_decay"] = 1
+		temp_state[recipient.uid]["statuses"][effect] = status_payload
 		recent_target_uid = recipient.uid
 		_show_unit_feedback(recipient.uid, _status_label(effect), Color(0.86, 0.70, 1.0, 1.0), 26.0, 0.74)
 		_flash_feedback(Color(0.76, 0.52, 1.0, 0.10), 3.0)
@@ -571,6 +631,10 @@ func _end_round() -> void:
 				temp_state[uid]["cooldowns"][skill_id] = left - 1
 		var statuses: Dictionary = temp_state[uid]["statuses"]
 		for status_id in statuses.keys().duplicate():
+			var rounds_before_decay := int(statuses[status_id].get("rounds_before_decay", 0))
+			if rounds_before_decay > 0:
+				statuses[status_id]["rounds_before_decay"] = rounds_before_decay - 1
+				continue
 			statuses[status_id]["turns"] = int(statuses[status_id].get("turns", 0)) - 1
 			if int(statuses[status_id]["turns"]) <= 0:
 				statuses.erase(status_id)
@@ -1435,6 +1499,8 @@ func _estimate_damage_range(actor: MonsterInstance, target: MonsterInstance, ski
 	if round_index == 1 and _is_ally(actor) and bool(battle_config.get("ally_first_round_attack_bonus", false)):
 		attack_value += 2
 	var power := int(skill.get("power", 0))
+	if String(skill.get("effect", "")) == "damage_all":
+		power += int(skill.get("effect_value", 0))
 	var raw_damage := attack_value + power
 	var multiplier := GameData.type_multiplier(String(skill.get("type", actor.type)), target.type)
 	var vulnerable: Dictionary = temp_state[target.uid]["statuses"].get("vulnerable", {})

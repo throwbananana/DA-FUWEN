@@ -53,6 +53,10 @@ func buy_shop_offer(offer_id: String) -> void:
 	current_step = "shop_result"
 	state_changed.emit("shop_result", shop_service.buy_offer(current_habitat_id, offer_id))
 
+func use_shop_npc_service(service_id: String) -> void:
+	current_step = "shop_npc_result"
+	state_changed.emit("shop_npc_result", shop_service.use_npc_service(current_habitat_id, service_id))
+
 func open_npc_menu() -> void:
 	current_step = "npc_menu"
 	state_changed.emit("npc_menu", {

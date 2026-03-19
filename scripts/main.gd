@@ -1854,6 +1854,8 @@ func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
 			_show_shop_menu(payload)
 		"shop_result":
 			_show_shop_result(payload)
+		"shop_npc_result":
+			_show_shop_npc_result(payload)
 		"npc_menu":
 			_show_npc_menu(payload)
 		"dojo_menu":
@@ -1962,7 +1964,7 @@ func _primary_content_summary(action_id: String) -> String:
 		"build_menu":
 			return "这是建设节点，本回合的主收益来自推进建筑和后续共鸣。"
 		"shop_menu":
-			return "这是商店节点，本回合的主收益来自按季节与事件轮换的商品补给。"
+			return "这是商店节点，本回合的主收益来自按季节与事件轮换的商品补给，以及摊位熟人的额外服务。"
 		"npc_menu":
 			return "这是社交节点，本回合的主收益来自情报、委托和关系推进。"
 		"observe":
@@ -2053,6 +2055,17 @@ func _show_shop_menu(payload: Dictionary) -> void:
 			"summary": summary,
 			"disabled": disabled,
 		})
+	var npc_services: Array = payload.get("npc_services", [])
+	if not npc_services.is_empty():
+		lines.append("[b]摊位熟人[/b] 他们今天还能额外帮你处理些别的事。")
+		for service in npc_services:
+			var service_id := String(service.get("id", ""))
+			choices.append({
+				"id": "service:%s" % service_id,
+				"label": "%s｜%s" % [String(service.get("npc_name", "熟人")), String(service.get("label", service_id))],
+				"summary": _format_shop_service_summary(service),
+				"disabled": not bool(service.get("available", false)),
+			})
 	pending_context = {"kind": "shop_menu", "on_close": "arrival"}
 	decision_panel.open_panel(String(payload.get("shop_name", "商店")), "\n".join(lines), choices, "返回地点")
 
@@ -2083,6 +2096,48 @@ func _show_shop_result(payload: Dictionary) -> void:
 	_push_log("在 %s 买下了 %d × %s，花费 %d 金。" % [String(payload.get("shop_name", "商店")), quantity, item_name, price])
 	pending_context = {"kind": "shop_result", "on_close": "shop_menu"}
 	decision_panel.open_panel("交易完成", "\n".join(lines), [], "继续逛摊")
+
+func _show_shop_npc_result(payload: Dictionary) -> void:
+	if not bool(payload.get("ok", false)):
+		var reason := String(payload.get("reason", "service_failed"))
+		var text := "这次没能谈成。"
+		match reason:
+			"service_used_up":
+				text = "这门额外手艺本周已经用过了，得等下一周。"
+			"trust_locked":
+				text = "关系还没熟到这一步，先多聊几次再来试。"
+			"insufficient_gold":
+				text = "手头资金不够，对方这次不肯先垫着。"
+			"missing_items":
+				text = "材料还没备齐：%s" % _format_item_cost(payload.get("cost_items", {}))
+			"no_intel":
+				text = "对方今天也探不到更具体的风声。"
+			"service_missing":
+				text = "今天这位没有空接这档额外活。"
+		pending_context = {"kind": "shop_npc_result", "on_close": "shop_menu"}
+		decision_panel.open_panel("熟人服务失败", text, [], "返回摊位")
+		return
+	var service: Dictionary = payload.get("service", {})
+	var lines: Array[String] = []
+	lines.append("[b]联系人[/b] %s" % String(service.get("npc_name", "摊位熟人")))
+	if not String(service.get("description", "")).is_empty():
+		lines.append(String(service.get("description", "")))
+	var cost_gold := int(payload.get("cost_gold", 0))
+	if cost_gold > 0:
+		lines.append("[b]花费[/b] %d 金" % cost_gold)
+	var cost_items: Dictionary = payload.get("cost_items", {})
+	if not cost_items.is_empty():
+		lines.append("[b]交付[/b] %s" % _format_item_cost(cost_items))
+	var reward_items: Dictionary = payload.get("reward_items", {})
+	if not reward_items.is_empty():
+		lines.append("[b]获得[/b] %s" % _format_item_cost(reward_items))
+	for line in payload.get("lines", []):
+		lines.append(String(line))
+	lines.append("[b]剩余资金[/b] %d 金" % int(payload.get("wallet_gold", 0)))
+	lines.append("[b]本周剩余次数[/b] %d" % int(service.get("remaining_uses", 0)))
+	_push_log("在 %s 找 %s 额外办了一件事：%s。" % [String(payload.get("shop_name", "商店")), String(service.get("npc_name", "熟人")), String(service.get("label", "额外服务"))])
+	pending_context = {"kind": "shop_npc_result", "on_close": "shop_menu"}
+	decision_panel.open_panel(String(service.get("label", "熟人服务完成")), "\n".join(lines), [], "继续逛摊")
 
 func _show_npc_menu(payload: Dictionary) -> void:
 	var choices := []
@@ -2249,6 +2304,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 		"shop_menu":
 			if choice_id.begins_with("buy:"):
 				visit_flow.buy_shop_offer(choice_id.trim_prefix("buy:"))
+			elif choice_id.begins_with("service:"):
+				visit_flow.use_shop_npc_service(choice_id.trim_prefix("service:"))
 		"npc_menu":
 			if choice_id.begins_with("duel:"):
 				_start_npc_intro_duel(choice_id.trim_prefix("duel:"))
@@ -3841,6 +3898,50 @@ func _format_item_cost(cost: Dictionary) -> String:
 	for item_id in keys:
 		parts.append("%s x%d" % [_item_name(item_id), int(cost[item_id])])
 	return " / ".join(parts)
+
+func _format_shop_service_summary(service: Dictionary) -> String:
+	var parts: Array[String] = []
+	var description := String(service.get("description", ""))
+	if not description.is_empty():
+		parts.append(description)
+	var cost_chunks: Array[String] = []
+	var cost_gold := int(service.get("cost_gold", 0))
+	if cost_gold > 0:
+		cost_chunks.append("%d 金" % cost_gold)
+	var cost_items: Dictionary = service.get("cost_items", {})
+	if not cost_items.is_empty():
+		cost_chunks.append(_format_item_cost(cost_items))
+	if not cost_chunks.is_empty():
+		parts.append("消耗：%s" % " / ".join(cost_chunks))
+	var reward_items: Dictionary = service.get("reward_items", {})
+	if not reward_items.is_empty():
+		parts.append("产出：%s" % _format_item_cost(reward_items))
+	var tags: Array = service.get("tags", [])
+	if not tags.is_empty():
+		parts.append("标签：%s" % " / ".join(tags))
+	parts.append("本周剩余：%d 次" % int(service.get("remaining_uses", 0)))
+	var required_trust := int(service.get("required_trust", 0))
+	if required_trust > 0:
+		parts.append("信赖要求：%d（当前 %d）" % [required_trust, int(service.get("trust_now", 0))])
+	var disabled_reason := String(service.get("disabled_reason", ""))
+	if not disabled_reason.is_empty():
+		parts.append(_shop_service_disabled_text(disabled_reason))
+	return " ｜ ".join(parts)
+
+func _shop_service_disabled_text(reason: String) -> String:
+	match reason:
+		"service_used_up":
+			return "本周已办过"
+		"trust_locked":
+			return "关系还不够熟"
+		"insufficient_gold":
+			return "金币不足"
+		"missing_items":
+			return "材料不足"
+		"no_intel":
+			return "今天没有新风声"
+		_:
+			return "暂时不可用"
 
 func _npc_names(npcs: Array) -> Array[String]:
 	var names: Array[String] = []

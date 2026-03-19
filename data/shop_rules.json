@@ -261,6 +261,91 @@
             }
           ]
         }
+      ],
+      "npc_services": [
+        {
+          "id": "bo_repair_exchange",
+          "npc_id": "tinker_bo",
+          "label": "阿铂代工修理包",
+          "description": "拿机括零件和润滑油过来，阿铂会当场帮你拧成一套能立刻上手的修理包。",
+          "type": "trade_in",
+          "cost_items": {
+            "parts": 1,
+            "oil": 1
+          },
+          "reward_items": {
+            "repair_kit": 1
+          },
+          "uses_per_week": 1,
+          "priority": 46,
+          "tags": [
+            "代工",
+            "每周一次"
+          ],
+          "success_text": "阿铂把零件往掌心一扣，三两下就替你攒出一套顺手的修理包。"
+        },
+        {
+          "id": "ya_badge_polish",
+          "npc_id": "smith_ya",
+          "label": "哑叔打磨铭牌",
+          "description": "哑叔不爱多话，但会把你带来的金属和布料磨成一块能挂在据点上的精致饰件。",
+          "type": "trade_in",
+          "cost_items": {
+            "metal": 2,
+            "cloth": 1
+          },
+          "reward_items": {
+            "rare_decor_part": 1
+          },
+          "required_trust": 1,
+          "uses_per_week": 1,
+          "priority": 42,
+          "tags": [
+            "铭刻",
+            "装饰"
+          ],
+          "success_text": "哑叔敲了几下炉沿，替你把这批料打成了一枚边角利落的铭牌。"
+        },
+        {
+          "id": "vendor_route_manifest",
+          "npc_id": "parts_vendor",
+          "label": "小轮透露下周货路",
+          "description": "给他一点路费，小轮会把下周准备押来的那批货单悄悄翻给你看。",
+          "type": "intel",
+          "cost_gold": 1,
+          "required_trust": 1,
+          "uses_per_week": 1,
+          "priority": 40,
+          "preview_week_offset": 1,
+          "preview_offer_count": 4,
+          "tags": [
+            "情报",
+            "下周预告"
+          ],
+          "success_text": "小轮把账本翻到折角那页，指给你看几样下周才会摆上台面的货。"
+        },
+        {
+          "id": "vendor_manifest_rewrite",
+          "npc_id": "parts_vendor",
+          "label": "小轮重写跑线清单",
+          "description": "他会把你带来的纸墨改成一份更像样的跑线提要，顺手塞你一张试炼札记。",
+          "type": "trade_in",
+          "cost_items": {
+            "paper": 1,
+            "ink": 1
+          },
+          "reward_items": {
+            "training_note": 1
+          },
+          "required_trust": 2,
+          "uses_per_week": 1,
+          "priority": 34,
+          "tags": [
+            "跑线",
+            "札记"
+          ],
+          "success_text": "小轮把纸页重新誊抄了一遍，还顺手把一张试炼札记塞回你手里。"
+        }
       ]
     }
   ]

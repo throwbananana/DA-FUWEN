@@ -1012,19 +1012,19 @@ func _tutorial_entry(tutorial_id: String) -> Dictionary:
 			return {
 				"title": "远征教学",
 				"close_text": "开始掷骰",
-				"body": "[b]主循环[/b]\n掷骰 -> 选路 -> 落点内容 -> 周结算 -> 季切换。\n\n[b]主界面减负后怎么找信息[/b]\n常驻区只保留全局值；任务、战斗构筑、经营状态和教学都收进了 [b]系统手册[/b]。\n\n[b]第一周建议[/b]\n先掷一次骰，找一个低压地点落脚；路过营地时会自动弹出营地总览。"
+				"body": "[b]主循环[/b]\n掷骰 -> 选路 -> 落点偶遇 -> 周结算 -> 季切换。\n\n[b]主界面减负后怎么找信息[/b]\n常驻区只保留全局值；任务、战斗构筑、经营状态和教学都收进了 [b]系统手册[/b]。\n\n[b]第一周建议[/b]\n先掷一次骰，找一个低压地点落脚；路过营地时会自动弹出营地总览，其余地点则更像一串现场偶遇。"
 			}
 		"management_intro":
 			return {
 				"title": "经营教学",
 				"close_text": "继续整理",
-				"body": "[b]营地总览[/b]\n只有路过营地时才会自动弹出，这里处理队伍整备、驻守、建筑与留信。\n\n[b]经营重点[/b]\n双打位决定当前战斗核心；背包位补羁绊；驻守会影响据点建设和建筑共鸣。\n\n[b]信息入口[/b]\n平时随时能在 [b]系统手册 -> 背包[/b] 里看饥饿、库存、金钱和地点状态。"
+				"body": "[b]营地总览[/b]\n只有路过营地时才会自动弹出，这里处理队伍整备、驻守、建筑与留信。其他地点则统一改成落点偶遇。\n\n[b]经营重点[/b]\n双打位决定当前战斗核心；背包位补羁绊；驻守会影响据点建设和建筑共鸣。\n\n[b]信息入口[/b]\n平时随时能在 [b]系统手册 -> 背包[/b] 里看饥饿、库存、金钱和地点状态。"
 			}
 		"battle_intro":
 			return {
 				"title": "战斗教学",
 				"close_text": "进入战斗",
-				"body": "[b]双打战斗[/b]\n我方固定 2v2。轮到己方行动时，先点头像选目标，再点技能。\n\n[b]看什么最关键[/b]\n速度决定先后手；护盾与建筑减伤会写在单位状态上；回合上限到了会按剩余战力结算。\n\n[b]战前准备[/b]\n如果想补羁绊、双打位或驻守增益，先去 [b]系统手册 -> 战斗[/b] 或营地整备。"
+				"body": "[b]双打战斗[/b]\n我方固定 2v2。轮到己方行动时，先点头像选目标，再点技能。\n\n[b]看什么最关键[/b]\n速度决定先后手；护盾与建筑减伤会写在单位状态上；回合上限到了会按剩余战力结算。\n\n[b]战前准备[/b]\n如果想补羁绊、双打位或驻守增益，先去 [b]系统手册 -> 战斗[/b] 或在下一次路过营地时整备。"
 			}
 		_:
 			return {}
@@ -1919,10 +1919,10 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 		choices.append({
 			"id": primary_action,
 			"label": _primary_content_label(primary_action),
-			"summary": "%s\n今天在这里就处理这一件事。" % _primary_content_summary(primary_action),
+			"summary": "%s\n这是这次落点里最值得先接住的一件事。" % _primary_content_summary(primary_action),
 		})
 	pending_context = {"kind": "visit_arrival", "on_close": "finish_visit"}
-	decision_panel.open_panel(String(habitat.get("name", "地点")), "\n".join(lines), choices, "结束拜访")
+	decision_panel.open_panel(String(habitat.get("name", "地点")), "\n".join(lines), choices, "继续前进")
 
 func _should_trigger_prearrival_ambush(node_id: int) -> bool:
 	return GameState.consume_node_ambush(node_id)
@@ -1973,17 +1973,17 @@ func _primary_content_label(action_id: String) -> String:
 func _primary_content_summary(action_id: String) -> String:
 	match action_id:
 		"build_menu":
-			return "这是建设节点，本回合的主收益来自推进建筑和后续共鸣。"
+			return "这是建设型路遇，主收益来自推进建筑和后续共鸣。"
 		"shop_menu":
-			return "这是商店节点，本回合的主收益来自按季节与事件轮换的商品补给，以及摊位熟人的额外服务。"
+			return "这是市集型路遇，主收益来自按季节与事件轮换的商品补给，以及摊位熟人的额外服务。"
 		"npc_menu":
-			return "这是社交节点，本回合的主收益来自情报、委托和关系推进。"
+			return "这是关系型路遇，主收益来自情报、委托和关系推进。"
 		"observe":
-			return "这是遭遇节点，本回合的主收益来自观察、结缘和风险处理。"
+			return "这是野外型路遇，主收益来自观察、结缘和风险处理。"
 		"dojo_menu":
-			return "这是验证节点，本回合的主收益来自试炼和阶段奖励。"
+			return "这是验证型路遇，主收益来自试炼和阶段奖励。"
 		"mail_menu":
-			return "这是中转节点，本回合的主收益来自跨点处理和路线信息。"
+			return "这是中转型路遇，主收益来自跨点处理和路线信息。"
 		_:
 			return "处理这个节点最核心的内容。"
 
@@ -2175,7 +2175,7 @@ func _show_npc_menu(payload: Dictionary) -> void:
 			"disabled": duel_locked,
 		})
 	pending_context = {"kind": "npc_menu", "on_close": "arrival"}
-	decision_panel.open_panel("与地点上的人交谈", "第一次见面要先决斗，定下态度之后才能正式拜访。", choices, "返回地点")
+	decision_panel.open_panel("你在这里遇到的人", "第一次见面要先决斗，定下态度之后才能正式深谈。", choices, "返回地点")
 
 func _show_dojo_menu(payload: Dictionary) -> void:
 	var dojo: Dictionary = payload.get("dojo", {})
@@ -2259,7 +2259,7 @@ func _show_encounter_preview(payload: Dictionary) -> void:
 		var empty_text := "今天没有遇到特别愿意停留的个体。"
 		if source == "ambush":
 			empty_text = "你先察觉到了躁动，但这次没有真的爆发袭扰。"
-		decision_panel.open_panel("今天的野外", empty_text, [], "结束拜访")
+		decision_panel.open_panel("今天的路遇", empty_text, [], "继续前进")
 		return
 	var species: Dictionary = payload.get("species", {})
 	var species_id := String(payload.get("species_id", ""))
@@ -2277,12 +2277,12 @@ func _show_encounter_preview(payload: Dictionary) -> void:
 	for action_id in encounter_service.get_available_actions(payload):
 		choices.append({"id": action_id, "label": _action_name(action_id), "summary": "按当前情绪做一次温和尝试。"})
 	pending_context = {"kind": "encounter_preview", "on_close": "arrival"}
-	decision_panel.open_panel("突发袭扰" if source == "ambush" else "野外相遇", "\n".join(body_lines), choices, "返回地点")
+	decision_panel.open_panel("突发袭扰" if source == "ambush" else "路遇野群", "\n".join(body_lines), choices, "返回地点")
 
 func _show_encounter_result(payload: Dictionary) -> void:
 	var outcome_text := _handle_encounter_result_effects(payload)
 	pending_context = {"kind": "encounter_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("相遇结果", outcome_text, [], "结束拜访")
+	decision_panel.open_panel("路遇结果", outcome_text, [], "继续前进")
 
 func _on_decision_choice_selected(choice_id: String) -> void:
 	if pending_context.is_empty():
@@ -2453,6 +2453,13 @@ func _resolve_board_event_node(node: Dictionary) -> void:
 	decision_panel.open_panel("事件格", "\n".join(body_lines), [], "继续前进")
 
 func _apply_board_event_package(event_package: Dictionary) -> void:
+	var event_id := String(event_package.get("id", ""))
+	if not event_id.is_empty():
+		GameState.note_ambient_event_seen(
+			event_id,
+			Array(event_package.get("tags", [])).duplicate(true),
+			current_visit_habitat_id
+		)
 	for event_id in event_package.get("completed_events", []):
 		if not String(event_id).is_empty():
 			GameState.mark_event_completed(String(event_id))
@@ -3143,6 +3150,14 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 	decision_panel.open_panel("交谈结果", "\n".join(body_lines), [], "结束拜访")
 
 func _apply_talk_side_effects(active_npc_id: String, talk_package: Dictionary) -> void:
+	var ambient_event: Dictionary = Dictionary(talk_package.get("event", {})).duplicate(true)
+	var ambient_event_id := String(ambient_event.get("id", ""))
+	if not ambient_event_id.is_empty():
+		GameState.note_ambient_event_seen(
+			ambient_event_id,
+			Array(ambient_event.get("tags", [])).duplicate(true),
+			current_visit_habitat_id
+		)
 	for event_id in talk_package.get("completed_events", []):
 		if not String(event_id).is_empty():
 			GameState.mark_event_completed(String(event_id))

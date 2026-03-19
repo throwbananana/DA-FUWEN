@@ -198,6 +198,7 @@ func _default_quest_memory() -> Dictionary:
 		"story_flags": {},
 		"story_beat_history": {},
 		"map_effect_flags": {},
+		"recent_ambient_events": [],
 	}
 
 func _ensure_quest_memory_defaults() -> void:
@@ -1044,6 +1045,49 @@ func mark_event_completed(event_id: String) -> void:
 
 func get_event_last_turn(event_id: String) -> int:
 	return int(quest_memory["event_last_turn"].get(event_id, -999))
+
+func note_ambient_event_seen(event_id: String, tags: Array = [], habitat_id: String = "") -> void:
+	if event_id.is_empty():
+		return
+	var history: Array = _duplicate_array(quest_memory.get("recent_ambient_events", []))
+	history.append({
+		"id": event_id,
+		"tags": Array(tags).duplicate(true),
+		"habitat_id": habitat_id,
+		"turn": global_turn,
+	})
+	while history.size() > 8:
+		history.pop_front()
+	quest_memory["recent_ambient_events"] = history
+
+func get_recent_ambient_event_ids(window_size: int = 6, habitat_id: String = "") -> Array:
+	var result: Array = []
+	var history: Array = _duplicate_array(quest_memory.get("recent_ambient_events", []))
+	var start_index := maxi(0, history.size() - window_size)
+	for index in range(start_index, history.size()):
+		var entry: Dictionary = Dictionary(history[index])
+		if not habitat_id.is_empty() and String(entry.get("habitat_id", "")) != habitat_id:
+			continue
+		var event_id := String(entry.get("id", ""))
+		if event_id.is_empty():
+			continue
+		result.append(event_id)
+	return result
+
+func get_recent_ambient_event_tags(window_size: int = 6, habitat_id: String = "") -> Array:
+	var result: Array = []
+	var history: Array = _duplicate_array(quest_memory.get("recent_ambient_events", []))
+	var start_index := maxi(0, history.size() - window_size)
+	for index in range(start_index, history.size()):
+		var entry: Dictionary = Dictionary(history[index])
+		if not habitat_id.is_empty() and String(entry.get("habitat_id", "")) != habitat_id:
+			continue
+		for raw_tag in Array(entry.get("tags", [])):
+			var tag := String(raw_tag)
+			if tag.is_empty() or result.has(tag):
+				continue
+			result.append(tag)
+	return result
 
 func unlock_dialogue(dialogue_id: String) -> void:
 	var unlocked: Dictionary = quest_memory["unlocked_dialogues"]

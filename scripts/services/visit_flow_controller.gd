@@ -1,7 +1,7 @@
 class_name VisitFlowController
 extends Node
 
-## 管理一次“出门 -> 到点 -> 互动 -> 结算”的流程。
+## 管理一次“出门 -> 落点偶遇 -> 互动 -> 结算”的流程。
 ## 你可以把它挂到 visit 场景或主场景里。
 
 const HabitatServiceScript = preload("res://scripts/services/habitat_service.gd")
@@ -140,3 +140,9 @@ func finish_visit() -> void:
 	pending_dojo_id = ""
 	pending_dojo_tier = ""
 	visit_finished.emit(report)
+
+func start_stop_encounter(habitat_id: String) -> void:
+	start_visit(habitat_id)
+
+func finish_stop_encounter() -> void:
+	finish_visit()

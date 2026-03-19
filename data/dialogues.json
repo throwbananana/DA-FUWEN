@@ -1245,6 +1245,350 @@
       "tags": [
         "pool_reflection"
       ]
+    },
+    {
+      "id": "dlg_grove_patrol_seed_line",
+      "npc": "grove_patrol",
+      "habitat_id": "greenbark_grove",
+      "topic": "seed_line",
+      "weight": 5,
+      "cooldown_days": 4,
+      "requires_unlock": true,
+      "tags": [
+        "事件后续",
+        "路线",
+        "林地"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "grove_patrol",
+          "text": "栎果排出来的路只管今天，明天泥一翻，它就不是原来那条了。",
+          "choices": [
+            {
+              "text": "所以你才让我只记最近三步。",
+              "next": "reply_a"
+            },
+            {
+              "text": "树脂味也是路标的一部分？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "grove_patrol",
+          "text": "近路从来不是更长远，是更少踩错今天这一脚。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "grove_patrol",
+          "text": "当然，林子先用味道说话，脚印只是后来补上的字。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_mire_guide_reed_knots",
+      "npc": "mire_guide",
+      "habitat_id": "reed_mire",
+      "topic": "reed_knots",
+      "weight": 5,
+      "cooldown_days": 4,
+      "requires_unlock": true,
+      "tags": [
+        "事件后续",
+        "湿地",
+        "路线"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mire_guide",
+          "text": "过泽地先记回身点，不是因为你会退，是因为知道能退才走得稳。",
+          "choices": [
+            {
+              "text": "原来折返点比入水点更早决定。",
+              "next": "reply_a"
+            },
+            {
+              "text": "绳结松紧是在提醒水底的泥？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mire_guide",
+          "text": "对，稳当的人不是不前进，是先给自己留一条不慌的退路。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mire_guide",
+          "text": "泥、水、风都在绳上，手比眼睛更早知道今天能不能过去。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_coast_keeper_return_crate",
+      "npc": "coast_keeper",
+      "habitat_id": "saltglass_coast",
+      "topic": "return_crate",
+      "weight": 5,
+      "cooldown_days": 4,
+      "requires_unlock": true,
+      "tags": [
+        "事件后续",
+        "海岸",
+        "潮汐"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "coast_keeper",
+          "text": "海流送回来的东西不算礼物，它只是把别人没守住的那一份推到你脚边。",
+          "choices": [
+            {
+              "text": "所以你先看潮痕，不先看值不值钱。",
+              "next": "reply_a"
+            },
+            {
+              "text": "玻片一旦起雾就很难再用了？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "coast_keeper",
+          "text": "潮痕是来路，知道来路，才知道这东西还能不能信。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "coast_keeper",
+          "text": "能用，但别拿去做最细的活，海边的东西总归带一点退潮后的毛边。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_storm_mentor_markers",
+      "npc": "storm_mentor",
+      "habitat_id": "thunder_meadow",
+      "topic": "charge_markers",
+      "weight": 5,
+      "cooldown_days": 4,
+      "requires_unlock": true,
+      "tags": [
+        "事件后续",
+        "训练",
+        "风暴"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "storm_mentor",
+          "text": "快不是一口气冲完，是知道哪一步该收、哪一步才该放。",
+          "choices": [
+            {
+              "text": "难怪你先让我记停步点。",
+              "next": "reply_a"
+            },
+            {
+              "text": "炭痕会因为风向改位置吗？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "storm_mentor",
+          "text": "记不住停，所谓加速就只是乱抢拍子。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "storm_mentor",
+          "text": "会，所以你每天都得重新看。训练不是背答案，是校准节奏。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_kiln_warden_true_heat",
+      "npc": "kiln_warden",
+      "habitat_id": "ember_crater",
+      "topic": "true_heat",
+      "weight": 5,
+      "cooldown_days": 4,
+      "requires_unlock": true,
+      "tags": [
+        "事件后续",
+        "余烬",
+        "锻炉"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "kiln_warden",
+          "text": "回火最骗人的时候，声音往往最大。真正该上的那一口，反而稳。",
+          "choices": [
+            {
+              "text": "所以你只让我记那几拍稳的。",
+              "next": "reply_a"
+            },
+            {
+              "text": "边缘温石比坑心更好带走，是因为不躁？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "kiln_warden",
+          "text": "对，锻火的人先学分辨真热，才配谈爆发。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "kiln_warden",
+          "text": "坑心留给火自己，边缘才是给走路的人捎带回去的东西。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_bridge_scout_echo_gap",
+      "npc": "bridge_scout",
+      "habitat_id": "echo_broken_bridge",
+      "topic": "echo_gap",
+      "weight": 5,
+      "cooldown_days": 4,
+      "requires_unlock": true,
+      "tags": [
+        "事件后续",
+        "桥头",
+        "路径"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "bridge_scout",
+          "text": "断桥最会骗人的是“看着还行”。真要信，还是信回音比信眼睛快。",
+          "choices": [
+            {
+              "text": "第一声太快，就说明那段板发空。",
+              "next": "reply_a"
+            },
+            {
+              "text": "你每天都要重吹一次试风哨？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "bridge_scout",
+          "text": "对，空得越厉害，声音越急着回来。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "bridge_scout",
+          "text": "桥会变，风也会变。昨天能走，不代表今天还讲同一套道理。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_mirror_keeper_reflection",
+      "npc": "mirror_keeper",
+      "habitat_id": "frost_mirror_lake",
+      "topic": "reflection_hold",
+      "weight": 5,
+      "cooldown_days": 4,
+      "requires_unlock": true,
+      "tags": [
+        "事件后续",
+        "镜面",
+        "恢复"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mirror_keeper",
+          "text": "盯整面湖，只会把自己的心也看乱。先守住一点，别的才会慢慢归位。",
+          "choices": [
+            {
+              "text": "原来安静不是看得更多，是先少看一点。",
+              "next": "reply_a"
+            },
+            {
+              "text": "最稳的那一点要怎么找？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mirror_keeper",
+          "text": "对，恢复从来不是把一切都压住，是先给自己一个不晃的位置。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mirror_keeper",
+          "text": "找最慢的那一丝雾，它不抢你，你也别急着追它。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_ruin_diviner_second_echo",
+      "npc": "ruin_diviner",
+      "habitat_id": "moonfen_ruins",
+      "topic": "second_echo",
+      "weight": 4,
+      "cooldown_days": 5,
+      "requires_unlock": true,
+      "tags": [
+        "事件后续",
+        "终局",
+        "余响"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "ruin_diviner",
+          "text": "第一道回响只会学你，第二道才开始说井自己想说的话。",
+          "choices": [
+            {
+              "text": "所以你总让我慢半拍再回答。",
+              "next": "reply_a"
+            },
+            {
+              "text": "那最快接上的那句话最不该信？",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "ruin_diviner",
+          "text": "慢半拍不是迟钝，是给真假留一点分开的时间。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "ruin_diviner",
+          "text": "在这种地方，最先贴上来的答案通常最想把你领偏。",
+          "end": true
+        }
+      ]
     }
   ]
 }

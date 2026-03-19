@@ -770,6 +770,374 @@
         "疏散线",
         "窗口"
       ]
+    },
+    {
+      "id": "evt_grove_seed_path",
+      "title": "林巡人的栎果近路",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "greenbark_grove",
+      "participants": [
+        "grove_patrol"
+      ],
+      "trigger": {
+        "time_in": ["day", "evening"],
+        "weather_in": ["clear", "fog"]
+      },
+      "summary": "青岚会用栎果在泥地上排出一条临时近路，专门教你看今天哪段脚下最稳。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "grove_patrol",
+          "text": "青岚先把栎果排成一弯，再让你别看远处，只看最近三步的落脚点。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "walk_seed_line",
+          "text": "跟着栎果重走一遍",
+          "outcome": "你记住了这条今天才成立的软土近路。",
+          "effects": {
+            "trust": { "grove_patrol": 1 },
+            "unlock_dialogue": "dlg_grove_patrol_seed_line"
+          }
+        },
+        {
+          "id": "note_soft_ground",
+          "text": "记下松土和树脂味的位置",
+          "outcome": "以后再来时，你会更快嗅到林地里哪边刚动过。",
+          "effects": {
+            "items": { "amber_resin": 1 },
+            "journal_entry": "青栎林：栎果近路会随着树脂味和软土位置一起变化。"
+          }
+        }
+      ],
+      "tags": ["林地", "路线", "巡林"]
+    },
+    {
+      "id": "evt_mire_reed_knots",
+      "title": "芦泽结绳渡线",
+      "category": "care_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "reed_mire",
+      "participants": [
+        "mire_guide"
+      ],
+      "trigger": {
+        "time_in": ["day", "evening"],
+        "weather_in": ["fog", "rain", "clear"]
+      },
+      "summary": "芦娘会把几根看似一样的芦绳打成不同结法，教你分辨哪条才是今天能安全涉过去的线。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "mire_guide",
+          "text": "芦娘让你先摸绳结的松紧，再去看水面，别把顺序搞反。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "follow_purify_line",
+          "text": "照她的顺序过一遍",
+          "outcome": "你的步子慢了，但脚下那层浑水也没再乱翻。",
+          "effects": {
+            "trust": { "mire_guide": 1 },
+            "unlock_dialogue": "dlg_mire_guide_reed_knots"
+          }
+        },
+        {
+          "id": "mark_reed_turn",
+          "text": "把回身点记在纸上",
+          "outcome": "哪怕下次雾更重，你也知道该在哪一步折回。",
+          "effects": {
+            "items": { "reed": 1 },
+            "journal_entry": "芦泽沼：结绳渡线要先记回身点，再记入水点。"
+          }
+        }
+      ],
+      "tags": ["湿地", "净化", "路线"]
+    },
+    {
+      "id": "evt_coast_return_crate",
+      "title": "潮退后的回流木箱",
+      "category": "settlement_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "saltglass_coast",
+      "participants": [
+        "coast_keeper"
+      ],
+      "trigger": {
+        "time_in": ["day", "evening"],
+        "weather_in": ["clear", "windy", "fog"]
+      },
+      "summary": "砺潮会在潮退时拆开刚冲回来的旧木箱，看看这次海流替岸上带回了什么还能用的东西。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "coast_keeper",
+          "text": "砺潮先用脚把木箱卡住，才让你去掀最松的那块板。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "sort_by_tide_mark",
+          "text": "按潮痕先分可用和不可用",
+          "outcome": "你们没翻到特别稀罕的东西，但至少不会把好玻片泡坏。",
+          "effects": {
+            "trust": { "coast_keeper": 1 },
+            "unlock_dialogue": "dlg_coast_keeper_return_crate"
+          }
+        },
+        {
+          "id": "keep_clear_shards",
+          "text": "挑走没起雾的几片",
+          "outcome": "就算边缘还有点毛，也足够回去当临时观察片。",
+          "effects": {
+            "items": { "glass": 1 },
+            "journal_entry": "盐镜海岸：回流木箱里的透明片要先看起雾边。"
+          }
+        }
+      ],
+      "tags": ["海岸", "潮汐", "回流"]
+    },
+    {
+      "id": "evt_meadow_charge_markers",
+      "title": "雷训场的落脚标记",
+      "category": "care_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "thunder_meadow",
+      "participants": [
+        "storm_mentor"
+      ],
+      "trigger": {
+        "time_in": ["day", "evening"],
+        "weather_in": ["storm", "clear", "windy"]
+      },
+      "summary": "霁岚会把今天的落脚点用炭痕标在草地上，让你先记住哪一步该快、哪一步该停。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "storm_mentor",
+          "text": "霁岚说先看停步点，再看加速点，不然你只会一味往前抢。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "follow_pause_then_burst",
+          "text": "按停一步、冲两步试一次",
+          "outcome": "节奏一对，连风声都像在帮你计拍。",
+          "effects": {
+            "trust": { "storm_mentor": 1 },
+            "unlock_dialogue": "dlg_storm_mentor_markers"
+          }
+        },
+        {
+          "id": "collect_burnt_reeds",
+          "text": "收起边上的焦黑草茎",
+          "outcome": "看着不起眼，但拿回去正好能当一次性引雷记号。",
+          "effects": {
+            "items": { "spark_reed": 1 },
+            "journal_entry": "鸣雷草场：今天的炭痕落脚点更适合练停顿而不是抢先。"
+          }
+        }
+      ],
+      "tags": ["风暴", "训练", "速度"]
+    },
+    {
+      "id": "evt_crater_kiln_breath",
+      "title": "余烬坑的回火呼吸",
+      "category": "ruin_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "ember_crater",
+      "participants": [
+        "kiln_warden"
+      ],
+      "trigger": {
+        "time_in": ["day", "evening", "night"],
+        "weather_in": ["dry", "clear", "windy"]
+      },
+      "summary": "炽伯会趁余烬坑呼吸最稳的时候让你靠近一点，听它什么时候是真热，什么时候只是虚张声势。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "kiln_warden",
+          "text": "炽伯先抬手示意你别靠太前，只听火口吐气的间隔。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "listen_for_true_heat",
+          "text": "只记真正回火的那几拍",
+          "outcome": "你没学会冒进，但学会了什么时候值得压上去。",
+          "effects": {
+            "trust": { "kiln_warden": 1 },
+            "unlock_dialogue": "dlg_kiln_warden_true_heat"
+          }
+        },
+        {
+          "id": "pick_warm_edge_stones",
+          "text": "捡起边缘那几块温热石",
+          "outcome": "边缘温度刚好，比正中心那些更适合带走。",
+          "effects": {
+            "items": { "warm_stone": 1 },
+            "journal_entry": "烬火盆地：回火最稳时，边缘温石比坑心材料更好带走。"
+          }
+        }
+      ],
+      "tags": ["余烬", "锻炉", "爆发"]
+    },
+    {
+      "id": "evt_bridge_whistle_test",
+      "title": "断桥口的试风哨",
+      "category": "settlement_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "echo_broken_bridge",
+      "participants": [
+        "bridge_scout"
+      ],
+      "trigger": {
+        "time_in": ["day", "evening"],
+        "weather_in": ["windy", "clear", "fog"]
+      },
+      "summary": "迟桥会在断桥口吹几声短促的试风哨，用回音告诉你今天哪边的板最不该踩。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "bridge_scout",
+          "text": "迟桥让你别急着听远处，只先记第一声和第二声回来的快慢。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "memorize_echo_gap",
+          "text": "照着回音记一条安全线",
+          "outcome": "那条线不算快，但至少今天还算讲理。",
+          "effects": {
+            "trust": { "bridge_scout": 1 },
+            "unlock_dialogue": "dlg_bridge_scout_echo_gap"
+          }
+        },
+        {
+          "id": "write_bridge_note",
+          "text": "把今天的回音差写下来",
+          "outcome": "一张小纸条而已，却足够让下次少走一次冤枉路。",
+          "effects": {
+            "items": { "paper": 1 },
+            "journal_entry": "回声断桥：试风哨第一声回得太快时，别走最窄的那段。"
+          }
+        }
+      ],
+      "tags": ["桥头", "传闻", "路径"]
+    },
+    {
+      "id": "evt_lake_mirror_fog",
+      "title": "镜湖边的雾痕校对",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "frost_mirror_lake",
+      "participants": [
+        "mirror_keeper"
+      ],
+      "trigger": {
+        "time_in": ["day", "evening", "night"],
+        "weather_in": ["fog", "snow", "clear"]
+      },
+      "summary": "冰珀会借湖面薄雾校对岸边的倒影，教你分清哪些晃动是风，哪些是自己心太急。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "mirror_keeper",
+          "text": "冰珀叫你先盯倒影最稳的那一点，不要一开始就追着整个湖面看。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "hold_on_reflection",
+          "text": "只守住最稳的一点",
+          "outcome": "等那一点不动了，旁边乱晃的东西反而更容易看明白。",
+          "effects": {
+            "trust": { "mirror_keeper": 1 },
+            "unlock_dialogue": "dlg_mirror_keeper_reflection"
+          }
+        },
+        {
+          "id": "collect_cold_edge",
+          "text": "沿边捡几片最冷的镜屑",
+          "outcome": "它们轻得过头，却意外适合带回去做安静的观察片。",
+          "effects": {
+            "items": { "ice_glass": 1 },
+            "journal_entry": "霜镜湖：先守一点，再看整面，倒影就不会把人拖乱。"
+          }
+        }
+      ],
+      "tags": ["镜面", "恢复", "反射"]
+    },
+    {
+      "id": "evt_moonfen_well_echo",
+      "title": "月井边的回响试探",
+      "category": "anomaly_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "moonfen_ruins",
+      "participants": [
+        "ruin_diviner"
+      ],
+      "trigger": {
+        "time_in": ["evening", "night"],
+        "weather_in": ["fog", "night", "storm"]
+      },
+      "summary": "玄沼会在月井边故意停半句，让井里的回响替你补上剩下那半句。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "ruin_diviner",
+          "text": "玄沼让你别急着回答，先听井里打回来的那一层尾音。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "wait_for_second_echo",
+          "text": "等第二道回响再开口",
+          "outcome": "你错过了最快的那一拍，却躲开了最容易误判的那一拍。",
+          "effects": {
+            "trust": { "ruin_diviner": 1 },
+            "unlock_dialogue": "dlg_ruin_diviner_second_echo"
+          }
+        },
+        {
+          "id": "take_glow_residue",
+          "text": "刮下一点井沿冷辉",
+          "outcome": "那点残光像是会自己往后退，但装进瓶里后总算安静了。",
+          "effects": {
+            "items": { "glow_dust": 1 },
+            "journal_entry": "月沼遗迹：月井的第二道回响比第一道更值得信。"
+          }
+        }
+      ],
+      "tags": ["终局", "异常", "余响"]
     }
   ]
 }

@@ -64,7 +64,7 @@ func build_board_event_package(habitat_id: String) -> Dictionary:
 		candidates.append(candidate)
 	if candidates.is_empty():
 		return {}
-	var chosen: Dictionary = _pick_weighted_event(candidates)
+	var chosen: Dictionary = _pick_weighted_event(candidates, habitat_id)
 	var npc_id := String(chosen.get("board_npc_id", ""))
 	if npc_id.is_empty():
 		return {}
@@ -96,7 +96,7 @@ func _pick_ambient_event(npc_id: String, habitat_id: String) -> Dictionary:
 		candidates.append(event_row)
 	if candidates.is_empty():
 		return {}
-	var chosen: Dictionary = _pick_weighted_event(candidates)
+	var chosen: Dictionary = _pick_weighted_event(candidates, habitat_id)
 	return _materialize_event(chosen, npc_id)
 
 func _dialogue_is_available(dialogue: Dictionary, npc_id: String, habitat_id: String) -> bool:
@@ -224,11 +224,11 @@ func _pick_weighted_dialogue(rows: Array, npc_id: String) -> Dictionary:
 			return Dictionary(bucket.get("row", {})).duplicate(true)
 	return Dictionary(rows[0]).duplicate(true)
 
-func _pick_weighted_event(rows: Array) -> Dictionary:
+func _pick_weighted_event(rows: Array, habitat_id: String) -> Dictionary:
 	var total := 0
 	var buckets: Array = []
 	for row in rows:
-		var score := maxi(1, int(row.get("weight", 1)))
+		var score := _event_weight(row, habitat_id)
 		total += score
 		buckets.append({"threshold": total, "row": row})
 	var roll := rng.randi_range(1, maxi(1, total))
@@ -236,6 +236,46 @@ func _pick_weighted_event(rows: Array) -> Dictionary:
 		if roll <= int(bucket.get("threshold", 0)):
 			return Dictionary(bucket.get("row", {})).duplicate(true)
 	return Dictionary(rows[0]).duplicate(true)
+
+func _event_weight(row: Dictionary, habitat_id: String) -> int:
+	var weight := maxi(1, int(row.get("weight", 1)))
+	var event_id := String(row.get("id", ""))
+	if GameState.get_event_last_turn(event_id) < 0:
+		weight += 3
+	var recent_ids: Array = GameState.get_recent_ambient_event_ids(6, habitat_id)
+	if recent_ids.has(event_id):
+		weight = maxi(1, int(ceil(float(weight) * 0.2)))
+	weight = maxi(1, weight - _recent_event_tag_penalty(row, habitat_id))
+	if _event_matches_current_deck(row):
+		weight += 2
+	if bool(row.get("repeatable", false)):
+		weight += 1
+	return maxi(1, weight)
+
+func _recent_event_tag_penalty(row: Dictionary, habitat_id: String) -> int:
+	var penalty := 0
+	var recent_tags: Array = GameState.get_recent_ambient_event_tags(6, habitat_id)
+	for raw_tag in row.get("tags", []):
+		if recent_tags.has(String(raw_tag)):
+			penalty += 1
+	return penalty
+
+func _event_matches_current_deck(row: Dictionary) -> bool:
+	var deck: Dictionary = DataRepository.get_node_deck_for_season(GameState.season_id)
+	var flavors: Array = Array(deck.get("encounter_flavors", [])).duplicate(true)
+	if flavors.is_empty():
+		return false
+	var summary_text := "%s %s" % [String(row.get("title", "")), String(row.get("summary", ""))]
+	for flavor in flavors:
+		var token := String(flavor)
+		if token.is_empty():
+			continue
+		if summary_text.findn(token) >= 0:
+			return true
+		for raw_tag in row.get("tags", []):
+			if String(raw_tag) == token:
+				return true
+	return false
 
 func _materialize_event(event_row: Dictionary, npc_id: String) -> Dictionary:
 	var stage_lines: Array = []
@@ -270,6 +310,7 @@ func _materialize_event(event_row: Dictionary, npc_id: String) -> Dictionary:
 	return {
 		"id": String(event_row.get("id", "")),
 		"title": String(event_row.get("title", "")),
+		"habitat_id": String(event_row.get("habitat_id", "")),
 		"summary": String(event_row.get("summary", "")),
 		"stage_lines": stage_lines,
 		"outcome": String(choice.get("outcome", "")),

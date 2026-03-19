@@ -713,13 +713,17 @@ func _merge_habitat_state(state: Dictionary, habitat_id: String, habitat: Dictio
 			merged["assistant_uid"] = ""
 	var level_key := "service_levels" if _uses_service_levels(habitat) else "building_levels"
 	var building_ids: Array = habitat.get("buildings", [])
+	var runtime_states: Dictionary = merged.get("building_runtime_states", {})
 	if not building_ids.is_empty():
 		var levels: Dictionary = merged.get(level_key, {})
 		for building_id in building_ids:
 			var id := String(building_id)
 			if not levels.has(id):
 				levels[id] = 0
+			if not runtime_states.has(id):
+				runtime_states[id] = _default_building_runtime_state()
 		merged[level_key] = levels
+	merged["building_runtime_states"] = runtime_states
 	var stored_unlock := bool(merged.get("is_unlocked", _default_unlock_state(habitat_id, habitat)))
 	merged["is_unlocked"] = stored_unlock
 	merged["rank"] = _rank_from_state(merged)
@@ -732,6 +736,7 @@ func _build_default_habitat_state(habitat_id: String, habitat: Dictionary) -> Di
 		"rank": 0,
 		"last_visit_day": -1,
 		"is_unlocked": _default_unlock_state(habitat_id, habitat),
+		"building_runtime_states": {},
 	}
 	if _uses_resident_slots(habitat):
 		state["resident_uid"] = ""
@@ -739,8 +744,12 @@ func _build_default_habitat_state(habitat_id: String, habitat: Dictionary) -> Di
 	var building_ids: Array = habitat.get("buildings", [])
 	if not building_ids.is_empty():
 		var levels := {}
+		var runtime_states := {}
 		for building_id in building_ids:
-			levels[String(building_id)] = 0
+			var id := String(building_id)
+			levels[id] = 0
+			runtime_states[id] = _default_building_runtime_state()
+		state["building_runtime_states"] = runtime_states
 		if _uses_service_levels(habitat):
 			state["service_levels"] = levels
 		else:
@@ -769,6 +778,16 @@ func _rank_from_state(habitat_state: Dictionary) -> int:
 	for value in levels.values():
 		total += int(value)
 	return total
+
+func _default_building_runtime_state() -> Dictionary:
+	return {
+		"cooldowns": {},
+		"stored_output": {},
+		"visit_flags": {},
+		"weekly_flags": {},
+		"last_used_turn": -1,
+		"last_action_id": "",
+	}
 
 func _seed_companions() -> void:
 	add_companion("steam_otter_1", "汐牙")
@@ -850,6 +869,10 @@ func set_building_level(habitat_id: String, building_id: String, level: int) -> 
 		habitat_state["building_levels"] = building_levels
 	else:
 		habitat_state["service_levels"] = building_levels
+	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
+	if not runtime_states.has(building_id):
+		runtime_states[building_id] = _default_building_runtime_state()
+	habitat_state["building_runtime_states"] = runtime_states
 	habitat_state["rank"] = _rank_from_state(habitat_state)
 	habitats[habitat_id] = habitat_state
 	_recalculate_backpack_capacity()
@@ -873,6 +896,75 @@ func note_build(building_id: String, level: int) -> void:
 	builds[building_id] = maxi(int(builds.get(building_id, 0)), level)
 	quest_memory["built_levels"] = builds
 	refresh_season_unlocks()
+
+func get_building_runtime_state(habitat_id: String, building_id: String) -> Dictionary:
+	if not habitats.has(habitat_id):
+		return {}
+	var habitat_state: Dictionary = habitats[habitat_id]
+	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
+	return Dictionary(runtime_states.get(building_id, _default_building_runtime_state())).duplicate(true)
+
+func ensure_building_runtime_state(habitat_id: String, building_id: String) -> Dictionary:
+	if not habitats.has(habitat_id):
+		return {}
+	var habitat_state: Dictionary = habitats[habitat_id]
+	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
+	if not runtime_states.has(building_id):
+		runtime_states[building_id] = _default_building_runtime_state()
+		habitat_state["building_runtime_states"] = runtime_states
+		habitats[habitat_id] = habitat_state
+	return Dictionary(runtime_states[building_id]).duplicate(true)
+
+func set_building_runtime_state(habitat_id: String, building_id: String, runtime_state: Dictionary) -> void:
+	if not habitats.has(habitat_id):
+		return
+	var habitat_state: Dictionary = habitats[habitat_id]
+	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
+	runtime_states[building_id] = runtime_state.duplicate(true)
+	habitat_state["building_runtime_states"] = runtime_states
+	habitats[habitat_id] = habitat_state
+
+func consume_next_observation_source(habitat_id: String) -> String:
+	if not habitats.has(habitat_id):
+		return "observe"
+	var habitat_state: Dictionary = habitats[habitat_id]
+	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
+	for building_id in runtime_states.keys():
+		var runtime_state: Dictionary = Dictionary(runtime_states[building_id]).duplicate(true)
+		var visit_flags: Dictionary = runtime_state.get("visit_flags", {})
+		var source := String(visit_flags.get("next_observation_source", ""))
+		if source.is_empty():
+			continue
+		visit_flags.erase("next_observation_source")
+		runtime_state["visit_flags"] = visit_flags
+		runtime_states[building_id] = runtime_state
+		habitat_state["building_runtime_states"] = runtime_states
+		habitats[habitat_id] = habitat_state
+		return source
+	return "observe"
+
+func _tick_building_runtime_states() -> void:
+	for habitat_id in habitats.keys():
+		var habitat_state: Dictionary = habitats[habitat_id]
+		var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
+		if runtime_states.is_empty():
+			continue
+		var dirty := false
+		for building_id in runtime_states.keys():
+			var runtime_state: Dictionary = Dictionary(runtime_states[building_id]).duplicate(true)
+			var cooldowns: Dictionary = Dictionary(runtime_state.get("cooldowns", {})).duplicate(true)
+			var updated_cooldowns := {}
+			for action_id in cooldowns.keys():
+				var remaining := maxi(0, int(cooldowns[action_id]) - 1)
+				if remaining > 0:
+					updated_cooldowns[action_id] = remaining
+			runtime_state["cooldowns"] = updated_cooldowns
+			runtime_state["visit_flags"] = {}
+			runtime_states[building_id] = runtime_state
+			dirty = true
+		if dirty:
+			habitat_state["building_runtime_states"] = runtime_states
+			habitats[habitat_id] = habitat_state
 
 func note_encounter(species_id: String) -> void:
 	var encounters: Dictionary = quest_memory["encounter_species"]
@@ -1153,6 +1245,7 @@ func advance_day() -> Dictionary:
 	season_turn = day_index
 	global_turn += 1
 	weekly_turn += 1
+	_tick_building_runtime_states()
 	if weekly_turn > 5:
 		weekly_turn = 1
 		week_index += 1

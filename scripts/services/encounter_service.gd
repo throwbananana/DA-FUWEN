@@ -4,14 +4,12 @@ extends RefCounted
 ## 负责把“战斗/捕捉”改成“观察/安抚/结缘”的前置流程。
 
 func roll_encounter(habitat_id: String, source: String = "observe") -> Dictionary:
-	var valid_entries := build_weighted_entries(habitat_id)
+	var valid_entries := build_weighted_entries(habitat_id, source)
 	if valid_entries.is_empty():
 		return {"ok": false, "reason": "no_encounter", "source": source}
-
 	var chosen := _weighted_pick(valid_entries)
 	var species_id := String(chosen.get("species_id", ""))
 	var mood_id := String(chosen.get("mood", "curious"))
-
 	return {
 		"ok": true,
 		"species_id": species_id,
@@ -21,14 +19,15 @@ func roll_encounter(habitat_id: String, source: String = "observe") -> Dictionar
 		"source": source,
 	}
 
-func build_weighted_entries(habitat_id: String) -> Array:
+func build_weighted_entries(habitat_id: String, source: String = "observe") -> Array:
 	var habitat_encounters: Dictionary = DataRepository.encounters.get(habitat_id, {})
 	var groups: Array = habitat_encounters.get("weight_groups", [])
 	var valid_entries: Array = []
 	for group in groups:
 		if _matches_condition(group.get("when", {})):
 			valid_entries.append_array(_filter_entries_by_progression(group.get("entries", [])))
-	return _apply_shop_odds(valid_entries)
+	valid_entries = _apply_shop_odds(valid_entries)
+	return _apply_source_biases(valid_entries, source)
 
 func _filter_entries_by_progression(entries: Array) -> Array:
 	var filtered: Array = []
@@ -68,6 +67,23 @@ func _apply_shop_odds(entries: Array) -> Array:
 			adjusted.append(fallback_entry)
 	return adjusted
 
+func _apply_source_biases(entries: Array, source: String) -> Array:
+	if source.is_empty() or source == "observe":
+		return entries
+	var adjusted: Array = []
+	for entry in entries:
+		var adjusted_entry: Dictionary = entry.duplicate(true)
+		var species_id := String(adjusted_entry.get("species_id", ""))
+		var species := DataRepository.get_species(species_id)
+		if species.is_empty():
+			adjusted.append(adjusted_entry)
+			continue
+		var factor := _source_bias_factor(species, source)
+		var base_weight := int(adjusted_entry.get("effective_weight", adjusted_entry.get("weight", 0)))
+		adjusted_entry["effective_weight"] = maxi(1, int(round(float(base_weight) * factor)))
+		adjusted.append(adjusted_entry)
+	return adjusted
+
 func get_available_actions(encounter: Dictionary) -> Array:
 	var mood_id := String(encounter.get("mood_id", "curious"))
 	match mood_id:
@@ -95,7 +111,6 @@ func get_available_actions(encounter: Dictionary) -> Array:
 func resolve_action(encounter: Dictionary, action_id: String) -> Dictionary:
 	var mood_id := String(encounter.get("mood_id", "curious"))
 	var bond_window := String(encounter.get("bond_window", "medium"))
-
 	var score := 0
 	match action_id:
 		"feed":
@@ -112,12 +127,10 @@ func resolve_action(encounter: Dictionary, action_id: String) -> Dictionary:
 			score += 2 if mood_id in ["curious", "hungry", "lively", "playful", "smooth"] else 0
 		"retreat":
 			return {"ok": true, "outcome": "safe_leave", "bond_delta": 0}
-
 	if bond_window == "high":
 		score += 1
 	elif bond_window == "low":
 		score -= 1
-
 	if score >= 3:
 		return {"ok": true, "outcome": "bond_success", "bond_delta": 2}
 	elif score == 2:
@@ -155,13 +168,65 @@ func _estimate_bond_window(mood_id: String) -> String:
 		_:
 			return "medium"
 
+func _source_bias_factor(species: Dictionary, source: String) -> float:
+	var resident_tags: Array = species.get("resident_tags", [])
+	var habitat_preferences: Array = species.get("habitat_preferences", [])
+	var trait_tags: Array = species.get("trait_tags", [])
+	var rarity := String(species.get("rarity", "common"))
+	var temperament := String(species.get("temperament", ""))
+	var factor := 1.0
+	match source:
+		"nursery_watch":
+			if _array_contains_any(resident_tags, ["nursery", "moss", "calm"]):
+				factor *= 1.8
+			if temperament in ["gentle", "curious", "fearful"]:
+				factor *= 1.2
+		"nursery_rare_watch":
+			if _array_contains_any(resident_tags, ["nursery", "moss", "calm"]):
+				factor *= 1.6
+			if rarity in ["rare", "epic"]:
+				factor *= 1.6
+		"waterside_lure":
+			if _array_contains_any(resident_tags, ["water", "cleaner"]) or habitat_preferences.has("waterside"):
+				factor *= 1.9
+		"waterside_rare":
+			if _array_contains_any(resident_tags, ["water", "cleaner"]) or habitat_preferences.has("waterside"):
+				factor *= 1.6
+			if rarity in ["uncommon", "rare", "epic"]:
+				factor *= 1.35
+		"route_tip":
+			if _array_contains_any(trait_tags, ["pathfinder"]) or _array_contains_any(resident_tags, ["messenger", "speed"]):
+				factor *= 1.8
+		"anomaly_watch":
+			if _array_contains_any(habitat_preferences, ["anomaly", "ruin", "night"]) or _array_contains_any(resident_tags, ["light", "echo", "machine"]):
+				factor *= 1.8
+		"anomaly_rare_watch":
+			if _array_contains_any(habitat_preferences, ["anomaly", "ruin", "night"]) or _array_contains_any(resident_tags, ["light", "echo", "machine"]):
+				factor *= 1.5
+			if rarity in ["rare", "epic"]:
+				factor *= 1.5
+		"echo_watch":
+			if _array_contains_any(resident_tags, ["echo", "light", "calm"]):
+				factor *= 1.9
+		"echo_rare_watch":
+			if _array_contains_any(resident_tags, ["echo", "light", "calm"]):
+				factor *= 1.5
+			if rarity in ["rare", "epic"]:
+				factor *= 1.6
+	return factor
+
+func _array_contains_any(values: Array, expected: Array) -> bool:
+	for item in values:
+		if expected.has(item):
+			return true
+	return false
+
 func _weighted_pick(entries: Array) -> Dictionary:
 	var total := 0
 	for entry in entries:
 		total += int(entry.get("effective_weight", entry.get("weight", 0)))
 	if total <= 0:
 		return entries[0] if not entries.is_empty() else {}
-
 	var roll := randi() % total
 	var cursor := 0
 	for entry in entries:

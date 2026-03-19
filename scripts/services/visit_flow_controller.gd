@@ -5,6 +5,7 @@ extends Node
 ## 你可以把它挂到 visit 场景或主场景里。
 
 const HabitatServiceScript = preload("res://scripts/services/habitat_service.gd")
+const BuildingInteractionServiceScript = preload("res://scripts/services/building_interaction_service.gd")
 const NpcServiceScript = preload("res://scripts/services/npc_service.gd")
 const EncounterServiceScript = preload("res://scripts/services/encounter_service.gd")
 const DojoServiceScript = preload("res://scripts/services/dojo_service.gd")
@@ -15,6 +16,7 @@ signal state_changed(step_id: String, payload: Dictionary)
 signal visit_finished(report: Dictionary)
 
 var habitat_service = HabitatServiceScript.new()
+var building_interaction_service = BuildingInteractionServiceScript.new()
 var npc_service = NpcServiceScript.new()
 var encounter_service = EncounterServiceScript.new()
 var dojo_service = DojoServiceScript.new()
@@ -44,6 +46,18 @@ func build_selected(building_id: String) -> void:
 	var result: Dictionary = habitat_service.build_on_site(current_habitat_id, building_id)
 	current_step = "build_result"
 	state_changed.emit("build_result", result)
+
+func open_building_action_menu() -> void:
+	current_step = "building_action_select"
+	state_changed.emit("building_action_select", {
+		"habitat_id": current_habitat_id,
+		"actions": building_interaction_service.get_interaction_menu(current_habitat_id)
+	})
+
+func use_building_action(building_id: String, action_id: String) -> void:
+	var result: Dictionary = building_interaction_service.execute_action(current_habitat_id, building_id, action_id)
+	current_step = "building_action_result"
+	state_changed.emit("building_action_result", result)
 
 func open_shop_menu() -> void:
 	current_step = "shop_menu"
@@ -90,13 +104,17 @@ func resolve_dojo_battle(battle_result: Dictionary) -> void:
 	pending_dojo_tier = ""
 
 func start_observation() -> void:
-	current_encounter = encounter_service.roll_encounter(current_habitat_id)
+	var source := GameState.consume_next_observation_source(current_habitat_id)
+	current_encounter = encounter_service.roll_encounter(current_habitat_id, source)
 	current_step = "encounter_preview"
 	state_changed.emit("encounter_preview", current_encounter)
 
 func start_observation_for_habitat(habitat_id: String, source: String = "observe") -> void:
 	current_habitat_id = habitat_id
-	current_encounter = encounter_service.roll_encounter(current_habitat_id, source)
+	var actual_source := source
+	if actual_source == "observe":
+		actual_source = GameState.consume_next_observation_source(current_habitat_id)
+	current_encounter = encounter_service.roll_encounter(current_habitat_id, actual_source)
 	current_step = "encounter_preview"
 	state_changed.emit("encounter_preview", current_encounter)
 
@@ -108,6 +126,8 @@ func choose_encounter_action(action_id: String) -> void:
 	state_changed.emit("encounter_result", result)
 
 func finish_visit() -> void:
+	if not current_habitat_id.is_empty():
+		GameState.note_visit(current_habitat_id)
 	var report := {
 		"habitat_id": current_habitat_id,
 		"step": current_step,

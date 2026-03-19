@@ -5,8 +5,10 @@ extends RefCounted
 ## 这里假设存在 DataRepository / GameState 两个 AutoLoad。
 
 const NpcRouteServiceScript = preload("res://scripts/services/npc_route_service.gd")
+const BuildingInteractionServiceScript = preload("res://scripts/services/building_interaction_service.gd")
 
 var npc_route_service = NpcRouteServiceScript.new()
+var building_interaction_service = BuildingInteractionServiceScript.new()
 
 func assign_resident(habitat_id: String, pet_uid: String, as_assistant: bool = false) -> Dictionary:
 	var habitat = DataRepository.get_habitat(habitat_id)
@@ -69,7 +71,13 @@ func can_build(habitat_id: String, building_id: String) -> Dictionary:
 	if not GameState.can_pay(cost):
 		return {"ok": false, "reason": "insufficient_items", "cost": cost}
 
-	return {"ok": true, "next_level": current_level + 1, "cost": cost, "effects": next_level.get("effects", [])}
+	return {
+		"ok": true,
+		"next_level": current_level + 1,
+		"cost": cost,
+		"effects": _level_effects(next_level),
+		"interactions": next_level.get("interactions", []).duplicate(true),
+	}
 
 func build_on_site(habitat_id: String, building_id: String) -> Dictionary:
 	var check := can_build(habitat_id, building_id)
@@ -81,6 +89,7 @@ func build_on_site(habitat_id: String, building_id: String) -> Dictionary:
 
 	var new_level := int(check.get("next_level", 1))
 	GameState.set_building_level(habitat_id, building_id, new_level)
+	GameState.ensure_building_runtime_state(habitat_id, building_id)
 	GameState.note_build(building_id, new_level)
 	_refresh_habitat_rank(habitat_id)
 
@@ -89,12 +98,13 @@ func build_on_site(habitat_id: String, building_id: String) -> Dictionary:
 		"habitat_id": habitat_id,
 		"building_id": building_id,
 		"level": new_level,
-		"effects": check.get("effects", [])
+		"effects": check.get("effects", []),
+		"interactions": check.get("interactions", []).duplicate(true),
 	}
 
 func _refresh_habitat_rank(habitat_id: String) -> void:
 	var habitat_state: Dictionary = GameState.habitats.get(habitat_id, {})
-	var building_levels: Dictionary = habitat_state.get("building_levels", {})
+	var building_levels: Dictionary = habitat_state.get("building_levels", habitat_state.get("service_levels", {}))
 	var total := 0
 	for level in building_levels.values():
 		total += int(level)
@@ -110,6 +120,8 @@ func get_visit_summary(habitat_id: String) -> Dictionary:
 		"habitat": habitat,
 		"state": state,
 		"buildings": DataRepository.get_buildings_for_habitat(habitat_id),
+		"building_actions": building_interaction_service.get_interaction_menu(habitat_id),
+		"building_runtime_states": state.get("building_runtime_states", {}).duplicate(true),
 		"npcs": npc_presence.get("visible_npcs", []),
 		"npc_presence": npc_presence,
 		"resident": GameState.get_pet(resident_uid) if not resident_uid.is_empty() else {},
@@ -155,6 +167,12 @@ func _building_levels(building: Dictionary) -> Array:
 		"cost": building.get("construction_cost", {}),
 		"effects": effects,
 	}]
+
+func _level_effects(level_data: Dictionary) -> Array:
+	var passive_effects: Array = level_data.get("passive_effects", [])
+	if passive_effects.is_empty():
+		passive_effects = level_data.get("effects", [])
+	return passive_effects.duplicate(true)
 
 func _normalize_cost(cost: Dictionary) -> Dictionary:
 	var normalized := {}

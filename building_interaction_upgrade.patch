@@ -1,0 +1,1225 @@
+diff --git a/data/building_blueprints.json b/data/building_blueprints.json
+index 73711ca..31c58c2 100644
+--- a/data/building_blueprints.json
++++ b/data/building_blueprints.json
+@@ -19,6 +19,24 @@
+           "effects": [
+             "驻守宠物回复+1",
+             "心情下降减缓"
++          ],
++          "passive_effects": [
++            "驻守宠物回复+1",
++            "心情下降减缓"
++          ],
++          "interactions": [
++            {
++              "id": "rest_resident",
++              "label": "安置驻守",
++              "description": "为驻守宠物安排一次恒温休整。",
++              "cooldown_turns": 1,
++              "result": {
++                "restore_hunger": 8,
++                "bond_target": "resident",
++                "bond_delta": 1,
++                "journal": "恒温护理室完成了一次基础护理，驻守宠物状态稳定下来。"
++              }
++            }
+           ]
+         },
+         {
+@@ -30,6 +48,22 @@
+           "effects": [
+             "访问时额外恢复",
+             "幼体事件概率提升"
++          ],
++          "passive_effects": [
++            "访问时额外恢复",
++            "幼体事件概率提升"
++          ],
++          "interactions": [
++            {
++              "id": "nursery_watch",
++              "label": "开启幼体观察",
++              "description": "下一次观察更偏向温顺或幼护倾向的个体。",
++              "cooldown_turns": 1,
++              "result": {
++                "set_next_observation_source": "nursery_watch",
++                "journal": "恒温护理室已布置观察环境，下一次观察将优先吸引幼护系目标。"
++              }
++            }
+           ]
+         },
+         {
+@@ -62,6 +96,23 @@
+           },
+           "effects": [
+             "每次拜访产出软苔"
++          ],
++          "passive_effects": [
++            "每次拜访产出软苔"
++          ],
++          "interactions": [
++            {
++              "id": "harvest_soft_moss",
++              "label": "收集软苔",
++              "description": "从康复床位区回收可再利用的软苔。",
++              "cooldown_turns": 1,
++              "result": {
++                "grant_items": {
++                  "soft_moss": 2
++                },
++                "journal": "康复床位区整理出一批可重复利用的软苔。"
++              }
++            }
+           ]
+         },
+         {
+@@ -72,6 +123,23 @@
+           },
+           "effects": [
+             "心情恢复额外+1"
++          ],
++          "passive_effects": [
++            "心情恢复额外+1"
++          ],
++          "interactions": [
++            {
++              "id": "guided_recovery",
++              "label": "引导康复",
++              "description": "对驻守者进行一次额外的安抚和恢复。",
++              "cooldown_turns": 1,
++              "result": {
++                "restore_hunger": 4,
++                "bond_target": "resident",
++                "bond_delta": 1,
++                "journal": "康复床位区完成了一次额外的恢复引导。"
++              }
++            }
+           ]
+         },
+         {
+@@ -103,6 +171,24 @@
+           },
+           "effects": [
+             "幼体观察事件解锁"
++          ],
++          "passive_effects": [
++            "幼体观察事件解锁"
++          ],
++          "interactions": [
++            {
++              "id": "log_younglings",
++              "label": "记录幼体痕迹",
++              "description": "整理观察记录，为后续观察提供方向。",
++              "cooldown_turns": 1,
++              "result": {
++                "grant_items": {
++                  "paper": 1
++                },
++                "set_next_observation_source": "nursery_watch",
++                "journal": "幼护观察室补全了观察笔记，下一次观察更容易遇到幼体相关目标。"
++              }
++            }
+           ]
+         },
+         {
+@@ -113,6 +199,24 @@
+           },
+           "effects": [
+             "稀有幼体遭遇提升"
++          ],
++          "passive_effects": [
++            "稀有幼体遭遇提升"
++          ],
++          "interactions": [
++            {
++              "id": "rare_nursery_watch",
++              "label": "定向稀有观察",
++              "description": "集中资源锁定更稀有的幼护线索。",
++              "cost": {
++                "ink": 1
++              },
++              "cooldown_turns": 2,
++              "result": {
++                "set_next_observation_source": "nursery_rare_watch",
++                "journal": "幼护观察室完成了定向稀有观察准备。"
++              }
++            }
+           ]
+         }
+       ]
+@@ -131,6 +235,23 @@
+           },
+           "effects": [
+             "水栖宠物心情+1"
++          ],
++          "passive_effects": [
++            "水栖宠物心情+1"
++          ],
++          "interactions": [
++            {
++              "id": "soak_service_pet",
++              "label": "浅池舒缓",
++              "description": "让驻守或协助宠物短暂浸水放松。",
++              "cooldown_turns": 1,
++              "result": {
++                "restore_hunger": 4,
++                "bond_target": "service_pet",
++                "bond_delta": 1,
++                "journal": "亲水互动池完成了一次舒缓互动。"
++              }
++            }
+           ]
+         },
+         {
+@@ -141,6 +262,21 @@
+           },
+           "effects": [
+             "结缘成功趋势提升"
++          ],
++          "passive_effects": [
++            "结缘成功趋势提升"
++          ],
++          "interactions": [
++            {
++              "id": "mirror_surface",
++              "label": "布置引水镜面",
++              "description": "下一次观察更偏向水边与互动型目标。",
++              "cooldown_turns": 1,
++              "result": {
++                "set_next_observation_source": "waterside_lure",
++                "journal": "亲水互动池已调整水面环境，下一次观察将更偏向水边目标。"
++              }
++            }
+           ]
+         },
+         {
+@@ -169,6 +305,23 @@
+           },
+           "effects": [
+             "产出温石"
++          ],
++          "passive_effects": [
++            "产出温石"
++          ],
++          "interactions": [
++            {
++              "id": "dry_warm_stones",
++              "label": "晾晒温石",
++              "description": "利用河岸处理台加工出温石。",
++              "cooldown_turns": 1,
++              "result": {
++                "grant_items": {
++                  "warm_stone": 1
++                },
++                "journal": "河岸处理台完成了一次温石晾晒。"
++              }
++            }
+           ]
+         },
+         {
+@@ -179,6 +332,24 @@
+           },
+           "effects": [
+             "额外产出矿砂"
++          ],
++          "passive_effects": [
++            "额外产出矿砂"
++          ],
++          "interactions": [
++            {
++              "id": "sift_mineral_sand",
++              "label": "筛取矿砂",
++              "description": "对河砂进行额外处理并回收矿砂。",
++              "cooldown_turns": 1,
++              "result": {
++                "grant_items": {
++                  "stone_chip": 2,
++                  "warm_stone": 1
++                },
++                "journal": "河岸处理台筛出了一批矿砂和温石。"
++              }
++            }
+           ]
+         },
+         {
+@@ -207,6 +378,24 @@
+           },
+           "effects": [
+             "钓取和喂食选项增强"
++          ],
++          "passive_effects": [
++            "钓取和喂食选项增强"
++          ],
++          "interactions": [
++            {
++              "id": "prep_bait_pack",
++              "label": "准备诱饵包",
++              "description": "为下一次观察准备水边诱饵。",
++              "cooldown_turns": 1,
++              "result": {
++                "grant_items": {
++                  "reed": 1
++                },
++                "set_next_observation_source": "waterside_lure",
++                "journal": "滨水补给棚备好了诱饵包。"
++              }
++            }
+           ]
+         },
+         {
+@@ -217,6 +406,21 @@
+           },
+           "effects": [
+             "稀有水边遭遇提升"
++          ],
++          "passive_effects": [
++            "稀有水边遭遇提升"
++          ],
++          "interactions": [
++            {
++              "id": "set_river_hide",
++              "label": "架设河岸隐蔽点",
++              "description": "为下一次观察争取更稀有的水边窗口。",
++              "cooldown_turns": 2,
++              "result": {
++                "set_next_observation_source": "waterside_rare",
++                "journal": "滨水补给棚已搭好临时隐蔽点。"
++              }
++            }
+           ]
+         }
+       ]
+@@ -235,6 +439,21 @@
+           },
+           "effects": [
+             "访问后同行恢复疲劳"
++          ],
++          "passive_effects": [
++            "访问后同行恢复疲劳"
++          ],
++          "interactions": [
++            {
++              "id": "brew_field_tea",
++              "label": "冲泡热饮",
++              "description": "恢复远征时的整体体力。",
++              "cooldown_turns": 1,
++              "result": {
++                "restore_hunger": 12,
++                "journal": "便民咖啡站提供了一轮热饮补给。"
++              }
++            }
+           ]
+         },
+         {
+@@ -245,6 +464,24 @@
+           },
+           "effects": [
+             "可一次服务两只同行宠物"
++          ],
++          "passive_effects": [
++            "可一次服务两只同行宠物"
++          ],
++          "interactions": [
++            {
++              "id": "double_service",
++              "label": "双份热饮",
++              "description": "进一步提升本次补给恢复量。",
++              "cost": {
++                "tea_leaf": 1
++              },
++              "cooldown_turns": 1,
++              "result": {
++                "restore_hunger": 18,
++                "journal": "便民咖啡站完成了双份热饮服务。"
++              }
++            }
+           ]
+         }
+       ]
+@@ -263,6 +500,23 @@
+           },
+           "effects": [
+             "托管位+1"
++          ],
++          "passive_effects": [
++            "托管位+1"
++          ],
++          "interactions": [
++            {
++              "id": "settle_service_pet",
++              "label": "安顿托管位",
++              "description": "让协助位宠物短暂休整。",
++              "cooldown_turns": 1,
++              "result": {
++                "bond_target": "service_pet",
++                "bond_delta": 1,
++                "restore_hunger": 6,
++                "journal": "临时托管中心安顿好了一只临时寄养的伙伴。"
++              }
++            }
+           ]
+         },
+         {
+@@ -273,6 +527,23 @@
+           },
+           "effects": [
+             "托管期间心情不降"
++          ],
++          "passive_effects": [
++            "托管期间心情不降"
++          ],
++          "interactions": [
++            {
++              "id": "preserve_morale",
++              "label": "维持状态",
++              "description": "积累一次可供后续系统消费的托管服务额度。",
++              "cooldown_turns": 2,
++              "result": {
++                "store_output": {
++                  "boarding_credits": 1
++                },
++                "journal": "临时托管中心记录了一次高质量托管服务。"
++              }
++            }
+           ]
+         }
+       ]
+@@ -291,6 +562,24 @@
+           },
+           "effects": [
+             "巡游 NPC 位置可见"
++          ],
++          "passive_effects": [
++            "巡游 NPC 位置可见"
++          ],
++          "interactions": [
++            {
++              "id": "scan_routes",
++              "label": "查看路线动态",
++              "description": "整理社区信息，下一次观察更偏向路线型目标。",
++              "cooldown_turns": 1,
++              "result": {
++                "set_next_observation_source": "route_tip",
++                "mark_map_effects": [
++                  "sky_post_route_scan"
++                ],
++                "journal": "社区信息屏更新了巡游路线情报。"
++              }
++            }
+           ]
+         },
+         {
+@@ -301,6 +590,26 @@
+           },
+           "effects": [
+             "跨点委托刷新"
++          ],
++          "passive_effects": [
++            "跨点委托刷新"
++          ],
++          "interactions": [
++            {
++              "id": "broadcast_request",
++              "label": "发布协作需求",
++              "description": "生成一份跨点委托刷新额度，供后续任务系统接入。",
++              "cost": {
++                "paper": 1
++              },
++              "cooldown_turns": 2,
++              "result": {
++                "store_output": {
++                  "quest_refresh_credit": 1
++                },
++                "journal": "社区信息屏发布了一条新的协作需求。"
++              }
++            }
+           ]
+         }
+       ]
+@@ -319,6 +628,21 @@
+           },
+           "effects": [
+             "天气/异常预告"
++          ],
++          "passive_effects": [
++            "天气/异常预告"
++          ],
++          "interactions": [
++            {
++              "id": "forecast_sweep",
++              "label": "执行预报扫描",
++              "description": "锁定更偏异常与遗迹的观察窗口。",
++              "cooldown_turns": 1,
++              "result": {
++                "set_next_observation_source": "anomaly_watch",
++                "journal": "城市监测塔完成了一轮预报扫描。"
++              }
++            }
+           ]
+         },
+         {
+@@ -329,6 +653,21 @@
+           },
+           "effects": [
+             "观测成功率提升"
++          ],
++          "passive_effects": [
++            "观测成功率提升"
++          ],
++          "interactions": [
++            {
++              "id": "precision_scope",
++              "label": "校准高精镜头",
++              "description": "进一步提升稀有异常目标出现的机会。",
++              "cooldown_turns": 2,
++              "result": {
++                "set_next_observation_source": "anomaly_rare_watch",
++                "journal": "城市监测塔已完成高精度校准。"
++              }
++            }
+           ]
+         },
+         {
+@@ -357,6 +696,23 @@
+           },
+           "effects": [
+             "修理类委托可接"
++          ],
++          "passive_effects": [
++            "修理类委托可接"
++          ],
++          "interactions": [
++            {
++              "id": "salvage_parts",
++              "label": "拆解旧构件",
++              "description": "从废弃构件中回收基础零件。",
++              "cooldown_turns": 1,
++              "result": {
++                "grant_items": {
++                  "parts": 2
++                },
++                "journal": "设备维护间回收出一批可用零件。"
++              }
++            }
+           ]
+         },
+         {
+@@ -367,6 +723,27 @@
+           },
+           "effects": [
+             "构件修复奖励提升"
++          ],
++          "passive_effects": [
++            "构件修复奖励提升"
++          ],
++          "interactions": [
++            {
++              "id": "restore_components",
++              "label": "修复构件",
++              "description": "进一步产出可用金属部件。",
++              "cost": {
++                "oil": 1
++              },
++              "cooldown_turns": 1,
++              "result": {
++                "grant_items": {
++                  "parts": 2,
++                  "metal": 1
++                },
++                "journal": "设备维护间修复出一件可继续使用的构件。"
++              }
++            }
+           ]
+         },
+         {
+@@ -395,6 +772,21 @@
+           },
+           "effects": [
+             "共鸣事件解锁"
++          ],
++          "passive_effects": [
++            "共鸣事件解锁"
++          ],
++          "interactions": [
++            {
++              "id": "replay_signal",
++              "label": "回放弱信号",
++              "description": "下一次观察更偏向光与回声类目标。",
++              "cooldown_turns": 1,
++              "result": {
++                "set_next_observation_source": "echo_watch",
++                "journal": "信号回放室捕捉到一段可用弱信号。"
++              }
++            }
+           ]
+         },
+         {
+@@ -405,9 +797,27 @@
+           },
+           "effects": [
+             "特殊图鉴条目开放"
++          ],
++          "passive_effects": [
++            "特殊图鉴条目开放"
++          ],
++          "interactions": [
++            {
++              "id": "deep_resonance",
++              "label": "启动深层共鸣",
++              "description": "为下一次观察争取更稀有的回响目标。",
++              "cost": {
++                "glow_dust": 1
++              },
++              "cooldown_turns": 2,
++              "result": {
++                "set_next_observation_source": "echo_rare_watch",
++                "journal": "信号回放室启动了深层共鸣程序。"
++              }
++            }
+           ]
+         }
+       ]
+     }
+   ]
+-}
+\ No newline at end of file
++}
+diff --git a/scripts/autoload/game_state.gd b/scripts/autoload/game_state.gd
+index ac35d1a..f36a1a3 100644
+--- a/scripts/autoload/game_state.gd
++++ b/scripts/autoload/game_state.gd
+@@ -713,13 +713,17 @@ func _merge_habitat_state(state: Dictionary, habitat_id: String, habitat: Dictio
+ 			merged["assistant_uid"] = ""
+ 	var level_key := "service_levels" if _uses_service_levels(habitat) else "building_levels"
+ 	var building_ids: Array = habitat.get("buildings", [])
++	var runtime_states: Dictionary = merged.get("building_runtime_states", {})
+ 	if not building_ids.is_empty():
+ 		var levels: Dictionary = merged.get(level_key, {})
+ 		for building_id in building_ids:
+ 			var id := String(building_id)
+ 			if not levels.has(id):
+ 				levels[id] = 0
++			if not runtime_states.has(id):
++				runtime_states[id] = _default_building_runtime_state()
+ 		merged[level_key] = levels
++	merged["building_runtime_states"] = runtime_states
+ 	var stored_unlock := bool(merged.get("is_unlocked", _default_unlock_state(habitat_id, habitat)))
+ 	merged["is_unlocked"] = stored_unlock
+ 	merged["rank"] = _rank_from_state(merged)
+@@ -732,6 +736,7 @@ func _build_default_habitat_state(habitat_id: String, habitat: Dictionary) -> Di
+ 		"rank": 0,
+ 		"last_visit_day": -1,
+ 		"is_unlocked": _default_unlock_state(habitat_id, habitat),
++		"building_runtime_states": {},
+ 	}
+ 	if _uses_resident_slots(habitat):
+ 		state["resident_uid"] = ""
+@@ -739,8 +744,12 @@ func _build_default_habitat_state(habitat_id: String, habitat: Dictionary) -> Di
+ 	var building_ids: Array = habitat.get("buildings", [])
+ 	if not building_ids.is_empty():
+ 		var levels := {}
++		var runtime_states := {}
+ 		for building_id in building_ids:
+-			levels[String(building_id)] = 0
++			var id := String(building_id)
++			levels[id] = 0
++			runtime_states[id] = _default_building_runtime_state()
++		state["building_runtime_states"] = runtime_states
+ 		if _uses_service_levels(habitat):
+ 			state["service_levels"] = levels
+ 		else:
+@@ -770,6 +779,16 @@ func _rank_from_state(habitat_state: Dictionary) -> int:
+ 		total += int(value)
+ 	return total
+ 
++func _default_building_runtime_state() -> Dictionary:
++	return {
++		"cooldowns": {},
++		"stored_output": {},
++		"visit_flags": {},
++		"weekly_flags": {},
++		"last_used_turn": -1,
++		"last_action_id": "",
++	}
++
+ func _seed_companions() -> void:
+ 	add_companion("steam_otter_1", "汐牙")
+ 	add_companion("moss_deer_1", "苔角")
+@@ -850,6 +869,10 @@ func set_building_level(habitat_id: String, building_id: String, level: int) ->
+ 		habitat_state["building_levels"] = building_levels
+ 	else:
+ 		habitat_state["service_levels"] = building_levels
++	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
++	if not runtime_states.has(building_id):
++		runtime_states[building_id] = _default_building_runtime_state()
++	habitat_state["building_runtime_states"] = runtime_states
+ 	habitat_state["rank"] = _rank_from_state(habitat_state)
+ 	habitats[habitat_id] = habitat_state
+ 	_recalculate_backpack_capacity()
+@@ -874,6 +897,75 @@ func note_build(building_id: String, level: int) -> void:
+ 	quest_memory["built_levels"] = builds
+ 	refresh_season_unlocks()
+ 
++func get_building_runtime_state(habitat_id: String, building_id: String) -> Dictionary:
++	if not habitats.has(habitat_id):
++		return {}
++	var habitat_state: Dictionary = habitats[habitat_id]
++	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
++	return Dictionary(runtime_states.get(building_id, _default_building_runtime_state())).duplicate(true)
++
++func ensure_building_runtime_state(habitat_id: String, building_id: String) -> Dictionary:
++	if not habitats.has(habitat_id):
++		return {}
++	var habitat_state: Dictionary = habitats[habitat_id]
++	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
++	if not runtime_states.has(building_id):
++		runtime_states[building_id] = _default_building_runtime_state()
++		habitat_state["building_runtime_states"] = runtime_states
++		habitats[habitat_id] = habitat_state
++	return Dictionary(runtime_states[building_id]).duplicate(true)
++
++func set_building_runtime_state(habitat_id: String, building_id: String, runtime_state: Dictionary) -> void:
++	if not habitats.has(habitat_id):
++		return
++	var habitat_state: Dictionary = habitats[habitat_id]
++	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
++	runtime_states[building_id] = runtime_state.duplicate(true)
++	habitat_state["building_runtime_states"] = runtime_states
++	habitats[habitat_id] = habitat_state
++
++func consume_next_observation_source(habitat_id: String) -> String:
++	if not habitats.has(habitat_id):
++		return "observe"
++	var habitat_state: Dictionary = habitats[habitat_id]
++	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
++	for building_id in runtime_states.keys():
++		var runtime_state: Dictionary = Dictionary(runtime_states[building_id]).duplicate(true)
++		var visit_flags: Dictionary = runtime_state.get("visit_flags", {})
++		var source := String(visit_flags.get("next_observation_source", ""))
++		if source.is_empty():
++			continue
++		visit_flags.erase("next_observation_source")
++		runtime_state["visit_flags"] = visit_flags
++		runtime_states[building_id] = runtime_state
++		habitat_state["building_runtime_states"] = runtime_states
++		habitats[habitat_id] = habitat_state
++		return source
++	return "observe"
++
++func _tick_building_runtime_states() -> void:
++	for habitat_id in habitats.keys():
++		var habitat_state: Dictionary = habitats[habitat_id]
++		var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
++		if runtime_states.is_empty():
++			continue
++		var dirty := false
++		for building_id in runtime_states.keys():
++			var runtime_state: Dictionary = Dictionary(runtime_states[building_id]).duplicate(true)
++			var cooldowns: Dictionary = Dictionary(runtime_state.get("cooldowns", {})).duplicate(true)
++			var updated_cooldowns := {}
++			for action_id in cooldowns.keys():
++				var remaining := maxi(0, int(cooldowns[action_id]) - 1)
++				if remaining > 0:
++					updated_cooldowns[action_id] = remaining
++			runtime_state["cooldowns"] = updated_cooldowns
++			runtime_state["visit_flags"] = {}
++			runtime_states[building_id] = runtime_state
++			dirty = true
++		if dirty:
++			habitat_state["building_runtime_states"] = runtime_states
++			habitats[habitat_id] = habitat_state
++
+ func note_encounter(species_id: String) -> void:
+ 	var encounters: Dictionary = quest_memory["encounter_species"]
+ 	encounters[species_id] = true
+@@ -1153,6 +1245,7 @@ func advance_day() -> Dictionary:
+ 	season_turn = day_index
+ 	global_turn += 1
+ 	weekly_turn += 1
++	_tick_building_runtime_states()
+ 	if weekly_turn > 5:
+ 		weekly_turn = 1
+ 		week_index += 1
+diff --git a/scripts/services/building_interaction_service.gd b/scripts/services/building_interaction_service.gd
+new file mode 100644
+index 0000000..16f3da8
+--- /dev/null
++++ b/scripts/services/building_interaction_service.gd
+@@ -0,0 +1,182 @@
++class_name BuildingInteractionService
++extends RefCounted
++
++func get_interaction_menu(habitat_id: String) -> Array:
++	var result: Array = []
++	for building in DataRepository.get_buildings_for_habitat(habitat_id):
++		var building_id := String(building.get("id", ""))
++		if building_id.is_empty():
++			continue
++		var level := GameState.get_building_level(habitat_id, building_id)
++		if level <= 0:
++			continue
++		var runtime_state := GameState.ensure_building_runtime_state(habitat_id, building_id)
++		var actions: Array = []
++		for action in _get_unlocked_actions(building, level):
++			var action_id := String(action.get("id", ""))
++			if action_id.is_empty():
++				continue
++			var cooldown_remaining := _get_cooldown_remaining(runtime_state, action_id)
++			actions.append({
++				"id": action_id,
++				"label": String(action.get("label", action_id)),
++				"description": String(action.get("description", "")),
++				"cost": Dictionary(action.get("cost", {})).duplicate(true),
++				"cooldown_remaining": cooldown_remaining,
++				"disabled": cooldown_remaining > 0,
++			})
++		if actions.is_empty():
++			continue
++		result.append({
++			"building_id": building_id,
++			"building_name": String(building.get("name", building_id)),
++			"level": level,
++			"category": String(building.get("category", "utility")),
++			"actions": actions,
++			"runtime_state": runtime_state.duplicate(true),
++		})
++	return result
++
++func execute_action(habitat_id: String, building_id: String, action_id: String) -> Dictionary:
++	var building: Dictionary = DataRepository.get_building(building_id)
++	if building.is_empty():
++		return {"ok": false, "reason": "building_missing", "building_id": building_id}
++	if String(building.get("site", "")) != habitat_id:
++		return {"ok": false, "reason": "site_mismatch", "building_id": building_id, "habitat_id": habitat_id}
++	var level := GameState.get_building_level(habitat_id, building_id)
++	if level <= 0:
++		return {"ok": false, "reason": "building_not_built", "building_id": building_id, "habitat_id": habitat_id}
++	var action := _find_action(building, level, action_id)
++	if action.is_empty():
++		return {"ok": false, "reason": "action_missing", "building_id": building_id, "action_id": action_id}
++	var runtime_state := GameState.ensure_building_runtime_state(habitat_id, building_id)
++	var cooldown_remaining := _get_cooldown_remaining(runtime_state, action_id)
++	if cooldown_remaining > 0:
++		return {
++			"ok": false,
++			"reason": "cooldown",
++			"building_id": building_id,
++			"action_id": action_id,
++			"cooldown_remaining": cooldown_remaining,
++		}
++	var cost: Dictionary = Dictionary(action.get("cost", {})).duplicate(true)
++	if not cost.is_empty() and not GameState.can_pay(cost):
++		return {
++			"ok": false,
++			"reason": "insufficient_items",
++			"building_id": building_id,
++			"action_id": action_id,
++			"cost": cost,
++		}
++	if not cost.is_empty() and not GameState.pay_cost(cost):
++		return {"ok": false, "reason": "payment_failed", "building_id": building_id, "action_id": action_id}
++
++	var result_payload: Dictionary = _apply_action_result(habitat_id, building, runtime_state, action)
++	var cooldown_turns := maxi(0, int(action.get("cooldown_turns", 0)))
++	if cooldown_turns > 0:
++		var cooldowns: Dictionary = Dictionary(runtime_state.get("cooldowns", {})).duplicate(true)
++		cooldowns[action_id] = cooldown_turns
++		runtime_state["cooldowns"] = cooldowns
++	runtime_state["last_used_turn"] = int(GameState.global_turn)
++	runtime_state["last_action_id"] = action_id
++	GameState.set_building_runtime_state(habitat_id, building_id, runtime_state)
++
++	result_payload["ok"] = true
++	result_payload["habitat_id"] = habitat_id
++	result_payload["building_id"] = building_id
++	result_payload["building_name"] = String(building.get("name", building_id))
++	result_payload["action_id"] = action_id
++	result_payload["action_label"] = String(action.get("label", action_id))
++	result_payload["cost"] = cost
++	result_payload["cooldown_turns"] = cooldown_turns
++	result_payload["runtime_state"] = runtime_state.duplicate(true)
++	return result_payload
++
++func _find_action(building: Dictionary, level: int, action_id: String) -> Dictionary:
++	for action in _get_unlocked_actions(building, level):
++		if String(action.get("id", "")) == action_id:
++			return Dictionary(action).duplicate(true)
++	return {}
++
++func _get_unlocked_actions(building: Dictionary, level: int) -> Array:
++	var levels: Array = building.get("levels", [])
++	var unlocked: Dictionary = {}
++	for index in range(mini(level, levels.size())):
++		var level_data: Dictionary = levels[index]
++		for action in level_data.get("interactions", []):
++			var action_id := String(action.get("id", ""))
++			if action_id.is_empty():
++				continue
++			unlocked[action_id] = Dictionary(action).duplicate(true)
++	var result: Array = []
++	for action_id in unlocked.keys():
++		result.append(unlocked[action_id])
++	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
++		return String(a.get("id", "")) < String(b.get("id", ""))
++	)
++	return result
++
++func _get_cooldown_remaining(runtime_state: Dictionary, action_id: String) -> int:
++	var cooldowns: Dictionary = runtime_state.get("cooldowns", {})
++	return maxi(0, int(cooldowns.get(action_id, 0)))
++
++func _apply_action_result(habitat_id: String, building: Dictionary, runtime_state: Dictionary, action: Dictionary) -> Dictionary:
++	var result: Dictionary = Dictionary(action.get("result", {})).duplicate(true)
++	var applied := {
++		"granted_items": {},
++		"bond_target_uid": "",
++		"bond_delta": 0,
++		"restored_hunger": 0,
++		"next_observation_source": "",
++		"marked_effects": [],
++		"stored_output": {},
++		"journal": String(result.get("journal", "")),
++	}
++	var reward_items: Dictionary = Dictionary(result.get("grant_items", {})).duplicate(true)
++	if not reward_items.is_empty():
++		GameState.grant_items(reward_items)
++		applied["granted_items"] = reward_items
++	var restore_hunger := maxi(0, int(result.get("restore_hunger", 0)))
++	if restore_hunger > 0:
++		GameState.restore_hunger(restore_hunger)
++		applied["restored_hunger"] = restore_hunger
++	var bond_delta := int(result.get("bond_delta", 0))
++	if bond_delta != 0:
++		var bond_target_uid := _resolve_bond_target_uid(habitat_id, String(result.get("bond_target", "resident")))
++		if not bond_target_uid.is_empty():
++			GameState.add_pet_bond(bond_target_uid, bond_delta)
++			applied["bond_target_uid"] = bond_target_uid
++			applied["bond_delta"] = bond_delta
++	var next_observation_source := String(result.get("set_next_observation_source", ""))
++	if not next_observation_source.is_empty():
++		var visit_flags: Dictionary = Dictionary(runtime_state.get("visit_flags", {})).duplicate(true)
++		visit_flags["next_observation_source"] = next_observation_source
++		runtime_state["visit_flags"] = visit_flags
++		applied["next_observation_source"] = next_observation_source
++	var marked_effects: Array = Array(result.get("mark_map_effects", [])).duplicate(true)
++	for effect_id in marked_effects:
++		GameState.mark_map_effect_trigger(String(effect_id))
++	applied["marked_effects"] = marked_effects
++	var stored_output: Dictionary = Dictionary(result.get("store_output", {})).duplicate(true)
++	if not stored_output.is_empty():
++		var runtime_output: Dictionary = Dictionary(runtime_state.get("stored_output", {})).duplicate(true)
++		for key in stored_output.keys():
++			runtime_output[String(key)] = int(runtime_output.get(String(key), 0)) + int(stored_output[key])
++		runtime_state["stored_output"] = runtime_output
++		applied["stored_output"] = runtime_output.duplicate(true)
++	if not applied["journal"].is_empty():
++		GameState.add_journal_entry(String(applied["journal"]))
++	return applied
++
++func _resolve_bond_target_uid(habitat_id: String, target: String) -> String:
++	var habitat_state: Dictionary = GameState.habitats.get(habitat_id, {})
++	match target:
++		"assistant":
++			return String(habitat_state.get("assistant_uid", ""))
++		"service_pet":
++			var assistant_uid := String(habitat_state.get("assistant_uid", ""))
++			if not assistant_uid.is_empty():
++				return assistant_uid
++			return String(habitat_state.get("resident_uid", ""))
++		_:
++			return String(habitat_state.get("resident_uid", ""))
+diff --git a/scripts/services/encounter_service.gd b/scripts/services/encounter_service.gd
+index a2fe622..8b51a05 100644
+--- a/scripts/services/encounter_service.gd
++++ b/scripts/services/encounter_service.gd
+@@ -4,14 +4,12 @@ extends RefCounted
+ ## 负责把“战斗/捕捉”改成“观察/安抚/结缘”的前置流程。
+ 
+ func roll_encounter(habitat_id: String, source: String = "observe") -> Dictionary:
+-	var valid_entries := build_weighted_entries(habitat_id)
++	var valid_entries := build_weighted_entries(habitat_id, source)
+ 	if valid_entries.is_empty():
+ 		return {"ok": false, "reason": "no_encounter", "source": source}
+-
+ 	var chosen := _weighted_pick(valid_entries)
+ 	var species_id := String(chosen.get("species_id", ""))
+ 	var mood_id := String(chosen.get("mood", "curious"))
+-
+ 	return {
+ 		"ok": true,
+ 		"species_id": species_id,
+@@ -21,14 +19,15 @@ func roll_encounter(habitat_id: String, source: String = "observe") -> Dictionar
+ 		"source": source,
+ 	}
+ 
+-func build_weighted_entries(habitat_id: String) -> Array:
++func build_weighted_entries(habitat_id: String, source: String = "observe") -> Array:
+ 	var habitat_encounters: Dictionary = DataRepository.encounters.get(habitat_id, {})
+ 	var groups: Array = habitat_encounters.get("weight_groups", [])
+ 	var valid_entries: Array = []
+ 	for group in groups:
+ 		if _matches_condition(group.get("when", {})):
+ 			valid_entries.append_array(_filter_entries_by_progression(group.get("entries", [])))
+-	return _apply_shop_odds(valid_entries)
++	valid_entries = _apply_shop_odds(valid_entries)
++	return _apply_source_biases(valid_entries, source)
+ 
+ func _filter_entries_by_progression(entries: Array) -> Array:
+ 	var filtered: Array = []
+@@ -68,6 +67,23 @@ func _apply_shop_odds(entries: Array) -> Array:
+ 			adjusted.append(fallback_entry)
+ 	return adjusted
+ 
++func _apply_source_biases(entries: Array, source: String) -> Array:
++	if source.is_empty() or source == "observe":
++		return entries
++	var adjusted: Array = []
++	for entry in entries:
++		var adjusted_entry: Dictionary = entry.duplicate(true)
++		var species_id := String(adjusted_entry.get("species_id", ""))
++		var species := DataRepository.get_species(species_id)
++		if species.is_empty():
++			adjusted.append(adjusted_entry)
++			continue
++		var factor := _source_bias_factor(species, source)
++		var base_weight := int(adjusted_entry.get("effective_weight", adjusted_entry.get("weight", 0)))
++		adjusted_entry["effective_weight"] = maxi(1, int(round(float(base_weight) * factor)))
++		adjusted.append(adjusted_entry)
++	return adjusted
++
+ func get_available_actions(encounter: Dictionary) -> Array:
+ 	var mood_id := String(encounter.get("mood_id", "curious"))
+ 	match mood_id:
+@@ -95,7 +111,6 @@ func get_available_actions(encounter: Dictionary) -> Array:
+ func resolve_action(encounter: Dictionary, action_id: String) -> Dictionary:
+ 	var mood_id := String(encounter.get("mood_id", "curious"))
+ 	var bond_window := String(encounter.get("bond_window", "medium"))
+-
+ 	var score := 0
+ 	match action_id:
+ 		"feed":
+@@ -112,12 +127,10 @@ func resolve_action(encounter: Dictionary, action_id: String) -> Dictionary:
+ 			score += 2 if mood_id in ["curious", "hungry", "lively", "playful", "smooth"] else 0
+ 		"retreat":
+ 			return {"ok": true, "outcome": "safe_leave", "bond_delta": 0}
+-
+ 	if bond_window == "high":
+ 		score += 1
+ 	elif bond_window == "low":
+ 		score -= 1
+-
+ 	if score >= 3:
+ 		return {"ok": true, "outcome": "bond_success", "bond_delta": 2}
+ 	elif score == 2:
+@@ -155,13 +168,65 @@ func _estimate_bond_window(mood_id: String) -> String:
+ 		_:
+ 			return "medium"
+ 
++func _source_bias_factor(species: Dictionary, source: String) -> float:
++	var resident_tags: Array = species.get("resident_tags", [])
++	var habitat_preferences: Array = species.get("habitat_preferences", [])
++	var trait_tags: Array = species.get("trait_tags", [])
++	var rarity := String(species.get("rarity", "common"))
++	var temperament := String(species.get("temperament", ""))
++	var factor := 1.0
++	match source:
++		"nursery_watch":
++			if _array_contains_any(resident_tags, ["nursery", "moss", "calm"]):
++				factor *= 1.8
++			if temperament in ["gentle", "curious", "fearful"]:
++				factor *= 1.2
++		"nursery_rare_watch":
++			if _array_contains_any(resident_tags, ["nursery", "moss", "calm"]):
++				factor *= 1.6
++			if rarity in ["rare", "epic"]:
++				factor *= 1.6
++		"waterside_lure":
++			if _array_contains_any(resident_tags, ["water", "cleaner"]) or habitat_preferences.has("waterside"):
++				factor *= 1.9
++		"waterside_rare":
++			if _array_contains_any(resident_tags, ["water", "cleaner"]) or habitat_preferences.has("waterside"):
++				factor *= 1.6
++			if rarity in ["uncommon", "rare", "epic"]:
++				factor *= 1.35
++		"route_tip":
++			if _array_contains_any(trait_tags, ["pathfinder"]) or _array_contains_any(resident_tags, ["messenger", "speed"]):
++				factor *= 1.8
++		"anomaly_watch":
++			if _array_contains_any(habitat_preferences, ["anomaly", "ruin", "night"]) or _array_contains_any(resident_tags, ["light", "echo", "machine"]):
++				factor *= 1.8
++		"anomaly_rare_watch":
++			if _array_contains_any(habitat_preferences, ["anomaly", "ruin", "night"]) or _array_contains_any(resident_tags, ["light", "echo", "machine"]):
++				factor *= 1.5
++			if rarity in ["rare", "epic"]:
++				factor *= 1.5
++		"echo_watch":
++			if _array_contains_any(resident_tags, ["echo", "light", "calm"]):
++				factor *= 1.9
++		"echo_rare_watch":
++			if _array_contains_any(resident_tags, ["echo", "light", "calm"]):
++				factor *= 1.5
++			if rarity in ["rare", "epic"]:
++				factor *= 1.6
++	return factor
++
++func _array_contains_any(values: Array, expected: Array) -> bool:
++	for item in values:
++		if expected.has(item):
++			return true
++	return false
++
+ func _weighted_pick(entries: Array) -> Dictionary:
+ 	var total := 0
+ 	for entry in entries:
+ 		total += int(entry.get("effective_weight", entry.get("weight", 0)))
+ 	if total <= 0:
+ 		return entries[0] if not entries.is_empty() else {}
+-
+ 	var roll := randi() % total
+ 	var cursor := 0
+ 	for entry in entries:
+diff --git a/scripts/services/habitat_service.gd b/scripts/services/habitat_service.gd
+index 6288a77..092ac12 100644
+--- a/scripts/services/habitat_service.gd
++++ b/scripts/services/habitat_service.gd
+@@ -5,8 +5,10 @@ extends RefCounted
+ ## 这里假设存在 DataRepository / GameState 两个 AutoLoad。
+ 
+ const NpcRouteServiceScript = preload("res://scripts/services/npc_route_service.gd")
++const BuildingInteractionServiceScript = preload("res://scripts/services/building_interaction_service.gd")
+ 
+ var npc_route_service = NpcRouteServiceScript.new()
++var building_interaction_service = BuildingInteractionServiceScript.new()
+ 
+ func assign_resident(habitat_id: String, pet_uid: String, as_assistant: bool = false) -> Dictionary:
+ 	var habitat = DataRepository.get_habitat(habitat_id)
+@@ -69,7 +71,13 @@ func can_build(habitat_id: String, building_id: String) -> Dictionary:
+ 	if not GameState.can_pay(cost):
+ 		return {"ok": false, "reason": "insufficient_items", "cost": cost}
+ 
+-	return {"ok": true, "next_level": current_level + 1, "cost": cost, "effects": next_level.get("effects", [])}
++	return {
++		"ok": true,
++		"next_level": current_level + 1,
++		"cost": cost,
++		"effects": _level_effects(next_level),
++		"interactions": next_level.get("interactions", []).duplicate(true),
++	}
+ 
+ func build_on_site(habitat_id: String, building_id: String) -> Dictionary:
+ 	var check := can_build(habitat_id, building_id)
+@@ -81,6 +89,7 @@ func build_on_site(habitat_id: String, building_id: String) -> Dictionary:
+ 
+ 	var new_level := int(check.get("next_level", 1))
+ 	GameState.set_building_level(habitat_id, building_id, new_level)
++	GameState.ensure_building_runtime_state(habitat_id, building_id)
+ 	GameState.note_build(building_id, new_level)
+ 	_refresh_habitat_rank(habitat_id)
+ 
+@@ -89,12 +98,13 @@ func build_on_site(habitat_id: String, building_id: String) -> Dictionary:
+ 		"habitat_id": habitat_id,
+ 		"building_id": building_id,
+ 		"level": new_level,
+-		"effects": check.get("effects", [])
++		"effects": check.get("effects", []),
++		"interactions": check.get("interactions", []).duplicate(true),
+ 	}
+ 
+ func _refresh_habitat_rank(habitat_id: String) -> void:
+ 	var habitat_state: Dictionary = GameState.habitats.get(habitat_id, {})
+-	var building_levels: Dictionary = habitat_state.get("building_levels", {})
++	var building_levels: Dictionary = habitat_state.get("building_levels", habitat_state.get("service_levels", {}))
+ 	var total := 0
+ 	for level in building_levels.values():
+ 		total += int(level)
+@@ -110,6 +120,8 @@ func get_visit_summary(habitat_id: String) -> Dictionary:
+ 		"habitat": habitat,
+ 		"state": state,
+ 		"buildings": DataRepository.get_buildings_for_habitat(habitat_id),
++		"building_actions": building_interaction_service.get_interaction_menu(habitat_id),
++		"building_runtime_states": state.get("building_runtime_states", {}).duplicate(true),
+ 		"npcs": npc_presence.get("visible_npcs", []),
+ 		"npc_presence": npc_presence,
+ 		"resident": GameState.get_pet(resident_uid) if not resident_uid.is_empty() else {},
+@@ -156,6 +168,12 @@ func _building_levels(building: Dictionary) -> Array:
+ 		"effects": effects,
+ 	}]
+ 
++func _level_effects(level_data: Dictionary) -> Array:
++	var passive_effects: Array = level_data.get("passive_effects", [])
++	if passive_effects.is_empty():
++		passive_effects = level_data.get("effects", [])
++	return passive_effects.duplicate(true)
++
+ func _normalize_cost(cost: Dictionary) -> Dictionary:
+ 	var normalized := {}
+ 	var alias_map := {
+diff --git a/scripts/services/visit_flow_controller.gd b/scripts/services/visit_flow_controller.gd
+index 0acbd97..88de641 100644
+--- a/scripts/services/visit_flow_controller.gd
++++ b/scripts/services/visit_flow_controller.gd
+@@ -5,6 +5,7 @@ extends Node
+ ## 你可以把它挂到 visit 场景或主场景里。
+ 
+ const HabitatServiceScript = preload("res://scripts/services/habitat_service.gd")
++const BuildingInteractionServiceScript = preload("res://scripts/services/building_interaction_service.gd")
+ const NpcServiceScript = preload("res://scripts/services/npc_service.gd")
+ const EncounterServiceScript = preload("res://scripts/services/encounter_service.gd")
+ const DojoServiceScript = preload("res://scripts/services/dojo_service.gd")
+@@ -15,6 +16,7 @@ signal state_changed(step_id: String, payload: Dictionary)
+ signal visit_finished(report: Dictionary)
+ 
+ var habitat_service = HabitatServiceScript.new()
++var building_interaction_service = BuildingInteractionServiceScript.new()
+ var npc_service = NpcServiceScript.new()
+ var encounter_service = EncounterServiceScript.new()
+ var dojo_service = DojoServiceScript.new()
+@@ -45,6 +47,18 @@ func build_selected(building_id: String) -> void:
+ 	current_step = "build_result"
+ 	state_changed.emit("build_result", result)
+ 
++func open_building_action_menu() -> void:
++	current_step = "building_action_select"
++	state_changed.emit("building_action_select", {
++		"habitat_id": current_habitat_id,
++		"actions": building_interaction_service.get_interaction_menu(current_habitat_id)
++	})
++
++func use_building_action(building_id: String, action_id: String) -> void:
++	var result: Dictionary = building_interaction_service.execute_action(current_habitat_id, building_id, action_id)
++	current_step = "building_action_result"
++	state_changed.emit("building_action_result", result)
++
+ func open_shop_menu() -> void:
+ 	current_step = "shop_menu"
+ 	state_changed.emit("shop_menu", shop_service.get_shop_menu(current_habitat_id))
+@@ -90,13 +104,17 @@ func resolve_dojo_battle(battle_result: Dictionary) -> void:
+ 	pending_dojo_tier = ""
+ 
+ func start_observation() -> void:
+-	current_encounter = encounter_service.roll_encounter(current_habitat_id)
++	var source := GameState.consume_next_observation_source(current_habitat_id)
++	current_encounter = encounter_service.roll_encounter(current_habitat_id, source)
+ 	current_step = "encounter_preview"
+ 	state_changed.emit("encounter_preview", current_encounter)
+ 
+ func start_observation_for_habitat(habitat_id: String, source: String = "observe") -> void:
+ 	current_habitat_id = habitat_id
+-	current_encounter = encounter_service.roll_encounter(current_habitat_id, source)
++	var actual_source := source
++	if actual_source == "observe":
++		actual_source = GameState.consume_next_observation_source(current_habitat_id)
++	current_encounter = encounter_service.roll_encounter(current_habitat_id, actual_source)
+ 	current_step = "encounter_preview"
+ 	state_changed.emit("encounter_preview", current_encounter)
+ 
+@@ -108,6 +126,8 @@ func choose_encounter_action(action_id: String) -> void:
+ 	state_changed.emit("encounter_result", result)
+ 
+ func finish_visit() -> void:
++	if not current_habitat_id.is_empty():
++		GameState.note_visit(current_habitat_id)
+ 	var report := {
+ 		"habitat_id": current_habitat_id,
+ 		"step": current_step,

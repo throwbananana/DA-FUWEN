@@ -19,6 +19,24 @@
           "effects": [
             "驻守宠物回复+1",
             "心情下降减缓"
+          ],
+          "passive_effects": [
+            "驻守宠物回复+1",
+            "心情下降减缓"
+          ],
+          "interactions": [
+            {
+              "id": "rest_resident",
+              "label": "安置驻守",
+              "description": "为驻守宠物安排一次恒温休整。",
+              "cooldown_turns": 1,
+              "result": {
+                "restore_hunger": 8,
+                "bond_target": "resident",
+                "bond_delta": 1,
+                "journal": "恒温护理室完成了一次基础护理，驻守宠物状态稳定下来。"
+              }
+            }
           ]
         },
         {
@@ -30,6 +48,22 @@
           "effects": [
             "访问时额外恢复",
             "幼体事件概率提升"
+          ],
+          "passive_effects": [
+            "访问时额外恢复",
+            "幼体事件概率提升"
+          ],
+          "interactions": [
+            {
+              "id": "nursery_watch",
+              "label": "开启幼体观察",
+              "description": "下一次观察更偏向温顺或幼护倾向的个体。",
+              "cooldown_turns": 1,
+              "result": {
+                "set_next_observation_source": "nursery_watch",
+                "journal": "恒温护理室已布置观察环境，下一次观察将优先吸引幼护系目标。"
+              }
+            }
           ]
         },
         {
@@ -62,6 +96,23 @@
           },
           "effects": [
             "每次拜访产出软苔"
+          ],
+          "passive_effects": [
+            "每次拜访产出软苔"
+          ],
+          "interactions": [
+            {
+              "id": "harvest_soft_moss",
+              "label": "收集软苔",
+              "description": "从康复床位区回收可再利用的软苔。",
+              "cooldown_turns": 1,
+              "result": {
+                "grant_items": {
+                  "soft_moss": 2
+                },
+                "journal": "康复床位区整理出一批可重复利用的软苔。"
+              }
+            }
           ]
         },
         {
@@ -72,6 +123,23 @@
           },
           "effects": [
             "心情恢复额外+1"
+          ],
+          "passive_effects": [
+            "心情恢复额外+1"
+          ],
+          "interactions": [
+            {
+              "id": "guided_recovery",
+              "label": "引导康复",
+              "description": "对驻守者进行一次额外的安抚和恢复。",
+              "cooldown_turns": 1,
+              "result": {
+                "restore_hunger": 4,
+                "bond_target": "resident",
+                "bond_delta": 1,
+                "journal": "康复床位区完成了一次额外的恢复引导。"
+              }
+            }
           ]
         },
         {
@@ -103,6 +171,24 @@
           },
           "effects": [
             "幼体观察事件解锁"
+          ],
+          "passive_effects": [
+            "幼体观察事件解锁"
+          ],
+          "interactions": [
+            {
+              "id": "log_younglings",
+              "label": "记录幼体痕迹",
+              "description": "整理观察记录，为后续观察提供方向。",
+              "cooldown_turns": 1,
+              "result": {
+                "grant_items": {
+                  "paper": 1
+                },
+                "set_next_observation_source": "nursery_watch",
+                "journal": "幼护观察室补全了观察笔记，下一次观察更容易遇到幼体相关目标。"
+              }
+            }
           ]
         },
         {
@@ -113,6 +199,24 @@
           },
           "effects": [
             "稀有幼体遭遇提升"
+          ],
+          "passive_effects": [
+            "稀有幼体遭遇提升"
+          ],
+          "interactions": [
+            {
+              "id": "rare_nursery_watch",
+              "label": "定向稀有观察",
+              "description": "集中资源锁定更稀有的幼护线索。",
+              "cost": {
+                "ink": 1
+              },
+              "cooldown_turns": 2,
+              "result": {
+                "set_next_observation_source": "nursery_rare_watch",
+                "journal": "幼护观察室完成了定向稀有观察准备。"
+              }
+            }
           ]
         }
       ]
@@ -131,6 +235,23 @@
           },
           "effects": [
             "水栖宠物心情+1"
+          ],
+          "passive_effects": [
+            "水栖宠物心情+1"
+          ],
+          "interactions": [
+            {
+              "id": "soak_service_pet",
+              "label": "浅池舒缓",
+              "description": "让驻守或协助宠物短暂浸水放松。",
+              "cooldown_turns": 1,
+              "result": {
+                "restore_hunger": 4,
+                "bond_target": "service_pet",
+                "bond_delta": 1,
+                "journal": "亲水互动池完成了一次舒缓互动。"
+              }
+            }
           ]
         },
         {
@@ -141,6 +262,21 @@
           },
           "effects": [
             "结缘成功趋势提升"
+          ],
+          "passive_effects": [
+            "结缘成功趋势提升"
+          ],
+          "interactions": [
+            {
+              "id": "mirror_surface",
+              "label": "布置引水镜面",
+              "description": "下一次观察更偏向水边与互动型目标。",
+              "cooldown_turns": 1,
+              "result": {
+                "set_next_observation_source": "waterside_lure",
+                "journal": "亲水互动池已调整水面环境，下一次观察将更偏向水边目标。"
+              }
+            }
           ]
         },
         {
@@ -169,6 +305,23 @@
           },
           "effects": [
             "产出温石"
+          ],
+          "passive_effects": [
+            "产出温石"
+          ],
+          "interactions": [
+            {
+              "id": "dry_warm_stones",
+              "label": "晾晒温石",
+              "description": "利用河岸处理台加工出温石。",
+              "cooldown_turns": 1,
+              "result": {
+                "grant_items": {
+                  "warm_stone": 1
+                },
+                "journal": "河岸处理台完成了一次温石晾晒。"
+              }
+            }
           ]
         },
         {
@@ -179,6 +332,24 @@
           },
           "effects": [
             "额外产出矿砂"
+          ],
+          "passive_effects": [
+            "额外产出矿砂"
+          ],
+          "interactions": [
+            {
+              "id": "sift_mineral_sand",
+              "label": "筛取矿砂",
+              "description": "对河砂进行额外处理并回收矿砂。",
+              "cooldown_turns": 1,
+              "result": {
+                "grant_items": {
+                  "stone_chip": 2,
+                  "warm_stone": 1
+                },
+                "journal": "河岸处理台筛出了一批矿砂和温石。"
+              }
+            }
           ]
         },
         {
@@ -207,6 +378,24 @@
           },
           "effects": [
             "钓取和喂食选项增强"
+          ],
+          "passive_effects": [
+            "钓取和喂食选项增强"
+          ],
+          "interactions": [
+            {
+              "id": "prep_bait_pack",
+              "label": "准备诱饵包",
+              "description": "为下一次观察准备水边诱饵。",
+              "cooldown_turns": 1,
+              "result": {
+                "grant_items": {
+                  "reed": 1
+                },
+                "set_next_observation_source": "waterside_lure",
+                "journal": "滨水补给棚备好了诱饵包。"
+              }
+            }
           ]
         },
         {
@@ -217,6 +406,21 @@
           },
           "effects": [
             "稀有水边遭遇提升"
+          ],
+          "passive_effects": [
+            "稀有水边遭遇提升"
+          ],
+          "interactions": [
+            {
+              "id": "set_river_hide",
+              "label": "架设河岸隐蔽点",
+              "description": "为下一次观察争取更稀有的水边窗口。",
+              "cooldown_turns": 2,
+              "result": {
+                "set_next_observation_source": "waterside_rare",
+                "journal": "滨水补给棚已搭好临时隐蔽点。"
+              }
+            }
           ]
         }
       ]
@@ -235,6 +439,21 @@
           },
           "effects": [
             "访问后同行恢复疲劳"
+          ],
+          "passive_effects": [
+            "访问后同行恢复疲劳"
+          ],
+          "interactions": [
+            {
+              "id": "brew_field_tea",
+              "label": "冲泡热饮",
+              "description": "恢复远征时的整体体力。",
+              "cooldown_turns": 1,
+              "result": {
+                "restore_hunger": 12,
+                "journal": "便民咖啡站提供了一轮热饮补给。"
+              }
+            }
           ]
         },
         {
@@ -245,6 +464,24 @@
           },
           "effects": [
             "可一次服务两只同行宠物"
+          ],
+          "passive_effects": [
+            "可一次服务两只同行宠物"
+          ],
+          "interactions": [
+            {
+              "id": "double_service",
+              "label": "双份热饮",
+              "description": "进一步提升本次补给恢复量。",
+              "cost": {
+                "tea_leaf": 1
+              },
+              "cooldown_turns": 1,
+              "result": {
+                "restore_hunger": 18,
+                "journal": "便民咖啡站完成了双份热饮服务。"
+              }
+            }
           ]
         }
       ]
@@ -263,6 +500,23 @@
           },
           "effects": [
             "托管位+1"
+          ],
+          "passive_effects": [
+            "托管位+1"
+          ],
+          "interactions": [
+            {
+              "id": "settle_service_pet",
+              "label": "安顿托管位",
+              "description": "让协助位宠物短暂休整。",
+              "cooldown_turns": 1,
+              "result": {
+                "bond_target": "service_pet",
+                "bond_delta": 1,
+                "restore_hunger": 6,
+                "journal": "临时托管中心安顿好了一只临时寄养的伙伴。"
+              }
+            }
           ]
         },
         {
@@ -273,6 +527,23 @@
           },
           "effects": [
             "托管期间心情不降"
+          ],
+          "passive_effects": [
+            "托管期间心情不降"
+          ],
+          "interactions": [
+            {
+              "id": "preserve_morale",
+              "label": "维持状态",
+              "description": "积累一次可供后续系统消费的托管服务额度。",
+              "cooldown_turns": 2,
+              "result": {
+                "store_output": {
+                  "boarding_credits": 1
+                },
+                "journal": "临时托管中心记录了一次高质量托管服务。"
+              }
+            }
           ]
         }
       ]
@@ -291,6 +562,24 @@
           },
           "effects": [
             "巡游 NPC 位置可见"
+          ],
+          "passive_effects": [
+            "巡游 NPC 位置可见"
+          ],
+          "interactions": [
+            {
+              "id": "scan_routes",
+              "label": "查看路线动态",
+              "description": "整理社区信息，下一次观察更偏向路线型目标。",
+              "cooldown_turns": 1,
+              "result": {
+                "set_next_observation_source": "route_tip",
+                "mark_map_effects": [
+                  "sky_post_route_scan"
+                ],
+                "journal": "社区信息屏更新了巡游路线情报。"
+              }
+            }
           ]
         },
         {
@@ -301,6 +590,26 @@
           },
           "effects": [
             "跨点委托刷新"
+          ],
+          "passive_effects": [
+            "跨点委托刷新"
+          ],
+          "interactions": [
+            {
+              "id": "broadcast_request",
+              "label": "发布协作需求",
+              "description": "生成一份跨点委托刷新额度，供后续任务系统接入。",
+              "cost": {
+                "paper": 1
+              },
+              "cooldown_turns": 2,
+              "result": {
+                "store_output": {
+                  "quest_refresh_credit": 1
+                },
+                "journal": "社区信息屏发布了一条新的协作需求。"
+              }
+            }
           ]
         }
       ]
@@ -319,6 +628,21 @@
           },
           "effects": [
             "天气/异常预告"
+          ],
+          "passive_effects": [
+            "天气/异常预告"
+          ],
+          "interactions": [
+            {
+              "id": "forecast_sweep",
+              "label": "执行预报扫描",
+              "description": "锁定更偏异常与遗迹的观察窗口。",
+              "cooldown_turns": 1,
+              "result": {
+                "set_next_observation_source": "anomaly_watch",
+                "journal": "城市监测塔完成了一轮预报扫描。"
+              }
+            }
           ]
         },
         {
@@ -329,6 +653,21 @@
           },
           "effects": [
             "观测成功率提升"
+          ],
+          "passive_effects": [
+            "观测成功率提升"
+          ],
+          "interactions": [
+            {
+              "id": "precision_scope",
+              "label": "校准高精镜头",
+              "description": "进一步提升稀有异常目标出现的机会。",
+              "cooldown_turns": 2,
+              "result": {
+                "set_next_observation_source": "anomaly_rare_watch",
+                "journal": "城市监测塔已完成高精度校准。"
+              }
+            }
           ]
         },
         {
@@ -357,6 +696,23 @@
           },
           "effects": [
             "修理类委托可接"
+          ],
+          "passive_effects": [
+            "修理类委托可接"
+          ],
+          "interactions": [
+            {
+              "id": "salvage_parts",
+              "label": "拆解旧构件",
+              "description": "从废弃构件中回收基础零件。",
+              "cooldown_turns": 1,
+              "result": {
+                "grant_items": {
+                  "parts": 2
+                },
+                "journal": "设备维护间回收出一批可用零件。"
+              }
+            }
           ]
         },
         {
@@ -367,6 +723,27 @@
           },
           "effects": [
             "构件修复奖励提升"
+          ],
+          "passive_effects": [
+            "构件修复奖励提升"
+          ],
+          "interactions": [
+            {
+              "id": "restore_components",
+              "label": "修复构件",
+              "description": "进一步产出可用金属部件。",
+              "cost": {
+                "oil": 1
+              },
+              "cooldown_turns": 1,
+              "result": {
+                "grant_items": {
+                  "parts": 2,
+                  "metal": 1
+                },
+                "journal": "设备维护间修复出一件可继续使用的构件。"
+              }
+            }
           ]
         },
         {
@@ -395,6 +772,21 @@
           },
           "effects": [
             "共鸣事件解锁"
+          ],
+          "passive_effects": [
+            "共鸣事件解锁"
+          ],
+          "interactions": [
+            {
+              "id": "replay_signal",
+              "label": "回放弱信号",
+              "description": "下一次观察更偏向光与回声类目标。",
+              "cooldown_turns": 1,
+              "result": {
+                "set_next_observation_source": "echo_watch",
+                "journal": "信号回放室捕捉到一段可用弱信号。"
+              }
+            }
           ]
         },
         {
@@ -405,6 +797,24 @@
           },
           "effects": [
             "特殊图鉴条目开放"
+          ],
+          "passive_effects": [
+            "特殊图鉴条目开放"
+          ],
+          "interactions": [
+            {
+              "id": "deep_resonance",
+              "label": "启动深层共鸣",
+              "description": "为下一次观察争取更稀有的回响目标。",
+              "cost": {
+                "glow_dust": 1
+              },
+              "cooldown_turns": 2,
+              "result": {
+                "set_next_observation_source": "echo_rare_watch",
+                "journal": "信号回放室启动了深层共鸣程序。"
+              }
+            }
           ]
         }
       ]

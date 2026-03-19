@@ -1471,7 +1471,7 @@ func _pick_anchor_override_target() -> int:
 	var candidates: Array = []
 	for raw_node_id in GameState.revealed_board_nodes:
 		var node_id := int(raw_node_id)
-		if node_id == current_node_id or blocked.has(node_id):
+		if node_id == current_node_id or blocked.has(node_id) or board_progression_service.is_node_locked(node_id):
 			continue
 		var node: Dictionary = board_lookup.get(node_id, {})
 		if String(node.get("type", "")) == "camp":
@@ -1534,7 +1534,7 @@ func _reachable_selectable_nodes() -> Array[int]:
 	var selectable: Array[int] = []
 	for node_id in reachable_paths.keys():
 		var target_id := int(node_id)
-		if board_lookup.has(target_id):
+		if board_lookup.has(target_id) and not board_progression_service.is_node_locked(target_id):
 			selectable.append(target_id)
 	return selectable
 
@@ -1776,6 +1776,17 @@ func _on_board_travel_finished(node_id: int) -> void:
 		_format_path_preview(pending_travel_path),
 	])
 	_push_log("移动消耗饥饿 %d，当前 %d / %d。" % [GameState.hunger_cost_per_travel, hunger_after_move, GameState.max_hunger])
+	var gate_result := board_progression_service.try_resolve_unlock_gate(node_id)
+	if not gate_result.is_empty():
+		current_visit_habitat_id = ""
+		if bool(gate_result.get("ok", false)):
+			_apply_ring_unlock_result(gate_result)
+			_update_ui()
+			return
+		if String(gate_result.get("awaiting", "")) == "dojo":
+			_show_ring_gate_blocked(node, String(gate_result.get("message", "还需要先通过当前道馆。")))
+			_update_ui()
+			return
 	var type_id := String(node.get("type", ""))
 	if type_id == "camp":
 		_push_log("你路过营地，顺手整理队伍、驻守和留信。")
@@ -2068,6 +2079,10 @@ func _show_dojo_result(payload: Dictionary) -> void:
 		lines.append(result_line)
 		if not reward_text.is_empty():
 			lines.append("[b]获得[/b] %s" % reward_text)
+		var ring_result := board_progression_service.try_unlock_outer_ring_from_dojo(String(dojo.get("id", "")), tier)
+		if bool(ring_result.get("ok", false)):
+			_apply_ring_unlock_result(ring_result, false)
+			lines.append("[b]外环变化[/b] %s" % String(ring_result.get("message", "新的外环已经展开。")))
 		_push_log("%s 通过了 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
 	else:
 		lines.append("[b]结果[/b] 暂未通过 %s" % _dojo_tier_name(tier))
@@ -2356,8 +2371,7 @@ func _show_environment_forage_stop(node: Dictionary) -> void:
 	decision_panel.open_panel("环境路段", "\n".join(body_lines), [], "继续前进")
 
 func _show_environment_scout_stop(node: Dictionary) -> void:
-	var reveal_target := mini(_current_boss_node_id(), current_node_id + 4)
-	GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(reveal_target))
+	GameState.reveal_board_nodes(board_progression_service.build_scout_reveal(current_node_id, 4))
 	var reward := _environment_travel_reward(node)
 	var body_lines: Array[String] = [
 		"[b]%s[/b]" % String(node.get("name", "侦察路段")),
@@ -2512,6 +2526,28 @@ func _show_locked_board_stop(node: Dictionary) -> void:
 	_push_log("路过 %s，但这里还没开放正式拜访流程。" % String(node.get("name", "未开放据点")))
 	pending_context = {"kind": "locked_stop", "on_close": "finish_transit_stop"}
 	decision_panel.open_panel("暂时只能路过", "\n".join(body_lines), [], "继续前进")
+
+func _show_ring_gate_blocked(node: Dictionary, message: String) -> void:
+	var body_lines: Array[String] = [
+		"[b]%s[/b]" % String(node.get("name", "外环路口")),
+		String(node.get("description", "这里通往更外侧的环路。")),
+		"",
+		message,
+	]
+	_push_log("抵达 %s，但更外侧的环路还未满足开启条件。" % String(node.get("name", "外环路口")))
+	pending_context = {"kind": "ring_gate_locked", "on_close": "finish_transit_stop"}
+	decision_panel.open_panel("外环尚未解锁", "\n".join(body_lines), [], "继续前进")
+
+func _apply_ring_unlock_result(result: Dictionary, open_panel: bool = true) -> void:
+	if result.is_empty() or not bool(result.get("ok", false)):
+		return
+	GameState.reveal_board_nodes(result.get("revealed_nodes", []))
+	_refresh_board_region(false)
+	_push_log(String(result.get("message", "新的外环已经展开。")))
+	if not open_panel:
+		return
+	pending_context = {"kind": "ring_unlock", "on_close": "finish_transit_stop"}
+	decision_panel.open_panel("外环展开", String(result.get("message", "新的外环已经展开。")), [], "继续前进")
 
 func _finish_board_event_visit() -> void:
 	current_visit_habitat_id = ""
@@ -3526,6 +3562,12 @@ func _build_board_markers() -> Dictionary:
 		var habitat_id := String(node.get("habitat_id", ""))
 		var type_id := String(node.get("type", ""))
 		var is_threatened := threat_markers.has(node_id)
+		if board_progression_service.is_node_locked(node_id) and (GameState.revealed_board_nodes.has(node_id) or _get_selectable_nodes().has(node_id)):
+			var ring_locked_text := board_progression_service.get_node_lock_reason(node_id)
+			if ai_markers.has(node_id):
+				ring_locked_text += " · 对手 %s" % " / ".join(ai_markers[node_id])
+			markers[node_id] = ring_locked_text
+			continue
 		if habitat_id.is_empty():
 			var base_marker := ""
 			match type_id:
@@ -3538,6 +3580,9 @@ func _build_board_markers() -> Dictionary:
 				_:
 					base_marker = _type_name(type_id)
 			var base_parts: Array[String] = [base_marker]
+			var gate_text := board_progression_service.get_active_gate_text(node_id)
+			if not gate_text.is_empty():
+				base_parts.append(gate_text)
 			if ai_markers.has(node_id):
 				base_parts.append("对手 %s" % " / ".join(ai_markers[node_id]))
 			markers[node_id] = " · ".join(base_parts)
@@ -3596,6 +3641,10 @@ func _get_selectable_nodes() -> Array[int]:
 func _get_locked_nodes() -> Array[int]:
 	var locked: Array[int] = []
 	for node in world_nodes:
+		var node_id := int(node.get("id", -1))
+		if board_progression_service.is_node_locked(node_id):
+			locked.append(node_id)
+			continue
 		var type_id := String(node.get("type", ""))
 		if type_id in ["camp", "empty", "environment", "event"]:
 			continue
@@ -3603,7 +3652,7 @@ func _get_locked_nodes() -> Array[int]:
 		if habitat_id.is_empty():
 			continue
 		if not GameState.is_habitat_unlocked(habitat_id):
-			locked.append(int(node.get("id", -1)))
+			locked.append(node_id)
 	return locked
 
 func _today_focus_text() -> String:
@@ -3903,10 +3952,7 @@ func _season_name() -> String:
 	return String(GameState.get_current_season_rule().get("name", GameState.season_id))
 
 func _current_boss_node_id() -> int:
-	var board_boss_id := board_progression_service.get_boss_node_id()
-	if board_boss_id >= 0:
-		return board_boss_id
-	return int(DataRepository.get_season_boss_rule(GameState.season_id).get("node_id", -1))
+	return board_progression_service.get_boss_node_id()
 
 func _active_dojo_names() -> Array[String]:
 	var names: Array[String] = []

@@ -270,12 +270,15 @@ func _build_tooltip(node_id: int, node: Dictionary) -> String:
 	return text
 
 func _draw() -> void:
+	var drawn_edges := {}
 	for node in board_nodes:
 		var start_id := int(node.get("id", -1))
 		for edge in node.get("edges", []):
 			var end_id := int(edge)
-			if end_id <= start_id:
+			var edge_key := "%d_%d" % [mini(start_id, end_id), maxi(start_id, end_id)]
+			if drawn_edges.has(edge_key):
 				continue
+			drawn_edges[edge_key] = true
 
 			var start_pos := _button_world_center(start_id) - camera_offset
 			var end_pos := _button_world_center(end_id) - camera_offset

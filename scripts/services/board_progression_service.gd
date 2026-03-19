@@ -1,136 +1,30 @@
 class_name BoardProgressionService
 extends RefCounted
 
-const LEGACY_BUFFER_NODE_PRESETS := {
-	"spring": {
-		14: {
-			"id": 14,
-			"name": "林脊观测点",
-			"type": "habitat",
-			"description": "上路冲塔前新增的一段缓冲观察点，让后段路线不再一口气冲到终点前。",
-			"position": Vector2(1180, 90),
-			"edges": [9, 11],
-			"travel_cost": 1,
-			"habitat_id": "greenbark_grove",
-			"primary_content": "observe",
-			"focus": "缓冲 / 观察",
-			"reward_hint": "先在这里确认局势，再决定要不要继续压向尖塔",
-		},
-		15: {
-			"id": 15,
-			"name": "潮湾回流坡",
-			"type": "habitat",
-			"description": "下路末段新增的回流坡，把返程线拆成两段，节奏更从容。",
-			"position": Vector2(1180, 510),
-			"edges": [10, 13],
-			"travel_cost": 1,
-			"habitat_id": "saltglass_coast",
-			"primary_content": "observe",
-			"focus": "回流 / 调整",
-			"reward_hint": "在这里先修正下路节奏，再决定要不要顶到异常终点",
-		},
-	},
-	"summer": {
-		14: {
-			"id": 14,
-			"name": "雷痕高台",
-			"type": "habitat",
-			"description": "夏季上路新增的高台节点，把冲压路线拆成更清晰的两段。",
-			"position": Vector2(1180, 90),
-			"edges": [9, 11],
-			"travel_cost": 1,
-			"habitat_id": "saltglass_coast",
-			"primary_content": "observe",
-			"focus": "高台 / 侦察",
-			"reward_hint": "先从高台看清雷暴节奏，再决定是否压向尖塔",
-		},
-		15: {
-			"id": 15,
-			"name": "盐镜回流坡",
-			"type": "habitat",
-			"description": "夏季下路新增的回流坡，把后段返程拆开，避免连续大岔路。",
-			"position": Vector2(1180, 510),
-			"edges": [10, 13],
-			"travel_cost": 1,
-			"habitat_id": "saltglass_coast",
-			"primary_content": "build_menu",
-			"focus": "回流 / 建设",
-			"reward_hint": "这里决定你能不能把下路资源稳稳带到终点前",
-		},
-	},
-	"autumn": {
-		14: {
-			"id": 14,
-			"name": "锻火望台",
-			"type": "habitat",
-			"description": "秋季上路新增的望台，把冲演武场前的节奏拆得更舒展。",
-			"position": Vector2(1180, 90),
-			"edges": [9, 11],
-			"travel_cost": 1,
-			"habitat_id": "radiant_observatory",
-			"primary_content": "observe",
-			"focus": "望台 / 侦察",
-			"reward_hint": "先在这里看清后段压力，再决定要不要直压演武场",
-		},
-		15: {
-			"id": 15,
-			"name": "净池回流坡",
-			"type": "habitat",
-			"description": "秋季下路新增的回流坡，让返程线多一段整理空间。",
-			"position": Vector2(1180, 510),
-			"edges": [10, 13],
-			"travel_cost": 1,
-			"habitat_id": "reed_mire",
-			"primary_content": "build_menu",
-			"focus": "回流 / 净化",
-			"reward_hint": "在这里把下路局势整理好，再决定是否顶向终点",
-		},
-	},
-	"winter": {
-		14: {
-			"id": 14,
-			"name": "霜镜折光台",
-			"type": "habitat",
-			"description": "冬季上路新增的折光台，把终段推进拆成更清晰的两拍。",
-			"position": Vector2(1180, 90),
-			"edges": [9, 11],
-			"travel_cost": 1,
-			"habitat_id": "frost_mirror_lake",
-			"primary_content": "observe",
-			"focus": "折光 / 侦察",
-			"reward_hint": "先看清雪线节奏，再决定是否继续压向遗迹",
-		},
-		15: {
-			"id": 15,
-			"name": "雪湾回流坡",
-			"type": "habitat",
-			"description": "冬季下路新增的回流坡，让返程线不会一口气切到终点前。",
-			"position": Vector2(1180, 510),
-			"edges": [10, 13],
-			"travel_cost": 1,
-			"habitat_id": "saltglass_coast",
-			"primary_content": "build_menu",
-			"focus": "回流 / 建设",
-			"reward_hint": "在这里把下路局势压稳，再决定要不要顶向遗迹",
-		},
-	},
+const REGION_NAME_SUFFIX := "环阵扩张盘"
+const MAX_GENERATED_RINGS := 8
+const PREVIEW_RING_AHEAD := 1
+const START_UNLOCKED_RING_COUNT := 1
+const START_GENERATED_RING_COUNT := 2
+const STARTER_RING_COUNT := 12
+const RING_NODE_GROWTH := 4
+const RING_GATE_COUNT := 4
+const START_RADIUS := 210.0
+const RING_RADIUS_STEP := 150.0
+const ELLIPSE_Y_RATIO := 0.72
+const BOARD_CENTER := Vector2(980.0, 520.0)
+const REVEAL_GRAPH_RADIUS := 2
+const SCOUT_LOOKAHEAD := 4
+const SCOUT_REVEAL_RADIUS := 1
+const GATE_REQUIREMENT_PATTERN := ["boss", "dojo"]
+
+const CHECKPOINT_NAMES := {
+	"spring": ["营地", "苔岔补给站", "雾林前哨"],
+	"summer": ["营地", "雷潮补给站", "热浪前哨"],
+	"autumn": ["营地", "赤叶补给站", "锻风前哨"],
+	"winter": ["营地", "雪线补给站", "寒镜前哨"],
 }
 
-const REGION_NODE_COUNT := 60
-const ROUTE_COLUMNS := 12
-const VISUAL_COLUMN_STEP := 2
-const GRID_ORIGIN := Vector2(70, 110)
-const GRID_SPACING := Vector2(120, 150)
-const CHECKPOINT_INTERVAL := 15
-const REVEAL_BACKTRACK := 2
-const REVEAL_LOOKAHEAD := 8
-const CHECKPOINT_NAMES := {
-	"spring": ["营地", "春芽补给营", "林脊整备营", "尖塔前哨"],
-	"summer": ["营地", "雷暴补给营", "高热整备营", "尖塔前哨"],
-	"autumn": ["营地", "赤叶补给营", "锻火整备营", "演武前哨"],
-	"winter": ["营地", "雪线补给营", "镜潮整备营", "遗迹前哨"],
-}
-const SEGMENT_NAMES := ["前段", "中段", "深行", "终盘"]
 const ENVIRONMENT_VARIANTS := {
 	"spring": [
 		{"name": "苔径浅湾", "kind": "forage", "focus": "采集 / 缓行", "description": "薄雾和苔径把主路拉成了一段能停下来喘口气的林间浅湾。", "reward_hint": "更容易顺手带回一点苔类和纤维。"},
@@ -148,7 +42,7 @@ const ENVIRONMENT_VARIANTS := {
 		{"name": "赤痕猎道", "kind": "wild_battle", "focus": "遭遇 / 试锋", "description": "这里留着新鲜的爪痕和冲撞印，基本意味着今天会有正面交锋。", "reward_hint": "可能直接进入一次野外对抗。"},
 	],
 	"winter": [
-		{"name": "霜线雪凹", "kind": "forage", "focus": "采集 / 整备", "description": "雪线在这里压成了缓坡和雪凹，是长线推进里少数能停下来整理物资的地方。", "reward_hint": "更容易带回冰湖与遗迹边缘的基础素材。"},
+		{"name": "霜线雪凹", "kind": "forage", "focus": "采集 / 整备", "description": "雪线在这里压成了缓坡和雪凹，是环阵推进里少数能停下来整理物资的地方。", "reward_hint": "更容易带回冰湖与遗迹边缘的基础素材。"},
 		{"name": "镜雪断脊", "kind": "scout", "focus": "侦察 / 望远", "description": "折光的雪脊能把远处路线照得很清楚，适合先判断今天值不值得继续深压。", "reward_hint": "会额外显露前方几格路线。"},
 		{"name": "寒痕伏道", "kind": "wild_battle", "focus": "遭遇 / 伏击", "description": "雪地里全是新鲜拖痕，队伍经过时很容易把潜伏个体逼出来。", "reward_hint": "可能触发一次偏伏击型的野外遭遇。"},
 	],
@@ -157,10 +51,16 @@ const ENVIRONMENT_VARIANTS := {
 var current_region: Dictionary = {}
 var node_lookup: Dictionary = {}
 var _seed_regions_by_season: Dictionary = {}
+var _ring_node_ids: Array = []
+var _ring_gate_nodes: Dictionary = {}
+var _current_progress: Dictionary = {}
+var _current_season_id := ""
 
 func set_region_for_season(season_id: String) -> void:
+	_current_season_id = season_id
 	var seed_region := _seed_region_for_season(season_id)
-	current_region = _build_long_region(seed_region)
+	_current_progress = _ensure_loop_progress(season_id)
+	current_region = _build_generated_region(seed_region, _current_progress)
 	_register_runtime_region(current_region)
 	_rebuild_lookup()
 
@@ -186,7 +86,7 @@ func get_nodes() -> Array:
 	return nodes
 
 func get_node(node_id: int) -> Dictionary:
-	return node_lookup.get(node_id, {})
+	return Dictionary(node_lookup.get(node_id, {})).duplicate(true)
 
 func get_reachable_paths(from_node_id: int, steps: int) -> Dictionary:
 	var result := {}
@@ -195,41 +95,35 @@ func get_reachable_paths(from_node_id: int, steps: int) -> Dictionary:
 	if steps <= 0:
 		result[from_node_id] = [from_node_id]
 		return result
-
 	var frontier: Array = [{
 		"node_id": from_node_id,
 		"path": [from_node_id],
 		"spent": 0,
 	}]
-
 	while not frontier.is_empty():
 		var state: Dictionary = frontier.pop_front()
 		var current_id := int(state.get("node_id", -1))
 		var current_path: Array = state.get("path", []).duplicate()
 		var spent := int(state.get("spent", 0))
-
 		for neighbor_id in _neighbors(current_id):
+			if is_node_locked(neighbor_id):
+				continue
 			if current_path.has(neighbor_id):
 				continue
-
 			var next_spent := spent + 1
 			if next_spent > steps:
 				continue
-
 			var next_path := current_path.duplicate()
 			next_path.append(neighbor_id)
-
 			if next_spent == steps:
 				if not result.has(neighbor_id):
 					result[neighbor_id] = next_path
 				continue
-
 			frontier.append({
 				"node_id": neighbor_id,
 				"path": next_path,
 				"spent": next_spent,
 			})
-
 	return result
 
 func get_shortest_path(from_node_id: int, to_node_id: int) -> Array[int]:
@@ -237,13 +131,15 @@ func get_shortest_path(from_node_id: int, to_node_id: int) -> Array[int]:
 		return []
 	if from_node_id == to_node_id:
 		return [from_node_id]
-
+	if is_node_locked(to_node_id):
+		return []
 	var frontier: Array[int] = [from_node_id]
 	var parents := {from_node_id: -1}
-
 	while not frontier.is_empty():
 		var current_id := int(frontier.pop_front())
 		for neighbor_id in _neighbors(current_id):
+			if is_node_locked(neighbor_id):
+				continue
 			if parents.has(neighbor_id):
 				continue
 			parents[neighbor_id] = current_id
@@ -257,14 +153,80 @@ func get_shortest_path(from_node_id: int, to_node_id: int) -> Array[int]:
 			frontier.append(neighbor_id)
 	return []
 
-func expand_reveal_from(node_id: int) -> Array[int]:
-	var revealed: Array[int] = []
+func expand_reveal_from(node_id: int, radius: int = REVEAL_GRAPH_RADIUS) -> Array[int]:
 	if node_id == -1:
-		return revealed
-	var last_node_id := int(current_region.get("boss_node_id", REGION_NODE_COUNT - 1))
-	for reveal_id in range(maxi(0, node_id - REVEAL_BACKTRACK), mini(last_node_id, node_id + REVEAL_LOOKAHEAD) + 1):
-		revealed.append(reveal_id)
-	return revealed
+		return []
+	return _collect_graph_nodes(node_id, maxi(0, radius), true)
+
+func build_scout_reveal(from_node_id: int, max_steps: int = SCOUT_LOOKAHEAD, local_radius: int = SCOUT_REVEAL_RADIUS) -> Array[int]:
+	if from_node_id == -1:
+		return []
+	var revealed := {}
+	for node_id in _collect_forward_nodes(from_node_id, maxi(0, max_steps)):
+		revealed[node_id] = true
+		for nearby_id in _collect_graph_nodes(node_id, maxi(0, local_radius), true):
+			revealed[nearby_id] = true
+	return _sorted_node_keys(revealed)
+
+func is_node_locked(node_id: int) -> bool:
+	return bool(node_lookup.get(node_id, {}).get("ring_locked", false))
+
+func get_node_lock_reason(node_id: int) -> String:
+	return String(node_lookup.get(node_id, {}).get("lock_reason", ""))
+
+func is_unlock_gate_node(node_id: int) -> bool:
+	return bool(node_lookup.get(node_id, {}).get("unlock_gate", false))
+
+func try_resolve_unlock_gate(node_id: int) -> Dictionary:
+	var node: Dictionary = node_lookup.get(node_id, {})
+	if not bool(node.get("unlock_gate", false)):
+		return {}
+	var requirement: Dictionary = node.get("unlock_requirement", {}).duplicate(true)
+	var target_ring := int(node.get("unlock_target_ring", -1))
+	if target_ring < 0:
+		return {}
+	match String(requirement.get("kind", "boss")):
+		"boss":
+			return _unlock_next_ring(target_ring, "击败了 %s。" % String(node.get("name", "路口领主")))
+		"dojo":
+			if _is_dojo_requirement_satisfied(requirement):
+				return _unlock_next_ring(target_ring, "通过了 %s。" % String(requirement.get("label", "当前道馆")))
+			var progress := _ensure_loop_progress(_current_season_id)
+			progress["pending_dojo_ring"] = target_ring
+			GameState.set_board_loop_progress(progress, _current_season_id)
+			_current_progress = progress.duplicate(true)
+			return {
+				"ok": false,
+				"awaiting": "dojo",
+				"message": String(requirement.get("blocked_text", "还需要先通过当前外环对应的道馆。")),
+				"revealed_nodes": [],
+			}
+		_:
+			return {}
+
+func try_unlock_outer_ring_from_dojo(dojo_id: String, tier: String) -> Dictionary:
+	var progress := _ensure_loop_progress(_current_season_id)
+	var target_ring := int(progress.get("pending_dojo_ring", -1))
+	if target_ring < 0:
+		return {}
+	var requirement := _unlock_requirement_for_ring(target_ring - 1, _current_season_id)
+	if String(requirement.get("kind", "")) != "dojo":
+		return {}
+	if String(requirement.get("tier", "tier_1")) != tier:
+		return {}
+	var expected_dojo_id := String(requirement.get("dojo_id", ""))
+	if not expected_dojo_id.is_empty() and expected_dojo_id != dojo_id:
+		return {}
+	return _unlock_next_ring(target_ring, "通过了 %s。" % String(requirement.get("label", dojo_id)))
+
+func get_active_gate_text(node_id: int) -> String:
+	var node: Dictionary = node_lookup.get(node_id, {})
+	if not bool(node.get("unlock_gate", false)):
+		return ""
+	var requirement: Dictionary = node.get("unlock_requirement", {}).duplicate(true)
+	if String(requirement.get("kind", "boss")) == "boss":
+		return "击败此路口领主后，会打开下一圈外环。"
+	return String(requirement.get("blocked_text", "需要通过当前道馆后，外环才会解锁。"))
 
 func _rebuild_lookup() -> void:
 	node_lookup.clear()
@@ -277,114 +239,426 @@ func _normalize_node(node: Dictionary) -> Dictionary:
 	if raw_position is Array and raw_position.size() >= 2:
 		normalized["position"] = Vector2(float(raw_position[0]), float(raw_position[1]))
 	elif raw_position is Dictionary:
-		normalized["position"] = Vector2(
-			float(raw_position.get("x", 0.0)),
-			float(raw_position.get("y", 0.0))
-		)
+		normalized["position"] = Vector2(float(raw_position.get("x", 0.0)), float(raw_position.get("y", 0.0)))
 	return normalized
 
 func _seed_region_for_season(season_id: String) -> Dictionary:
 	if _seed_regions_by_season.has(season_id):
 		return Dictionary(_seed_regions_by_season[season_id]).duplicate(true)
 	var raw_region := DataRepository.get_board_region_for_season(season_id)
-	var seed_region := _expand_seed_layout(raw_region)
-	_seed_regions_by_season[season_id] = seed_region.duplicate(true)
-	return seed_region
+	_seed_regions_by_season[season_id] = raw_region.duplicate(true)
+	return Dictionary(raw_region).duplicate(true)
 
-func _build_long_region(seed_region: Dictionary) -> Dictionary:
-	if seed_region.is_empty():
+func _ensure_loop_progress(season_id: String) -> Dictionary:
+	var progress := GameState.get_board_loop_progress(season_id)
+	if progress.is_empty():
+		progress = {
+			"unlocked_ring_count": START_UNLOCKED_RING_COUNT,
+			"generated_ring_count": START_GENERATED_RING_COUNT,
+			"pending_dojo_ring": -1,
+		}
+	progress["unlocked_ring_count"] = clampi(int(progress.get("unlocked_ring_count", START_UNLOCKED_RING_COUNT)), 1, MAX_GENERATED_RINGS)
+	var minimum_generated := mini(MAX_GENERATED_RINGS, int(progress.get("unlocked_ring_count", START_UNLOCKED_RING_COUNT)) + PREVIEW_RING_AHEAD)
+	progress["generated_ring_count"] = clampi(int(progress.get("generated_ring_count", START_GENERATED_RING_COUNT)), minimum_generated, MAX_GENERATED_RINGS)
+	progress["pending_dojo_ring"] = int(progress.get("pending_dojo_ring", -1))
+	GameState.set_board_loop_progress(progress, season_id)
+	return progress
+
+func _unlock_next_ring(target_ring: int, summary: String) -> Dictionary:
+	var progress := _ensure_loop_progress(_current_season_id)
+	var unlocked_ring_count := int(progress.get("unlocked_ring_count", START_UNLOCKED_RING_COUNT))
+	if target_ring >= MAX_GENERATED_RINGS or target_ring < unlocked_ring_count:
 		return {}
+	progress["unlocked_ring_count"] = target_ring + 1
+	progress["generated_ring_count"] = mini(MAX_GENERATED_RINGS, int(progress.get("unlocked_ring_count", 1)) + PREVIEW_RING_AHEAD)
+	progress["pending_dojo_ring"] = -1
+	GameState.set_board_loop_progress(progress, _current_season_id)
+	_current_progress = progress.duplicate(true)
+	var seed_region := _seed_region_for_season(_current_season_id)
+	current_region = _build_generated_region(seed_region, progress)
+	_register_runtime_region(current_region)
+	_rebuild_lookup()
+	var revealed_nodes := _unlock_reveal_nodes(target_ring)
+	return {
+		"ok": true,
+		"message": "%s 新的外环已经展开。" % summary,
+		"revealed_nodes": revealed_nodes,
+		"target_ring": target_ring,
+	}
+
+func _build_generated_region(seed_region: Dictionary, progress: Dictionary) -> Dictionary:
 	var generated: Dictionary = seed_region.duplicate(true)
-	var season_id := String(seed_region.get("season_id", ""))
-	var boss_node_id := REGION_NODE_COUNT - 1
+	var season_id := String(seed_region.get("season_id", _current_season_id))
 	var template_pool := _build_template_pool(seed_region, int(seed_region.get("boss_node_id", -1)))
 	var boss_template := _build_boss_template(seed_region)
-	var generated_nodes: Array = []
+	_ring_node_ids.clear()
+	_ring_gate_nodes.clear()
+	var nodes: Array = []
+	var next_id := 0
+	var ring_count := int(progress.get("generated_ring_count", START_GENERATED_RING_COUNT))
+	var unlocked_ring_count := int(progress.get("unlocked_ring_count", START_UNLOCKED_RING_COUNT))
 	var template_cursor := 0
-
-	for node_id in range(REGION_NODE_COUNT):
-		if node_id == boss_node_id:
-			generated_nodes.append(_build_boss_node(season_id, boss_template, node_id))
-			continue
-		if _is_checkpoint(node_id):
-			generated_nodes.append(_build_checkpoint_node(season_id, node_id))
-			continue
-		var template: Dictionary = {}
-		if not template_pool.is_empty():
-			template = Dictionary(template_pool[template_cursor % template_pool.size()]).duplicate(true)
-		generated_nodes.append(_build_path_node(season_id, template, node_id, template_cursor))
-		template_cursor += 1
-
-	for node_id in range(generated_nodes.size()):
-		var node: Dictionary = generated_nodes[node_id]
-		var edges: Array[int] = []
-		if node_id < boss_node_id:
-			edges.append(node_id + 1)
-		node["edges"] = edges
-		generated_nodes[node_id] = node
-
-	generated["name"] = "%s · 60格远征线" % String(seed_region.get("name", "长线区域"))
+	var center_node := _build_center_camp_node(season_id, next_id)
+	nodes.append(center_node)
+	next_id += 1
+	for ring_index in range(ring_count):
+		var count := STARTER_RING_COUNT + ring_index * RING_NODE_GROWTH
+		var ring_ids: Array[int] = []
+		for _offset in range(count):
+			ring_ids.append(next_id)
+			next_id += 1
+		_ring_node_ids.append(ring_ids)
+	var active_boss_gate_id := -1
+	for ring_index in range(ring_count):
+		var ring_ids: Array = _ring_node_ids[ring_index]
+		var locked := ring_index >= unlocked_ring_count
+		var lock_reason := _ring_lock_reason(ring_index, season_id)
+		var gate_offset := _gate_offset_for_ring(ring_ids.size())
+		var entrance_offset := 0
+		for offset in range(ring_ids.size()):
+			var node_id := ring_ids[offset]
+			var node: Dictionary
+			if offset == entrance_offset and ring_index == 0:
+				node = _build_entry_node(season_id, node_id)
+			elif ring_index < MAX_GENERATED_RINGS - 1 and offset == gate_offset:
+				var gate_requirement := _unlock_requirement_for_ring(ring_index, season_id)
+				node = _build_gate_node(season_id, boss_template, node_id, ring_index, gate_requirement)
+				_ring_gate_nodes[ring_index] = node_id
+				if ring_index == unlocked_ring_count - 1 and String(gate_requirement.get("kind", "boss")) == "boss":
+					active_boss_gate_id = node_id
+			else:
+				var template: Dictionary = {}
+				if not template_pool.is_empty():
+					template = Dictionary(template_pool[template_cursor % template_pool.size()]).duplicate(true)
+				template_cursor += 1
+				node = _build_ring_content_node(season_id, template, node_id, ring_index, offset)
+			node["ring_index"] = ring_index
+			node["position"] = _ring_position(ring_index, offset, ring_ids.size())
+			node["ring_locked"] = locked
+			node["lock_reason"] = lock_reason if locked else ""
+			node["edges"] = []
+			nodes.append(node)
+	_connect_layout(nodes, ring_count)
+	generated["id"] = "%s_loop" % season_id
+	generated["name"] = "%s · %s" % [String(seed_region.get("name", "未命名区域")), REGION_NAME_SUFFIX]
 	generated["start_node_id"] = 0
-	generated["boss_node_id"] = boss_node_id
-	generated["revealed_nodes"] = _initial_revealed_nodes()
-	generated["nodes"] = generated_nodes
+	generated["boss_node_id"] = active_boss_gate_id
+	generated["revealed_nodes"] = _initial_revealed_nodes(nodes, unlocked_ring_count)
+	generated["nodes"] = nodes
+	generated["loop_progress"] = progress.duplicate(true)
 	return generated
 
-func _register_runtime_region(region: Dictionary) -> void:
-	if region.is_empty():
-		return
-	var region_id := String(region.get("id", ""))
-	var season_id := String(region.get("season_id", ""))
-	if not region_id.is_empty():
-		DataRepository.board_regions[region_id] = region.duplicate(true)
-	if not season_id.is_empty():
-		DataRepository.board_regions_by_season[season_id] = region.duplicate(true)
-		var boss_rule: Dictionary = DataRepository.season_boss_rules_by_season.get(season_id, {}).duplicate(true)
-		if not boss_rule.is_empty():
-			boss_rule["node_id"] = int(region.get("boss_node_id", -1))
-			DataRepository.season_boss_rules_by_season[season_id] = boss_rule
+func _build_center_camp_node(season_id: String, node_id: int) -> Dictionary:
+	var names: Array = CHECKPOINT_NAMES.get(season_id, CHECKPOINT_NAMES.get("spring", []))
+	return {
+		"id": node_id,
+		"name": String(names[0]) if not names.is_empty() else "营地",
+		"type": "camp",
+		"description": "环阵自动生成的中心营地。所有外环都从这里向外展开。",
+		"travel_cost": 0,
+		"focus": "整备 / 起点",
+		"reward_hint": "在这里重整队伍，再决定切向哪一圈。",
+	}
 
-func _expand_seed_layout(region: Dictionary) -> Dictionary:
-	if region.is_empty():
-		return {}
-	var expanded: Dictionary = region.duplicate(true)
-	var season_id := String(expanded.get("season_id", ""))
-	if not LEGACY_BUFFER_NODE_PRESETS.has(season_id):
-		return expanded
-	var existing_nodes: Array = expanded.get("nodes", [])
+func _build_entry_node(season_id: String, node_id: int) -> Dictionary:
+	return {
+		"id": node_id,
+		"name": "%s前环入口" % String(CHECKPOINT_NAMES.get(season_id, CHECKPOINT_NAMES.get("spring", ["营地"]))[0]),
+		"type": "camp",
+		"description": "这是第一圈与中心营地衔接的入口，适合重新判断今天是继续压外圈还是回内圈整备。",
+		"travel_cost": 0,
+		"focus": "入口 / 调整",
+		"reward_hint": "这里能稳定承接中心营地与第一圈的路线。",
+	}
+
+func _build_gate_node(season_id: String, boss_template: Dictionary, node_id: int, ring_index: int, requirement: Dictionary) -> Dictionary:
+	var kind := String(requirement.get("kind", "boss"))
+	if kind == "boss":
+		var node: Dictionary = boss_template.duplicate(true)
+		node["id"] = node_id
+		node["name"] = String(requirement.get("label", "路口领主"))
+		node["type"] = "anomaly"
+		node["description"] = "这里是第 %d 圈的路口封门点。只要压过这里，下一圈外环就会展开。" % (ring_index + 1)
+		node["travel_cost"] = 1
+		node["focus"] = "路口 Boss / 开环"
+		node["reward_hint"] = "击破后会立即生成并显露更外侧的一圈。"
+		node["unlock_gate"] = true
+		node["unlock_requirement"] = requirement.duplicate(true)
+		node["unlock_target_ring"] = ring_index + 1
+		return node
+	return {
+		"id": node_id,
+		"name": String(requirement.get("label", "道馆门")),
+		"type": "event",
+		"description": "这里通向更外侧的环路，但需要先通过当前层要求的道馆验证。",
+		"travel_cost": 1,
+		"focus": "道馆验证 / 开环",
+		"reward_hint": String(requirement.get("blocked_text", "需要先通过当前道馆。")),
+		"unlock_gate": true,
+		"unlock_requirement": requirement.duplicate(true),
+		"unlock_target_ring": ring_index + 1,
+	}
+
+func _build_ring_content_node(season_id: String, template: Dictionary, node_id: int, ring_index: int, offset: int) -> Dictionary:
+	if (offset + ring_index) % 5 == 2:
+		return _build_environment_node(season_id, template, node_id, ring_index)
+	if (offset + ring_index) % 7 == 4 and not template.is_empty() and String(template.get("type", "")) != "dojo":
+		return _build_event_node(template, node_id, ring_index)
+	return _build_path_node(template, node_id, ring_index)
+
+func _build_environment_node(season_id: String, template: Dictionary, node_id: int, ring_index: int) -> Dictionary:
+	var variants: Array = ENVIRONMENT_VARIANTS.get(season_id, ENVIRONMENT_VARIANTS.get("spring", []))
+	var variant: Dictionary = {}
+	if not variants.is_empty():
+		variant = Dictionary(variants[(node_id + ring_index) % variants.size()]).duplicate(true)
+	return {
+		"id": node_id,
+		"name": "%s · %02d" % [String(variant.get("name", "沿途环境")), node_id],
+		"type": "environment",
+		"description": "%s\n它属于自动扩张的第 %d 圈环境段。" % [String(variant.get("description", "这是一段会产生沿途内容的环境地貌。")), ring_index + 1],
+		"travel_cost": 1,
+		"habitat_id": "",
+		"environment_kind": String(variant.get("kind", "forage")),
+		"focus": String(variant.get("focus", "行进 / 缓冲")),
+		"reward_hint": String(variant.get("reward_hint", "这段环境会提供一次沿途内容，而不只是空走一格。")),
+		"source_habitat_id": String(template.get("habitat_id", "")),
+	}
+
+func _build_event_node(template: Dictionary, node_id: int, ring_index: int) -> Dictionary:
+	var node: Dictionary = template.duplicate(true)
+	node["id"] = node_id
+	node["type"] = "event"
+	node["primary_content"] = "board_event"
+	node["name"] = "%s · 插曲格 %02d" % [_template_display_name(template), node_id]
+	node["description"] = "%s\n当前位于第 %d 圈的插曲位，会在环阵上制造节奏变化。" % [String(template.get("description", "沿主干继续推进。")), ring_index + 1]
+	node["focus"] = "插曲 / 机遇"
+	node["reward_hint"] = "落到这里会自动触发一段沿途插曲。"
+	return node
+
+func _build_path_node(template: Dictionary, node_id: int, ring_index: int) -> Dictionary:
+	var node: Dictionary = template.duplicate(true)
+	if node.is_empty():
+		node = {
+			"type": "habitat",
+			"name": "外环节点",
+			"description": "自动生成的环阵节点。",
+			"travel_cost": 1,
+			"habitat_id": "",
+		}
+	node["id"] = node_id
+	node["name"] = "%s · %02d格" % [_template_display_name(template), node_id]
+	node["description"] = "%s\n当前位于自动生成的第 %d 圈，可以继续沿环前压，或在路口切向更外层。" % [String(node.get("description", "沿主干继续推进。")), ring_index + 1]
+	node["focus"] = String(node.get("focus", "推进 / 观察"))
+	node["reward_hint"] = "精确走满骰面后才会落到这一格。"
+	return node
+
+func _connect_layout(nodes: Array, ring_count: int) -> void:
 	var node_map := {}
-	for raw_node in existing_nodes:
+	for index in range(nodes.size()):
+		var node: Dictionary = nodes[index]
+		node_map[int(node.get("id", -1))] = index
+	for ring_index in range(ring_count):
+		var ring_ids: Array = _ring_node_ids[ring_index]
+		for offset in range(ring_ids.size()):
+			var current_id := ring_ids[offset]
+			var next_id := ring_ids[(offset + 1) % ring_ids.size()]
+			var prev_id := ring_ids[(offset - 1 + ring_ids.size()) % ring_ids.size()]
+			_append_edge_to_nodes(nodes, node_map, current_id, next_id)
+			_append_edge_to_nodes(nodes, node_map, current_id, prev_id)
+		if ring_index == 0 and not ring_ids.is_empty():
+			_append_edge_to_nodes(nodes, node_map, 0, ring_ids[0])
+			_append_edge_to_nodes(nodes, node_map, ring_ids[0], 0)
+	for ring_index in range(ring_count - 1):
+		var inner_ids: Array = _ring_node_ids[ring_index]
+		var outer_ids: Array = _ring_node_ids[ring_index + 1]
+		for slot in range(RING_GATE_COUNT):
+			var ratio := float(slot) / float(RING_GATE_COUNT)
+			var inner_index := int(round(ratio * float(inner_ids.size() - 1)))
+			var outer_index := int(round(ratio * float(outer_ids.size() - 1)))
+			var inner_id := inner_ids[clampi(inner_index, 0, inner_ids.size() - 1)]
+			var outer_id := outer_ids[clampi(outer_index, 0, outer_ids.size() - 1)]
+			_append_edge_to_nodes(nodes, node_map, inner_id, outer_id)
+			_append_edge_to_nodes(nodes, node_map, outer_id, inner_id)
+
+func _append_edge_to_nodes(nodes: Array, node_map: Dictionary, from_node_id: int, to_node_id: int) -> void:
+	if not node_map.has(from_node_id):
+		return
+	var index := int(node_map[from_node_id])
+	var node: Dictionary = nodes[index]
+	var edges: Array[int] = []
+	for existing_id in node.get("edges", []):
+		edges.append(int(existing_id))
+	if not edges.has(to_node_id):
+		edges.append(to_node_id)
+	node["edges"] = edges
+	nodes[index] = node
+
+func _ring_position(ring_index: int, offset: int, count: int) -> Vector2:
+	var radius_x := START_RADIUS + float(ring_index) * RING_RADIUS_STEP
+	var radius_y := radius_x * ELLIPSE_Y_RATIO
+	var angle := -PI * 0.5 + TAU * (float(offset) / maxf(float(count), 1.0))
+	return BOARD_CENTER + Vector2(cos(angle) * radius_x, sin(angle) * radius_y)
+
+func _gate_offset_for_ring(count: int) -> int:
+	return maxi(1, int(floor(float(count) * 0.25)))
+
+func _unlock_requirement_for_ring(ring_index: int, season_id: String) -> Dictionary:
+	var kind := GATE_REQUIREMENT_PATTERN[ring_index % GATE_REQUIREMENT_PATTERN.size()]
+	if kind == "boss":
+		return {
+			"kind": "boss",
+			"label": _boss_gate_name(season_id, ring_index),
+		}
+	var dojo_ids: Array = GameState.get_current_dojo_rotation()
+	if dojo_ids.is_empty():
+		return {
+			"kind": "boss",
+			"label": _boss_gate_name(season_id, ring_index),
+		}
+	var dojo_id := String(dojo_ids[ring_index % dojo_ids.size()])
+	var dojo_name := dojo_id
+	if not dojo_id.is_empty():
+		dojo_name = String(DataRepository.get_dojo(dojo_id).get("name", dojo_id))
+	return {
+		"kind": "dojo",
+		"dojo_id": dojo_id,
+		"tier": "tier_1",
+		"label": "%s一阶试炼" % dojo_name if not dojo_name.is_empty() else "当前道馆一阶试炼",
+		"blocked_text": "需要先通过 %s，下一圈外环才会解锁。" % ("%s的一阶试炼" % dojo_name if not dojo_name.is_empty() else "当前道馆的一阶试炼"),
+	}
+
+func _ring_lock_reason(ring_index: int, season_id: String) -> String:
+	if ring_index <= 0:
+		return ""
+	var requirement := _unlock_requirement_for_ring(ring_index - 1, season_id)
+	if String(requirement.get("kind", "boss")) == "boss":
+		return "需先击败上一圈的路口领主。"
+	return String(requirement.get("blocked_text", "需先通过当前道馆。"))
+
+func _boss_gate_name(season_id: String, ring_index: int) -> String:
+	match season_id:
+		"summer":
+			return "雷痕路口领主 %d" % (ring_index + 1)
+		"autumn":
+			return "赤纹路口领主 %d" % (ring_index + 1)
+		"winter":
+			return "霜镜路口领主 %d" % (ring_index + 1)
+		_:
+			return "雾苔路口领主 %d" % (ring_index + 1)
+
+func _is_dojo_requirement_satisfied(requirement: Dictionary) -> bool:
+	var expected_dojo_id := String(requirement.get("dojo_id", ""))
+	var tier := String(requirement.get("tier", "tier_1"))
+	if not expected_dojo_id.is_empty():
+		return GameState.has_cleared_dojo(expected_dojo_id, tier)
+	for dojo_id in GameState.get_current_dojo_rotation():
+		if GameState.has_cleared_dojo(String(dojo_id), tier):
+			return true
+	return false
+
+func _initial_revealed_nodes(nodes: Array, unlocked_ring_count: int) -> Array[int]:
+	var adjacency := _build_undirected_adjacency(nodes)
+	var revealed := _collect_graph_nodes_with_adjacency(0, 2, adjacency)
+	if unlocked_ring_count > 0:
+		revealed.append_array(_unlock_reveal_nodes(0))
+	return _dedupe_sorted_ints(revealed)
+
+func _unlock_reveal_nodes(ring_index: int) -> Array[int]:
+	var revealed: Array[int] = []
+	if ring_index < 0 or ring_index >= _ring_node_ids.size():
+		return revealed
+	for node_id in _ring_node_ids[ring_index]:
+		revealed.append(int(node_id))
+		if revealed.size() >= 8:
+			break
+		for neighbor_id in _neighbors(int(node_id)):
+			revealed.append(int(neighbor_id))
+	return _dedupe_sorted_ints(revealed)
+
+func _collect_forward_nodes(from_node_id: int, max_depth: int) -> Array[int]:
+	var revealed := {from_node_id: true}
+	var frontier: Array = [{"node_id": from_node_id, "depth": 0}]
+	while not frontier.is_empty():
+		var state: Dictionary = frontier.pop_front()
+		var node_id := int(state.get("node_id", -1))
+		var depth := int(state.get("depth", 0))
+		if depth >= max_depth:
+			continue
+		for neighbor_id in _neighbors(node_id):
+			if is_node_locked(neighbor_id):
+				continue
+			if revealed.has(neighbor_id):
+				continue
+			revealed[neighbor_id] = true
+			frontier.append({"node_id": neighbor_id, "depth": depth + 1})
+	return _sorted_node_keys(revealed)
+
+func _collect_graph_nodes(from_node_id: int, radius: int, include_reverse: bool) -> Array[int]:
+	var adjacency := _build_runtime_adjacency(include_reverse)
+	return _collect_graph_nodes_with_adjacency(from_node_id, radius, adjacency)
+
+func _collect_graph_nodes_with_adjacency(from_node_id: int, radius: int, adjacency: Dictionary) -> Array[int]:
+	if from_node_id == -1:
+		return []
+	var visited := {from_node_id: 0}
+	var frontier: Array = [{"node_id": from_node_id, "depth": 0}]
+	while not frontier.is_empty():
+		var state: Dictionary = frontier.pop_front()
+		var node_id := int(state.get("node_id", -1))
+		var depth := int(state.get("depth", 0))
+		if depth >= radius:
+			continue
+		for neighbor_id in adjacency.get(node_id, []):
+			if visited.has(neighbor_id):
+				continue
+			visited[neighbor_id] = depth + 1
+			frontier.append({"node_id": neighbor_id, "depth": depth + 1})
+	return _sorted_node_keys(visited)
+
+func _build_runtime_adjacency(include_reverse: bool) -> Dictionary:
+	return _build_adjacency_from_nodes(get_nodes(), include_reverse)
+
+func _build_undirected_adjacency(nodes: Array) -> Dictionary:
+	return _build_adjacency_from_nodes(nodes, true)
+
+func _build_adjacency_from_nodes(nodes: Array, include_reverse: bool) -> Dictionary:
+	var adjacency := {}
+	for raw_node in nodes:
 		var node: Dictionary = _normalize_node(raw_node)
-		node_map[int(node.get("id", -1))] = node
-	if node_map.has(14) or node_map.has(15):
-		return expanded
-	if node_map.has(0):
-		node_map[0]["edges"] = [1, 2]
-	if node_map.has(9):
-		node_map[9]["edges"] = [8, 14]
-	if node_map.has(10):
-		node_map[10]["edges"] = [7, 15]
-	if node_map.has(11):
-		node_map[11]["edges"] = [14, 12]
-		node_map[11]["position"] = Vector2(1320, 180)
-	if node_map.has(12):
-		node_map[12]["edges"] = [11, 13]
-		node_map[12]["position"] = Vector2(1480, 300)
-	if node_map.has(13):
-		node_map[13]["edges"] = [15, 12]
-		node_map[13]["position"] = Vector2(1320, 420)
-	var preset: Dictionary = LEGACY_BUFFER_NODE_PRESETS[season_id]
-	node_map[14] = Dictionary(preset.get(14, {})).duplicate(true)
-	node_map[15] = Dictionary(preset.get(15, {})).duplicate(true)
-	var ordered_nodes: Array = []
-	for node_id in node_map.keys():
-		ordered_nodes.append(int(node_id))
-	ordered_nodes.sort()
-	var final_nodes: Array = []
-	for node_id in ordered_nodes:
-		final_nodes.append(node_map.get(node_id, {}).duplicate(true))
-	expanded["nodes"] = final_nodes
-	return expanded
+		var node_id := int(node.get("id", -1))
+		if node_id < 0:
+			continue
+		if not adjacency.has(node_id):
+			adjacency[node_id] = []
+		for raw_neighbor in node.get("edges", []):
+			var neighbor_id := int(raw_neighbor)
+			_add_unique_neighbor(adjacency, node_id, neighbor_id)
+			if include_reverse:
+				_add_unique_neighbor(adjacency, neighbor_id, node_id)
+	return adjacency
+
+func _add_unique_neighbor(adjacency: Dictionary, from_node_id: int, to_node_id: int) -> void:
+	var neighbors: Array[int] = []
+	for raw_neighbor in adjacency.get(from_node_id, []):
+		neighbors.append(int(raw_neighbor))
+	if neighbors.has(to_node_id):
+		adjacency[from_node_id] = neighbors
+		return
+	neighbors.append(to_node_id)
+	adjacency[from_node_id] = neighbors
+
+func _sorted_node_keys(value: Dictionary) -> Array[int]:
+	var keys: Array[int] = []
+	for raw_key in value.keys():
+		keys.append(int(raw_key))
+	keys.sort()
+	return keys
+
+func _dedupe_sorted_ints(values: Array) -> Array[int]:
+	var seen := {}
+	for value in values:
+		seen[int(value)] = true
+	return _sorted_node_keys(seen)
 
 func _build_template_pool(seed_region: Dictionary, boss_seed_id: int) -> Array:
 	var ordered_ids: Array[int] = []
@@ -397,15 +671,12 @@ func _build_template_pool(seed_region: Dictionary, boss_seed_id: int) -> Array:
 		seed_lookup[node_id] = node
 		ordered_ids.append(node_id)
 	ordered_ids.sort()
-
 	var templates: Array = []
 	for node_id in ordered_ids:
 		if node_id == 0 or node_id == boss_seed_id:
 			continue
 		var template: Dictionary = seed_lookup.get(node_id, {}).duplicate(true)
 		if String(template.get("type", "")) == "camp":
-			continue
-		if String(template.get("habitat_id", "")).is_empty():
 			continue
 		templates.append(template)
 	return templates
@@ -418,139 +689,25 @@ func _build_boss_template(seed_region: Dictionary) -> Dictionary:
 			return node
 	return {}
 
-func _build_checkpoint_node(season_id: String, node_id: int) -> Dictionary:
-	var checkpoint_index := int(node_id / CHECKPOINT_INTERVAL)
-	var names: Array = CHECKPOINT_NAMES.get(season_id, CHECKPOINT_NAMES.get("spring", []))
-	var label := "营地" if checkpoint_index <= 0 else String(names[min(checkpoint_index, names.size() - 1)])
-	var description := "长线远征中的补给节点。路过这里会自动进入营地整备，用来重新收口队伍、驻守和留信节奏。"
-	if node_id == 0:
-		description = "长线远征的起点。这里是本赛季第一格，也承担整备、编成和路线规划。"
-	return {
-		"id": node_id,
-		"name": label,
-		"type": "camp",
-		"description": description,
-		"position": _position_for_node(node_id),
-		"edges": [],
-		"travel_cost": 0,
-		"habitat_id": "",
-		"focus": "补给 / 整备",
-		"reward_hint": "路过这里会自动进入营地整备，不再需要靠侧边常驻按钮。",
-	}
-
-func _build_environment_node(season_id: String, template: Dictionary, node_id: int, template_cursor: int) -> Dictionary:
-	var variants: Array = ENVIRONMENT_VARIANTS.get(season_id, ENVIRONMENT_VARIANTS.get("spring", []))
-	var variant: Dictionary = {}
-	if not variants.is_empty():
-		variant = Dictionary(variants[(node_id + template_cursor) % variants.size()]).duplicate(true)
-	var source_habitat_id := String(template.get("habitat_id", ""))
-	var environment_name := String(variant.get("name", "沿途环境"))
-	return {
-		"id": node_id,
-		"name": "%s · %02d" % [environment_name, node_id],
-		"type": "environment",
-		"description": "%s\n它不再是纯空地，而是长线推进里会发生沿途内容的环境段。" % String(variant.get("description", "这是一段会产生沿途内容的环境地貌。")),
-		"position": _position_for_node(node_id),
-		"edges": [],
-		"travel_cost": 1,
-		"habitat_id": "",
-		"source_habitat_id": source_habitat_id,
-		"environment_kind": String(variant.get("kind", "forage")),
-		"focus": String(variant.get("focus", "行进 / 缓冲")),
-		"reward_hint": String(variant.get("reward_hint", "这段环境会提供一次沿途内容，而不只是空走一格。")),
-	}
-
-func _build_path_node(season_id: String, template: Dictionary, node_id: int, template_cursor: int) -> Dictionary:
-	var node: Dictionary = template.duplicate(true)
-	node["id"] = node_id
-	node["position"] = _position_for_node(node_id)
-	var reward_hint := String(node.get("reward_hint", ""))
-	if _should_be_event_node(node_id, template):
-		node["type"] = "event"
-		node["primary_content"] = "board_event"
-		node["focus"] = "插曲 / 机遇"
-		node["name"] = "%s · 事件格 %02d" % [_template_display_name(template), node_id]
-		reward_hint = "落到这里会自动触发一段沿途插曲。"
-	elif _should_be_empty_node(node_id):
-		return _build_environment_node(season_id, template, node_id, template_cursor)
-	else:
-		node["name"] = "%s · %02d格" % [_template_display_name(template), node_id]
-		if reward_hint.is_empty():
-			reward_hint = "精确走满骰面后才会落到这一格。"
-		else:
-			reward_hint = "%s ｜ 这是长线推进中的第 %d 格。" % [reward_hint, node_id]
-	node["reward_hint"] = reward_hint
-	var description := String(node.get("description", "沿主干继续推进。"))
-	node["description"] = "%s\n当前位于%s，用来把原本过短的赛季棋盘拉成长线推进。" % [
-		description,
-		_segment_name(node_id, template_cursor),
-	]
-	return node
-
-func _build_boss_node(season_id: String, template: Dictionary, node_id: int) -> Dictionary:
-	var node: Dictionary = template.duplicate(true)
-	var boss_rule := DataRepository.get_season_boss_rule(season_id)
-	if node.is_empty():
-		node = {
-			"type": "anomaly",
-			"habitat_id": String(boss_rule.get("habitat_id", "")),
-			"primary_content": "observe",
-		}
-	node["id"] = node_id
-	node["position"] = _position_for_node(node_id)
-	node["name"] = String(boss_rule.get("name", node.get("name", "赛季高潮")))
-	node["description"] = String(boss_rule.get("description", node.get("description", "这是赛季长线地图的最终落点。")))
-	node["reward_hint"] = "走到这里会直接触发赛季高潮奖励结算。"
-	node["focus"] = "赛季高潮 / 验收"
-	node["primary_content"] = "observe"
-	if not String(boss_rule.get("habitat_id", "")).is_empty():
-		node["habitat_id"] = String(boss_rule.get("habitat_id", ""))
-	return node
-
 func _template_display_name(template: Dictionary) -> String:
 	var habitat_id := String(template.get("habitat_id", ""))
 	if habitat_id.is_empty():
 		return String(template.get("name", "未知节点"))
 	return String(DataRepository.get_habitat(habitat_id).get("name", template.get("name", habitat_id)))
 
-func _position_for_node(node_id: int) -> Vector2:
-	var row := int(node_id / ROUTE_COLUMNS)
-	var route_column := node_id % ROUTE_COLUMNS
-	var column := route_column * VISUAL_COLUMN_STEP
-	if row % 2 == 1:
-		column = (ROUTE_COLUMNS - 1 - route_column) * VISUAL_COLUMN_STEP + 1
-	var lane_offset := 32.0 if route_column % 2 == 1 else 0.0
-	return GRID_ORIGIN + Vector2(float(column) * GRID_SPACING.x, float(row) * GRID_SPACING.y + lane_offset)
-
-func _segment_name(node_id: int, template_cursor: int) -> String:
-	var checkpoint_index := int(node_id / CHECKPOINT_INTERVAL)
-	var segment_label := String(SEGMENT_NAMES[min(checkpoint_index, SEGMENT_NAMES.size() - 1)])
-	return "%s第 %d 段" % [segment_label, template_cursor + 1]
-
-func _initial_revealed_nodes() -> Array[int]:
-	var revealed: Array[int] = []
-	for node_id in range(mini(REGION_NODE_COUNT, 7)):
-		revealed.append(node_id)
-	return revealed
-
-func _should_be_event_node(node_id: int, template: Dictionary) -> bool:
-	if node_id <= 0 or _is_checkpoint(node_id) or node_id >= REGION_NODE_COUNT - 1:
-		return false
-	if node_id % 6 != 4:
-		return false
-	if String(template.get("type", "")) == "dojo":
-		return false
-	return not String(template.get("habitat_id", "")).is_empty()
-
-func _should_be_empty_node(node_id: int) -> bool:
-	if node_id <= 0 or _is_checkpoint(node_id) or node_id >= REGION_NODE_COUNT - 1:
-		return false
-	return node_id % 3 == 2
-
-func _is_checkpoint(node_id: int) -> bool:
-	if node_id == 0:
-		return true
-	return node_id % CHECKPOINT_INTERVAL == 0 and node_id < REGION_NODE_COUNT - 1
+func _register_runtime_region(region: Dictionary) -> void:
+	if region.is_empty():
+		return
+	var region_id := String(region.get("id", ""))
+	var season_id := String(region.get("season_id", _current_season_id))
+	if not region_id.is_empty():
+		DataRepository.board_regions[region_id] = region.duplicate(true)
+	if not season_id.is_empty():
+		DataRepository.board_regions_by_season[season_id] = region.duplicate(true)
+		var boss_rule: Dictionary = DataRepository.season_boss_rules_by_season.get(season_id, {}).duplicate(true)
+		if not boss_rule.is_empty():
+			boss_rule["node_id"] = int(region.get("boss_node_id", -1))
+			DataRepository.season_boss_rules_by_season[season_id] = boss_rule
 
 func _neighbors(node_id: int) -> Array[int]:
 	var neighbors: Array[int] = []

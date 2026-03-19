@@ -44,6 +44,7 @@ var exploration_points := 0
 var exploration_points_total := 0
 var completed_tutorials: Array[String] = []
 var claimed_season_bosses: Array[String] = []
+var board_loop_progress: Dictionary = {}
 var meta_unlocks: Dictionary = {
 	"tracks": [],
 	"dice_modules": [],
@@ -123,6 +124,7 @@ func reset_for_new_season() -> void:
 	completed_seasons = 0
 	exploration_points = 0
 	claimed_season_bosses.clear()
+	board_loop_progress.clear()
 	inventory = _default_inventory()
 	habitats = _default_habitats()
 	pet_states.clear()
@@ -498,6 +500,7 @@ func build_runtime_snapshot() -> Dictionary:
 		"completed_seasons": completed_seasons,
 		"exploration_points": exploration_points,
 		"claimed_season_bosses": claimed_season_bosses.duplicate(),
+		"board_loop_progress": board_loop_progress.duplicate(true),
 		"inventory": inventory.duplicate(true),
 		"habitats": habitats.duplicate(true),
 		"pet_states": pet_states.duplicate(true),
@@ -557,6 +560,7 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	completed_seasons = int(snapshot.get("completed_seasons", 0))
 	exploration_points = int(snapshot.get("exploration_points", 0))
 	claimed_season_bosses = _coerce_string_array(snapshot.get("claimed_season_bosses", []))
+	board_loop_progress = _duplicate_dictionary(snapshot.get("board_loop_progress", {}))
 	inventory = _duplicate_dictionary(snapshot.get("inventory", {}))
 	habitats = _duplicate_dictionary(snapshot.get("habitats", {}))
 	pet_states = _duplicate_dictionary(snapshot.get("pet_states", {}))
@@ -1388,6 +1392,24 @@ func reveal_board_nodes(node_ids: Array) -> void:
 		var int_id := int(node_id)
 		if not revealed_board_nodes.has(int_id):
 			revealed_board_nodes.append(int_id)
+
+func get_board_loop_progress(season_override: String = "") -> Dictionary:
+	var key := season_id if season_override.is_empty() else season_override
+	if key.is_empty():
+		return {}
+	return _duplicate_dictionary(board_loop_progress.get(key, {}))
+
+func set_board_loop_progress(progress: Dictionary, season_override: String = "") -> void:
+	var key := season_id if season_override.is_empty() else season_override
+	if key.is_empty():
+		return
+	board_loop_progress[key] = _duplicate_dictionary(progress)
+
+func clear_board_loop_progress(season_override: String = "") -> void:
+	var key := season_id if season_override.is_empty() else season_override
+	if key.is_empty():
+		return
+	board_loop_progress.erase(key)
 
 func get_node_danger(node_id: int) -> int:
 	return int(node_danger.get(node_id, 0))

@@ -78,6 +78,7 @@ func start_battle(config: Dictionary) -> void:
 		_finish_tween.kill()
 		_finish_tween = null
 	battle_config = config.duplicate(true)
+	_normalize_balance_overrides()
 	allies = config.get("allies", [])
 	enemies = config.get("enemies", [])
 	temp_state.clear()
@@ -118,6 +119,21 @@ func start_battle(config: Dictionary) -> void:
 	_update_selection_summary()
 	_show_battle_banner(_tr("battle.start"), String(config.get("title", _tr("battle.default_title"))), Color(0.98, 0.79, 0.36, 1.0))
 	_begin_round()
+
+func _normalize_balance_overrides() -> void:
+	var battle_kind := String(battle_config.get("kind", "wild"))
+	if battle_kind != "wild":
+		return
+
+	var round_limit := int(battle_config.get("round_limit", 0))
+	if round_limit <= 0 or round_limit < 8:
+		battle_config["round_limit"] = 8
+
+	if not battle_config.has("ally_first_round_attack_bonus"):
+		battle_config["ally_first_round_attack_bonus"] = true
+
+	if not battle_config.has("ally_guard_bonus"):
+		battle_config["ally_guard_bonus"] = 0.10
 
 func _begin_round() -> void:
 	if _try_finish_battle():

@@ -122,6 +122,375 @@
           "end": true
         }
       ]
+    },
+    {
+      "id": "dlg_story_post_intro",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "story_post_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "云升驿",
+        "接力"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "雾苔窟那边的照料记法要是能顺着驿路传下去，帮到的就不止一个窝口了。",
+          "choices": [
+            {
+              "text": "所以你想把“照料的分寸”也写进留信牌？",
+              "next": "route"
+            },
+            {
+              "text": "原来驿站传的不只是人和货。",
+              "next": "relay"
+            }
+          ]
+        },
+        {
+          "id": "route",
+          "speaker": "innkeeper_yun",
+          "text": "对。真正让一条路稳下来的，往往是这些看起来不显眼的小规矩。",
+          "end": true
+        },
+        {
+          "id": "relay",
+          "speaker": "innkeeper_yun",
+          "text": "人走得远，靠的不只是脚程，还得有人把经验替他接过去。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_post_after_board",
+      "npc": "boarder_liu",
+      "habitat_id": "sky_post",
+      "topic": "story_post_after_board",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "夜排留信",
+        "寄养"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "boarder_liu",
+          "text": "今晚把寄养纸条和留信牌排顺以后，我才发现照料原来也能沿着路一站一站传下去。",
+          "choices": [
+            {
+              "text": "先把说明写稳，后面的人就少慌一点。",
+              "next": "steady"
+            },
+            {
+              "text": "难怪你总说驿站也是照料的一部分。",
+              "next": "care"
+            }
+          ]
+        },
+        {
+          "id": "steady",
+          "speaker": "boarder_liu",
+          "text": "是啊。很多时候先被接住的不是宠物，是照料的人那口气。",
+          "end": true
+        },
+        {
+          "id": "care",
+          "speaker": "boarder_liu",
+          "text": "把话说清，把顺序摆好，第二天整条路都会轻一点。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_post_resolve",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "story_post_resolve",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "暴雨",
+        "驿路"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "风雨一来，才看得出一块牌子、一句说明能不能真的替人把路接住。",
+          "choices": [
+            {
+              "text": "今天留下来的，不只是消息，也是走法。",
+              "next": "method"
+            },
+            {
+              "text": "从雾苔窟出来的那点经验，已经能帮更多地方了。",
+              "next": "carry"
+            }
+          ]
+        },
+        {
+          "id": "method",
+          "speaker": "innkeeper_yun",
+          "text": "说得好。真正能传远的经验，最后都会变成别人也能照着走的办法。",
+          "end": true
+        },
+        {
+          "id": "carry",
+          "speaker": "innkeeper_yun",
+          "text": "下一站要是有人肯继续记下去，这条路就不会只通到今天。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_platform_intro",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "story_platform_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "古械平台",
+        "记录"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "云升驿送来的那些照料记录，我越看越觉得，平台缺的其实也是同一种东西：能传下去的顺序。",
+          "choices": [
+            {
+              "text": "遗迹也需要有人把“先做什么”记清楚。",
+              "next": "order"
+            },
+            {
+              "text": "原来修复和照料离得没那么远。",
+              "next": "repair"
+            }
+          ]
+        },
+        {
+          "id": "order",
+          "speaker": "field_recorder",
+          "text": "没错。回响一乱，人就会急；顺序一稳，才听得见它真正想留下什么。",
+          "end": true
+        },
+        {
+          "id": "repair",
+          "speaker": "field_recorder",
+          "text": "都是一样的，先别把它惊得更乱，再慢慢让它愿意把反应露出来。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_platform_after_hum",
+      "npc": "ruin_restorer",
+      "habitat_id": "ancient_platform",
+      "topic": "story_platform_after_hum",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "低鸣",
+        "修复"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "ruin_restorer",
+          "text": "刚才那阵低鸣没被你我做成杂响，这就说明我们总算学会先稳住，再下手了。",
+          "choices": [
+            {
+              "text": "原来平台也会记住人是不是太急。",
+              "next": "rush"
+            },
+            {
+              "text": "先按住面板，再记频率，顺序真的差很多。",
+              "next": "sequence"
+            }
+          ]
+        },
+        {
+          "id": "rush",
+          "speaker": "ruin_restorer",
+          "text": "会的。很多裂痕不是怕修，是怕人一慌就把它们的话全盖过去。",
+          "end": true
+        },
+        {
+          "id": "sequence",
+          "speaker": "ruin_restorer",
+          "text": "顺序稳了，修补才像修补，不像把昨天硬从今天上面撕下来。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_platform_resolve",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "story_platform_resolve",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "回响",
+        "收束"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "现在我终于能把这段路记成一句完整的话了：先接住反应，再留下顺序，最后才谈我们从中读懂了什么。",
+          "choices": [
+            {
+              "text": "这句话已经能带去更危险的地方了。",
+              "next": "farther"
+            },
+            {
+              "text": "从窝口到驿路，再到平台，规矩已经越记越完整了。",
+              "next": "chain"
+            }
+          ]
+        },
+        {
+          "id": "farther",
+          "speaker": "field_recorder",
+          "text": "是啊。到了尖塔那种地方，能救人的往往就是这点被提前记好的分寸。",
+          "end": true
+        },
+        {
+          "id": "chain",
+          "speaker": "field_recorder",
+          "text": "有人把经验接过去，它就不再只是一个地方的做法，而成了一条真能走下去的线。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_spire_intro",
+      "npc": "anomaly_researcher",
+      "habitat_id": "radiant_spire",
+      "topic": "story_spire_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "裂辉尖塔",
+        "撤离"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "anomaly_researcher",
+          "text": "平台那边送来的记录我看过了。到了尖塔，所有顺序都得更短、更准，不然连安静窗口都会从手边漏过去。",
+          "choices": [
+            {
+              "text": "这里不是只比胆子，更比谁能把顺序记牢。",
+              "next": "precise"
+            },
+            {
+              "text": "前面一路记下来的分寸，终于要拿来救命了。",
+              "next": "rescue"
+            }
+          ]
+        },
+        {
+          "id": "precise",
+          "speaker": "anomaly_researcher",
+          "text": "对。先知道怎么退，人才有余裕看清该怎么往前救。",
+          "end": true
+        },
+        {
+          "id": "rescue",
+          "speaker": "anomaly_researcher",
+          "text": "尖塔最不原谅的就是犹豫和逞强，我们只能把该稳住的都提前稳住。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_spire_after_marks",
+      "npc": "anomaly_researcher",
+      "habitat_id": "radiant_spire",
+      "topic": "story_spire_after_marks",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "标记",
+        "窗口"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "anomaly_researcher",
+          "text": "撤离标记一补齐，尖塔就不再只是逼人后退的地方了。它总算肯给我们留下一条能带人回来的线。",
+          "choices": [
+            {
+              "text": "先把退路看清，手才不会乱。",
+              "next": "retreat"
+            },
+            {
+              "text": "这些线条，像是把前面一路学会的顺序都画在地上了。",
+              "next": "drawn"
+            }
+          ]
+        },
+        {
+          "id": "retreat",
+          "speaker": "anomaly_researcher",
+          "text": "没错。真正让人敢伸手去救的，从来不是蛮劲，是知道还能怎么退回来。",
+          "end": true
+        },
+        {
+          "id": "drawn",
+          "speaker": "anomaly_researcher",
+          "text": "你看得很准。那些看不见的分寸，到了这里就得变成人人看得见的标记。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_spire_resolve",
+      "npc": "anomaly_researcher",
+      "habitat_id": "radiant_spire",
+      "topic": "story_spire_resolve",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "救助",
+        "终段"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "anomaly_researcher",
+          "text": "今天这次救助能成，不是因为我们做了多惊人的事，而是一路把该稳住的都稳住了：先别惊扰，再留顺序，最后才在安静窗口里把它带回来。",
+          "choices": [
+            {
+              "text": "这样看，整条线终于在尖塔收拢成一件事了。",
+              "next": "whole"
+            },
+            {
+              "text": "从照料幼体到救助隙鹿，靠的其实一直是同一种分寸。",
+              "next": "same"
+            }
+          ]
+        },
+        {
+          "id": "whole",
+          "speaker": "anomaly_researcher",
+          "text": "是啊。你现在带着的，已经不是某一个地点的经验，而是一套真能把人和生物一起带回来的做法。",
+          "end": true
+        },
+        {
+          "id": "same",
+          "speaker": "anomaly_researcher",
+          "text": "所以这条路才值得继续写下去。越危险的地方，越需要有人把这种分寸留给后来的人。",
+          "end": true
+        }
+      ]
     }
   ]
 }

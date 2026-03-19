@@ -43,6 +43,163 @@
           "story_flags": [
             "story_moss_wipe_done"
           ],
+          "complete_arc": true,
+          "set_story_flags": [
+            "story_moss_arc_done"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arc_sky_post_care_route",
+      "title": "云升驿的照料接力",
+      "priority": 20,
+      "start_conditions": {
+        "habitat_id": "sky_post"
+      },
+      "beats": [
+        {
+          "id": "intro",
+          "habitat_id": "sky_post",
+          "npc_id": "innkeeper_yun",
+          "dialogue_id": "dlg_story_post_intro",
+          "story_flags": [
+            "story_moss_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening"
+          ]
+        },
+        {
+          "id": "after_board",
+          "habitat_id": "sky_post",
+          "npc_id": "boarder_liu",
+          "dialogue_id": "dlg_story_post_after_board",
+          "requires_events": [
+            "evt_post_late_board"
+          ],
+          "set_story_flags": [
+            "story_post_board_done"
+          ]
+        },
+        {
+          "id": "resolve",
+          "habitat_id": "sky_post",
+          "npc_id": "innkeeper_yun",
+          "dialogue_id": "dlg_story_post_resolve",
+          "requires_events": [
+            "evt_post_storm_layover"
+          ],
+          "story_flags": [
+            "story_post_board_done"
+          ],
+          "set_story_flags": [
+            "story_post_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_ancient_platform_resonance_log",
+      "title": "古械平台的回响记录",
+      "priority": 30,
+      "start_conditions": {
+        "habitat_id": "ancient_platform"
+      },
+      "beats": [
+        {
+          "id": "intro",
+          "habitat_id": "ancient_platform",
+          "npc_id": "field_recorder",
+          "dialogue_id": "dlg_story_platform_intro",
+          "story_flags": [
+            "story_post_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening"
+          ]
+        },
+        {
+          "id": "after_hum",
+          "habitat_id": "ancient_platform",
+          "npc_id": "ruin_restorer",
+          "dialogue_id": "dlg_story_platform_after_hum",
+          "requires_events": [
+            "evt_platform_panel_hum"
+          ],
+          "set_story_flags": [
+            "story_platform_hum_done"
+          ]
+        },
+        {
+          "id": "resolve",
+          "habitat_id": "ancient_platform",
+          "npc_id": "field_recorder",
+          "dialogue_id": "dlg_story_platform_resolve",
+          "requires_events": [
+            "evt_platform_echo_bloom"
+          ],
+          "story_flags": [
+            "story_platform_hum_done"
+          ],
+          "set_story_flags": [
+            "story_platform_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_radiant_spire_safe_window",
+      "title": "裂辉尖塔的安静撤离线",
+      "priority": 40,
+      "start_conditions": {
+        "habitat_id": "radiant_spire"
+      },
+      "beats": [
+        {
+          "id": "intro",
+          "habitat_id": "radiant_spire",
+          "npc_id": "anomaly_researcher",
+          "dialogue_id": "dlg_story_spire_intro",
+          "story_flags": [
+            "story_platform_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening",
+            "night"
+          ]
+        },
+        {
+          "id": "after_marks",
+          "habitat_id": "radiant_spire",
+          "npc_id": "anomaly_researcher",
+          "dialogue_id": "dlg_story_spire_after_marks",
+          "requires_events": [
+            "evt_spire_signal_marks"
+          ],
+          "set_story_flags": [
+            "story_spire_marks_done"
+          ]
+        },
+        {
+          "id": "resolve",
+          "habitat_id": "radiant_spire",
+          "npc_id": "anomaly_researcher",
+          "dialogue_id": "dlg_story_spire_resolve",
+          "requires_events": [
+            "evt_spire_calm_window"
+          ],
+          "story_flags": [
+            "story_spire_marks_done"
+          ],
+          "set_story_flags": [
+            "story_spire_arc_done"
+          ],
           "complete_arc": true
         }
       ]

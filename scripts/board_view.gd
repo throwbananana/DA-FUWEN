@@ -3,6 +3,7 @@ extends Control
 
 signal node_chosen(node_id: int)
 signal travel_finished(node_id: int)
+signal observer_travel_finished(node_id: int)
 
 const TYPE_SHORT := {
 	"camp": "营",
@@ -28,6 +29,7 @@ const TYPE_COLORS := {
 
 const BUTTON_SIZE := Vector2(118, 72)
 const TRAVELER_OFFSET := Vector2(0, -42)
+const OBSERVER_OFFSET := Vector2(30, -42)
 const CAMERA_PADDING := Vector2(220, 140)
 const CAMERA_LERP_SPEED := 8.0
 
@@ -43,6 +45,10 @@ var traveler: ColorRect
 var traveler_node_id := -1
 var is_traveling := false
 var idle_tween: Tween
+var observer_traveler: ColorRect
+var observer_node_id := -1
+var observer_idle_tween: Tween
+var observer_focus_active := false
 var board_bounds := Rect2(Vector2.ZERO, Vector2.ZERO)
 var camera_offset := Vector2.ZERO
 var camera_target := Vector2.ZERO
@@ -58,10 +64,21 @@ var traveler_world_position: Vector2:
 		_apply_camera_transform()
 		queue_redraw()
 
+var _observer_world_position := Vector2.ZERO
+var observer_world_position: Vector2:
+	get:
+		return _observer_world_position
+	set(value):
+		_observer_world_position = value
+		_refresh_camera_target()
+		_apply_camera_transform()
+		queue_redraw()
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	clip_contents = true
 	_ensure_traveler()
+	_ensure_observer_traveler()
 	set_process(true)
 
 func _process(delta: float) -> void:
@@ -92,12 +109,25 @@ func _ensure_traveler() -> void:
 	traveler.visible = false
 	add_child(traveler)
 
+func _ensure_observer_traveler() -> void:
+	if observer_traveler != null:
+		return
+
+	observer_traveler = ColorRect.new()
+	observer_traveler.name = "ObserverTraveler"
+	observer_traveler.size = Vector2(20, 20)
+	observer_traveler.color = Color("fb7185")
+	observer_traveler.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	observer_traveler.z_index = 31
+	observer_traveler.visible = false
+	add_child(observer_traveler)
+
 func setup(nodes: Array) -> void:
 	board_nodes = nodes
 	node_positions.clear()
 
 	for child in get_children():
-		if child == traveler:
+		if child == traveler or child == observer_traveler:
 			continue
 		child.queue_free()
 
@@ -123,6 +153,8 @@ func setup(nodes: Array) -> void:
 	_rebuild_board_bounds()
 	if traveler_node_id != -1 and buttons.has(traveler_node_id):
 		_snap_traveler_to(traveler_node_id)
+	if observer_node_id != -1 and buttons.has(observer_node_id):
+		_snap_observer_to(observer_node_id)
 	_refresh_camera_target(true)
 	queue_redraw()
 
@@ -138,6 +170,99 @@ func set_current_node(node_id: int, immediate := true) -> void:
 		_refresh_camera_target()
 
 	queue_redraw()
+
+func set_observer_node(node_id: int, immediate := true) -> void:
+	if node_id < 0:
+		hide_observer()
+		return
+
+	observer_focus_active = true
+	observer_node_id = node_id
+	_ensure_observer_traveler()
+
+	if immediate:
+		_snap_observer_to(node_id)
+		_refresh_camera_target(true)
+		_play_observer_idle()
+	else:
+		_refresh_camera_target()
+
+	queue_redraw()
+
+func hide_observer() -> void:
+	observer_focus_active = false
+	if observer_idle_tween != null:
+		observer_idle_tween.kill()
+		observer_idle_tween = null
+	if observer_traveler != null:
+		observer_traveler.visible = false
+	_refresh_camera_target()
+	_apply_camera_transform()
+	queue_redraw()
+
+func play_observer_travel(path: Array[int]) -> void:
+	if path.is_empty():
+		return
+
+	_ensure_observer_traveler()
+	observer_focus_active = true
+	observer_traveler.visible = true
+
+	if observer_idle_tween != null:
+		observer_idle_tween.kill()
+		observer_idle_tween = null
+
+	if observer_node_id == -1:
+		observer_node_id = int(path[0])
+		_snap_observer_to(observer_node_id)
+
+	if GameState.should_skip_animations():
+		var final_id := int(path[path.size() - 1])
+		observer_world_position = _observer_world_top_left(final_id)
+		observer_node_id = final_id
+		_refresh_camera_target(true)
+		_play_observer_idle()
+		observer_travel_finished.emit(observer_node_id)
+		return
+
+	for i in range(1, path.size()):
+		var next_id := int(path[i])
+		var to_pos := _observer_world_top_left(next_id)
+
+		var tween := create_tween()
+		tween.set_parallel(true)
+		tween.tween_property(self, "observer_world_position", to_pos, 0.24) \
+			.set_trans(Tween.TRANS_SINE) \
+			.set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(observer_traveler, "scale", Vector2(1.12, 0.90), 0.12)
+		tween.chain().tween_property(observer_traveler, "scale", Vector2.ONE, 0.12)
+
+		await tween.finished
+		observer_node_id = next_id
+		_refresh_camera_target()
+		queue_redraw()
+
+	_play_observer_arrival_punch()
+	observer_travel_finished.emit(observer_node_id)
+
+func _play_observer_arrival_punch() -> void:
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(observer_traveler, "scale", Vector2(1.18, 0.88), 0.08)
+	tween.chain().tween_property(observer_traveler, "scale", Vector2.ONE, 0.10)
+	await tween.finished
+	_play_observer_idle()
+
+func _play_observer_idle() -> void:
+	if observer_traveler == null:
+		return
+	if observer_idle_tween != null:
+		observer_idle_tween.kill()
+
+	observer_idle_tween = create_tween()
+	observer_idle_tween.set_loops()
+	observer_idle_tween.tween_property(observer_traveler, "scale", Vector2(1.05, 0.95), 0.45)
+	observer_idle_tween.tween_property(observer_traveler, "scale", Vector2.ONE, 0.45)
 
 func play_travel(path: Array[int]) -> void:
 	if path.is_empty():
@@ -215,12 +340,23 @@ func _snap_traveler_to(node_id: int) -> void:
 	traveler.scale = Vector2.ONE
 	_apply_camera_transform()
 
+func _snap_observer_to(node_id: int) -> void:
+	if observer_traveler == null or not buttons.has(node_id):
+		return
+	observer_traveler.visible = true
+	_observer_world_position = _observer_world_top_left(node_id)
+	observer_traveler.scale = Vector2.ONE
+	_apply_camera_transform()
+
 func _button_world_center(node_id: int) -> Vector2:
 	var world_position := Vector2(node_positions.get(node_id, Vector2.ZERO))
 	return world_position + BUTTON_SIZE * 0.5
 
 func _traveler_world_top_left(node_id: int) -> Vector2:
 	return _button_world_center(node_id) - traveler.size * 0.5 + TRAVELER_OFFSET
+
+func _observer_world_top_left(node_id: int) -> Vector2:
+	return _button_world_center(node_id) - observer_traveler.size * 0.5 + OBSERVER_OFFSET
 
 func refresh_view(current_pos: int, selectable: Array[int], markers: Dictionary, locked: Array[int]) -> void:
 	current_position = current_pos
@@ -321,6 +457,8 @@ func _refresh_camera_target(immediate := false) -> void:
 		_apply_camera_transform()
 
 func _current_focus_world_point() -> Vector2:
+	if observer_focus_active and observer_traveler != null and observer_traveler.visible:
+		return observer_world_position + observer_traveler.size * 0.5
 	if traveler != null and traveler.visible:
 		return traveler_world_position + traveler.size * 0.5
 	if current_position != -1:
@@ -350,6 +488,8 @@ func _apply_camera_transform() -> void:
 		button.position = Vector2(node_positions.get(node_id, Vector2.ZERO)) - camera_offset
 	if traveler != null and traveler.visible:
 		traveler.position = traveler_world_position - camera_offset
+	if observer_traveler != null and observer_traveler.visible:
+		observer_traveler.position = observer_world_position - camera_offset
 	queue_redraw()
 
 func _apply_dynamic_node_fx() -> void:

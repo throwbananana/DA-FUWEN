@@ -6,15 +6,17 @@ const GameData = preload("res://scripts/game_data.gd")
 const MAX_ROLL := 6
 const REROLL_THRESHOLD := 2.25
 
-func simulate_turns(node_lookup: Dictionary) -> Dictionary:
+func simulate_turns(node_lookup: Dictionary, commit_results: bool = true) -> Dictionary:
 	var players := GameState.get_ai_players()
 	var reports: Array = []
 	for index in range(players.size()):
 		var rival := Dictionary(players[index]).duplicate(true)
 		var report := _simulate_single_turn(rival, node_lookup)
+		report["index"] = index
 		players[index] = report.get("player", rival)
 		reports.append(report)
-	GameState.set_ai_players(players)
+	if commit_results:
+		GameState.set_ai_players(players)
 	return {
 		"players": players,
 		"reports": reports,

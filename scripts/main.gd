@@ -55,6 +55,9 @@ const TUTORIAL_ORDER := ["run_intro", "management_intro", "battle_intro"]
 const EVENT_LOG_TYPEWRITER_SPEED := 0.016
 const EVENT_LOG_TYPEWRITER_MIN_DURATION := 0.18
 const EVENT_LOG_TYPEWRITER_MAX_DURATION := 0.82
+const AI_OBSERVE_PREPARE_DELAY := 0.18
+const AI_OBSERVE_LANDING_DELAY := 0.24
+const AI_OBSERVE_TURN_FINISH_DELAY := 0.18
 
 const NODE_TEMPLATES := [
 	{"id": 0, "name": "营地", "type": "camp", "description": "整理材料、查看笔记，然后决定今天去看望谁。", "position": Vector2(80, 280), "edges": [1, 2, 3], "travel_cost": 0, "habitat_id": ""},
@@ -1232,6 +1235,7 @@ func _refresh_board_region(reset_position: bool) -> void:
 		GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(start_node_id))
 	current_node_id = GameState.current_board_node_id
 	board_view.set_current_node(current_node_id, true)
+	board_view.hide_observer()
 	_initialize_board_threats()
 
 func _initialize_board_threats() -> void:
@@ -2722,29 +2726,116 @@ func _advance_after_travel_stop() -> void:
 func _run_ai_turns() -> void:
 	if not runtime_session_started:
 		return
-	var ai_result: Dictionary = ai_player_service.simulate_turns(board_lookup)
+	var ai_result: Dictionary = ai_player_service.simulate_turns(board_lookup, false)
 	var reports: Array = ai_result.get("reports", [])
 	if reports.is_empty():
 		return
+	var staged_players: Array = GameState.get_ai_players().duplicate(true)
 	ai_turn_in_progress = true
 	_active_ai_observation_line = "你腾出片刻观察其他远征队的推进。"
 	_update_ui()
 	if not GameState.should_skip_animations():
 		_play_stage_transition("对手回合", "你空出手来观察其他远征队的推进、抢点和遭遇。", Color(0.95, 0.74, 0.38, 1.0))
 		await get_tree().create_timer(0.28).timeout
-	for report in reports:
-		var line := String(report.get("line", ""))
-		if line.is_empty():
-			continue
-		_active_ai_observation_line = line
-		_push_log("对手回合：%s" % line)
-		_update_ui()
-		if not GameState.should_skip_animations():
-			await get_tree().create_timer(0.42).timeout
+	for raw_report in reports:
+		var report: Dictionary = Dictionary(raw_report).duplicate(true)
+		await _play_single_ai_observed_turn(report, staged_players)
+	GameState.set_ai_players(staged_players.duplicate(true))
 	ai_turn_in_progress = false
 	_active_ai_observation_line = ""
+	board_view.hide_observer()
 	_update_ui()
 	_show_ai_turn_report(ai_result)
+
+func _play_single_ai_observed_turn(report: Dictionary, staged_players: Array) -> void:
+	var player_index := int(report.get("index", -1))
+	var line := String(report.get("line", "")).strip_edges()
+	if player_index < 0 or player_index >= staged_players.size():
+		if not line.is_empty():
+			_active_ai_observation_line = line
+			_push_log("对手回合：%s" % line)
+			_update_ui()
+		return
+
+	var before_player: Dictionary = Dictionary(staged_players[player_index]).duplicate(true)
+	var after_player: Dictionary = Dictionary(report.get("player", before_player)).duplicate(true)
+	var move: Dictionary = Dictionary(report.get("move", {})).duplicate(true)
+	var landing: Dictionary = Dictionary(report.get("landing", {})).duplicate(true)
+	var display_name := String(after_player.get("display_name", before_player.get("display_name", "对手")))
+	var start_node_id := int(before_player.get("current_node_id", -1))
+	var path: Array[int] = []
+	for raw_node_id in Array(move.get("path", [])):
+		path.append(int(raw_node_id))
+	if path.is_empty() and start_node_id >= 0:
+		path.append(start_node_id)
+
+	board_view.set_observer_node(start_node_id, true)
+	_active_ai_observation_line = _build_ai_observation_move_line(display_name, move, landing, after_player)
+	_update_ui()
+	if not GameState.should_skip_animations():
+		await get_tree().create_timer(AI_OBSERVE_PREPARE_DELAY).timeout
+
+	if path.size() >= 2:
+		await board_view.play_observer_travel(path)
+	elif start_node_id >= 0:
+		board_view.set_observer_node(start_node_id, true)
+
+	staged_players[player_index] = after_player
+	GameState.set_ai_players(staged_players.duplicate(true))
+	_active_ai_observation_line = _build_ai_observation_landing_line(display_name, landing, report)
+	_update_ui()
+	if not GameState.should_skip_animations():
+		await get_tree().create_timer(AI_OBSERVE_LANDING_DELAY).timeout
+
+	if line.is_empty():
+		line = _build_ai_observation_landing_line(display_name, landing, report)
+	_push_log("对手回合：%s" % line)
+	_active_ai_observation_line = "%s 的下一拍意图：%s" % [
+		display_name,
+		String(report.get("intent", "继续观察")),
+	]
+	_update_ui()
+	if not GameState.should_skip_animations():
+		await get_tree().create_timer(AI_OBSERVE_TURN_FINISH_DELAY).timeout
+
+func _build_ai_observation_move_line(display_name: String, move: Dictionary, landing: Dictionary, rival: Dictionary) -> String:
+	var destination_name := String(move.get("destination_name", landing.get("node_name", "")))
+	if destination_name.is_empty():
+		destination_name = String(board_lookup.get(int(rival.get("current_node_id", -1)), {}).get("name", "未知节点"))
+	var final_roll := int(move.get("final_roll", 0))
+	if bool(move.get("stayed_put", false)):
+		return "%s 掷出 %d，但前方没有精确落点，先原地整备。" % [display_name, final_roll]
+
+	var reroll_text := ""
+	if bool(move.get("reroll_used", false)):
+		reroll_text = "，不满意首掷 %d，改掷 %d" % [
+			int(move.get("first_roll", final_roll)),
+			int(move.get("reroll_value", final_roll)),
+		]
+	var path_text := _format_ai_path_text(move.get("path_names", []))
+	if not path_text.is_empty():
+		return "%s 掷出 %d%s，沿 %s 推进到 %s。" % [
+			display_name,
+			final_roll,
+			reroll_text,
+			path_text,
+			destination_name,
+		]
+	return "%s 掷出 %d%s，推进到 %s。" % [
+		display_name,
+		final_roll,
+		reroll_text,
+		destination_name,
+	]
+
+func _build_ai_observation_landing_line(display_name: String, landing: Dictionary, report: Dictionary) -> String:
+	var landing_text := String(landing.get("text", "")).strip_edges()
+	if not landing_text.is_empty():
+		return "%s：%s" % [display_name, landing_text]
+	return "%s：%s。" % [
+		display_name,
+		String(report.get("short", "完成行动")),
+	]
 
 func _show_ai_turn_report(ai_result: Dictionary) -> void:
 	_last_ai_turn_report = Dictionary(ai_result).duplicate(true)

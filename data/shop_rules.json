@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "shops": [
+    {
+      "id": "copper_hammer_bazaar",
+      "name": "铜锤集商栈",
+      "description": "随着周次、季节和事件推进轮换货品的商店节点。",
+      "offers": [
+        {
+          "id": "spring_rope",
+          "item_id": "rope",
+          "price": 3,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 40,
+          "season_ids": [
+            "spring"
+          ],
+          "tags": [
+            "春季常驻"
+          ]
+        },
+        {
+          "id": "spring_parts",
+          "item_id": "parts",
+          "price": 4,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 36,
+          "season_ids": [
+            "spring"
+          ],
+          "tags": [
+            "春季常驻"
+          ]
+        },
+        {
+          "id": "spring_soft_moss",
+          "item_id": "soft_moss",
+          "price": 2,
+          "quantity": 3,
+          "stock": 3,
+          "priority": 20,
+          "season_ids": [
+            "spring"
+          ],
+          "tags": [
+            "补给"
+          ]
+        },
+        {
+          "id": "summer_glass",
+          "item_id": "glass",
+          "price": 4,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 38,
+          "season_ids": [
+            "summer"
+          ],
+          "tags": [
+            "夏季常驻"
+          ]
+        },
+        {
+          "id": "summer_oil",
+          "item_id": "oil",
+          "price": 4,
+          "quantity": 1,
+          "stock": 2,
+          "priority": 34,
+          "season_ids": [
+            "summer"
+          ],
+          "tags": [
+            "维修"
+          ]
+        },
+        {
+          "id": "summer_repair_kit",
+          "item_id": "repair_kit",
+          "price": 6,
+          "quantity": 1,
+          "stock": 1,
+          "priority": 30,
+          "season_ids": [
+            "summer"
+          ],
+          "tags": [
+            "工具"
+          ]
+        },
+        {
+          "id": "autumn_metal",
+          "item_id": "metal",
+          "price": 4,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 38,
+          "season_ids": [
+            "autumn"
+          ],
+          "tags": [
+            "秋季常驻"
+          ]
+        },
+        {
+          "id": "autumn_cloth",
+          "item_id": "cloth",
+          "price": 3,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 30,
+          "season_ids": [
+            "autumn"
+          ],
+          "tags": [
+            "秋季常驻"
+          ]
+        },
+        {
+          "id": "autumn_training_note",
+          "item_id": "training_note",
+          "price": 7,
+          "quantity": 1,
+          "stock": 1,
+          "priority": 28,
+          "season_ids": [
+            "autumn"
+          ],
+          "tags": [
+            "试炼支援"
+          ]
+        },
+        {
+          "id": "winter_cloth",
+          "item_id": "cloth",
+          "price": 3,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 34,
+          "season_ids": [
+            "winter"
+          ],
+          "tags": [
+            "冬季常驻"
+          ]
+        },
+        {
+          "id": "winter_oil",
+          "item_id": "oil",
+          "price": 4,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 32,
+          "season_ids": [
+            "winter"
+          ],
+          "tags": [
+            "冬季常驻"
+          ]
+        },
+        {
+          "id": "winter_ice_glass",
+          "item_id": "ice_glass",
+          "price": 9,
+          "quantity": 1,
+          "stock": 1,
+          "priority": 26,
+          "season_ids": [
+            "winter"
+          ],
+          "tags": [
+            "冬季限定"
+          ]
+        }
+      ],
+      "rotations": [
+        {
+          "id": "late_week_bonus",
+          "title": "周后段补货",
+          "week_range": [
+            2,
+            99
+          ],
+          "offers": [
+            {
+              "id": "late_week_paper",
+              "item_id": "paper",
+              "price": 3,
+              "quantity": 2,
+              "stock": 1,
+              "priority": 18,
+              "tags": [
+                "周中轮换"
+              ]
+            },
+            {
+              "id": "late_week_ink",
+              "item_id": "ink",
+              "price": 3,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 16,
+              "tags": [
+                "周中轮换"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "festival_night_swap",
+          "title": "夜换会",
+          "required_event_ids": [
+            "evt_bazaar_night_swap"
+          ],
+          "offers": [
+            {
+              "id": "festival_glow_dust",
+              "item_id": "glow_dust",
+              "price": 9,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 60,
+              "tags": [
+                "节庆限定"
+              ]
+            },
+            {
+              "id": "festival_dew_crystal",
+              "item_id": "dew_crystal",
+              "price": 10,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 58,
+              "tags": [
+                "节庆限定"
+              ]
+            },
+            {
+              "id": "festival_rare_decor",
+              "item_id": "rare_decor_part",
+              "price": 8,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 56,
+              "tags": [
+                "夜换会"
+              ]
+            },
+            {
+              "id": "festival_training_note",
+              "item_id": "training_note",
+              "price": 6,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 54,
+              "tags": [
+                "夜换会"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -8,6 +8,7 @@ const HabitatServiceScript = preload("res://scripts/services/habitat_service.gd"
 const NpcServiceScript = preload("res://scripts/services/npc_service.gd")
 const EncounterServiceScript = preload("res://scripts/services/encounter_service.gd")
 const DojoServiceScript = preload("res://scripts/services/dojo_service.gd")
+const ShopServiceScript = preload("res://scripts/services/shop_service.gd")
 
 signal visit_started(habitat_id: String)
 signal state_changed(step_id: String, payload: Dictionary)
@@ -17,6 +18,7 @@ var habitat_service = HabitatServiceScript.new()
 var npc_service = NpcServiceScript.new()
 var encounter_service = EncounterServiceScript.new()
 var dojo_service = DojoServiceScript.new()
+var shop_service = ShopServiceScript.new()
 
 var current_habitat_id := ""
 var current_step := "idle"
@@ -42,6 +44,14 @@ func build_selected(building_id: String) -> void:
 	var result: Dictionary = habitat_service.build_on_site(current_habitat_id, building_id)
 	current_step = "build_result"
 	state_changed.emit("build_result", result)
+
+func open_shop_menu() -> void:
+	current_step = "shop_menu"
+	state_changed.emit("shop_menu", shop_service.get_shop_menu(current_habitat_id))
+
+func buy_shop_offer(offer_id: String) -> void:
+	current_step = "shop_result"
+	state_changed.emit("shop_result", shop_service.buy_offer(current_habitat_id, offer_id))
 
 func open_npc_menu() -> void:
 	current_step = "npc_menu"

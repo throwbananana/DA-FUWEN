@@ -103,13 +103,13 @@
         {
           "id": 7,
           "name": "铜锤集",
-          "type": "settlement",
+          "type": "shop",
           "description": "春季第二支点，负责把上路材料换成更稳定的转线收益。",
           "position": [700, 300],
           "edges": [5, 6, 8, 10],
           "travel_cost": 1,
           "habitat_id": "copper_hammer_bazaar",
-          "primary_content": "npc_menu",
+          "primary_content": "shop_menu",
           "focus": "交易 / 转线",
           "reward_hint": "把上路拿到的材料转成更稳收益，适合春季回收节奏"
         },
@@ -216,13 +216,13 @@
         {
           "id": 1,
           "name": "铜锤西站",
-          "type": "settlement",
+          "type": "shop",
           "description": "夏季最稳的起手补给点，用来换出第一段节奏。",
           "position": [160, 90],
           "edges": [0, 3],
           "travel_cost": 1,
           "habitat_id": "copper_hammer_bazaar",
-          "primary_content": "npc_menu",
+          "primary_content": "shop_menu",
           "focus": "交易 / 委托",
           "reward_hint": "这里负责把前半圈的坏手气修回来"
         },
@@ -434,13 +434,13 @@
         {
           "id": 3,
           "name": "铜锤锻路枢",
-          "type": "settlement",
+          "type": "shop",
           "description": "赤叶季第一支点，负责把建设与试炼的先后顺序排清。",
           "position": [340, 300],
           "edges": [1, 2, 4, 6],
           "travel_cost": 1,
           "habitat_id": "copper_hammer_bazaar",
-          "primary_content": "npc_menu",
+          "primary_content": "shop_menu",
           "focus": "排期 / 情报",
           "reward_hint": "这里负责整理 build 与试炼顺序，不只是普通交易点"
         },
@@ -678,13 +678,13 @@
         {
           "id": 7,
           "name": "铜锤火棚",
-          "type": "settlement",
+          "type": "shop",
           "description": "冬季第二支点，把终局前的材料和人手重新排布。",
           "position": [700, 300],
           "edges": [5, 6, 8, 10],
           "travel_cost": 1,
           "habitat_id": "copper_hammer_bazaar",
-          "primary_content": "npc_menu",
+          "primary_content": "shop_menu",
           "focus": "支点 / 交易",
           "reward_hint": "第二支点决定你走镜湖上路，还是走海岸回流线"
         },

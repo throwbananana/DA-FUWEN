@@ -75,6 +75,7 @@ var backpack_slots: Array[String] = []
 var backpack_capacity := 4
 var wallet_gold := 12
 var bank_gold := 0
+var shop_purchase_counts: Dictionary = {}
 var max_hunger := 100
 var hunger := 100
 var hunger_warning_threshold := 30
@@ -148,6 +149,7 @@ func reset_for_new_season() -> void:
 	backpack_capacity = 4
 	wallet_gold = 12
 	bank_gold = 0
+	shop_purchase_counts.clear()
 	hunger = max_hunger
 	rival_wallets = {}
 	ai_players = _build_default_ai_players()
@@ -524,6 +526,7 @@ func build_runtime_snapshot() -> Dictionary:
 		"backpack_capacity": backpack_capacity,
 		"wallet_gold": wallet_gold,
 		"bank_gold": bank_gold,
+		"shop_purchase_counts": shop_purchase_counts.duplicate(true),
 		"max_hunger": max_hunger,
 		"hunger": hunger,
 		"rival_wallets": rival_wallets.duplicate(true),
@@ -585,6 +588,7 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	backpack_capacity = int(snapshot.get("backpack_capacity", 4))
 	wallet_gold = int(snapshot.get("wallet_gold", 12))
 	bank_gold = int(snapshot.get("bank_gold", 0))
+	shop_purchase_counts = _duplicate_dictionary(snapshot.get("shop_purchase_counts", {}))
 	max_hunger = maxi(1, int(snapshot.get("max_hunger", 100)))
 	hunger = clampi(int(snapshot.get("hunger", max_hunger)), 0, max_hunger)
 	rival_wallets = _duplicate_dictionary(snapshot.get("rival_wallets", {}))
@@ -1247,6 +1251,34 @@ func add_wallet_gold(amount: int) -> void:
 	if amount <= 0:
 		return
 	wallet_gold += amount
+
+func can_afford_wallet_gold(amount: int) -> bool:
+	return wallet_gold >= maxi(amount, 0)
+
+func spend_wallet_gold(amount: int) -> bool:
+	var cost := maxi(amount, 0)
+	if cost <= 0:
+		return true
+	if wallet_gold < cost:
+		return false
+	wallet_gold -= cost
+	return true
+
+func get_item_count(item_id: String) -> int:
+	return int(inventory.get(item_id, 0))
+
+func get_shop_purchase_count(shop_id: String, offer_id: String) -> int:
+	return int(shop_purchase_counts.get(_shop_purchase_key(shop_id, offer_id), 0))
+
+func record_shop_purchase(shop_id: String, offer_id: String, amount: int = 1) -> void:
+	var count := maxi(amount, 0)
+	if shop_id.is_empty() or offer_id.is_empty() or count <= 0:
+		return
+	var key := _shop_purchase_key(shop_id, offer_id)
+	shop_purchase_counts[key] = int(shop_purchase_counts.get(key, 0)) + count
+
+func _shop_purchase_key(shop_id: String, offer_id: String) -> String:
+	return "%s|%d|%s|%s" % [season_id, week_index, shop_id, offer_id]
 
 func deposit_bank_gold(amount: int) -> int:
 	var moved := mini(maxi(amount, 0), wallet_gold)

@@ -13,6 +13,7 @@ var buildings: Dictionary = {}
 var encounters: Dictionary = {}
 var quests: Dictionary = {}
 var items: Dictionary = {}
+var shop_definitions: Dictionary = {}
 var season_rules: Dictionary = {}
 var unlock_rules_by_habitat: Dictionary = {}
 var dojos: Dictionary = {}
@@ -55,6 +56,7 @@ func load_all() -> void:
 	buildings = _merge_indexed_rows(buildings, _read_json("%s/building_blueprints_mda.json" % DATA_ROOT).get("buildings", []))
 	quests = _index_by_id(_read_json("%s/quest_templates.json" % DATA_ROOT).get("quests", []))
 	items = _index_by_id(_read_json("%s/items.json" % DATA_ROOT).get("items", []))
+	shop_definitions = _index_by_id(_read_json("%s/shop_rules.json" % DATA_ROOT).get("shops", []))
 	events = _index_by_id(_read_json("%s/events.json" % DATA_ROOT).get("events", []))
 	dialogues = _index_by_id(_read_json("%s/dialogues.json" % DATA_ROOT).get("dialogues", []))
 	dialogues = _merge_indexed_rows(dialogues, _read_json("%s/story_dialogues.json" % DATA_ROOT).get("dialogues", []))
@@ -245,6 +247,12 @@ func get_building(building_id: String) -> Dictionary:
 
 func get_quest(quest_id: String) -> Dictionary:
 	return quests.get(quest_id, {})
+
+func get_item(item_id: String) -> Dictionary:
+	return Dictionary(items.get(item_id, {})).duplicate(true)
+
+func get_shop(shop_id: String) -> Dictionary:
+	return Dictionary(shop_definitions.get(shop_id, {})).duplicate(true)
 
 func get_event(event_id: String) -> Dictionary:
 	return events.get(event_id, {})

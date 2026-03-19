@@ -1850,6 +1850,10 @@ func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
 			_show_build_menu(payload)
 		"build_result":
 			_show_build_result(payload)
+		"shop_menu":
+			_show_shop_menu(payload)
+		"shop_result":
+			_show_shop_result(payload)
 		"npc_menu":
 			_show_npc_menu(payload)
 		"dojo_menu":
@@ -1923,6 +1927,8 @@ func _is_primary_action_available(action_id: String, habitat: Dictionary, buildi
 	match action_id:
 		"build_menu":
 			return not buildings.is_empty()
+		"shop_menu":
+			return not DataRepository.get_shop(String(habitat.get("id", ""))).is_empty()
 		"npc_menu":
 			return not npcs.is_empty()
 		"observe":
@@ -1938,6 +1944,8 @@ func _primary_content_label(action_id: String) -> String:
 	match action_id:
 		"build_menu":
 			return "推进建设"
+		"shop_menu":
+			return "进入商店"
 		"npc_menu":
 			return "与人交谈"
 		"observe":
@@ -1953,6 +1961,8 @@ func _primary_content_summary(action_id: String) -> String:
 	match action_id:
 		"build_menu":
 			return "这是建设节点，本回合的主收益来自推进建筑和后续共鸣。"
+		"shop_menu":
+			return "这是商店节点，本回合的主收益来自按季节与事件轮换的商品补给。"
 		"npc_menu":
 			return "这是社交节点，本回合的主收益来自情报、委托和关系推进。"
 		"observe":
@@ -2005,6 +2015,74 @@ func _show_build_result(payload: Dictionary) -> void:
 		return
 	pending_context = {"kind": "build_result", "on_close": "finish_visit"}
 	decision_panel.open_panel("建设受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "结束拜访")
+
+func _show_shop_menu(payload: Dictionary) -> void:
+	if not bool(payload.get("ok", false)):
+		pending_context = {"kind": "shop_menu", "on_close": "arrival"}
+		decision_panel.open_panel("商店未开放", "这里现在还没有能营业的摊位。", [], "返回地点")
+		return
+	var lines: Array[String] = []
+	if not String(payload.get("description", "")).is_empty():
+		lines.append(String(payload.get("description", "")))
+	lines.append("[b]手头资金[/b] %d 金" % int(payload.get("wallet_gold", 0)))
+	lines.append("[b]当前周次[/b] 第 %d 周" % int(payload.get("week_index", 1)))
+	var active_rotations: Array = payload.get("active_rotations", [])
+	if not active_rotations.is_empty():
+		lines.append("[b]当期轮换[/b] %s" % " / ".join(active_rotations))
+	var choices := []
+	for offer in payload.get("offers", []):
+		var offer_id := String(offer.get("id", ""))
+		var remaining := int(offer.get("remaining_stock", 0))
+		var disabled := remaining <= 0 or int(payload.get("wallet_gold", 0)) < int(offer.get("price", 0))
+		var summary := "购入 %d × %s ｜ %d 金 ｜ 剩余 %d" % [
+			int(offer.get("quantity", 1)),
+			String(offer.get("item_name", offer.get("label", offer_id))),
+			int(offer.get("price", 0)),
+			remaining,
+		]
+		var tags: Array = offer.get("tags", [])
+		if not tags.is_empty():
+			summary += " ｜ %s" % " / ".join(tags)
+		if remaining <= 0:
+			summary += " ｜ 已售罄"
+		elif int(payload.get("wallet_gold", 0)) < int(offer.get("price", 0)):
+			summary += " ｜ 金币不足"
+		choices.append({
+			"id": "buy:%s" % offer_id,
+			"label": String(offer.get("label", offer_id)),
+			"summary": summary,
+			"disabled": disabled,
+		})
+	pending_context = {"kind": "shop_menu", "on_close": "arrival"}
+	decision_panel.open_panel(String(payload.get("shop_name", "商店")), "\n".join(lines), choices, "返回地点")
+
+func _show_shop_result(payload: Dictionary) -> void:
+	if not bool(payload.get("ok", false)):
+		var reason := String(payload.get("reason", "shop_failed"))
+		var text := "这次交易没有成功。"
+		match reason:
+			"insufficient_gold":
+				text = "手头资金不够，先去别的节点赚点金再来。"
+			"sold_out":
+				text = "这一档货已经被买空了，要等下周再补。"
+			"offer_missing":
+				text = "今天这档货已经不在台面上了。"
+		pending_context = {"kind": "shop_result", "on_close": "shop_menu"}
+		decision_panel.open_panel("交易失败", text, [], "返回摊位")
+		return
+	var offer: Dictionary = payload.get("offer", {})
+	var item_name := String(offer.get("item_name", offer.get("label", "货物")))
+	var quantity := int(offer.get("quantity", 1))
+	var price := int(offer.get("price", 0))
+	var lines := [
+		"[b]购入[/b] %d × %s" % [quantity, item_name],
+		"[b]花费[/b] %d 金" % price,
+		"[b]剩余资金[/b] %d 金" % int(payload.get("wallet_gold", 0)),
+		"[b]本周剩余库存[/b] %d" % int(offer.get("remaining_stock", 0)),
+	]
+	_push_log("在 %s 买下了 %d × %s，花费 %d 金。" % [String(payload.get("shop_name", "商店")), quantity, item_name, price])
+	pending_context = {"kind": "shop_result", "on_close": "shop_menu"}
+	decision_panel.open_panel("交易完成", "\n".join(lines), [], "继续逛摊")
 
 func _show_npc_menu(payload: Dictionary) -> void:
 	var choices := []
@@ -2154,6 +2232,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 					_open_resident_picker()
 				"build_menu":
 					visit_flow.open_build_menu()
+				"shop_menu":
+					visit_flow.open_shop_menu()
 				"npc_menu":
 					visit_flow.open_npc_menu()
 				"dojo_menu":
@@ -2166,6 +2246,9 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 			_assign_resident(choice_id)
 		"build_select":
 			visit_flow.build_selected(choice_id)
+		"shop_menu":
+			if choice_id.begins_with("buy:"):
+				visit_flow.buy_shop_offer(choice_id.trim_prefix("buy:"))
 		"npc_menu":
 			if choice_id.begins_with("duel:"):
 				_start_npc_intro_duel(choice_id.trim_prefix("duel:"))
@@ -2248,6 +2331,9 @@ func _on_decision_closed() -> void:
 		"arrival":
 			if not current_visit_habitat_id.is_empty():
 				visit_flow.start_visit(current_visit_habitat_id)
+		"shop_menu":
+			if not current_visit_habitat_id.is_empty():
+				visit_flow.open_shop_menu()
 		"team_manage":
 			_open_team_manage_menu()
 		"reopen_base":
@@ -3902,6 +3988,7 @@ func _type_name(type_id: String) -> String:
 		"event": return "事件格"
 		"habitat": return "栖居据点"
 		"settlement": return "聚落节点"
+		"shop": return "商店节点"
 		"dojo": return "试炼场"
 		"anomaly": return "异常区域"
 		_: return type_id

@@ -204,10 +204,16 @@ func _prompt_player_action_with_feedback(actor: MonsterInstance, show_banner: bo
 	if pending_action.is_empty():
 		intro.text = _tr("battle.prompt.player", {"actor": actor.display_name})
 	else:
+		var pending_skill_id := String(pending_action.get("skill_id", ""))
+		var pending_skill: Dictionary = GameData.get_skill(pending_skill_id)
+		var target_mode := String(pending_skill.get("target", "enemy"))
 		intro.text = _tr("battle.prompt.choose_target", {
 			"actor": actor.display_name,
-			"skill": _skill_name(String(pending_action.get("skill_id", "")), GameData.get_skill(String(pending_action.get("skill_id", "")))),
+			"skill": _skill_name(pending_skill_id, pending_skill),
 		})
+		var target_hint := _manual_target_hint_text(target_mode)
+		if not target_hint.is_empty():
+			intro.text += " " + target_hint
 	action_box.add_child(intro)
 	_update_selection_summary(actor)
 	if show_banner:
@@ -718,10 +724,29 @@ func _render_rosters() -> void:
 		child.queue_free()
 	for child in enemy_list.get_children():
 		child.queue_free()
+
+	ally_list.add_child(_make_roster_header(
+		_tr("battle.roster.allies"),
+		Color(0.58, 0.86, 1.0, 0.95)
+	))
+	enemy_list.add_child(_make_roster_header(
+		_tr("battle.roster.enemies"),
+		Color(1.0, 0.64, 0.58, 0.95)
+	))
+
 	for ally in allies:
 		ally_list.add_child(_make_unit_button(ally, true))
 	for enemy in enemies:
 		enemy_list.add_child(_make_unit_button(enemy, false))
+
+func _make_roster_header(text: String, accent: Color) -> Label:
+	var label := Label.new()
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	label.text = text
+	label.add_theme_font_size_override("font_size", 14)
+	label.modulate = accent
+	return label
 
 func _make_unit_button(unit: MonsterInstance, is_ally: bool) -> Button:
 	var button := Button.new()
@@ -867,6 +892,15 @@ func _skill_detail_text(skill_id: String, skill: Dictionary) -> String:
 
 func _requires_manual_target(target_mode: String) -> bool:
 	return target_mode in ["enemy", "ally"]
+
+func _manual_target_hint_text(target_mode: String) -> String:
+	match target_mode:
+		"enemy":
+			return _tr("battle.prompt.choose_enemy_column")
+		"ally":
+			return _tr("battle.prompt.choose_ally_column")
+		_:
+			return ""
 
 func _pending_target_selection_active() -> bool:
 	if pending_action.is_empty():

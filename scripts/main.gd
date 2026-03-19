@@ -28,6 +28,13 @@ const LocalizationService = preload("res://scripts/services/localization_service
 const GAME_TITLE := "雾野远征"
 const BACKPACK_RESOURCE_TYPES := ["material", "rare_material"]
 const BACKPACK_SUPPLY_TYPES := ["consumable", "tool", "trophy"]
+const CODEX_RARITY_LABELS := {
+	"common": "常见",
+	"uncommon": "少见",
+	"rare": "稀有",
+	"epic": "史诗",
+	"legendary": "传说",
+}
 
 const WEATHER_ORDER := ["clear", "fog", "rain", "storm"]
 const WEATHER_NAMES := {
@@ -4151,7 +4158,142 @@ func _build_backpack_section_lines() -> Array[String]:
 	lines.append("[b]地点状态[/b]")
 	lines.append_array(_location_status_lines())
 	lines.append("")
+	lines.append("[b]生物图鉴[/b] %d / %d" % [_count_unlocked_codex_entries(), DataRepository.codex_entries.size()])
+	lines.append("图鉴入口已收进背包 / 手册，切到 [b]生物图鉴[/b] 页签即可查看。")
+	lines.append("")
 	lines.append("资源与补给已经从主界面移走，统一放到这一页查看。")
+	return lines
+
+func _count_unlocked_codex_entries() -> int:
+	var count := 0
+	for raw_entry in DataRepository.codex_entries.values():
+		var entry: Dictionary = Dictionary(raw_entry).duplicate(true)
+		if _is_codex_entry_unlocked(entry):
+			count += 1
+	return count
+
+func _is_codex_entry_unlocked(entry: Dictionary) -> bool:
+	return _is_codex_unlock_rule_met(Dictionary(entry.get("unlock_rule", {})).duplicate(true))
+
+func _is_codex_unlock_rule_met(rule: Dictionary) -> bool:
+	match String(rule.get("type", "")):
+		"observe_species":
+			return _step_is_complete({
+				"type": "observe",
+				"species_id": String(rule.get("species_id", "")),
+			})
+		"encounter_species":
+			return _step_is_complete({
+				"type": "encounter",
+				"species_id": String(rule.get("species_id", "")),
+			})
+		"bond_species":
+			return _step_is_complete({
+				"type": "bond",
+				"species_id": String(rule.get("species_id", "")),
+			})
+		"calm_species":
+			return _step_is_complete({
+				"type": "calm",
+				"species_id": String(rule.get("species_id", "")),
+			})
+		_:
+			return false
+
+func _codex_rarity_label(rarity: String) -> String:
+	return String(CODEX_RARITY_LABELS.get(rarity, rarity))
+
+func _species_display_name(species_id: String) -> String:
+	var species: Dictionary = DataRepository.get_species(species_id)
+	if species.is_empty():
+		return species_id
+	return String(species.get("name", species_id))
+
+func _codex_unlock_hint(rule: Dictionary) -> String:
+	match String(rule.get("type", "")):
+		"observe_species":
+			return "观察对应生物后解锁"
+		"encounter_species":
+			return "遭遇对应生物后解锁"
+		"bond_species":
+			return "与对应生物结缘后解锁"
+		"calm_species":
+			return "安抚对应生物后解锁"
+		_:
+			return "推进相关内容后解锁"
+
+func _append_codex_note_lines(lines: Array[String], label: String, values: Array) -> void:
+	if values.is_empty():
+		return
+	var chunks: Array[String] = []
+	for value in values:
+		var text := String(value).strip_edges()
+		if text.is_empty():
+			continue
+		chunks.append(text)
+	if chunks.is_empty():
+		return
+	lines.append("%s：%s" % [label, " / ".join(chunks)])
+
+func _build_codex_section_lines() -> Array[String]:
+	var lines: Array[String] = []
+	var total := DataRepository.codex_entries.size()
+	var unlocked := _count_unlocked_codex_entries()
+
+	lines.append("[b]图鉴进度[/b] %d / %d" % [unlocked, total])
+	lines.append("遭遇、观察、结缘或安抚生物后，会把对应观察档案收进这里。")
+
+	if total <= 0:
+		lines.append("")
+		lines.append("当前没有可用的图鉴数据。")
+		return lines
+
+	var entries: Array[Dictionary] = []
+	for raw_entry in DataRepository.codex_entries.values():
+		entries.append(Dictionary(raw_entry).duplicate(true))
+
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var unlocked_a := _is_codex_entry_unlocked(a)
+		var unlocked_b := _is_codex_entry_unlocked(b)
+		if unlocked_a != unlocked_b:
+			return unlocked_a and not unlocked_b
+		return String(a.get("title", a.get("id", ""))) < String(b.get("title", b.get("id", "")))
+	)
+
+	for index in range(entries.size()):
+		var entry := entries[index]
+		var rarity_label := _codex_rarity_label(String(entry.get("rarity", "common")))
+		lines.append("")
+
+		if not _is_codex_entry_unlocked(entry):
+			lines.append("[b]%02d. 未知条目[/b] ｜ %s" % [index + 1, rarity_label])
+			lines.append("解锁条件：%s" % _codex_unlock_hint(Dictionary(entry.get("unlock_rule", {}))))
+			continue
+
+		var species_id := String(entry.get("species_id", ""))
+		var species_name := _species_display_name(species_id)
+		lines.append("[b]%02d. %s[/b] ｜ %s ｜ %s" % [
+			index + 1,
+			String(entry.get("title", "未命名条目")),
+			species_name,
+			rarity_label,
+		])
+
+		var portrait_hint := String(entry.get("portrait_hint", "")).strip_edges()
+		if not portrait_hint.is_empty():
+			lines.append("外观：%s" % portrait_hint)
+
+		_append_codex_note_lines(lines, "栖地", Array(entry.get("habitat_notes", [])))
+		_append_codex_note_lines(lines, "行为", Array(entry.get("behavior_notes", [])))
+		_append_codex_note_lines(lines, "照料", Array(entry.get("care_notes", [])))
+
+		var tags: Array = entry.get("research_tags", [])
+		if not tags.is_empty():
+			var tag_lines: Array[String] = []
+			for tag in tags:
+				tag_lines.append(String(tag))
+			lines.append("标签：%s" % " / ".join(tag_lines))
+
 	return lines
 
 func _hunger_status_text() -> String:
@@ -4395,6 +4537,7 @@ func _build_system_sections() -> Array:
 		battle_lines.append("[b]战斗汇总[/b] %s" % " / ".join(synergy_service.describe_battle_bonus(battle_bonus)))
 
 	var backpack_lines := _build_backpack_section_lines()
+	var codex_lines := _build_codex_section_lines()
 
 	var completed_count := 0
 	for tutorial_id in TUTORIAL_ORDER:
@@ -4427,8 +4570,14 @@ func _build_system_sections() -> Array:
 		{
 			"id": "backpack",
 			"label": "背包",
-			"summary": "[b]背包与生存[/b]\n饥饿、资源、补给和金钱统一收口到这一页查看。",
+			"summary": "[b]背包与生存[/b]\n饥饿、资源、补给、金钱与图鉴入口都收口到这里。",
 			"body": "\n".join(backpack_lines),
+		},
+		{
+			"id": "codex",
+			"label": "生物图鉴",
+			"summary": "[b]观察档案[/b]\n已解锁的生物观察记录会沉淀到这里。",
+			"body": "\n".join(codex_lines),
 		},
 		{
 			"id": "tutorial",

@@ -3,7 +3,7 @@
   "events": [
     {
       "id": "evt_bazaar_night_swap",
-      "title": "铜锤集夜换会",
+      "title": "机修市夜间换件会",
       "category": "market_event",
       "habitat_id": "copper_hammer_bazaar",
       "participants": [
@@ -15,24 +15,24 @@
         "after_quest": "bazaar_repair_stall",
         "season": "festival"
       },
-      "summary": "节庆夜里，铜锤集会临时开启夜换会，玩家可以听到配件与装饰的来路故事。",
+      "summary": "节庆夜里，铜锤机修市会临时开放夜间换件区，玩家能听到旧配件、翻新件与装饰件的来源故事。",
       "stages": [
         {
           "type": "talk",
           "npc": "tinker_bo",
-          "text": "阿铂邀请玩家看新修好的摊位上摆出的旧零件。"
+          "text": "阿铂邀请玩家看看刚翻新的维修前台旁，新摆出来的一批旧配件。"
         },
         {
           "type": "talk",
           "npc": "smith_ya",
-          "text": "哑叔会用敲击声示意每件饰件的用途。"
+          "text": "哑叔会用敲击声示意每种配件适合装在哪类设备上。"
         }
       ],
       "choices": [
         {
           "id": "swap_stories",
-          "text": "听摊主讲零件来历",
-          "outcome": "能解锁更多世界观词条。",
+          "text": "听摊主讲翻新件来历",
+          "outcome": "能解锁更多社区设施与维修来源词条。",
           "effects": {
             "unlock_encyclopedia": "ency_copper_hammer_bazaar",
             "unlock_dialogue": "dlg_tinker_bo_night_swap"
@@ -40,7 +40,7 @@
         },
         {
           "id": "trade_parts",
-          "text": "直接换一些实用材料",
+          "text": "直接换一些常用材料",
           "outcome": "得到少量维修与装饰资源。",
           "effects": {
             "items": {
@@ -59,7 +59,7 @@
     },
     {
       "id": "evt_bazaar_spare_demo",
-      "title": "旧件摊前的小演示",
+      "title": "维修摊位的旧件演示",
       "category": "market_event",
       "mode": "ambient_talk",
       "repeatable": true,
@@ -83,12 +83,12 @@
           "winter"
         ]
       },
-      "summary": "阿铂偶尔会拿一件看似报废的旧件，当场演示它为什么还值得留。",
+      "summary": "阿铂偶尔会拿一件看似报废的旧件，在摊前演示它为什么还值得翻新留用。",
       "stages": [
         {
           "type": "talk",
           "npc": "tinker_bo",
-          "text": "阿铂把一枚旧齿轮放到掌心里，先不装，只讲它原来为什么会坏。"
+          "text": "阿铂把一枚旧齿轮放到掌心里，先不安装，只讲它原来为什么会坏。"
         },
         {
           "type": "talk",
@@ -99,8 +99,8 @@
       "choices": [
         {
           "id": "listen_story",
-          "text": "先听旧件来路",
-          "outcome": "围观的人散得慢了些，真正想学的人反而留了下来。",
+          "text": "先听旧件检修记录",
+          "outcome": "围观的人散得慢了些，真正想学维修的人反而留了下来。",
           "effects": {
             "trust": {
               "tinker_bo": 1
@@ -110,7 +110,7 @@
         },
         {
           "id": "check_teeth",
-          "text": "凑近看磨损边",
+          "text": "凑近看磨损边和编号",
           "outcome": "你学会了分辨哪些缺口只是旧，哪些才是真的不能用。",
           "effects": {
             "items": {
@@ -127,7 +127,7 @@
     },
     {
       "id": "evt_creek_warm_stone_sort",
-      "title": "浅滩分暖石",
+      "title": "滨河区暖石分级",
       "category": "care_event",
       "mode": "ambient_talk",
       "repeatable": true,
@@ -152,7 +152,7 @@
           "evening"
         ]
       },
-      "summary": "婆婆会把不同温度的暖石排在浅滩边，让壳幼自己挑喜欢靠近的那一块。",
+      "summary": "婆婆会把不同温度的暖石排在亲水互动池边，让壳幼自己挑更愿意靠近的一块。",
       "stages": [
         {
           "type": "talk",
@@ -162,7 +162,7 @@
         {
           "type": "talk",
           "npc": "stone_trader",
-          "text": "阿砾顺手挑出几块更圆滑的薄石，说这样翻身时不容易磕边。"
+          "text": "阿砾顺手挑出几块更圆滑的薄石，说这样在互动池边翻身时不容易磕到边。"
         }
       ],
       "choices": [
@@ -179,7 +179,7 @@
         },
         {
           "id": "mark_surface",
-          "text": "记下每块石头的表面手感",
+          "text": "记下每块石头的表面和温度",
           "outcome": "之后更容易区分适合休息还是适合磨壳。",
           "effects": {
             "items": {
@@ -190,13 +190,13 @@
       ],
       "tags": [
         "暖石",
-        "浅滩",
+        "滨河区",
         "护理"
       ]
     },
     {
       "id": "evt_moss_morning_wipe",
-      "title": "晨雾擦窝口",
+      "title": "晨间清理护理室入口",
       "category": "care_event",
       "mode": "ambient_talk",
       "repeatable": true,
@@ -222,23 +222,23 @@
           "evening"
         ]
       },
-      "summary": "窝口挂了细密雾珠，迟叔会顺手叫你一起把最潮的一圈擦掉。",
+      "summary": "早晨湿气重时，迟叔会叫你一起把恒温护理室门口最潮的一圈擦干。",
       "stages": [
         {
           "type": "talk",
           "npc": "moss_keeper",
-          "text": "迟叔把布递给你，示意先擦外圈，不碰里面的干草。"
+          "text": "迟叔把布递给你，示意先擦外圈，不碰里面铺好的垫层。"
         },
         {
           "type": "talk",
           "npc": "lost_apprentice",
-          "text": "小禾在旁边小声记着“擦掉的是湿，不是味道”。"
+          "text": "小禾在旁边小声记着“擦掉的是水汽，不是气味”。"
         }
       ],
       "choices": [
         {
           "id": "wipe_edges",
-          "text": "先擦窝口外圈",
+          "text": "先擦护理室外圈",
           "outcome": "窝内热气没散，幼体也没被惊动。",
           "effects": {
             "trust": {
@@ -250,21 +250,21 @@
         {
           "id": "change_cloth",
           "text": "顺手换一块更干的布",
-          "outcome": "洞口更清爽，小禾也多记下一条照料细节。",
+          "outcome": "入口更清爽，小禾也多记下一条照护细节。",
           "effects": {
-            "journal_entry": "记录：潮雾天气下窝口更换布层的时机"
+            "journal_entry": "记录：潮湿天气下护理室入口更换布层的时机"
           }
         }
       ],
       "tags": [
-        "晨雾",
-        "育幼",
+        "晨间",
+        "护理",
         "照料"
       ]
     },
     {
       "id": "evt_moss_night_watch",
-      "title": "雾苔窟的守夜哼唱",
+      "title": "保育中心夜班观察",
       "category": "habitat_story",
       "habitat_id": "mist_moss_cave",
       "participants": [
@@ -279,29 +279,29 @@
         },
         "time": "night"
       },
-      "summary": "夜深后，迟叔会请玩家一起守着新搭好的保温窝，记录幼体对声音与光线的反应。",
+      "summary": "夜深后，迟叔会请玩家一起守着新搭好的恒温护理室，记录幼体对声音与光线的反应。",
       "stages": [
         {
           "type": "talk",
           "npc": "moss_keeper",
-          "text": "迟叔提议今晚别急着走，听听苔团在窝里翻身的声音。"
+          "text": "迟叔提议今晚别急着走，先听听护理室里幼体翻身的声音。"
         },
         {
           "type": "observe",
           "species_id": "moss_puff",
-          "text": "保温窝内的苔团会随着哼唱缓慢舒展。"
+          "text": "恒温护理室里的苔团会随着轻声哼唱缓慢舒展。"
         },
         {
           "type": "talk",
           "npc": "lost_apprentice",
-          "text": "小禾补记了几条育幼观察笔记。"
+          "text": "小禾又补了几条夜班观察笔记。"
         }
       ],
       "choices": [
         {
           "id": "hum_softly",
           "text": "轻轻哼唱，稳定幼体情绪",
-          "outcome": "苔团会主动靠近热源，迟叔对玩家的细心更认可。",
+          "outcome": "苔团会主动靠近热源，迟叔对玩家的照护细心更认可。",
           "effects": {
             "trust": {
               "moss_keeper": 1
@@ -314,12 +314,12 @@
         {
           "id": "dim_lantern",
           "text": "把灯调暗，只记录动作",
-          "outcome": "观察更安静，但笔记偏向行为学数据。",
+          "outcome": "观察更安静，但笔记会偏向行为数据。",
           "effects": {
             "trust": {
               "lost_apprentice": 1
             },
-            "journal_entry": "幼巢低光环境观察"
+            "journal_entry": "幼体护理室低光环境观察"
           }
         }
       ],
@@ -332,7 +332,7 @@
     },
     {
       "id": "evt_platform_echo_bloom",
-      "title": "古械平台的回响开花",
+      "title": "监测站夜间信号回传",
       "category": "ruin_event",
       "habitat_id": "ancient_platform",
       "participants": [
@@ -347,24 +347,24 @@
         },
         "time": "night"
       },
-      "summary": "回响室首次稳定后，辉蛾会被低频共鸣吸引而来，平台会出现短暂的“开花”景象。",
+      "summary": "信号回放室首次稳定后，辉蛾会被低频共振吸引而来，北城城市监测站会出现短暂的光轨回传现象。",
       "stages": [
         {
           "type": "observe",
           "species_id": "glow_moth",
-          "text": "辉蛾会在玻片与辉尘上方盘旋，留下柔和轨迹。"
+          "text": "辉蛾会在玻片和辉尘采样区上方盘旋，留下柔和的光轨。"
         },
         {
           "type": "talk",
           "npc": "field_recorder",
-          "text": "叶衡会请玩家决定更偏记录还是更偏修复。"
+          "text": "叶衡会请玩家决定这次更偏记录数据还是先做现场加固。"
         }
       ],
       "choices": [
         {
           "id": "record_resonance",
-          "text": "优先记录辉尘轨迹",
-          "outcome": "得到一段可写入图鉴的夜间行为数据。",
+          "text": "优先记录光轨与频率",
+          "outcome": "得到一段可写入图鉴的夜间监测数据。",
           "effects": {
             "items": {
               "glow_dust": 1
@@ -375,8 +375,8 @@
         },
         {
           "id": "stabilize_panels",
-          "text": "先帮绛固定玻片与面板",
-          "outcome": "修复系事件触发概率提高。",
+          "text": "先帮绛固定采样板和面板",
+          "outcome": "维护系事件触发概率提高。",
           "effects": {
             "trust": {
               "ruin_restorer": 1
@@ -396,7 +396,7 @@
     },
     {
       "id": "evt_platform_panel_hum",
-      "title": "面板低鸣校准",
+      "title": "监测面板低鸣校准",
       "category": "ruin_event",
       "mode": "ambient_talk",
       "repeatable": true,
@@ -417,12 +417,12 @@
           "night"
         ]
       },
-      "summary": "回响室边缘偶尔会冒出一阵低鸣，需要一边压稳松动面板，一边重新记录频率。",
+      "summary": "信号回放室边缘偶尔会冒出一阵低鸣，需要一边压稳松动面板，一边重新记录频率。",
       "stages": [
         {
           "type": "talk",
           "npc": "ruin_restorer",
-          "text": "绛先用手掌压住面板角，示意你别急着拧紧。"
+          "text": "绛先用手掌压住面板角，示意你别急着把固定件拧死。"
         },
         {
           "type": "talk",
@@ -444,7 +444,7 @@
         },
         {
           "id": "tighten_fast",
-          "text": "先补一颗钉子再说",
+          "text": "先补一颗固定钉再说",
           "outcome": "虽然有些仓促，但总算没让面板继续抖。",
           "effects": {
             "items": {
@@ -461,7 +461,7 @@
     },
     {
       "id": "evt_post_late_board",
-      "title": "夜里重排留信牌",
+      "title": "夜间整理社区信息屏",
       "category": "settlement_event",
       "mode": "ambient_talk",
       "repeatable": true,
@@ -488,23 +488,23 @@
           "storm"
         ]
       },
-      "summary": "临睡前，云伯会把白天新增的留信和寄养纸条重新排一次，让明天一早的人少走弯路。",
+      "summary": "临睡前，云伯会把白天新增的托管提醒和代寄纸条重新排一次，让第二天一早的人少走弯路。",
       "stages": [
         {
           "type": "talk",
           "npc": "innkeeper_yun",
-          "text": "云伯把最急的两张牌先抽出来，让你帮忙摆到最显眼的位置。"
+          "text": "云伯把最急的两张通知先抽出来，让你帮忙摆到最显眼的位置。"
         },
         {
           "type": "talk",
           "npc": "boarder_liu",
-          "text": "柳姐顺手把寄养说明压在一旁，免得晨风掀乱。"
+          "text": "柳姐顺手把托管说明压在一旁，免得夜风吹乱。"
         }
       ],
       "choices": [
         {
           "id": "sort_urgent",
-          "text": "先把急件往前排",
+          "text": "先把急件通知往前排",
           "outcome": "第二天的来客更容易迅速找到要看的内容。",
           "effects": {
             "trust": {
@@ -516,24 +516,24 @@
         {
           "id": "bundle_notes",
           "text": "把同去向的纸条捆在一起",
-          "outcome": "寄养与传递的流程都更顺。",
+          "outcome": "托管与转递的流程都更顺。",
           "effects": {
             "items": {
               "paper": 1
             },
-            "journal_entry": "驿站夜间整理：按去向归类更省晨间手忙脚乱"
+            "journal_entry": "转运镇夜间整理：按去向归类更省晨间手忙脚乱"
           }
         }
       ],
       "tags": [
         "夜间",
-        "留信",
-        "驿站"
+        "信息屏",
+        "转运镇"
       ]
     },
     {
       "id": "evt_post_storm_layover",
-      "title": "暴雨后的驿站留客",
+      "title": "暴雨后的转运站滞留安置",
       "category": "settlement_event",
       "habitat_id": "sky_post",
       "participants": [
@@ -548,12 +548,12 @@
         },
         "weather": "storm"
       },
-      "summary": "风雨天会有更多巡游商人与照料员停留，云升驿会刷新传闻与跨点委托。",
+      "summary": "风雨天会有更多巡游商人与照料员临时停留，云升转运镇会刷新传闻和跨点委托。",
       "stages": [
         {
           "type": "talk",
           "npc": "innkeeper_yun",
-          "text": "云伯让玩家帮忙整理新增的留信与寄养请求。"
+          "text": "云伯让玩家帮忙整理新增的社区信息和托管请求。"
         },
         {
           "type": "talk",
@@ -564,7 +564,7 @@
       "choices": [
         {
           "id": "sort_letters",
-          "text": "优先整理留信牌上的委托",
+          "text": "优先整理信息屏上的委托",
           "outcome": "跨点委托刷新得更快。",
           "effects": {
             "unlock_dialogue": "dlg_innkeeper_yun_letters",
@@ -573,8 +573,8 @@
         },
         {
           "id": "help_boarding",
-          "text": "先去寄养栏安顿同行宠物",
-          "outcome": "柳姐会开放更温和的寄养说明。",
+          "text": "先去托管区安顿同行宠物",
+          "outcome": "柳姐会开放更温和的托管说明。",
           "effects": {
             "trust": {
               "boarder_liu": 1
@@ -594,7 +594,7 @@
     },
     {
       "id": "evt_shallow_pool_reflection",
-      "title": "浅池映光",
+      "title": "互动池反光检查",
       "category": "care_event",
       "habitat_id": "crystal_creek",
       "participants": [
@@ -608,12 +608,12 @@
         },
         "weather": "clear"
       },
-      "summary": "晴朗时，浅池会映出壳幼背壳的花纹变化，婆婆会借此教玩家判断健康状态。",
+      "summary": "晴朗时，亲水互动池会映出壳幼背壳的花纹变化，婆婆会借此教玩家判断健康状态。",
       "stages": [
         {
           "type": "observe",
           "species_id": "shell_pup",
-          "text": "壳幼在浅池边慢慢翻动，背壳反光会显示细纹。"
+          "text": "壳幼在亲水互动池边慢慢翻动，背壳反光会显示细纹。"
         },
         {
           "type": "talk",
@@ -654,7 +654,7 @@
     },
     {
       "id": "evt_spire_calm_window",
-      "title": "裂辉尖塔的安静窗口",
+      "title": "封控塔区短时稳定窗口",
       "category": "anomaly_event",
       "habitat_id": "radiant_spire",
       "participants": [
@@ -664,12 +664,12 @@
         "after_quest": "rescue_rift_fawn",
         "anomaly": "high"
       },
-      "summary": "异常强度升高后偶尔会出现极短的稳定窗口，澄会带玩家尝试在窗口内完成记录与救助。",
+      "summary": "异常强度升高后偶尔会出现极短的稳定窗口，澄会带玩家在窗口内完成记录与救助。",
       "stages": [
         {
           "type": "observe",
           "species_id": "rift_fawn",
-          "text": "隙鹿会在稳定窗口里短暂放松警戒。"
+          "text": "隙鹿会在短时稳定窗口里短暂放松警戒。"
         },
         {
           "type": "observe",
@@ -681,7 +681,7 @@
         {
           "id": "mark_safe_nodes",
           "text": "先标记可撤离节点",
-          "outcome": "之后的尖塔访问会更安全。",
+          "outcome": "之后的塔区访问会更安全。",
           "effects": {
             "items": {
               "stability_shard": 1
@@ -711,7 +711,7 @@
     },
     {
       "id": "evt_spire_signal_marks",
-      "title": "稳定窗口里的撤离标记",
+      "title": "稳定窗口里的疏散标记",
       "category": "anomaly_event",
       "mode": "ambient_talk",
       "repeatable": true,
@@ -733,7 +733,7 @@
           "clear"
         ]
       },
-      "summary": "澄会趁短暂的稳定窗口，在地上补画几道更清楚的撤离标记。",
+      "summary": "澄会趁短暂的稳定窗口，在地面补画几道更清楚的疏散标记。",
       "stages": [
         {
           "type": "talk",
@@ -744,7 +744,7 @@
       "choices": [
         {
           "id": "mark_safe_line",
-          "text": "优先补齐安全线",
+          "text": "优先补齐疏散线",
           "outcome": "再退回时少了一点犹豫。",
           "effects": {
             "trust": {
@@ -761,13 +761,13 @@
             "items": {
               "glow_dust": 1
             },
-            "journal_entry": "尖塔稳定窗口：撤离线与光纹变化同步记录"
+            "journal_entry": "封控塔区稳定窗口：疏散线与光纹变化同步记录"
           }
         }
       ],
       "tags": [
         "异常",
-        "撤离线",
+        "疏散线",
         "窗口"
       ]
     }

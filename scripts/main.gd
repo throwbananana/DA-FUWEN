@@ -2309,13 +2309,23 @@ func _show_fishing_result(payload: Dictionary) -> void:
 	_apply_fishing_side_effects(payload)
 	if not String(payload.get("log_line", "")).is_empty():
 		_push_log(String(payload.get("log_line", "")))
+	var body_lines: Array = Array(payload.get("body_lines", [])).duplicate(true)
+	var leaderboard_lines: Array = Array(payload.get("leaderboard_lines", [])).duplicate(true)
+	if not leaderboard_lines.is_empty():
+		body_lines.append("")
+		body_lines.append("[b]本季榜单[/b]")
+		body_lines.append("\n".join(leaderboard_lines.slice(0, 3)))
 	pending_context = {"kind": "fishing_result", "on_close": "finish_visit"}
-	decision_panel.open_panel(String(payload.get("title", "垂钓结果")), "\n".join(payload.get("body_lines", [])), [], "结束拜访")
+	decision_panel.open_panel(String(payload.get("title", "垂钓结果")), "\n".join(body_lines), [], "结束拜访")
 
 func _apply_fishing_side_effects(payload: Dictionary) -> void:
 	var catch_species_id := String(payload.get("catch_species_id", ""))
 	if not catch_species_id.is_empty():
 		GameState.note_fishing_catch(current_visit_habitat_id, catch_species_id, String(payload.get("weight_class", "common")))
+	for raw_marker in payload.get("observe_markers", []):
+		var marker_id := String(raw_marker)
+		if not marker_id.is_empty():
+			GameState.note_observe_marker(marker_id)
 	var release_species_id := String(payload.get("release_species_id", ""))
 	if not release_species_id.is_empty():
 		GameState.note_aquatic_release(release_species_id)
@@ -4323,11 +4333,13 @@ func _build_backpack_section_lines() -> Array[String]:
 	var fishing_records: Dictionary = Dictionary(GameState.quest_memory.get("fishing_records", {})).duplicate(true)
 	var released_aquatics: Dictionary = Dictionary(GameState.quest_memory.get("released_aquatic_species", {})).duplicate(true)
 	if not fishing_records.is_empty() or not released_aquatics.is_empty():
-		var released_total := 0
-		for species_id in released_aquatics.keys():
-			released_total += int(released_aquatics.get(species_id, 0))
+		var released_total := GameState.get_total_aquatic_release_count()
+		var catches_total := GameState.get_total_fishing_catch_count()
 		lines.append("")
-		lines.append("[b]垂钓记录[/b] 已记录 %d 种水域生物 ｜ 放流 %d 次" % [fishing_records.size(), released_total])
+		lines.append("[b]垂钓记录[/b] 已记录 %d 种水域生物 ｜ 累计起鱼 %d ｜ 放流 %d 次" % [fishing_records.size(), catches_total, released_total])
+		lines.append("[b]钓手声望[/b] %d" % GameState.get_fishing_reputation())
+		for festival_id in GameState.get_all_festival_scores().keys():
+			lines.append("- %s：%d 分" % [festival_id, GameState.get_festival_score(String(festival_id))])
 	lines.append("")
 	lines.append("[b]生物图鉴[/b] %d / %d" % [_count_unlocked_codex_entries(), DataRepository.codex_entries.size()])
 	lines.append("图鉴入口已收进背包 / 手册；宠物编成请看宠物栏。切到 [b]生物图鉴[/b] 页签即可查看。")
@@ -4368,6 +4380,11 @@ func _is_codex_unlock_rule_met(rule: Dictionary) -> bool:
 				"type": "calm",
 				"species_id": String(rule.get("species_id", "")),
 			})
+		"observe_marker":
+			return _step_is_complete({
+				"type": "observe",
+				"marker": String(rule.get("marker", "")),
+			})
 		_:
 			return false
 
@@ -4377,7 +4394,10 @@ func _codex_rarity_label(rarity: String) -> String:
 func _species_display_name(species_id: String) -> String:
 	var species: Dictionary = DataRepository.get_species(species_id)
 	if species.is_empty():
-		return species_id
+		var aquatic_species: Dictionary = DataRepository.get_aquatic_species(species_id)
+		if aquatic_species.is_empty():
+			return species_id
+		return String(aquatic_species.get("name", species_id))
 	return String(species.get("name", species_id))
 
 func _codex_unlock_hint(rule: Dictionary) -> String:
@@ -4390,6 +4410,8 @@ func _codex_unlock_hint(rule: Dictionary) -> String:
 			return "与对应生物结缘后解锁"
 		"calm_species":
 			return "安抚对应生物后解锁"
+		"observe_marker":
+			return "完成对应钓鱼记录或生态节点后解锁"
 		_:
 			return "推进相关内容后解锁"
 

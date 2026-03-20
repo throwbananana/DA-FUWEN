@@ -1,41 +1,89 @@
 {
-  "version": 1,
+  "version": 2,
   "fishing_spots": [
     {
       "id": "crystal_creek",
       "habitat_id": "crystal_creek",
       "name": "晶溪浅滩",
-      "species_pool": ["brook_lantern_fish", "reed_back_crab", "glass_fin_koi"],
+      "species_pool": [
+        "brook_lantern_fish",
+        "reed_back_crab",
+        "glass_fin_koi"
+      ],
       "festival_by_season": {
         "summer": "summer_lantern_derby"
-      }
+      },
+      "host_npcs": [
+        "washer_grandma",
+        "stone_trader"
+      ],
+      "recommended_baits": [
+        "reed",
+        "soft_moss"
+      ],
+      "notes": [
+        "浅滩白天更稳",
+        "薄雾夜场更可能撞见亮鳍个体"
+      ]
     },
     {
       "id": "frost_mirror_lake",
       "habitat_id": "frost_mirror_lake",
       "name": "霜镜冰孔",
-      "species_pool": ["mirror_ice_perch", "snow_shell_turtle"],
+      "species_pool": [
+        "mirror_ice_perch",
+        "snow_shell_turtle"
+      ],
       "festival_by_season": {
         "winter": "winter_ice_classic"
-      }
+      },
+      "recommended_baits": [
+        "soft_moss"
+      ],
+      "notes": [
+        "更看重静和判断",
+        "放流与救护比抢口更重要"
+      ]
     },
     {
       "id": "reed_mire",
       "habitat_id": "reed_mire",
       "name": "芦泽边汊",
-      "species_pool": ["reed_back_crab", "brook_lantern_fish", "moon_tide_eel"],
+      "species_pool": [
+        "reed_back_crab",
+        "brook_lantern_fish",
+        "moon_tide_eel"
+      ],
       "festival_by_season": {
         "autumn": "autumn_big_catch_cup"
-      }
+      },
+      "recommended_baits": [
+        "reed",
+        "tea_leaf"
+      ],
+      "notes": [
+        "风停后的半刻最容易认鱼路",
+        "旧线组事件较多"
+      ]
     },
     {
       "id": "saltglass_coast",
       "habitat_id": "saltglass_coast",
       "name": "盐镜潮滩",
-      "species_pool": ["glass_fin_koi", "moon_tide_eel"],
+      "species_pool": [
+        "glass_fin_koi",
+        "moon_tide_eel"
+      ],
       "festival_by_season": {
         "autumn": "autumn_big_catch_cup"
-      }
+      },
+      "recommended_baits": [
+        "tea_leaf"
+      ],
+      "notes": [
+        "更偏夜场和稀有度",
+        "风向判断会直接影响得分"
+      ]
     }
   ]
 }

@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "quests": [
+    {
+      "id": "creek_first_lantern_catch",
+      "title": "替婆婆认出今天第一尾溪灯鱼",
+      "giver": "washer_grandma",
+      "category": "fishing",
+      "target_habitat": "crystal_creek",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "washer_grandma"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_catch:brook_lantern_fish"
+        },
+        {
+          "type": "return",
+          "npc": "washer_grandma"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "water_drop": 2
+        }
+      }
+    },
+    {
+      "id": "creek_release_crab_brood",
+      "title": "帮婆婆放回抱卵的芦背蟹",
+      "giver": "washer_grandma",
+      "category": "fishing",
+      "target_habitat": "crystal_creek",
+      "steps": [
+        {
+          "type": "visit",
+          "habitat_id": "crystal_creek"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_release:reed_back_crab"
+        },
+        {
+          "type": "return",
+          "npc": "washer_grandma"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "reed": 2
+        }
+      }
+    },
+    {
+      "id": "post_lantern_board_run",
+      "title": "替驿站把河灯夜钓会的成绩挂上去",
+      "giver": "innkeeper_yun",
+      "category": "fishing",
+      "target_habitat": "crystal_creek",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "innkeeper_yun"
+        },
+        {
+          "type": "observe",
+          "marker": "festival_score:summer_lantern_derby:6"
+        },
+        {
+          "type": "return",
+          "npc": "innkeeper_yun"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "河灯夜钓会小榜"
+      }
+    },
+    {
+      "id": "winter_ice_hole_notes",
+      "title": "替叶衡补一页冰孔救护记录",
+      "giver": "field_recorder",
+      "category": "fishing",
+      "target_habitat": "frost_mirror_lake",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "field_recorder"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_event:winter_ice_rescue"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_watch:mirror_ice_perch"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "霜镜冰孔救护记"
+      }
+    }
+  ]
+}

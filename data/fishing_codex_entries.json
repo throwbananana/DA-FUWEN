@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "codex_entries": [
+    {
+      "id": "codex_brook_lantern_fish",
+      "species_id": "brook_lantern_fish",
+      "title": "溪灯鱼垂钓档案",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_catch:brook_lantern_fish"
+      },
+      "portrait_hint": "贴着浅滩绕石游动，群起时会先亮一下再散开。",
+      "habitat_notes": [
+        "晶溪浅滩和芦泽边汊都能见到",
+        "白昼与黄昏最稳"
+      ],
+      "behavior_notes": [
+        "更怕突然抬竿",
+        "风平时更容易靠岸"
+      ],
+      "care_notes": [
+        "基础挂饵足够",
+        "先认鱼路比急着起口更重要"
+      ],
+      "research_tags": [
+        "fishing",
+        "water",
+        "schooling"
+      ]
+    },
+    {
+      "id": "codex_reed_back_crab",
+      "species_id": "reed_back_crab",
+      "title": "芦背蟹放流档案",
+      "rarity": "uncommon",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_release:reed_back_crab"
+      },
+      "portrait_hint": "抱卵时会先把钳举高，再慢慢把腹面压回水里。",
+      "habitat_notes": [
+        "浅滩、边汊与芦根阴影里活跃",
+        "水稳时更容易处理"
+      ],
+      "behavior_notes": [
+        "拖线时更喜欢往芦根里钻",
+        "放流后会先原地稳一息"
+      ],
+      "care_notes": [
+        "处理旧线组比硬起鱼更有效",
+        "浅池升级后放流更稳"
+      ],
+      "research_tags": [
+        "fishing",
+        "release",
+        "wetland"
+      ]
+    },
+    {
+      "id": "codex_moon_tide_eel",
+      "species_id": "moon_tide_eel",
+      "title": "月潮鳗夜场档案",
+      "rarity": "epic",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_catch:moon_tide_eel"
+      },
+      "portrait_hint": "先拖线，不急着爆冲，像在把岸上的人慢慢拉离原位。",
+      "habitat_notes": [
+        "秋冬夜场才会真正露头",
+        "盐镜潮滩与芦泽边汊最常见"
+      ],
+      "behavior_notes": [
+        "极怕噪声",
+        "压力一高整夜都不再现身"
+      ],
+      "care_notes": [
+        "更适合重判断而不是重手速",
+        "夜潮和风向比装备更重要"
+      ],
+      "research_tags": [
+        "fishing",
+        "night",
+        "epic"
+      ]
+    }
+  ]
+}

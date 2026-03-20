@@ -1,11 +1,14 @@
 {
-  "version": 1,
+  "version": 2,
   "fishing_events": [
     {
       "id": "otter_line_tangle",
       "habitat_id": "crystal_creek",
       "mode": "incident",
-      "choice_ids": ["cast_line", "watch_tide"],
+      "choice_ids": [
+        "cast_line",
+        "watch_tide"
+      ],
       "weight": 3,
       "repeatable": true,
       "title": "缠线的小帮手",
@@ -33,12 +36,47 @@
       "log_line": "晶溪浅滩今天先处理掉了一团旧线组。"
     },
     {
+      "id": "creek_teacher_knots",
+      "habitat_id": "crystal_creek",
+      "mode": "incident",
+      "choice_ids": [
+        "watch_tide",
+        "cast_line"
+      ],
+      "weight": 2,
+      "repeatable": true,
+      "title": "婆婆教你理结",
+      "body_lines": [
+        "你还在理线，婆婆已经把手伸过来，顺手把最容易炸开的结拆成了两段。",
+        "她没抢你的鱼口，只是告诉你哪种风会先把线拖坏。"
+      ],
+      "items": {
+        "paper": 1
+      },
+      "journal_entry": "晶溪今天记下了一种更不伤线的收线方法。",
+      "trust_rewards": {
+        "washer_grandma": 1
+      },
+      "story_flags": [
+        "creek_teacher_knots_seen"
+      ],
+      "observe_markers": [
+        "fish_event:creek_teacher_knots"
+      ],
+      "pressure_delta": -1,
+      "log_line": "婆婆在晶溪边教了你一手更稳的理线法。"
+    },
+    {
       "id": "spring_release_day",
       "habitat_id": "crystal_creek",
       "mode": "incident",
-      "choice_ids": ["release_watch"],
+      "choice_ids": [
+        "release_watch"
+      ],
       "weight": 4,
-      "seasons": ["spring"],
+      "seasons": [
+        "spring"
+      ],
       "title": "春汛放流日",
       "body_lines": [
         "岸边今天挂起了放流的小旗，你索性把这一回合留给抱卵个体和幼体。",
@@ -52,7 +90,9 @@
       "trust_rewards": {
         "washer_grandma": 1
       },
-      "story_flags": ["spring_release_day_seen"],
+      "story_flags": [
+        "spring_release_day_seen"
+      ],
       "pressure_delta": -1,
       "log_line": "你在晶溪赶上了春汛放流。"
     },
@@ -60,7 +100,9 @@
       "id": "summer_lantern_derby",
       "habitat_id": "crystal_creek",
       "mode": "festival",
-      "seasons": ["summer"],
+      "seasons": [
+        "summer"
+      ],
       "title": "河灯夜钓会",
       "menu_summary": "把这回合拿来参加河灯夜钓会，成绩会记进当季榜单。",
       "description": "岸边挂起河灯后，大家比的不是单纯多少，而是谁更懂今天这片水。",
@@ -73,15 +115,30 @@
         "washer_grandma": 1
       },
       "journal_entry": "今年夏天的河灯夜钓会开始记榜了。",
-      "story_flags": ["summer_lantern_derby_joined"]
+      "story_flags": [
+        "summer_lantern_derby_joined"
+      ],
+      "host_npcs": [
+        "washer_grandma"
+      ],
+      "rival_names": [
+        "溪边老手",
+        "柳灯会友",
+        "雾野巡路队"
+      ]
     },
     {
       "id": "winter_ice_rescue",
       "habitat_id": "frost_mirror_lake",
       "mode": "incident",
-      "choice_ids": ["release_watch", "watch_tide"],
+      "choice_ids": [
+        "release_watch",
+        "watch_tide"
+      ],
       "weight": 5,
-      "seasons": ["winter"],
+      "seasons": [
+        "winter"
+      ],
       "title": "冰孔边的救护",
       "body_lines": [
         "你今天几乎没把注意力放在起鱼上，而是先把冰孔边缘清开，防止擦伤上浮个体。",
@@ -92,13 +149,18 @@
       },
       "journal_entry": "今天在霜镜湖做了一次真正意义上的冰孔救护。",
       "pressure_delta": -2,
+      "observe_markers": [
+        "fish_event:winter_ice_rescue"
+      ],
       "log_line": "你在霜镜湖先做了冰孔救护，没有急着起鱼。"
     },
     {
       "id": "winter_ice_classic",
       "habitat_id": "frost_mirror_lake",
       "mode": "festival",
-      "seasons": ["winter"],
+      "seasons": [
+        "winter"
+      ],
       "title": "冰孔静钓赛",
       "menu_summary": "更看重安静、判断和放流后的处理，不只是钓上来多少。",
       "description": "冬季比赛不比喧闹，大家更在乎谁能在不惊扰静湖的前提下拿到最好成绩。",
@@ -108,13 +170,51 @@
       },
       "base_score": 4,
       "journal_entry": "冰孔静钓赛的榜单会单独记放流和处理分。",
-      "story_flags": ["winter_ice_classic_joined"]
+      "story_flags": [
+        "winter_ice_classic_joined"
+      ],
+      "rival_names": [
+        "静湖常客",
+        "守夜钓手",
+        "北路巡队"
+      ]
+    },
+    {
+      "id": "reed_mire_cleanup_chain",
+      "habitat_id": "reed_mire",
+      "mode": "incident",
+      "choice_ids": [
+        "release_watch",
+        "watch_tide"
+      ],
+      "weight": 3,
+      "repeatable": true,
+      "title": "芦根旧线链",
+      "body_lines": [
+        "你顺着芦根摸出一串旧线组，才发现整片边汊一直被这些残线拖着。",
+        "这回合没那么像钓鱼，更像是在替下一轮鱼讯清路。"
+      ],
+      "items": {
+        "rope": 1,
+        "reed": 1
+      },
+      "journal_entry": "芦泽边汊今天清出了一串旧线链。",
+      "pressure_delta": -1,
+      "observe_markers": [
+        "fish_event:reed_mire_cleanup_chain"
+      ],
+      "log_line": "你在芦泽先清掉了一串旧线链。"
     },
     {
       "id": "autumn_big_catch_cup",
-      "habitat_ids": ["reed_mire", "saltglass_coast"],
+      "habitat_ids": [
+        "reed_mire",
+        "saltglass_coast"
+      ],
       "mode": "festival",
-      "seasons": ["autumn"],
+      "seasons": [
+        "autumn"
+      ],
       "title": "丰渔大尾杯",
       "menu_summary": "秋季的记分更偏向单尾、稀有度和判断，不只是看总数。",
       "description": "秋季大家都在追大尾和稀有种，但真正高分的仍然是判断最稳的人。",
@@ -124,7 +224,43 @@
       },
       "base_score": 4,
       "journal_entry": "丰渔大尾杯已经在沿岸和湿地同时开赛。",
-      "story_flags": ["autumn_big_catch_cup_joined"]
+      "story_flags": [
+        "autumn_big_catch_cup_joined"
+      ],
+      "rival_names": [
+        "潮滩独行客",
+        "湿地旧手",
+        "铜锤来客"
+      ]
+    },
+    {
+      "id": "saltglass_night_whisper",
+      "habitat_id": "saltglass_coast",
+      "mode": "incident",
+      "choice_ids": [
+        "watch_tide",
+        "cast_line"
+      ],
+      "weight": 2,
+      "repeatable": true,
+      "times": [
+        "night"
+      ],
+      "min_fishing_reputation": 6,
+      "title": "潮声把线悄悄带走",
+      "body_lines": [
+        "你几乎没有看见真正的鱼，只听到一小段极轻的刮线声。",
+        "这种夜场不会给很多现成战利品，但会把你带进更高一层的判断里。"
+      ],
+      "items": {
+        "paper": 1,
+        "glow_dust": 1
+      },
+      "journal_entry": "盐镜夜场的潮声会先带走判断迟疑的人。",
+      "observe_markers": [
+        "fish_event:saltglass_night_whisper"
+      ],
+      "log_line": "你在盐镜潮滩的夜里先听见了线，再看见了水。"
     }
   ]
 }

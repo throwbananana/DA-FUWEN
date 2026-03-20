@@ -1052,6 +1052,37 @@ func mark_fishing_event_seen(event_id: String) -> void:
 	history[event_id] = global_turn
 	quest_memory["fishing_event_history"] = history
 
+func get_fishing_record(species_id: String) -> Dictionary:
+	if species_id.is_empty():
+		return {}
+	return Dictionary(_duplicate_dictionary(quest_memory.get("fishing_records", {})).get(species_id, {})).duplicate(true)
+
+func get_total_fishing_catch_count() -> int:
+	var total := 0
+	for record in _duplicate_dictionary(quest_memory.get("fishing_records", {})).values():
+		total += int(Dictionary(record).get("count", 0))
+	return total
+
+func get_total_aquatic_release_count() -> int:
+	var total := 0
+	for count in _duplicate_dictionary(quest_memory.get("released_aquatic_species", {})).values():
+		total += int(count)
+	return total
+
+func get_festival_score(festival_id: String) -> int:
+	if festival_id.is_empty():
+		return 0
+	return int(_duplicate_dictionary(quest_memory.get("festival_scores", {})).get(festival_id, 0))
+
+func get_all_festival_scores() -> Dictionary:
+	return _duplicate_dictionary(quest_memory.get("festival_scores", {}))
+
+func get_fishing_reputation() -> int:
+	var total := get_total_fishing_catch_count() + get_total_aquatic_release_count() * 2
+	for value in get_all_festival_scores().values():
+		total += int(value)
+	return total
+
 func _better_fishing_weight_class(current_weight: String, next_weight: String) -> String:
 	var order := {
 		"common": 0,

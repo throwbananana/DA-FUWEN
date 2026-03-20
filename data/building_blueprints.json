@@ -3,7 +3,7 @@
   "buildings": [
     {
       "id": "warm_nest",
-      "name": "恒温护理室",
+      "name": "暖窝",
       "habitat_types": [
         "habitat"
       ],
@@ -81,7 +81,7 @@
     },
     {
       "id": "moss_bed",
-      "name": "康复床位区",
+      "name": "苔床角",
       "habitat_types": [
         "habitat"
       ],
@@ -156,7 +156,7 @@
     },
     {
       "id": "nursery_corner",
-      "name": "幼护观察室",
+      "name": "幼护角",
       "habitat_types": [
         "habitat"
       ],
@@ -223,7 +223,7 @@
     },
     {
       "id": "shallow_pool",
-      "name": "亲水互动池",
+      "name": "浅水池",
       "site": "crystal_creek",
       "max_level": 3,
       "levels": [
@@ -293,7 +293,7 @@
     },
     {
       "id": "sun_drying_rack",
-      "name": "河岸处理台",
+      "name": "河边晒台",
       "site": "crystal_creek",
       "max_level": 3,
       "levels": [
@@ -366,7 +366,7 @@
     },
     {
       "id": "reed_shed",
-      "name": "滨水补给棚",
+      "name": "河边补给棚",
       "site": "crystal_creek",
       "max_level": 2,
       "levels": [
@@ -427,7 +427,7 @@
     },
     {
       "id": "tea_shed",
-      "name": "便民咖啡站",
+      "name": "热饮摊",
       "site": "sky_post",
       "max_level": 2,
       "levels": [
@@ -488,7 +488,7 @@
     },
     {
       "id": "boarding_pen",
-      "name": "临时托管中心",
+      "name": "寄养屋",
       "site": "sky_post",
       "max_level": 2,
       "levels": [
@@ -550,7 +550,7 @@
     },
     {
       "id": "message_board",
-      "name": "社区信息屏",
+      "name": "公告板",
       "site": "sky_post",
       "max_level": 2,
       "levels": [
@@ -616,7 +616,7 @@
     },
     {
       "id": "watch_tower",
-      "name": "城市监测塔",
+      "name": "观测塔",
       "site": "ancient_platform",
       "max_level": 3,
       "levels": [
@@ -684,7 +684,7 @@
     },
     {
       "id": "repair_bench",
-      "name": "设备维护间",
+      "name": "修理间",
       "site": "ancient_platform",
       "max_level": 3,
       "levels": [
@@ -760,7 +760,7 @@
     },
     {
       "id": "echo_room",
-      "name": "信号回放室",
+      "name": "回声室",
       "site": "ancient_platform",
       "max_level": 2,
       "levels": [

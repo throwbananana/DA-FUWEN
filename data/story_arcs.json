@@ -187,6 +187,36 @@
           ]
         },
         {
+          "id": "after_soft_contact",
+          "habitat_id": "radiant_spire",
+          "npc_id": "anomaly_researcher",
+          "dialogue_id": "dlg_story_spire_soft_contact",
+          "requires_events": [
+            "soc_spire_reassure_fawn"
+          ],
+          "pair_relation_min": [
+            {
+              "pair": [
+                "npc:anomaly_researcher",
+                "species:rift_fawn"
+              ],
+              "familiarity": 2
+            }
+          ],
+          "pair_relation_max": [
+            {
+              "pair": [
+                "npc:anomaly_researcher",
+                "species:rift_fawn"
+              ],
+              "fear": 2
+            }
+          ],
+          "set_story_flags": [
+            "story_spire_contact_done"
+          ]
+        },
+        {
           "id": "resolve",
           "habitat_id": "radiant_spire",
           "npc_id": "anomaly_researcher",

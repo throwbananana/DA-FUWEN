@@ -26,6 +26,7 @@ var progression_curves: Dictionary = {}
 var events: Dictionary = {}
 var dialogues: Dictionary = {}
 var story_arcs: Dictionary = {}
+var social_events: Dictionary = {}
 var codex_entries: Dictionary = {}
 var encyclopedia_entries: Dictionary = {}
 var npc_routes: Array = []
@@ -61,6 +62,7 @@ func load_all() -> void:
 	dialogues = _index_by_id(_read_json("%s/dialogues.json" % DATA_ROOT).get("dialogues", []))
 	dialogues = _merge_indexed_rows(dialogues, _read_json("%s/story_dialogues.json" % DATA_ROOT).get("dialogues", []))
 	story_arcs = _index_by_id(_read_json("%s/story_arcs.json" % DATA_ROOT).get("story_arcs", []))
+	social_events = _index_by_id(_read_json("%s/social_events.json" % DATA_ROOT).get("social_events", []))
 	codex_entries = _index_by_id(_read_json("%s/codex_entries.json" % DATA_ROOT).get("codex_entries", []))
 	encyclopedia_entries = _index_by_id(_read_json("%s/encyclopedia_entries.json" % DATA_ROOT).get("encyclopedia_entries", []))
 	_load_npc_routes(_read_json("%s/npc_routes.json" % DATA_ROOT).get("routes", []))
@@ -352,6 +354,24 @@ func get_story_arcs() -> Array:
 		if priority_a == priority_b:
 			return String(a.get("id", "")) < String(b.get("id", ""))
 		return priority_a < priority_b
+	)
+	return result
+
+func get_social_event(social_event_id: String) -> Dictionary:
+	return Dictionary(social_events.get(social_event_id, {})).duplicate(true)
+
+func get_social_events_for_habitat(habitat_id: String) -> Array:
+	var result: Array = []
+	for social_event in social_events.values():
+		if String(social_event.get("habitat_id", "")) != habitat_id:
+			continue
+		result.append(Dictionary(social_event).duplicate(true))
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var weight_a := int(a.get("weight", 1))
+		var weight_b := int(b.get("weight", 1))
+		if weight_a == weight_b:
+			return String(a.get("id", "")) < String(b.get("id", ""))
+		return weight_a > weight_b
 	)
 	return result
 

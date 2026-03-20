@@ -83,12 +83,40 @@ func _conditions_match(conditions: Dictionary, npc_id: String, habitat_id: Strin
 		return false
 	if conditions.has("global_turn_max") and GameState.global_turn > int(conditions.get("global_turn_max", 999999)):
 		return false
+	if conditions.has("pair_relation_min") and not _pair_requirements_match(conditions.get("pair_relation_min"), true):
+		return false
+	if conditions.has("pair_relation_max") and not _pair_requirements_match(conditions.get("pair_relation_max"), false):
+		return false
 	if conditions.has("required_building"):
 		var requirement: Dictionary = Dictionary(conditions.get("required_building", {}))
 		var building_id := String(requirement.get("id", ""))
 		var min_level := int(requirement.get("min_level", 1))
 		if building_id.is_empty() or GameState.get_building_level(habitat_id, building_id) < min_level:
 			return false
+	return true
+
+func _pair_requirements_match(raw_requirements, is_minimum: bool) -> bool:
+	var requirements: Array = []
+	if raw_requirements is Array:
+		requirements = Array(raw_requirements).duplicate(true)
+	elif raw_requirements is Dictionary:
+		requirements = [Dictionary(raw_requirements).duplicate(true)]
+	for raw_requirement in requirements:
+		var requirement: Dictionary = Dictionary(raw_requirement).duplicate(true)
+		var pair: Array = Array(requirement.get("pair", [])).duplicate(true)
+		if pair.size() < 2:
+			return false
+		var actor_a := String(pair[0])
+		var actor_b := String(pair[1])
+		for stat_key in ["affinity", "familiarity", "fear", "rivalry"]:
+			if not requirement.has(stat_key):
+				continue
+			var current_value := GameState.get_social_relation_value(actor_a, actor_b, stat_key)
+			var expected_value := int(requirement.get(stat_key, 0))
+			if is_minimum and current_value < expected_value:
+				return false
+			if not is_minimum and current_value > expected_value:
+				return false
 	return true
 
 func _all_events_completed(raw_value) -> bool:

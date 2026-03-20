@@ -1589,6 +1589,141 @@
           "end": true
         }
       ]
+    },
+    {
+      "id": "dlg_anomaly_researcher_after_soft_contact",
+      "npc": "anomaly_researcher",
+      "habitat_id": "radiant_spire",
+      "topic": "soft_contact",
+      "weight": 3,
+      "cooldown_days": 2,
+      "tags": [
+        "后续",
+        "异常",
+        "照护"
+      ],
+      "conditions": {
+        "after_event": "soc_spire_reassure_fawn"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "anomaly_researcher",
+          "text": "今天它没再一下退到最远的位置。对塔区来说，这已经是很罕见的让步。",
+          "choices": [
+            {
+              "text": "说明你现在的动作它认得了。",
+              "next": "reply_a"
+            },
+            {
+              "text": "它也在学着判断你不是危险。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "anomaly_researcher",
+          "text": "是，先让对方认得你的节奏，很多记录才有资格继续往下做。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "anomaly_researcher",
+          "text": "我宁愿它慢一点，也不要它在误判里受第二次惊。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_moss_keeper_after_cofeeding",
+      "npc": "moss_keeper",
+      "habitat_id": "mist_moss_cave",
+      "topic": "settled_nest",
+      "weight": 3,
+      "cooldown_days": 2,
+      "tags": [
+        "后续",
+        "护理",
+        "窝巢"
+      ],
+      "conditions": {
+        "after_event": "soc_moss_settle_nest"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "moss_keeper",
+          "text": "照护不是把东西塞进去，而是让窝里的小家伙愿意自己把身子放回去。",
+          "choices": [
+            {
+              "text": "今天它回窝的动作确实快了。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来添料的顺序也会影响它安不安心。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "moss_keeper",
+          "text": "那就对了，说明温度和气味都没被我们粗暴地切断。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "moss_keeper",
+          "text": "很多时候，顺序就是态度。它们听不懂话，却能记住动作。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_spire_soft_contact",
+      "npc": "anomaly_researcher",
+      "habitat_id": "radiant_spire",
+      "topic": "rift_fawn_contact",
+      "weight": 1,
+      "cooldown_days": 3,
+      "tags": [
+        "剧情",
+        "异常",
+        "关系"
+      ],
+      "conditions": {
+        "after_event": "soc_spire_reassure_fawn"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "anomaly_researcher",
+          "text": "我以前总把这里当成要先“控制住”的地方。可最近我更确定，有些窗口其实是要先被信任，才会真正稳定。",
+          "choices": [
+            {
+              "text": "你是在说塔区，也是在说那只隙鹿。",
+              "next": "reply_a"
+            },
+            {
+              "text": "能让它留下来，本身就是一种测量结果。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "anomaly_researcher",
+          "text": "对。疏散线可以画在地上，但“可接近的边界”只能一点点被共同学出来。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "anomaly_researcher",
+          "text": "而且这种结果没法靠抢时间得到。它只会在一次次没有惊扰的记录里慢慢出现。",
+          "end": true
+        }
+      ]
     }
   ]
 }

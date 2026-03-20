@@ -1,0 +1,359 @@
+{
+  "version": 1,
+  "social_events": [
+    {
+      "id": "soc_spire_reassure_fawn",
+      "title": "稳定窗口下的试探接近",
+      "category": "npc_species",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "radiant_spire",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "anomaly_researcher"
+          ]
+        },
+        {
+          "slot": "species_b",
+          "type": "species",
+          "species_ids": [
+            "rift_fawn"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening",
+          "night"
+        ],
+        "weather_in": [
+          "clear",
+          "fog",
+          "storm"
+        ],
+        "pair_relation_max": [
+          {
+            "pair": [
+              "npc_a",
+              "species_b"
+            ],
+            "fear": 4
+          }
+        ]
+      },
+      "summary": "短暂稳定时，{npc_a}会尝试把记录动作放得更轻，好让{species_b}不用每次都先后退。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把记录板压低，只让手势留在更不刺激的位置。"
+        },
+        {
+          "type": "observe",
+          "slot": "species_b",
+          "text": "{species_b}没有立刻靠近，但也没有像以前那样转身逃开。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "gentle_success",
+          "weight": 3,
+          "outcome": "这次接触没有完全消除戒备，但双方都记住了彼此不是单纯的威胁。",
+          "effects": {
+            "trust": {
+              "{npc_a}": 1
+            },
+            "unlock_dialogue": "dlg_anomaly_researcher_after_soft_contact",
+            "journal_entry": "封控塔区观察：在稳定窗口内降低动作幅度后，隙鹿的撤离距离明显缩短。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "species_b"
+                ],
+                "familiarity": 1,
+                "fear": -1
+              }
+            ]
+          }
+        },
+        {
+          "id": "sample_success",
+          "weight": 2,
+          "outcome": "{npc_a}没再追求更多动作，只多留下一段足够可信的近距记录。",
+          "effects": {
+            "items": {
+              "glow_dust": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "species_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "异常",
+        "试探接近"
+      ]
+    },
+    {
+      "id": "soc_spire_shadow_pass",
+      "title": "塔区边缘的绕行试探",
+      "category": "species_species",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 3,
+      "weight": 3,
+      "habitat_id": "radiant_spire",
+      "actor_slots": [
+        {
+          "slot": "species_a",
+          "type": "species",
+          "species_ids": [
+            "rift_fawn"
+          ]
+        },
+        {
+          "slot": "species_b",
+          "type": "species",
+          "species_ids": [
+            "lumen_howler"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "summary": "{species_b}沿着外围绕行时，{species_a}会先停在疏散线内侧，等对方经过。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "species_a",
+          "text": "{species_a}的蹄尖只往后退了半步。"
+        },
+        {
+          "type": "observe",
+          "slot": "species_b",
+          "text": "{species_b}压低了身形，却没有进一步逼近。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "pressure_rises",
+          "weight": 3,
+          "outcome": "这不是正式冲突，但塔区边缘的压力又被记进了彼此的本能里。",
+          "effects": {
+            "journal_entry": "塔区夜间观察：隙鹿与辉嚎兽在疏散线附近保持了危险但克制的距离。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "species_a",
+                  "species_b"
+                ],
+                "fear": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "生态",
+        "压力"
+      ]
+    },
+    {
+      "id": "soc_moss_settle_nest",
+      "title": "恒温窝边的安静添料",
+      "category": "npc_species",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "mist_moss_cave",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "moss_keeper"
+          ]
+        },
+        {
+          "slot": "species_b",
+          "type": "species",
+          "resident_tags_any": [
+            "moss",
+            "warmth"
+          ],
+          "temperament_in": [
+            "shy",
+            "hungry",
+            "gentle"
+          ]
+        }
+      ],
+      "conditions": {
+        "required_building": {
+          "id": "warm_nest",
+          "min_level": 1
+        },
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "fog",
+          "mist",
+          "rain",
+          "clear"
+        ]
+      },
+      "summary": "{npc_a}会把新的垫料拆成更细的小束，再一点点推到{species_b}愿意接受的位置。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}先把手停在窝外，确认里面的小家伙没有绷紧。"
+        },
+        {
+          "type": "observe",
+          "slot": "species_b",
+          "text": "{species_b}闻了闻新垫料，然后把身体慢慢压回了窝边。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "nest_success",
+          "weight": 3,
+          "outcome": "窝里的温度没有被破坏，照护的节奏也更像是彼此都能接受的约定。",
+          "effects": {
+            "trust": {
+              "{npc_a}": 1
+            },
+            "unlock_dialogue": "dlg_moss_keeper_after_cofeeding",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "species_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "care_note",
+          "weight": 2,
+          "outcome": "{npc_a}让你把今天的添料顺序写下来，说以后能少惊动一次就是赚到一次。",
+          "effects": {
+            "journal_entry": "照护记录：恒温窝添料时，先给幼体留出闻味和回位的空隙。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "species_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "护理",
+        "幼体"
+      ]
+    },
+    {
+      "id": "soc_platform_relay_check",
+      "title": "监测站的双人复核",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "ancient_platform",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "ruin_restorer"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "field_recorder"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "{npc_a}和{npc_b}会在交接前再对一次数字，确认是设备在飘，还是环境本身真的变了。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把刚换下来的零件摆在边上，等{npc_b}先把原始记录念完。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}没有急着下结论，只把偏差最大的那一段单独圈了出来。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "relay_sync",
+          "weight": 3,
+          "outcome": "两人没有把问题互相推开，监测站今天也就少留了一点不必要的误差。",
+          "effects": {
+            "journal_entry": "监测站复核：先拆设备误差，再看环境异常，能让维护和记录少走弯路。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "监测站",
+        "协作"
+      ]
+    }
+  ]
+}

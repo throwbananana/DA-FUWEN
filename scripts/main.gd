@@ -2466,6 +2466,17 @@ func _apply_board_event_package(event_package: Dictionary) -> void:
 	for dialogue_id in event_package.get("unlocked_dialogues", []):
 		if not String(dialogue_id).is_empty():
 			GameState.unlock_dialogue(String(dialogue_id))
+	for raw_flag in event_package.get("story_flags", []):
+		var flag_id := String(raw_flag)
+		if not flag_id.is_empty():
+			GameState.set_story_flag(flag_id)
+	for raw_delta in event_package.get("relation_deltas", []):
+		var relation_delta: Dictionary = Dictionary(raw_delta).duplicate(true)
+		var actor_a := String(relation_delta.get("actor_a", ""))
+		var actor_b := String(relation_delta.get("actor_b", ""))
+		if actor_a.is_empty() or actor_b.is_empty():
+			continue
+		GameState.apply_social_relation_delta(actor_a, actor_b, relation_delta)
 	var items: Dictionary = event_package.get("items", {})
 	if not items.is_empty():
 		GameState.grant_items(items)
@@ -2500,6 +2511,10 @@ func _build_board_event_reward_lines(event_package: Dictionary) -> Array[String]
 		var dialogue := DataRepository.get_dialogue(String(dialogue_id))
 		var topic := String(dialogue.get("topic", "新话题"))
 		lines.append("- 解锁后续话题：%s" % _talk_topic_label(topic))
+	for raw_delta in event_package.get("relation_deltas", []):
+		var relation_line := _format_relation_delta_line(Dictionary(raw_delta).duplicate(true))
+		if not relation_line.is_empty():
+			lines.append("- %s" % relation_line)
 	return lines
 
 func _resolve_environment_node(node: Dictionary) -> void:
@@ -3164,6 +3179,17 @@ func _apply_talk_side_effects(active_npc_id: String, talk_package: Dictionary) -
 	for dialogue_id in talk_package.get("unlocked_dialogues", []):
 		if not String(dialogue_id).is_empty():
 			GameState.unlock_dialogue(String(dialogue_id))
+	for raw_flag in talk_package.get("story_flags", []):
+		var flag_id := String(raw_flag)
+		if not flag_id.is_empty():
+			GameState.set_story_flag(flag_id)
+	for raw_delta in talk_package.get("relation_deltas", []):
+		var relation_delta: Dictionary = Dictionary(raw_delta).duplicate(true)
+		var actor_a := String(relation_delta.get("actor_a", ""))
+		var actor_b := String(relation_delta.get("actor_b", ""))
+		if actor_a.is_empty() or actor_b.is_empty():
+			continue
+		GameState.apply_social_relation_delta(actor_a, actor_b, relation_delta)
 	var items: Dictionary = talk_package.get("items", {})
 	if not items.is_empty():
 		GameState.grant_items(items)
@@ -3201,7 +3227,55 @@ func _build_talk_reward_lines(active_npc_id: String, talk_package: Dictionary) -
 		var dialogue := DataRepository.get_dialogue(String(dialogue_id))
 		var topic := String(dialogue.get("topic", "新话题"))
 		lines.append("- 解锁后续话题：%s" % _talk_topic_label(topic))
+	for raw_delta in talk_package.get("relation_deltas", []):
+		var relation_line := _format_relation_delta_line(Dictionary(raw_delta).duplicate(true))
+		if not relation_line.is_empty():
+			lines.append("- %s" % relation_line)
 	return lines
+
+func _format_relation_delta_line(relation_delta: Dictionary) -> String:
+	var actor_a := String(relation_delta.get("actor_a", ""))
+	var actor_b := String(relation_delta.get("actor_b", ""))
+	if actor_a.is_empty() or actor_b.is_empty():
+		return ""
+	var changes: Array[String] = []
+	for stat_key in ["affinity", "familiarity", "fear", "rivalry"]:
+		if not relation_delta.has(stat_key):
+			continue
+		var amount := int(relation_delta.get(stat_key, 0))
+		if amount == 0:
+			continue
+		changes.append("%s %s%d" % [_relation_stat_label(stat_key), "+" if amount > 0 else "", amount])
+	if changes.is_empty():
+		return ""
+	return "%s ↔ %s：%s" % [_social_actor_label(actor_a), _social_actor_label(actor_b), " / ".join(changes)]
+
+func _social_actor_label(actor_id: String) -> String:
+	var normalized := actor_id
+	if normalized.begins_with("npc:"):
+		normalized = normalized.trim_prefix("npc:")
+	elif normalized.begins_with("species:"):
+		normalized = normalized.trim_prefix("species:")
+	var npc := DataRepository.get_npc(normalized)
+	if not npc.is_empty():
+		return String(npc.get("name", normalized))
+	var species := DataRepository.get_species(normalized)
+	if not species.is_empty():
+		return String(species.get("name", normalized))
+	return normalized
+
+func _relation_stat_label(stat_key: String) -> String:
+	match stat_key:
+		"affinity":
+			return "亲近"
+		"familiarity":
+			return "熟悉"
+		"fear":
+			return "戒备"
+		"rivalry":
+			return "竞争"
+		_:
+			return stat_key
 
 func _talk_topic_label(topic: String) -> String:
 	if topic.is_empty():

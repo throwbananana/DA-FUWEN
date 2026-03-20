@@ -199,6 +199,7 @@ func _default_quest_memory() -> Dictionary:
 		"story_beat_history": {},
 		"map_effect_flags": {},
 		"recent_ambient_events": [],
+		"social_relations": {},
 	}
 
 func _ensure_quest_memory_defaults() -> void:
@@ -1177,6 +1178,79 @@ func get_npc_topic_seen_count(npc_id: String, topic: String) -> int:
 	var topic_counts: Dictionary = quest_memory["npc_topic_counts"]
 	var npc_topics: Dictionary = Dictionary(topic_counts.get(npc_id, {}))
 	return int(npc_topics.get(topic, 0))
+
+func _default_social_relation_state() -> Dictionary:
+	return {
+		"affinity": 0,
+		"familiarity": 0,
+		"fear": 0,
+		"rivalry": 0,
+		"last_event_turn": -999,
+	}
+
+func _normalize_social_actor_id(actor_id: String) -> String:
+	var normalized := actor_id.strip_edges()
+	if normalized.is_empty():
+		return ""
+	if normalized.contains(":"):
+		return normalized
+	if DataRepository.npcs.has(normalized):
+		return "npc:%s" % normalized
+	if DataRepository.species.has(normalized):
+		return "species:%s" % normalized
+	return normalized
+
+func _social_relation_key(actor_a: String, actor_b: String) -> String:
+	var normalized_a := _normalize_social_actor_id(actor_a)
+	var normalized_b := _normalize_social_actor_id(actor_b)
+	if normalized_a.is_empty() or normalized_b.is_empty():
+		return ""
+	var pair := [normalized_a, normalized_b]
+	pair.sort()
+	return "%s|%s" % [String(pair[0]), String(pair[1])]
+
+func get_social_relation(actor_a: String, actor_b: String) -> Dictionary:
+	var key := _social_relation_key(actor_a, actor_b)
+	var relation := _default_social_relation_state()
+	if key.is_empty():
+		return relation
+	var relations: Dictionary = _duplicate_dictionary(quest_memory.get("social_relations", {}))
+	var stored: Dictionary = Dictionary(relations.get(key, {})).duplicate(true)
+	for stat_key in relation.keys():
+		if stat_key == "last_event_turn":
+			relation[stat_key] = int(stored.get(stat_key, relation[stat_key]))
+		else:
+			relation[stat_key] = int(stored.get(stat_key, 0))
+	relation["actor_a"] = _normalize_social_actor_id(actor_a)
+	relation["actor_b"] = _normalize_social_actor_id(actor_b)
+	return relation
+
+func get_social_relation_value(actor_a: String, actor_b: String, stat_key: String) -> int:
+	return int(get_social_relation(actor_a, actor_b).get(stat_key, 0))
+
+func apply_social_relation_delta(actor_a: String, actor_b: String, delta: Dictionary) -> Dictionary:
+	var key := _social_relation_key(actor_a, actor_b)
+	if key.is_empty():
+		return {}
+	var relations: Dictionary = _duplicate_dictionary(quest_memory.get("social_relations", {}))
+	var next_state := _default_social_relation_state()
+	var current_state: Dictionary = Dictionary(relations.get(key, {}))
+	for stat_key in next_state.keys():
+		if stat_key == "last_event_turn":
+			next_state[stat_key] = int(current_state.get(stat_key, next_state[stat_key]))
+		else:
+			next_state[stat_key] = int(current_state.get(stat_key, 0))
+	for stat_key in ["affinity", "familiarity", "fear", "rivalry"]:
+		if not delta.has(stat_key):
+			continue
+		next_state[stat_key] = int(next_state.get(stat_key, 0)) + int(delta.get(stat_key, 0))
+	next_state["last_event_turn"] = global_turn
+	relations[key] = next_state
+	quest_memory["social_relations"] = relations
+	var result := next_state.duplicate(true)
+	result["actor_a"] = _normalize_social_actor_id(actor_a)
+	result["actor_b"] = _normalize_social_actor_id(actor_b)
+	return result
 
 func add_trust(npc_id: String, amount: int) -> void:
 	npc_trust[npc_id] = int(npc_trust.get(npc_id, 0)) + amount

@@ -2,9 +2,11 @@ class_name DialogueService
 extends RefCounted
 
 const StoryService = preload("res://scripts/services/story_service.gd")
+const SocialEventService = preload("res://scripts/services/social_event_service.gd")
 
 var rng := RandomNumberGenerator.new()
 var story_service := StoryService.new()
+var social_event_service := SocialEventService.new()
 
 func _init() -> void:
 	rng.randomize()
@@ -17,7 +19,7 @@ func build_talk_package(npc_id: String, habitat_id: String, context: Dictionary 
 	if forced_dialogue_id.is_empty():
 		var story_beat := story_service.claim_story_dialogue(npc_id, habitat_id)
 		forced_dialogue_id = String(story_beat.get("dialogue_id", ""))
-	var event_result := _pick_ambient_event(npc_id, habitat_id)
+	var event_result := _pick_social_or_ambient_event(npc_id, habitat_id)
 	var dialogue := {}
 	if not forced_dialogue_id.is_empty():
 		dialogue = DataRepository.get_dialogue(forced_dialogue_id)
@@ -40,9 +42,14 @@ func build_talk_package(npc_id: String, habitat_id: String, context: Dictionary 
 		"journal_entries": Array(event_result.get("journal_entries", [])).duplicate(true),
 		"completed_events": Array(event_result.get("completed_events", [])).duplicate(true),
 		"unlocked_dialogues": Array(event_result.get("unlocked_dialogues", [])).duplicate(true),
+		"story_flags": Array(event_result.get("story_flags", [])).duplicate(true),
+		"relation_deltas": Array(event_result.get("relation_deltas", [])).duplicate(true),
 	}
 
 func build_board_event_package(habitat_id: String) -> Dictionary:
+	var social_event := social_event_service.claim_board_event(habitat_id)
+	if not social_event.is_empty():
+		return social_event
 	var candidates: Array = []
 	for event_row in DataRepository.get_events_for_habitat(habitat_id):
 		if String(event_row.get("mode", "")) != "ambient_talk":
@@ -71,6 +78,12 @@ func build_board_event_package(habitat_id: String) -> Dictionary:
 	var result := _materialize_event(chosen, npc_id)
 	result["npc_id"] = npc_id
 	return result
+
+func _pick_social_or_ambient_event(npc_id: String, habitat_id: String) -> Dictionary:
+	var social_event := social_event_service.claim_talk_event(npc_id, habitat_id)
+	if not social_event.is_empty():
+		return social_event
+	return _pick_ambient_event(npc_id, habitat_id)
 
 func _pick_dialogue(npc_id: String, habitat_id: String) -> Dictionary:
 	var candidates: Array = []
@@ -176,12 +189,40 @@ func _conditions_match(conditions: Dictionary, npc_id: String, habitat_id: Strin
 		return false
 	if conditions.has("max_trust") and int(GameState.npc_trust.get(npc_id, 0)) > int(conditions.get("max_trust", 0)):
 		return false
+	if conditions.has("pair_relation_min") and not _pair_requirements_match(conditions.get("pair_relation_min"), true):
+		return false
+	if conditions.has("pair_relation_max") and not _pair_requirements_match(conditions.get("pair_relation_max"), false):
+		return false
 	if conditions.has("required_building"):
 		var requirement: Dictionary = conditions.get("required_building", {})
 		var building_id := String(requirement.get("id", ""))
 		var min_level := int(requirement.get("min_level", 1))
 		if building_id.is_empty() or GameState.get_building_level(habitat_id, building_id) < min_level:
 			return false
+	return true
+
+func _pair_requirements_match(raw_requirements, is_minimum: bool) -> bool:
+	var requirements: Array = []
+	if raw_requirements is Array:
+		requirements = Array(raw_requirements).duplicate(true)
+	elif raw_requirements is Dictionary:
+		requirements = [Dictionary(raw_requirements).duplicate(true)]
+	for raw_requirement in requirements:
+		var requirement: Dictionary = Dictionary(raw_requirement).duplicate(true)
+		var pair: Array = Array(requirement.get("pair", [])).duplicate(true)
+		if pair.size() < 2:
+			return false
+		var actor_a := String(pair[0])
+		var actor_b := String(pair[1])
+		for stat_key in ["affinity", "familiarity", "fear", "rivalry"]:
+			if not requirement.has(stat_key):
+				continue
+			var current_value := GameState.get_social_relation_value(actor_a, actor_b, stat_key)
+			var expected_value := int(requirement.get(stat_key, 0))
+			if is_minimum and current_value < expected_value:
+				return false
+			if not is_minimum and current_value > expected_value:
+				return false
 	return true
 
 func _all_events_completed(raw_value) -> bool:
@@ -319,6 +360,8 @@ func _materialize_event(event_row: Dictionary, npc_id: String) -> Dictionary:
 		"journal_entries": journal_entries,
 		"completed_events": [String(event_row.get("id", ""))],
 		"unlocked_dialogues": unlocked_dialogues,
+		"story_flags": Array(effects.get("set_story_flags", [])).duplicate(true),
+		"relation_deltas": Array(effects.get("relation_delta", [])).duplicate(true),
 		"tags": Array(event_row.get("tags", [])).duplicate(true),
 	}
 

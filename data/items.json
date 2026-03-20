@@ -3,7 +3,7 @@
   "items": [
     {
       "id": "soft_moss",
-      "name": "软苔",
+      "name": "湿苔团",
       "type": "material",
       "stack_limit": 99,
       "sell_price": 4,
@@ -45,7 +45,7 @@
     },
     {
       "id": "amber_resin",
-      "name": "琥脂",
+      "name": "树脂块",
       "type": "rare_material",
       "stack_limit": 99,
       "sell_price": 12,
@@ -59,7 +59,7 @@
     },
     {
       "id": "water_drop",
-      "name": "净水滴",
+      "name": "净水囊",
       "type": "material",
       "stack_limit": 99,
       "sell_price": 4,
@@ -101,7 +101,7 @@
     },
     {
       "id": "clear_sand",
-      "name": "净砂",
+      "name": "细沙",
       "type": "material",
       "stack_limit": 99,
       "sell_price": 4,
@@ -143,7 +143,7 @@
     },
     {
       "id": "parts",
-      "name": "机括零件",
+      "name": "小机件",
       "type": "material",
       "stack_limit": 99,
       "sell_price": 4,
@@ -157,7 +157,7 @@
     },
     {
       "id": "glass",
-      "name": "玻片",
+      "name": "碎玻片",
       "type": "material",
       "stack_limit": 99,
       "sell_price": 4,
@@ -171,7 +171,7 @@
     },
     {
       "id": "glow_dust",
-      "name": "辉尘",
+      "name": "荧粉",
       "type": "rare_material",
       "stack_limit": 99,
       "sell_price": 12,
@@ -185,7 +185,7 @@
     },
     {
       "id": "spring_core",
-      "name": "簧芯",
+      "name": "小弹簧",
       "type": "rare_material",
       "stack_limit": 99,
       "sell_price": 12,
@@ -242,7 +242,7 @@
     },
     {
       "id": "paper",
-      "name": "信纸",
+      "name": "便笺",
       "type": "material",
       "stack_limit": 99,
       "sell_price": 4,
@@ -397,7 +397,7 @@
     },
     {
       "id": "training_note",
-      "name": "试炼札记",
+      "name": "练习手记",
       "type": "consumable",
       "stack_limit": 99,
       "sell_price": 8,
@@ -412,7 +412,7 @@
     },
     {
       "id": "ice_glass",
-      "name": "冰镜片",
+      "name": "薄冰片",
       "type": "rare_material",
       "stack_limit": 99,
       "sell_price": 12,

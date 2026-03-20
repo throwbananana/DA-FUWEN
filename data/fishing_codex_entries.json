@@ -4,7 +4,7 @@
     {
       "id": "codex_brook_lantern_fish",
       "species_id": "brook_lantern_fish",
-      "title": "溪灯鱼垂钓档案",
+      "title": "溪灯鱼小记",
       "rarity": "common",
       "unlock_rule": {
         "type": "observe_marker",
@@ -32,7 +32,7 @@
     {
       "id": "codex_reed_back_crab",
       "species_id": "reed_back_crab",
-      "title": "芦背蟹放流档案",
+      "title": "芦背蟹放流记",
       "rarity": "uncommon",
       "unlock_rule": {
         "type": "observe_marker",
@@ -60,7 +60,7 @@
     {
       "id": "codex_moon_tide_eel",
       "species_id": "moon_tide_eel",
-      "title": "月潮鳗夜场档案",
+      "title": "夜潮鳗小记",
       "rarity": "epic",
       "unlock_rule": {
         "type": "observe_marker",

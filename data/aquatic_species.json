@@ -29,7 +29,7 @@
     },
     {
       "id": "glass_fin_koi",
-      "name": "玻鳍锦鲤",
+      "name": "雾鳍鲤",
       "rarity": "rare",
       "seasons": ["spring", "autumn"],
       "times": ["evening", "night"],
@@ -45,39 +45,39 @@
         "rain": 1
       },
       "catch_text": "它会在薄雾里翻出很亮的一记侧身，像是一片会游的碎玻。",
-      "journal_text": "玻鳍锦鲤偏爱薄雾压岸的时段，水压一高就难靠近。",
-      "watch_text": "今天你没有下竿，只把那条玻鳍侧身的时点和风向记了下来。",
+      "journal_text": "雾鳍鲤偏爱薄雾压岸的时段，水压一高就难靠近。",
+      "watch_text": "今天你没有下竿，只把那条雾鳍鲤侧身的时点和风向记了下来。",
       "release_text": "放回去时它在岸边停了一息，像是在重新确认你的影子。"
     },
     {
       "id": "mirror_ice_perch",
-      "name": "镜冰鲈",
+      "name": "冰纹鲈",
       "rarity": "uncommon",
       "seasons": ["winter"],
       "times": ["day", "evening"],
       "weight": 4,
       "pressure_tolerance": 2,
       "catch_text": "冰孔下的第一下顿口很轻，真正发力总在你犹豫之后。",
-      "journal_text": "镜冰鲈会沿着冰面反光最弱的暗带巡游。",
-      "watch_text": "你把冰面反光、孔位和镜冰鲈的换线时机记得很细。",
+      "journal_text": "冰纹鲈会沿着冰面反光最弱的暗带巡游。",
+      "watch_text": "你把冰面反光、孔位和冰纹鲈的换线时机记得很细。",
       "release_text": "冬季个体的体表膜更脆，放流比强拉安全得多。"
     },
     {
       "id": "snow_shell_turtle",
-      "name": "雪壳龟",
+      "name": "白壳龟",
       "rarity": "rare",
       "seasons": ["winter"],
       "times": ["day"],
       "weight": 2,
       "pressure_tolerance": 1,
       "catch_text": "它不是来抢食，更像是顺着线把你整个人拽进冰面的静里。",
-      "journal_text": "雪壳龟更像被人偶遇，而不是被真正钓起。",
+      "journal_text": "白壳龟更像被人偶遇，而不是被真正钓起。",
       "watch_text": "你先看到的是冰面下慢慢偏过来的白影，而不是浮漂。",
-      "release_text": "雪壳龟会在近岸慢慢换气，真正惊扰它只会让它整天不再靠孔。"
+      "release_text": "白壳龟会在近岸慢慢换气，真正惊扰它只会让它整天不再靠孔。"
     },
     {
       "id": "moon_tide_eel",
-      "name": "月潮鳗",
+      "name": "夜潮鳗",
       "rarity": "epic",
       "seasons": ["autumn", "winter"],
       "times": ["night"],
@@ -87,7 +87,7 @@
         "night": 3
       },
       "catch_text": "它先拖着线走，而不是立刻爆冲，像在把你从岸上慢慢带离原地。",
-      "journal_text": "月潮鳗只在夜里沿回潮边线贴底走，稍微吵一点就整晚不再现身。",
+      "journal_text": "夜潮鳗只在夜里沿回潮边线贴底走，稍微吵一点就整晚不再现身。",
       "watch_text": "你只听见一小段非常轻的刮线声，随后夜潮把痕迹全吞掉了。",
       "release_text": "你把它放回去后，整段岸边像突然安静下来，只剩潮声自己往回走。"
     }

@@ -105,7 +105,7 @@
       ],
       "title": "河灯夜钓会",
       "menu_summary": "把这回合拿来参加河灯夜钓会，成绩会记进当季榜单。",
-      "description": "岸边挂起河灯后，大家比的不是单纯多少，而是谁更懂今天这片水。",
+      "description": "岸边挂起河灯后，大家都慢了下来，想看看今晚这片水先把鱼带向哪一边。",
       "items": {
         "paper": 1,
         "glass": 1
@@ -162,14 +162,14 @@
         "winter"
       ],
       "title": "冰孔静钓赛",
-      "menu_summary": "更看重安静、判断和放流后的处理，不只是钓上来多少。",
-      "description": "冬季比赛不比喧闹，大家更在乎谁能在不惊扰静湖的前提下拿到最好成绩。",
+      "menu_summary": "这场更适合慢慢来。安静守着、把放流收尾做好，这一回合就算钓得很圆满。",
+      "description": "冬天的静湖不爱热闹。能不惊水地把这一回合收好，榜上自然会记住你。",
       "items": {
         "paper": 1,
         "ice_glass": 1
       },
       "base_score": 4,
-      "journal_entry": "冰孔静钓赛的榜单会单独记放流和处理分。",
+      "journal_entry": "冰孔静钓赛今年另外记了放流和收尾的小榜。",
       "story_flags": [
         "winter_ice_classic_joined"
       ],
@@ -216,8 +216,8 @@
         "autumn"
       ],
       "title": "丰渔大尾杯",
-      "menu_summary": "秋季的记分更偏向单尾、稀有度和判断，不只是看总数。",
-      "description": "秋季大家都在追大尾和稀有种，但真正高分的仍然是判断最稳的人。",
+      "menu_summary": "秋天这场更看这一尾够不够漂亮，未必要钓很多。",
+      "description": "秋天大家都盼着碰上一尾大的；肯多看一会儿潮和风的人，往往更容易等到它。",
       "items": {
         "paper": 1,
         "glass": 1
@@ -250,13 +250,13 @@
       "title": "潮声把线悄悄带走",
       "body_lines": [
         "你几乎没有看见真正的鱼，只听到一小段极轻的刮线声。",
-        "这种夜场不会给很多现成战利品，但会把你带进更高一层的判断里。"
+        "这种夜场不一定马上有收获，但会让你慢慢听懂这片潮水。"
       ],
       "items": {
         "paper": 1,
         "glow_dust": 1
       },
-      "journal_entry": "盐镜夜场的潮声会先带走判断迟疑的人。",
+      "journal_entry": "盐镜夜场的潮声总会先把人的脚步放慢。",
       "observe_markers": [
         "fish_event:saltglass_night_whisper"
       ],

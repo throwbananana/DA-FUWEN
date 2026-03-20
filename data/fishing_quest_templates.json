@@ -57,7 +57,7 @@
     },
     {
       "id": "post_lantern_board_run",
-      "title": "替驿站把河灯夜钓会的成绩挂上去",
+      "title": "去把河灯夜钓会的小榜挂出来",
       "giver": "innkeeper_yun",
       "category": "fishing",
       "target_habitat": "crystal_creek",
@@ -82,7 +82,7 @@
     },
     {
       "id": "winter_ice_hole_notes",
-      "title": "替叶衡补一页冰孔救护记录",
+      "title": "陪叶衡记下今天的冰孔救护",
       "giver": "field_recorder",
       "category": "fishing",
       "target_habitat": "frost_mirror_lake",

@@ -27,6 +27,9 @@ var events: Dictionary = {}
 var dialogues: Dictionary = {}
 var story_arcs: Dictionary = {}
 var social_events: Dictionary = {}
+var fishing_spots: Dictionary = {}
+var aquatic_species: Dictionary = {}
+var fishing_events: Dictionary = {}
 var codex_entries: Dictionary = {}
 var encyclopedia_entries: Dictionary = {}
 var npc_routes: Array = []
@@ -63,6 +66,9 @@ func load_all() -> void:
 	dialogues = _merge_indexed_rows(dialogues, _read_json("%s/story_dialogues.json" % DATA_ROOT).get("dialogues", []))
 	story_arcs = _index_by_id(_read_json("%s/story_arcs.json" % DATA_ROOT).get("story_arcs", []))
 	social_events = _index_by_id(_read_json("%s/social_events.json" % DATA_ROOT).get("social_events", []))
+	fishing_spots = _index_by_id(_read_json("%s/fishing_spots.json" % DATA_ROOT).get("fishing_spots", []))
+	aquatic_species = _index_by_id(_read_json("%s/aquatic_species.json" % DATA_ROOT).get("aquatic_species", []))
+	fishing_events = _index_by_id(_read_json("%s/fishing_events.json" % DATA_ROOT).get("fishing_events", []))
 	codex_entries = _index_by_id(_read_json("%s/codex_entries.json" % DATA_ROOT).get("codex_entries", []))
 	encyclopedia_entries = _index_by_id(_read_json("%s/encyclopedia_entries.json" % DATA_ROOT).get("encyclopedia_entries", []))
 	_load_npc_routes(_read_json("%s/npc_routes.json" % DATA_ROOT).get("routes", []))
@@ -366,6 +372,31 @@ func get_social_events_for_habitat(habitat_id: String) -> Array:
 		if String(social_event.get("habitat_id", "")) != habitat_id:
 			continue
 		result.append(Dictionary(social_event).duplicate(true))
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var weight_a := int(a.get("weight", 1))
+		var weight_b := int(b.get("weight", 1))
+		if weight_a == weight_b:
+			return String(a.get("id", "")) < String(b.get("id", ""))
+		return weight_a > weight_b
+	)
+	return result
+
+func get_fishing_spot(habitat_id: String) -> Dictionary:
+	return Dictionary(fishing_spots.get(habitat_id, {})).duplicate(true)
+
+func get_aquatic_species(aquatic_species_id: String) -> Dictionary:
+	return Dictionary(aquatic_species.get(aquatic_species_id, {})).duplicate(true)
+
+func get_fishing_events_for_habitat(habitat_id: String) -> Array:
+	var result: Array = []
+	for fishing_event in fishing_events.values():
+		var row: Dictionary = Dictionary(fishing_event).duplicate(true)
+		var habitat_ids: Array = Array(row.get("habitat_ids", []))
+		if not habitat_ids.is_empty() and not habitat_ids.has(habitat_id):
+			continue
+		if habitat_ids.is_empty() and String(row.get("habitat_id", "")) != habitat_id:
+			continue
+		result.append(row)
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		var weight_a := int(a.get("weight", 1))
 		var weight_b := int(b.get("weight", 1))

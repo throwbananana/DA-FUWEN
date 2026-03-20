@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "fishing_spots": [
+    {
+      "id": "crystal_creek",
+      "habitat_id": "crystal_creek",
+      "name": "晶溪浅滩",
+      "species_pool": ["brook_lantern_fish", "reed_back_crab", "glass_fin_koi"],
+      "festival_by_season": {
+        "summer": "summer_lantern_derby"
+      }
+    },
+    {
+      "id": "frost_mirror_lake",
+      "habitat_id": "frost_mirror_lake",
+      "name": "霜镜冰孔",
+      "species_pool": ["mirror_ice_perch", "snow_shell_turtle"],
+      "festival_by_season": {
+        "winter": "winter_ice_classic"
+      }
+    },
+    {
+      "id": "reed_mire",
+      "habitat_id": "reed_mire",
+      "name": "芦泽边汊",
+      "species_pool": ["reed_back_crab", "brook_lantern_fish", "moon_tide_eel"],
+      "festival_by_season": {
+        "autumn": "autumn_big_catch_cup"
+      }
+    },
+    {
+      "id": "saltglass_coast",
+      "habitat_id": "saltglass_coast",
+      "name": "盐镜潮滩",
+      "species_pool": ["glass_fin_koi", "moon_tide_eel"],
+      "festival_by_season": {
+        "autumn": "autumn_big_catch_cup"
+      }
+    }
+  ]
+}

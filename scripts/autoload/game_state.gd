@@ -200,6 +200,11 @@ func _default_quest_memory() -> Dictionary:
 		"map_effect_flags": {},
 		"recent_ambient_events": [],
 		"social_relations": {},
+		"fishing_records": {},
+		"fishing_spot_pressure": {},
+		"released_aquatic_species": {},
+		"festival_scores": {},
+		"fishing_event_history": {},
 	}
 
 func _ensure_quest_memory_defaults() -> void:
@@ -991,6 +996,74 @@ func note_observe_marker(marker_id: String) -> void:
 	var markers: Dictionary = quest_memory["observed_markers"]
 	markers[marker_id] = true
 	quest_memory["observed_markers"] = markers
+
+func note_fishing_catch(habitat_id: String, species_id: String, weight_class: String = "common") -> Dictionary:
+	if species_id.is_empty():
+		return {}
+	var records: Dictionary = _duplicate_dictionary(quest_memory.get("fishing_records", {}))
+	var entry: Dictionary = Dictionary(records.get(species_id, {})).duplicate(true)
+	entry["count"] = int(entry.get("count", 0)) + 1
+	entry["last_habitat_id"] = habitat_id
+	entry["last_turn"] = global_turn
+	entry["best_weight_class"] = _better_fishing_weight_class(String(entry.get("best_weight_class", "")), weight_class)
+	records[species_id] = entry
+	quest_memory["fishing_records"] = records
+	return entry
+
+func note_aquatic_release(species_id: String) -> void:
+	if species_id.is_empty():
+		return
+	var released: Dictionary = _duplicate_dictionary(quest_memory.get("released_aquatic_species", {}))
+	released[species_id] = int(released.get(species_id, 0)) + 1
+	quest_memory["released_aquatic_species"] = released
+
+func get_fishing_spot_pressure(habitat_id: String) -> int:
+	return int(_duplicate_dictionary(quest_memory.get("fishing_spot_pressure", {})).get(habitat_id, 0))
+
+func add_fishing_spot_pressure(habitat_id: String, amount: int) -> int:
+	if habitat_id.is_empty() or amount == 0:
+		return get_fishing_spot_pressure(habitat_id)
+	var pressure: Dictionary = _duplicate_dictionary(quest_memory.get("fishing_spot_pressure", {}))
+	var next_value := clampi(int(pressure.get(habitat_id, 0)) + amount, 0, 6)
+	if next_value <= 0:
+		pressure.erase(habitat_id)
+	else:
+		pressure[habitat_id] = next_value
+	quest_memory["fishing_spot_pressure"] = pressure
+	return next_value
+
+func record_festival_score(festival_id: String, amount: int) -> int:
+	if festival_id.is_empty() or amount == 0:
+		return int(_duplicate_dictionary(quest_memory.get("festival_scores", {})).get(festival_id, 0))
+	var scores: Dictionary = _duplicate_dictionary(quest_memory.get("festival_scores", {}))
+	scores[festival_id] = int(scores.get(festival_id, 0)) + amount
+	quest_memory["festival_scores"] = scores
+	return int(scores.get(festival_id, 0))
+
+func has_seen_fishing_event(event_id: String) -> bool:
+	if event_id.is_empty():
+		return false
+	return _duplicate_dictionary(quest_memory.get("fishing_event_history", {})).has(event_id)
+
+func mark_fishing_event_seen(event_id: String) -> void:
+	if event_id.is_empty():
+		return
+	var history: Dictionary = _duplicate_dictionary(quest_memory.get("fishing_event_history", {}))
+	history[event_id] = global_turn
+	quest_memory["fishing_event_history"] = history
+
+func _better_fishing_weight_class(current_weight: String, next_weight: String) -> String:
+	var order := {
+		"common": 0,
+		"uncommon": 1,
+		"rare": 2,
+		"epic": 3,
+	}
+	if next_weight.is_empty():
+		return current_weight
+	if current_weight.is_empty():
+		return next_weight
+	return next_weight if int(order.get(next_weight, 0)) > int(order.get(current_weight, 0)) else current_weight
 
 func has_map_effect_trigger(effect_key: String) -> bool:
 	return bool(quest_memory["map_effect_flags"].get(effect_key, false))

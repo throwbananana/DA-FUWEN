@@ -23,6 +23,7 @@ const NpcRouteService = preload("res://scripts/services/npc_route_service.gd")
 const ThreatService = preload("res://scripts/services/threat_service.gd")
 const AIPlayerService = preload("res://scripts/services/ai_player_service.gd")
 const DialogueService = preload("res://scripts/services/dialogue_service.gd")
+const FishingService = preload("res://scripts/services/fishing_service.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
 
 const GAME_TITLE := "雾野远征"
@@ -169,6 +170,7 @@ var npc_route_service := NpcRouteService.new()
 var threat_service := ThreatService.new()
 var ai_player_service := AIPlayerService.new()
 var dialogue_service := DialogueService.new()
+var fishing_service := FishingService.new()
 var localization_service := LocalizationService.new()
 
 var season_finished := false
@@ -1930,7 +1932,7 @@ func _should_trigger_prearrival_ambush(node_id: int) -> bool:
 func _primary_content_action(node: Dictionary, habitat: Dictionary, buildings: Array, npcs: Array) -> String:
 	var requested := String(node.get("primary_content", ""))
 	if requested.is_empty():
-		for fallback_action in ["dojo_menu", "build_menu", "npc_menu", "observe", "mail_menu"]:
+		for fallback_action in ["fishing_menu", "dojo_menu", "build_menu", "npc_menu", "observe", "mail_menu"]:
 			if _is_primary_action_available(fallback_action, habitat, buildings, npcs):
 				return fallback_action
 		return ""
@@ -1946,6 +1948,8 @@ func _is_primary_action_available(action_id: String, habitat: Dictionary, buildi
 			return not npcs.is_empty()
 		"observe":
 			return not habitat.get("wild_pool", []).is_empty()
+		"fishing_menu":
+			return fishing_service.has_fishing_spot(String(habitat.get("id", "")))
 		"dojo_menu":
 			return not String(habitat.get("dojo_id", "")).is_empty()
 		"mail_menu":
@@ -1963,6 +1967,8 @@ func _primary_content_label(action_id: String) -> String:
 			return "与人交谈"
 		"observe":
 			return "观察野外"
+		"fishing_menu":
+			return "在水边垂钓"
 		"dojo_menu":
 			return "进入试炼"
 		"mail_menu":
@@ -1980,6 +1986,8 @@ func _primary_content_summary(action_id: String) -> String:
 			return "这是关系型路遇，主收益来自情报、委托和关系推进。"
 		"observe":
 			return "这是野外型路遇，主收益来自观察、结缘和风险处理。"
+		"fishing_menu":
+			return "这是水域型路遇，主收益来自消耗回合钓鱼、放流、节庆比赛与水系生物互动。"
 		"dojo_menu":
 			return "这是验证型路遇，主收益来自试炼和阶段奖励。"
 		"mail_menu":
@@ -2284,6 +2292,71 @@ func _show_encounter_result(payload: Dictionary) -> void:
 	pending_context = {"kind": "encounter_result", "on_close": "finish_visit"}
 	decision_panel.open_panel("路遇结果", outcome_text, [], "继续前进")
 
+func _show_fishing_menu() -> void:
+	var payload := fishing_service.build_fishing_menu(current_visit_habitat_id)
+	if not bool(payload.get("ok", false)):
+		pending_context = {"kind": "fishing_menu", "on_close": "arrival"}
+		decision_panel.open_panel("水边垂钓", "这里今天不适合展开钓鱼。", [], "返回地点")
+		return
+	pending_context = {"kind": "fishing_menu", "on_close": "arrival"}
+	decision_panel.open_panel(String(payload.get("title", "水边垂钓")), String(payload.get("body", "")), payload.get("choices", []), "返回地点")
+
+func _show_fishing_result(payload: Dictionary) -> void:
+	if not bool(payload.get("ok", false)):
+		pending_context = {"kind": "fishing_result", "on_close": "finish_visit"}
+		decision_panel.open_panel("垂钓结果", String(payload.get("body", "今天没有钓到什么。")), [], "结束拜访")
+		return
+	_apply_fishing_side_effects(payload)
+	if not String(payload.get("log_line", "")).is_empty():
+		_push_log(String(payload.get("log_line", "")))
+	pending_context = {"kind": "fishing_result", "on_close": "finish_visit"}
+	decision_panel.open_panel(String(payload.get("title", "垂钓结果")), "\n".join(payload.get("body_lines", [])), [], "结束拜访")
+
+func _apply_fishing_side_effects(payload: Dictionary) -> void:
+	var catch_species_id := String(payload.get("catch_species_id", ""))
+	if not catch_species_id.is_empty():
+		GameState.note_fishing_catch(current_visit_habitat_id, catch_species_id, String(payload.get("weight_class", "common")))
+	var release_species_id := String(payload.get("release_species_id", ""))
+	if not release_species_id.is_empty():
+		GameState.note_aquatic_release(release_species_id)
+	var pressure_delta := int(payload.get("pressure_delta", 0))
+	if pressure_delta != 0:
+		GameState.add_fishing_spot_pressure(current_visit_habitat_id, pressure_delta)
+	var festival_id := String(payload.get("festival_id", ""))
+	var score_delta := int(payload.get("score_delta", 0))
+	if not festival_id.is_empty() and score_delta != 0:
+		GameState.record_festival_score(festival_id, score_delta)
+	var event_id := String(payload.get("event_id", ""))
+	if not event_id.is_empty():
+		GameState.mark_fishing_event_seen(event_id)
+	var items: Dictionary = payload.get("items", {})
+	if not items.is_empty():
+		GameState.grant_items(items)
+	for entry in payload.get("journal_entries", []):
+		var text := String(entry)
+		if not text.is_empty():
+			GameState.add_journal_entry(text)
+	var trust_rewards: Dictionary = payload.get("trust_rewards", {})
+	for npc_id in trust_rewards.keys():
+		var target_id := String(npc_id)
+		if target_id.is_empty():
+			continue
+		GameState.add_trust(target_id, int(trust_rewards[npc_id]))
+	for raw_flag in payload.get("story_flags", []):
+		var flag_id := String(raw_flag)
+		if not flag_id.is_empty():
+			GameState.set_story_flag(flag_id)
+	for raw_delta in payload.get("relation_deltas", []):
+		var relation_delta: Dictionary = Dictionary(raw_delta).duplicate(true)
+		var actor_a := String(relation_delta.get("actor_a", ""))
+		var actor_b := String(relation_delta.get("actor_b", ""))
+		if actor_a.is_empty() or actor_b.is_empty():
+			continue
+		GameState.apply_social_relation_delta(actor_a, actor_b, relation_delta)
+	if not current_visit_habitat_id.is_empty():
+		GameState.add_weekly_progress("fish_count", 1)
+	_check_active_quests()
+
 func _on_decision_choice_selected(choice_id: String) -> void:
 	if pending_context.is_empty():
 		return
@@ -2306,6 +2379,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 					visit_flow.open_dojo_menu()
 				"observe":
 					visit_flow.start_observation()
+				"fishing_menu":
+					_show_fishing_menu()
 				"mail_menu":
 					_show_mail_menu()
 		"resident_select":
@@ -2326,6 +2401,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 				_try_accept_quest(choice_id.trim_prefix("quest:"))
 		"dojo_menu":
 			visit_flow.choose_dojo_tier(choice_id)
+		"fishing_menu":
+			_show_fishing_result(fishing_service.resolve_fishing_choice(current_visit_habitat_id, choice_id))
 		"team_manage":
 			match choice_id:
 				"battle_0":
@@ -3262,6 +3339,9 @@ func _social_actor_label(actor_id: String) -> String:
 	var species := DataRepository.get_species(normalized)
 	if not species.is_empty():
 		return String(species.get("name", normalized))
+	var aquatic_species := DataRepository.get_aquatic_species(normalized)
+	if not aquatic_species.is_empty():
+		return String(aquatic_species.get("name", normalized))
 	return normalized
 
 func _relation_stat_label(stat_key: String) -> String:
@@ -4240,6 +4320,14 @@ func _build_backpack_section_lines() -> Array[String]:
 	lines.append("[b]钱包[/b] %d 金 ｜ [b]银行[/b] %d 金" % [GameState.wallet_gold, GameState.bank_gold])
 	lines.append("[b]地点状态[/b]")
 	lines.append_array(_location_status_lines())
+	var fishing_records: Dictionary = Dictionary(GameState.quest_memory.get("fishing_records", {})).duplicate(true)
+	var released_aquatics: Dictionary = Dictionary(GameState.quest_memory.get("released_aquatic_species", {})).duplicate(true)
+	if not fishing_records.is_empty() or not released_aquatics.is_empty():
+		var released_total := 0
+		for species_id in released_aquatics.keys():
+			released_total += int(released_aquatics.get(species_id, 0))
+		lines.append("")
+		lines.append("[b]垂钓记录[/b] 已记录 %d 种水域生物 ｜ 放流 %d 次" % [fishing_records.size(), released_total])
 	lines.append("")
 	lines.append("[b]生物图鉴[/b] %d / %d" % [_count_unlocked_codex_entries(), DataRepository.codex_entries.size()])
 	lines.append("图鉴入口已收进背包 / 手册；宠物编成请看宠物栏。切到 [b]生物图鉴[/b] 页签即可查看。")

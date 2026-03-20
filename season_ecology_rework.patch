@@ -1,0 +1,4310 @@
+diff --git a/data/season_rules.json b/data/season_rules.json
+index 5e7b276..0d1f13c 100644
+--- a/data/season_rules.json
++++ b/data/season_rules.json
+@@ -1,155 +1 @@
+-{
+-  "version": 1,
+-  "seasons": [
+-    {
+-      "id": "spring",
+-      "name": "春芽季",
+-      "days": 25,
+-      "region_id": "spring_frontier",
+-      "weekly_reroll_limit": 1,
+-      "season_adjust_points": 3,
+-      "season_goal": "稳住据点建设与基础养成，准备第一次阶段压力。",
+-      "weekly_summary": "春季每 5 回合进行一次补给与周目标结算。",
+-      "weather_pool": [
+-        "clear",
+-        "drizzle",
+-        "mist"
+-      ],
+-      "unlock_habitats": [
+-        "tidal_sprout_shore"
+-      ],
+-      "lock_habitats": [
+-        "frost_mirror_lake"
+-      ],
+-      "event_tags": [
+-        "spring",
+-        "growth",
+-        "nursery"
+-      ],
+-      "resource_bonus": {
+-        "soft_moss": 1,
+-        "dew_crystal": 1
+-      },
+-      "dojo_rotation": [
+-        "spring_bloom_trial"
+-      ],
+-      "objective_tags": [
+-        "build",
+-        "bond",
+-        "observe"
+-      ]
+-    },
+-    {
+-      "id": "summer",
+-      "name": "盛雷季",
+-      "days": 25,
+-      "region_id": "summer_stormway",
+-      "weekly_reroll_limit": 1,
+-      "season_adjust_points": 3,
+-      "season_goal": "让构筑真正成型，并在高压路线里维持节奏。",
+-      "weekly_summary": "盛雷季每周都会刷新挑战路线和补给节奏。",
+-      "weather_pool": [
+-        "clear",
+-        "storm",
+-        "humid"
+-      ],
+-      "unlock_habitats": [
+-        "thunder_meadow"
+-      ],
+-      "lock_habitats": [
+-        "frost_mirror_lake"
+-      ],
+-      "event_tags": [
+-        "summer",
+-        "training",
+-        "storm"
+-      ],
+-      "resource_bonus": {
+-        "spark_reed": 1,
+-        "warm_stone": 1
+-      },
+-      "dojo_rotation": [
+-        "summer_storm_trial"
+-      ],
+-      "objective_tags": [
+-        "encounter",
+-        "visit",
+-        "build"
+-      ]
+-    },
+-    {
+-      "id": "autumn",
+-      "name": "赤叶季",
+-      "days": 25,
+-      "region_id": "autumn_forgepath",
+-      "weekly_reroll_limit": 1,
+-      "season_adjust_points": 3,
+-      "season_goal": "围绕试炼与成长路线，完成中后期 build 验收。",
+-      "weekly_summary": "赤叶季每周都应有一次构筑冲刺或试炼尝试。",
+-      "weather_pool": [
+-        "clear",
+-        "windy",
+-        "dry"
+-      ],
+-      "unlock_habitats": [
+-        "autumn_leaf_dojo"
+-      ],
+-      "lock_habitats": [],
+-      "event_tags": [
+-        "autumn",
+-        "harvest",
+-        "duel"
+-      ],
+-      "resource_bonus": {
+-        "amber_resin": 1,
+-        "tea_leaf": 1
+-      },
+-      "dojo_rotation": [
+-        "autumn_leaf_dojo"
+-      ],
+-      "objective_tags": [
+-        "dojo",
+-        "growth",
+-        "social"
+-      ]
+-    },
+-    {
+-      "id": "winter",
+-      "name": "霜镜季",
+-      "days": 25,
+-      "region_id": "winter_mirrorway",
+-      "weekly_reroll_limit": 1,
+-      "season_adjust_points": 3,
+-      "season_goal": "维持终局稳态并完成年度远征。",
+-      "weekly_summary": "霜镜季每周都要在恢复与终局推进之间做取舍。",
+-      "weather_pool": [
+-        "snow",
+-        "clear",
+-        "mist"
+-      ],
+-      "unlock_habitats": [
+-        "frost_mirror_lake"
+-      ],
+-      "lock_habitats": [
+-        "tidal_sprout_shore"
+-      ],
+-      "event_tags": [
+-        "winter",
+-        "quiet",
+-        "observation"
+-      ],
+-      "resource_bonus": {
+-        "ice_glass": 1,
+-        "glow_dust": 1
+-      },
+-      "dojo_rotation": [
+-        "winter_mirror_trial"
+-      ],
+-      "objective_tags": [
+-        "observe",
+-        "visit",
+-        "build"
+-      ]
+-    }
+-  ]
+-}
++{"version": 1, "seasons": [{"id": "spring", "name": "春芽季", "days": 25, "region_id": "spring_frontier", "weekly_reroll_limit": 1, "season_adjust_points": 3, "season_goal": "主线推进不变；春芽季只额外提高育成型与成长型个体在前线地区的活跃度。", "weekly_summary": "春季仍按每 5 回合做补给与周目标结算，但季节主要影响生态权重而非主线开放。", "weather_pool": ["clear", "drizzle", "mist"], "unlock_habitats": [], "lock_habitats": [], "event_tags": ["spring", "growth", "nursery"], "resource_bonus": {"soft_moss": 1, "dew_crystal": 1}, "dojo_rotation": ["summer_storm_trial", "autumn_leaf_dojo"], "objective_tags": ["encounter", "observe", "build"]}, {"id": "summer", "name": "盛雷季", "days": 25, "region_id": "summer_stormway", "weekly_reroll_limit": 1, "season_adjust_points": 3, "season_goal": "主线推进不变；盛雷季只额外提高雷原与训练路线个体的出现权重。", "weekly_summary": "盛雷季继续提供天气与资源偏向，但不再重置主线路线与道馆可玩性。", "weather_pool": ["clear", "storm", "humid"], "unlock_habitats": [], "lock_habitats": [], "event_tags": ["summer", "training", "storm"], "resource_bonus": {"spark_reed": 1, "warm_stone": 1}, "dojo_rotation": ["summer_storm_trial", "autumn_leaf_dojo"], "objective_tags": ["encounter", "observe", "build"]}, {"id": "autumn", "name": "赤叶季", "days": 25, "region_id": "autumn_forgepath", "weekly_reroll_limit": 1, "season_adjust_points": 3, "season_goal": "主线推进不变；赤叶季只额外提高演武、回响与异常线索的出现权重。", "weekly_summary": "赤叶季继续提供演武与观察偏向，但不再作为道馆的唯一开放条件。", "weather_pool": ["clear", "windy", "dry"], "unlock_habitats": [], "lock_habitats": [], "event_tags": ["autumn", "harvest", "duel"], "resource_bonus": {"amber_resin": 1, "tea_leaf": 1}, "dojo_rotation": ["summer_storm_trial", "autumn_leaf_dojo"], "objective_tags": ["encounter", "observe", "build"]}, {"id": "winter", "name": "霜镜季", "days": 25, "region_id": "winter_mirrorway", "weekly_reroll_limit": 1, "season_adjust_points": 3, "season_goal": "主线推进不变；霜镜季只额外提高静观、稀有倒影与神兽线索的出现权重。", "weekly_summary": "霜镜季继续提供静观与高稀有偏向，但不再强制锁住主要地区。", "weather_pool": ["snow", "clear", "mist"], "unlock_habitats": [], "lock_habitats": [], "event_tags": ["winter", "quiet", "observation"], "resource_bonus": {"ice_glass": 1, "glow_dust": 1}, "dojo_rotation": ["summer_storm_trial", "autumn_leaf_dojo"], "objective_tags": ["encounter", "observe", "build"]}]}
+\ No newline at end of file
+diff --git a/data/habitats.json b/data/habitats.json
+index 4d49d91..69c1893 100644
+--- a/data/habitats.json
++++ b/data/habitats.json
+@@ -1,532 +1 @@
+-{
+-  "version": 1,
+-  "habitats": [
+-    {
+-      "id": "mist_moss_cave",
+-      "name": "雾岚镇保育中心",
+-      "type": "habitat",
+-      "biome": "cold_cave",
+-      "mood_tags": [
+-        "安静",
+-        "保温",
+-        "孵育"
+-      ],
+-      "travel_cost": 1,
+-      "resident_slots": 1,
+-      "support_slots": 1,
+-      "resident_preferences": [
+-        "moss",
+-        "burrow",
+-        "warmth"
+-      ],
+-      "buildings": [
+-        "warm_nest",
+-        "moss_bed",
+-        "nursery_corner"
+-      ],
+-      "npc_pool": [
+-        "moss_keeper",
+-        "lost_apprentice"
+-      ],
+-      "wild_pool": [
+-        "moss_puff",
+-        "cave_sniffer",
+-        "dew_slug"
+-      ],
+-      "visit_actions": [
+-        "care",
+-        "build",
+-        "talk",
+-        "observe",
+-        "forage"
+-      ],
+-      "unlock_rule": {
+-        "type": "default"
+-      },
+-      "seasonal_hooks": {
+-        "spring": [
+-          "幼体孵化率提升"
+-        ],
+-        "rain": [
+-          "软苔采集量提升"
+-        ],
+-        "winter": [
+-          "保温需求上升"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "crystal_creek",
+-      "name": "晶溪滨河区",
+-      "type": "habitat",
+-      "biome": "waterside",
+-      "mood_tags": [
+-        "清爽",
+-        "晒暖",
+-        "安居"
+-      ],
+-      "travel_cost": 1,
+-      "resident_slots": 1,
+-      "support_slots": 1,
+-      "resident_preferences": [
+-        "water",
+-        "stone",
+-        "cleaner"
+-      ],
+-      "buildings": [
+-        "shallow_pool",
+-        "sun_drying_rack",
+-        "reed_shed"
+-      ],
+-      "npc_pool": [
+-        "washer_grandma",
+-        "stone_trader"
+-      ],
+-      "wild_pool": [
+-        "shell_pup",
+-        "ripple_slime",
+-        "stream_glider"
+-      ],
+-      "visit_actions": [
+-        "care",
+-        "build",
+-        "talk",
+-        "observe",
+-        "fish"
+-      ],
+-      "unlock_rule": {
+-        "type": "default"
+-      },
+-      "seasonal_hooks": {
+-        "summer": [
+-          "河岸处理台产出提升"
+-        ],
+-        "fog": [
+-          "稀有个体更易出现"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "sky_post",
+-      "name": "云升转运镇",
+-      "type": "settlement",
+-      "biome": "highroad",
+-      "mood_tags": [
+-        "往来",
+-        "休息",
+-        "传闻"
+-      ],
+-      "travel_cost": 1,
+-      "resident_slots": 0,
+-      "support_slots": 0,
+-      "resident_preferences": [],
+-      "buildings": [
+-        "tea_shed",
+-        "boarding_pen",
+-        "message_board"
+-      ],
+-      "npc_pool": [
+-        "innkeeper_yun",
+-        "boarder_liu",
+-        "traveling_peddler"
+-      ],
+-      "wild_pool": [],
+-      "visit_actions": [
+-        "rest",
+-        "trade",
+-        "quest",
+-        "talk",
+-        "mail"
+-      ],
+-      "unlock_rule": {
+-        "type": "default"
+-      },
+-      "seasonal_hooks": {
+-        "storm": [
+-          "巡游 NPC 更常停留"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "ancient_platform",
+-      "name": "北城城市监测站",
+-      "type": "habitat",
+-      "biome": "ruin",
+-      "mood_tags": [
+-        "探索",
+-        "发现",
+-        "微神秘"
+-      ],
+-      "travel_cost": 2,
+-      "resident_slots": 1,
+-      "support_slots": 1,
+-      "resident_preferences": [
+-        "curious",
+-        "spark",
+-        "machine"
+-      ],
+-      "buildings": [
+-        "watch_tower",
+-        "repair_bench",
+-        "echo_room"
+-      ],
+-      "npc_pool": [
+-        "ruin_restorer",
+-        "field_recorder"
+-      ],
+-      "wild_pool": [
+-        "spark_mite",
+-        "gear_finch",
+-        "glow_moth"
+-      ],
+-      "visit_actions": [
+-        "care",
+-        "build",
+-        "talk",
+-        "observe",
+-        "repair"
+-      ],
+-      "unlock_rule": {
+-        "type": "quest",
+-        "quest_id": "open_platform"
+-      },
+-      "seasonal_hooks": {
+-        "aurora": [
+-          "信号回放室事件概率提升"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "copper_hammer_bazaar",
+-      "name": "铜锤机修市",
+-      "type": "settlement",
+-      "biome": "workshop",
+-      "mood_tags": [
+-        "热闹",
+-        "手作",
+-        "交换"
+-      ],
+-      "travel_cost": 1,
+-      "resident_slots": 0,
+-      "support_slots": 0,
+-      "resident_preferences": [],
+-      "buildings": [
+-        "tool_shelf",
+-        "repair_counter",
+-        "display_corner"
+-      ],
+-      "npc_pool": [
+-        "tinker_bo",
+-        "smith_ya",
+-        "parts_vendor"
+-      ],
+-      "wild_pool": [],
+-      "visit_actions": [
+-        "trade",
+-        "craft",
+-        "quest",
+-        "decorate",
+-        "talk"
+-      ],
+-      "unlock_rule": {
+-        "type": "default"
+-      },
+-      "seasonal_hooks": {
+-        "festival": [
+-          "装饰与交换任务增加"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "radiant_spire",
+-      "name": "裂辉封控塔区",
+-      "type": "anomaly",
+-      "biome": "anomaly",
+-      "mood_tags": [
+-        "异常",
+-        "救助",
+-        "高风险"
+-      ],
+-      "travel_cost": 3,
+-      "resident_slots": 0,
+-      "support_slots": 0,
+-      "resident_preferences": [],
+-      "buildings": [],
+-      "npc_pool": [
+-        "anomaly_researcher"
+-      ],
+-      "wild_pool": [
+-        "rift_fawn",
+-        "lumen_howler"
+-      ],
+-      "visit_actions": [
+-        "rescue",
+-        "stabilize",
+-        "observe"
+-      ],
+-      "unlock_rule": {
+-        "type": "season_progress",
+-        "required_habitat_rank": 3,
+-        "required_trust_total": 8
+-      },
+-      "seasonal_hooks": {
+-        "eclipse": [
+-          "异常波动更强，但稀有奖励更好"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "thunder_meadow",
+-      "name": "雷驰训练公园",
+-      "type": "habitat",
+-      "biome": "storm_field",
+-      "mood_tags": [
+-        "训练",
+-        "迅疾",
+-        "雷鸣"
+-      ],
+-      "travel_cost": 2,
+-      "resident_slots": 1,
+-      "support_slots": 1,
+-      "resident_preferences": [
+-        "speed",
+-        "storm",
+-        "training"
+-      ],
+-      "buildings": [],
+-      "npc_pool": [],
+-      "wild_pool": [
+-        "gear_finch",
+-        "storm_ram"
+-      ],
+-      "visit_actions": [
+-        "care",
+-        "observe",
+-        "challenge"
+-      ],
+-      "unlock_rule_id": "unlock_thunder_meadow",
+-      "season_availability": [
+-        "summer"
+-      ],
+-      "dojo_id": "summer_storm_trial",
+-      "recommended_rank": 2,
+-      "flow_band": "mid_pressure",
+-      "seasonal_events": [
+-        "summer_training",
+-        "storm_observation"
+-      ],
+-      "seasonal_resources": [
+-        "spark_reed",
+-        "warm_stone"
+-      ],
+-      "mda_role": "growth",
+-      "seasonal_hooks": {
+-        "summer": [
+-          "雷暴后更容易出现训练型个体"
+-        ],
+-        "storm": [
+-          "挑战奖励的季节点数会被强调"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "autumn_leaf_dojo",
+-      "name": "赤叶竞技馆",
+-      "type": "dojo",
+-      "biome": "red_forest",
+-      "mood_tags": [
+-        "试炼",
+-        "对决",
+-        "掌控"
+-      ],
+-      "travel_cost": 2,
+-      "resident_slots": 0,
+-      "support_slots": 0,
+-      "resident_preferences": [],
+-      "buildings": [],
+-      "npc_pool": [],
+-      "wild_pool": [],
+-      "visit_actions": [
+-        "challenge",
+-        "talk"
+-      ],
+-      "unlock_rule_id": "unlock_autumn_leaf_dojo",
+-      "season_availability": [
+-        "autumn"
+-      ],
+-      "dojo_id": "autumn_leaf_dojo",
+-      "recommended_rank": 3,
+-      "flow_band": "high_pressure",
+-      "seasonal_events": [
+-        "autumn_duel",
+-        "mentor_visit"
+-      ],
+-      "seasonal_resources": [
+-        "amber_resin",
+-        "tea_leaf"
+-      ],
+-      "mda_role": "mastery",
+-      "seasonal_hooks": {
+-        "autumn": [
+-          "演武场开放，适合验证当前 build"
+-        ],
+-        "windy": [
+-          "对决修正更偏向精准与控制"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "frost_mirror_lake",
+-      "name": "霜镜静养中心",
+-      "type": "habitat",
+-      "biome": "ice_lake",
+-      "mood_tags": [
+-        "静观",
+-        "寒霜",
+-        "安抚"
+-      ],
+-      "travel_cost": 2,
+-      "resident_slots": 1,
+-      "support_slots": 1,
+-      "resident_preferences": [
+-        "calm",
+-        "ice",
+-        "reflection"
+-      ],
+-      "buildings": [],
+-      "npc_pool": [],
+-      "wild_pool": [
+-        "glaze_crane",
+-        "shell_pup"
+-      ],
+-      "visit_actions": [
+-        "care",
+-        "observe",
+-        "calm"
+-      ],
+-      "unlock_rule_id": "unlock_frost_mirror_lake",
+-      "season_availability": [
+-        "winter"
+-      ],
+-      "dojo_id": "",
+-      "recommended_rank": 3,
+-      "flow_band": "low_pressure",
+-      "seasonal_events": [
+-        "winter_reflection",
+-        "rare_observe"
+-      ],
+-      "seasonal_resources": [
+-        "ice_glass",
+-        "glow_dust"
+-      ],
+-      "mda_role": "recovery",
+-      "seasonal_hooks": {
+-        "winter": [
+-          "更适合进行高价值的低压观察"
+-        ],
+-        "snow": [
+-          "稀有倒影事件概率提升"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "echo_broken_bridge",
+-      "name": "回声中转桥区",
+-      "type": "settlement",
+-      "biome": "broken_bridge",
+-      "mood_tags": [
+-        "中转",
+-        "回响",
+-        "捷径"
+-      ],
+-      "travel_cost": 2,
+-      "resident_slots": 0,
+-      "support_slots": 0,
+-      "resident_preferences": [],
+-      "buildings": [],
+-      "npc_pool": [],
+-      "wild_pool": [
+-        "gear_finch",
+-        "glow_moth"
+-      ],
+-      "visit_actions": [
+-        "observe",
+-        "rest",
+-        "mail"
+-      ],
+-      "unlock_rule_id": "unlock_echo_bridge",
+-      "season_availability": [],
+-      "dojo_id": "",
+-      "recommended_rank": 3,
+-      "flow_band": "mid_pressure",
+-      "seasonal_events": [
+-        "echo_route",
+-        "shortcut_notice"
+-      ],
+-      "seasonal_resources": [
+-        "parts",
+-        "paper"
+-      ],
+-      "mda_role": "routing",
+-      "seasonal_hooks": {
+-        "autumn": [
+-          "通往异常区的消息和脚印变多了"
+-        ],
+-        "winter": [
+-          "断桥边会留下更明显的回响线索"
+-        ]
+-      }
+-    },
+-    {
+-      "id": "radiant_observatory",
+-      "name": "裂辉观测中心",
+-      "type": "anomaly",
+-      "biome": "observatory",
+-      "mood_tags": [
+-        "观测",
+-        "异常",
+-        "高压"
+-      ],
+-      "travel_cost": 3,
+-      "resident_slots": 0,
+-      "support_slots": 0,
+-      "resident_preferences": [],
+-      "buildings": [],
+-      "npc_pool": [],
+-      "wild_pool": [
+-        "glow_moth",
+-        "lumen_howler"
+-      ],
+-      "visit_actions": [
+-        "observe",
+-        "stabilize",
+-        "rescue"
+-      ],
+-      "unlock_rule_id": "unlock_radiant_observatory",
+-      "season_availability": [
+-        "autumn",
+-        "winter"
+-      ],
+-      "dojo_id": "",
+-      "recommended_rank": 4,
+-      "flow_band": "high_pressure",
+-      "seasonal_events": [
+-        "aurora_scan",
+-        "rare_rescue"
+-      ],
+-      "seasonal_resources": [
+-        "glow_dust",
+-        "stability_shard"
+-      ],
+-      "mda_role": "mastery",
+-      "seasonal_hooks": {
+-        "autumn": [
+-          "城市监测塔会放大季末异常波动"
+-        ],
+-        "winter": [
+-          "高阶救助与观测事件更容易出现"
+-        ]
+-      }
+-    }
+-  ]
+-}
++{"version": 1, "habitats": [{"id": "mist_moss_cave", "name": "雾岚镇保育中心", "type": "habitat", "biome": "cold_cave", "mood_tags": ["安静", "保温", "孵育"], "travel_cost": 1, "resident_slots": 1, "support_slots": 1, "resident_preferences": ["moss", "burrow", "warmth"], "buildings": ["warm_nest", "moss_bed", "nursery_corner"], "npc_pool": ["moss_keeper", "lost_apprentice"], "wild_pool": ["moss_puff", "cave_sniffer", "dew_slug"], "visit_actions": ["care", "build", "talk", "observe", "forage"], "unlock_rule": {"type": "default"}, "seasonal_hooks": {"spring": ["幼体孵化率提升"], "rain": ["软苔采集量提升"], "winter": ["保温需求上升"]}}, {"id": "crystal_creek", "name": "晶溪滨河区", "type": "habitat", "biome": "waterside", "mood_tags": ["清爽", "晒暖", "安居"], "travel_cost": 1, "resident_slots": 1, "support_slots": 1, "resident_preferences": ["water", "stone", "cleaner"], "buildings": ["shallow_pool", "sun_drying_rack", "reed_shed"], "npc_pool": ["washer_grandma", "stone_trader"], "wild_pool": ["shell_pup", "ripple_slime", "stream_glider"], "visit_actions": ["care", "build", "talk", "observe", "fish"], "unlock_rule": {"type": "default"}, "seasonal_hooks": {"summer": ["河岸处理台产出提升"], "fog": ["稀有个体更易出现"]}}, {"id": "sky_post", "name": "云升转运镇", "type": "settlement", "biome": "highroad", "mood_tags": ["往来", "休息", "传闻"], "travel_cost": 1, "resident_slots": 0, "support_slots": 0, "resident_preferences": [], "buildings": ["tea_shed", "boarding_pen", "message_board"], "npc_pool": ["innkeeper_yun", "boarder_liu", "traveling_peddler"], "wild_pool": [], "visit_actions": ["rest", "trade", "quest", "talk", "mail"], "unlock_rule": {"type": "default"}, "seasonal_hooks": {"storm": ["巡游 NPC 更常停留"]}}, {"id": "ancient_platform", "name": "北城城市监测站", "type": "habitat", "biome": "ruin", "mood_tags": ["探索", "发现", "微神秘"], "travel_cost": 2, "resident_slots": 1, "support_slots": 1, "resident_preferences": ["curious", "spark", "machine"], "buildings": ["watch_tower", "repair_bench", "echo_room"], "npc_pool": ["ruin_restorer", "field_recorder"], "wild_pool": ["spark_mite", "gear_finch", "glow_moth"], "visit_actions": ["care", "build", "talk", "observe", "repair"], "unlock_rule": {"type": "quest", "quest_id": "open_platform"}, "seasonal_hooks": {"aurora": ["信号回放室事件概率提升"]}}, {"id": "copper_hammer_bazaar", "name": "铜锤机修市", "type": "settlement", "biome": "workshop", "mood_tags": ["热闹", "手作", "交换"], "travel_cost": 1, "resident_slots": 0, "support_slots": 0, "resident_preferences": [], "buildings": ["tool_shelf", "repair_counter", "display_corner"], "npc_pool": ["tinker_bo", "smith_ya", "parts_vendor"], "wild_pool": [], "visit_actions": ["trade", "craft", "quest", "decorate", "talk"], "unlock_rule": {"type": "default"}, "seasonal_hooks": {"festival": ["装饰与交换任务增加"]}}, {"id": "radiant_spire", "name": "裂辉封控塔区", "type": "anomaly", "biome": "anomaly", "mood_tags": ["异常", "救助", "高风险"], "travel_cost": 3, "resident_slots": 0, "support_slots": 0, "resident_preferences": [], "buildings": [], "npc_pool": ["anomaly_researcher"], "wild_pool": ["rift_fawn", "lumen_howler"], "visit_actions": ["rescue", "stabilize", "observe"], "unlock_rule": {"type": "season_progress", "required_habitat_rank": 3, "required_trust_total": 8}, "seasonal_hooks": {"eclipse": ["异常波动更强，但稀有奖励更好"]}}, {"id": "thunder_meadow", "name": "雷驰训练公园", "type": "habitat", "biome": "storm_field", "mood_tags": ["训练", "迅疾", "雷鸣"], "travel_cost": 2, "resident_slots": 1, "support_slots": 1, "resident_preferences": ["speed", "storm", "training"], "buildings": [], "npc_pool": [], "wild_pool": ["gear_finch", "storm_ram"], "visit_actions": ["care", "observe", "challenge"], "unlock_rule_id": "unlock_thunder_meadow", "season_availability": [], "dojo_id": "summer_storm_trial", "recommended_rank": 2, "flow_band": "mid_pressure", "seasonal_events": ["summer_training", "storm_observation"], "seasonal_resources": ["spark_reed", "warm_stone"], "mda_role": "growth", "seasonal_hooks": {"summer": ["训练型与雷暴相关个体权重提升，道馆全年可挑战。"], "storm": ["暴风天气会额外提高高阶雷系个体的出现权重。"]}}, {"id": "autumn_leaf_dojo", "name": "赤叶竞技馆", "type": "dojo", "biome": "red_forest", "mood_tags": ["试炼", "对决", "掌控"], "travel_cost": 2, "resident_slots": 0, "support_slots": 0, "resident_preferences": [], "buildings": [], "npc_pool": [], "wild_pool": [], "visit_actions": ["challenge", "talk"], "unlock_rule_id": "unlock_autumn_leaf_dojo", "season_availability": [], "dojo_id": "autumn_leaf_dojo", "recommended_rank": 3, "flow_band": "high_pressure", "seasonal_events": ["autumn_duel", "mentor_visit"], "seasonal_resources": ["amber_resin", "tea_leaf"], "mda_role": "mastery", "seasonal_hooks": {"autumn": ["导师拜访与演武素材更活跃，道馆全年开放。"], "windy": ["对决修正更偏向精准与控制，稀有见习者更常现身。"]}}, {"id": "frost_mirror_lake", "name": "霜镜静养中心", "type": "habitat", "biome": "ice_lake", "mood_tags": ["静观", "寒霜", "安抚"], "travel_cost": 2, "resident_slots": 1, "support_slots": 1, "resident_preferences": ["calm", "ice", "reflection"], "buildings": [], "npc_pool": [], "wild_pool": ["glaze_crane", "shell_pup"], "visit_actions": ["care", "observe", "calm"], "unlock_rule_id": "unlock_frost_mirror_lake", "season_availability": [], "dojo_id": "", "recommended_rank": 3, "flow_band": "low_pressure", "seasonal_events": ["winter_reflection", "rare_observe"], "seasonal_resources": ["ice_glass", "glow_dust"], "mda_role": "recovery", "seasonal_hooks": {"winter": ["镜面观测与高稀有个体权重提升，湖区不再季节性关闭。"], "snow": ["稀有倒影事件与神兽线索概率提升。"]}}, {"id": "echo_broken_bridge", "name": "回声中转桥区", "type": "settlement", "biome": "broken_bridge", "mood_tags": ["中转", "回响", "捷径"], "travel_cost": 2, "resident_slots": 0, "support_slots": 0, "resident_preferences": [], "buildings": [], "npc_pool": [], "wild_pool": ["gear_finch", "glow_moth"], "visit_actions": ["observe", "rest", "mail"], "unlock_rule_id": "unlock_echo_bridge", "season_availability": [], "dojo_id": "", "recommended_rank": 3, "flow_band": "mid_pressure", "seasonal_events": ["echo_route", "shortcut_notice"], "seasonal_resources": ["parts", "paper"], "mda_role": "routing", "seasonal_hooks": {"autumn": ["通往异常区的消息和脚印变多了"], "winter": ["断桥边会留下更明显的回响线索"]}}, {"id": "radiant_observatory", "name": "裂辉观测中心", "type": "anomaly", "biome": "observatory", "mood_tags": ["观测", "异常", "高压"], "travel_cost": 3, "resident_slots": 0, "support_slots": 0, "resident_preferences": [], "buildings": [], "npc_pool": [], "wild_pool": ["glow_moth", "lumen_howler"], "visit_actions": ["observe", "stabilize", "rescue"], "unlock_rule_id": "unlock_radiant_observatory", "season_availability": [], "dojo_id": "", "recommended_rank": 4, "flow_band": "high_pressure", "seasonal_events": ["aurora_scan", "rare_rescue"], "seasonal_resources": ["glow_dust", "stability_shard"], "mda_role": "mastery", "seasonal_hooks": {"autumn": ["异常观测与裂隙仔鹿线索更容易出现。"], "winter": ["高阶观测、救助与神兽现身概率提升。"]}}]}
+\ No newline at end of file
+diff --git a/data/dojo_definitions.json b/data/dojo_definitions.json
+index 3e60a1b..24c72d4 100644
+--- a/data/dojo_definitions.json
++++ b/data/dojo_definitions.json
+@@ -1,146 +1 @@
+-{
+-  "version": 1,
+-  "dojos": [
+-    {
+-      "id": "summer_storm_trial",
+-      "name": "夏·鸣雷试炼",
+-      "location_id": "thunder_meadow",
+-      "season_tags": [
+-        "summer"
+-      ],
+-      "recommended_rank": 2,
+-      "entry_cost": {
+-        "spark_reed": 1
+-      },
+-      "rounds": [
+-        {
+-          "tier": "tier_1",
+-          "enemy_pool": [
+-            "spark_mouse_1",
+-            "volt_carp_1"
+-          ],
+-          "modifiers": [
+-            "speed_up"
+-          ]
+-        },
+-        {
+-          "tier": "tier_2",
+-          "enemy_pool": [
+-            "spark_mouse_2",
+-            "storm_yak_1"
+-          ],
+-          "modifiers": [
+-            "speed_up",
+-            "storm_field"
+-          ]
+-        }
+-      ],
+-      "first_clear_rewards": {
+-        "tier_1": {
+-          "bundle_id": "dojo_summer_first_1"
+-        },
+-        "tier_2": {
+-          "bundle_id": "dojo_summer_first_2"
+-        }
+-      },
+-      "repeat_rewards": {
+-        "tier_1": {
+-          "bundle_id": "dojo_summer_repeat_1"
+-        },
+-        "tier_2": {
+-          "bundle_id": "dojo_summer_repeat_2"
+-        }
+-      },
+-      "failure_consolation": {
+-        "bundle_id": "dojo_failure_small"
+-      },
+-      "unlock_on_clear": {
+-        "tier_1": [
+-          "echo_broken_bridge"
+-        ],
+-        "tier_2": []
+-      },
+-      "ui_hint": "擅长速度与连击的队伍更容易通过。"
+-    },
+-    {
+-      "id": "autumn_leaf_dojo",
+-      "name": "秋·赤叶演武场",
+-      "location_id": "autumn_leaf_dojo",
+-      "season_tags": [
+-        "autumn"
+-      ],
+-      "recommended_rank": 3,
+-      "entry_cost": {
+-        "amber_resin": 1,
+-        "tea_leaf": 1
+-      },
+-      "rounds": [
+-        {
+-          "tier": "tier_1",
+-          "enemy_pool": [
+-            "bloom_lark_1",
+-            "moss_deer_1"
+-          ],
+-          "modifiers": [
+-            "precision_up"
+-          ]
+-        },
+-        {
+-          "tier": "tier_2",
+-          "enemy_pool": [
+-            "cedar_bear_1",
+-            "mind_owl_1"
+-          ],
+-          "modifiers": [
+-            "precision_up",
+-            "duel_rule"
+-          ]
+-        },
+-        {
+-          "tier": "tier_3",
+-          "enemy_pool": [
+-            "chapel_stag_2",
+-            "dusk_wolf_2"
+-          ],
+-          "modifiers": [
+-            "duel_rule",
+-            "pressure_field"
+-          ]
+-        }
+-      ],
+-      "first_clear_rewards": {
+-        "tier_1": {
+-          "bundle_id": "dojo_autumn_first_1"
+-        },
+-        "tier_2": {
+-          "bundle_id": "dojo_autumn_first_2"
+-        },
+-        "tier_3": {
+-          "bundle_id": "dojo_autumn_first_3"
+-        }
+-      },
+-      "repeat_rewards": {
+-        "tier_1": {
+-          "bundle_id": "dojo_autumn_repeat_1"
+-        },
+-        "tier_2": {
+-          "bundle_id": "dojo_autumn_repeat_2"
+-        },
+-        "tier_3": {
+-          "bundle_id": "dojo_autumn_repeat_3"
+-        }
+-      },
+-      "failure_consolation": {
+-        "bundle_id": "dojo_failure_medium"
+-      },
+-      "unlock_on_clear": {
+-        "tier_1": [],
+-        "tier_2": [
+-          "radiant_observatory"
+-        ],
+-        "tier_3": []
+-      },
+-      "ui_hint": "这是一个检验中后期 build 的主道馆。"
+-    }
+-  ]
+-}
++{"version": 1, "dojos": [{"id": "summer_storm_trial", "name": "夏·鸣雷试炼", "location_id": "thunder_meadow", "season_tags": [], "recommended_rank": 2, "entry_cost": {"spark_reed": 1}, "rounds": [{"tier": "tier_1", "enemy_pool": ["spark_mouse_1", "volt_carp_1"], "modifiers": ["speed_up"]}, {"tier": "tier_2", "enemy_pool": ["spark_mouse_2", "storm_yak_1"], "modifiers": ["speed_up", "storm_field"]}], "first_clear_rewards": {"tier_1": {"bundle_id": "dojo_summer_first_1"}, "tier_2": {"bundle_id": "dojo_summer_first_2"}}, "repeat_rewards": {"tier_1": {"bundle_id": "dojo_summer_repeat_1"}, "tier_2": {"bundle_id": "dojo_summer_repeat_2"}}, "failure_consolation": {"bundle_id": "dojo_failure_small"}, "unlock_on_clear": {"tier_1": [], "tier_2": ["echo_broken_bridge"]}, "ui_hint": "常驻雷原地区的速度试炼，偏向连击与节奏控制。"}, {"id": "autumn_leaf_dojo", "name": "秋·赤叶演武场", "location_id": "autumn_leaf_dojo", "season_tags": [], "recommended_rank": 3, "entry_cost": {"amber_resin": 1, "tea_leaf": 1}, "rounds": [{"tier": "tier_1", "enemy_pool": ["bloom_lark_1", "moss_deer_1"], "modifiers": ["precision_up"]}, {"tier": "tier_2", "enemy_pool": ["cedar_bear_1", "mind_owl_1"], "modifiers": ["precision_up", "duel_rule"]}, {"tier": "tier_3", "enemy_pool": ["chapel_stag_2", "dusk_wolf_2"], "modifiers": ["duel_rule", "pressure_field"]}], "first_clear_rewards": {"tier_1": {"bundle_id": "dojo_autumn_first_1"}, "tier_2": {"bundle_id": "dojo_autumn_first_2"}, "tier_3": {"bundle_id": "dojo_autumn_first_3"}}, "repeat_rewards": {"tier_1": {"bundle_id": "dojo_autumn_repeat_1"}, "tier_2": {"bundle_id": "dojo_autumn_repeat_2"}, "tier_3": {"bundle_id": "dojo_autumn_repeat_3"}}, "failure_consolation": {"bundle_id": "dojo_failure_medium"}, "unlock_on_clear": {"tier_1": [], "tier_2": ["radiant_observatory"], "tier_3": []}, "ui_hint": "常驻赤叶地区的主道馆，用于检验中后期 build。"}]}
+\ No newline at end of file
+diff --git a/data/habitat_unlock_rules.json b/data/habitat_unlock_rules.json
+index 518c1fd..c2bcac9 100644
+--- a/data/habitat_unlock_rules.json
++++ b/data/habitat_unlock_rules.json
+@@ -1,101 +1 @@
+-{
+-  "version": 1,
+-  "rules": [
+-    {
+-      "id": "unlock_tidal_sprout_shore",
+-      "habitat_id": "tidal_sprout_shore",
+-      "priority": 10,
+-      "unlock_text": "春芽季来临，潮芽浅滩退潮露出可行路径。",
+-      "conditions": [
+-        {
+-          "type": "season_is",
+-          "value": "spring"
+-        }
+-      ]
+-    },
+-    {
+-      "id": "unlock_thunder_meadow",
+-      "habitat_id": "thunder_meadow",
+-      "priority": 20,
+-      "unlock_text": "盛雷季的草场稳定下来，可以尝试进入训练。",
+-      "conditions": [
+-        {
+-          "type": "season_is",
+-          "value": "summer"
+-        },
+-        {
+-          "type": "habitat_rank_total_at_least",
+-          "value": 2
+-        }
+-      ]
+-    },
+-    {
+-      "id": "unlock_autumn_leaf_dojo",
+-      "habitat_id": "autumn_leaf_dojo",
+-      "priority": 30,
+-      "unlock_text": "赤叶演武场在秋季开门，完成一次二级建筑升级后可正式参战。",
+-      "conditions": [
+-        {
+-          "type": "season_is",
+-          "value": "autumn"
+-        },
+-        {
+-          "type": "built_level_at_least",
+-          "building_id": "warm_nest",
+-          "value": 2
+-        }
+-      ]
+-    },
+-    {
+-      "id": "unlock_frost_mirror_lake",
+-      "habitat_id": "frost_mirror_lake",
+-      "priority": 40,
+-      "unlock_text": "霜镜湖只在冬季可达，且需要足够的伙伴与 NPC 信赖。",
+-      "conditions": [
+-        {
+-          "type": "season_is",
+-          "value": "winter"
+-        },
+-        {
+-          "type": "trust_at_least",
+-          "value": 6
+-        }
+-      ]
+-    },
+-    {
+-      "id": "unlock_echo_bridge",
+-      "habitat_id": "echo_broken_bridge",
+-      "priority": 50,
+-      "unlock_text": "你已经证明了自己的试炼能力，回声断桥的封路被移开。",
+-      "conditions": [
+-        {
+-          "type": "dojo_cleared",
+-          "value": "summer_storm_trial:tier_1"
+-        },
+-        {
+-          "type": "dojo_cleared",
+-          "value": "autumn_leaf_dojo:tier_1"
+-        }
+-      ]
+-    },
+-    {
+-      "id": "unlock_radiant_observatory",
+-      "habitat_id": "radiant_observatory",
+-      "priority": 60,
+-      "unlock_text": "你获得了进入异常观测台的许可。",
+-      "conditions": [
+-        {
+-          "type": "season_in",
+-          "value": [
+-            "autumn",
+-            "winter"
+-          ]
+-        },
+-        {
+-          "type": "dojo_cleared",
+-          "value": "autumn_leaf_dojo:tier_2"
+-        }
+-      ]
+-    }
+-  ]
+-}
++{"version": 1, "rules": [{"id": "unlock_tidal_sprout_shore", "habitat_id": "tidal_sprout_shore", "priority": 10, "unlock_text": "春芽季来临，潮芽浅滩退潮露出可行路径。", "conditions": [{"type": "season_is", "value": "spring"}]}, {"id": "unlock_thunder_meadow", "habitat_id": "thunder_meadow", "priority": 20, "unlock_text": "雷驰训练公园已可勘察；总据点等级达到 2 后即可进入训练。", "conditions": [{"type": "habitat_rank_total_at_least", "value": 2}]}, {"id": "unlock_autumn_leaf_dojo", "habitat_id": "autumn_leaf_dojo", "priority": 30, "unlock_text": "赤叶演武场常驻开放，完成一次二级建筑升级后可正式参战。", "conditions": [{"type": "built_level_at_least", "building_id": "warm_nest", "value": 2}]}, {"id": "unlock_frost_mirror_lake", "habitat_id": "frost_mirror_lake", "priority": 40, "unlock_text": "你已获得前往霜镜湖的许可；只要伙伴与 NPC 信赖足够即可进入。", "conditions": [{"type": "trust_at_least", "value": 6}]}, {"id": "unlock_echo_bridge", "habitat_id": "echo_broken_bridge", "priority": 50, "unlock_text": "你已经证明了自己的试炼能力，回声断桥的封路被移开。", "conditions": [{"type": "dojo_cleared", "value": "summer_storm_trial:tier_2"}]}, {"id": "unlock_radiant_observatory", "habitat_id": "radiant_observatory", "priority": 60, "unlock_text": "你获得了进入异常观测台的许可。", "conditions": [{"type": "dojo_cleared", "value": "autumn_leaf_dojo:tier_2"}]}]}
+\ No newline at end of file
+diff --git a/data/encounter_tables.json b/data/encounter_tables.json
+index ccafc3b..46ce67e 100644
+--- a/data/encounter_tables.json
++++ b/data/encounter_tables.json
+@@ -1,240 +1 @@
+-{
+-  "version": 1,
+-  "encounters": [
+-    {
+-      "habitat_id": "mist_moss_cave",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "moss_puff",
+-              "weight": 50,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "cave_sniffer",
+-              "weight": 30,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "dew_slug",
+-              "weight": 20,
+-              "mood": "hungry"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "winter"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "moss_puff",
+-              "weight": 45,
+-              "mood": "cold"
+-            },
+-            {
+-              "species_id": "cave_sniffer",
+-              "weight": 35,
+-              "mood": "guarded"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "crystal_creek",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "weather": "clear"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "shell_pup",
+-              "weight": 45,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "stream_glider",
+-              "weight": 25,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "ripple_slime",
+-              "weight": 30,
+-              "mood": "hungry"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "weather": "fog"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "shell_pup",
+-              "weight": 35,
+-              "mood": "shy"
+-            },
+-            {
+-              "species_id": "stream_glider",
+-              "weight": 35,
+-              "mood": "curious"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "ancient_platform",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "time": "night"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "gear_finch",
+-              "weight": 35,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "glow_moth",
+-              "weight": 25,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "spark_mite",
+-              "weight": 40,
+-              "mood": "curious"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "radiant_spire",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "anomaly": "high"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "rift_fawn",
+-              "weight": 55,
+-              "mood": "fearful"
+-            },
+-            {
+-              "species_id": "lumen_howler",
+-              "weight": 20,
+-              "mood": "wild"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "thunder_meadow",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "gear_finch",
+-              "weight": 35,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "storm_ram",
+-              "weight": 45,
+-              "mood": "guarded"
+-            },
+-            {
+-              "species_id": "shell_pup",
+-              "weight": 20,
+-              "mood": "curious"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "frost_mirror_lake",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "winter"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "glaze_crane",
+-              "weight": 45,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "shell_pup",
+-              "weight": 25,
+-              "mood": "cold"
+-            },
+-            {
+-              "species_id": "moss_puff",
+-              "weight": 30,
+-              "mood": "calm"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "echo_broken_bridge",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "gear_finch",
+-              "weight": 40,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "glow_moth",
+-              "weight": 35,
+-              "mood": "fragile"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "radiant_observatory",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "winter"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "glow_moth",
+-              "weight": 35,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "lumen_howler",
+-              "weight": 30,
+-              "mood": "wild"
+-            }
+-          ]
+-        }
+-      ]
+-    }
+-  ]
+-}
++{"version": 1, "encounters": [{"habitat_id": "mist_moss_cave", "weight_groups": [{"when": {}, "entries": [{"species_id": "moss_puff", "weight": 7, "mood": "curious"}, {"species_id": "cave_sniffer", "weight": 5, "mood": "alert"}, {"species_id": "dew_slug", "weight": 3, "mood": "hungry"}, {"species_id": "moss_puff", "weight": 7, "mood": "cold"}, {"species_id": "cave_sniffer", "weight": 5, "mood": "guarded"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "moss_puff", "weight": 22, "mood": "curious"}, {"species_id": "cave_sniffer", "weight": 14, "mood": "alert"}, {"species_id": "dew_slug", "weight": 9, "mood": "hungry"}]}, {"when": {"season": "winter"}, "entries": [{"species_id": "moss_puff", "weight": 20, "mood": "cold"}, {"species_id": "cave_sniffer", "weight": 16, "mood": "guarded"}]}]}, {"habitat_id": "crystal_creek", "weight_groups": [{"when": {"weather": "clear"}, "entries": [{"species_id": "shell_pup", "weight": 45, "mood": "curious"}, {"species_id": "stream_glider", "weight": 25, "mood": "alert"}, {"species_id": "ripple_slime", "weight": 30, "mood": "hungry"}]}, {"when": {"weather": "fog"}, "entries": [{"species_id": "shell_pup", "weight": 35, "mood": "shy"}, {"species_id": "stream_glider", "weight": 35, "mood": "curious"}]}]}, {"habitat_id": "ancient_platform", "weight_groups": [{"when": {"time": "night"}, "entries": [{"species_id": "gear_finch", "weight": 35, "mood": "busy"}, {"species_id": "glow_moth", "weight": 25, "mood": "fragile"}, {"species_id": "spark_mite", "weight": 40, "mood": "curious"}]}]}, {"habitat_id": "radiant_spire", "weight_groups": [{"when": {"anomaly": "high"}, "entries": [{"species_id": "rift_fawn", "weight": 55, "mood": "fearful"}, {"species_id": "lumen_howler", "weight": 20, "mood": "wild"}]}]}, {"habitat_id": "thunder_meadow", "weight_groups": [{"when": {}, "entries": [{"species_id": "gear_finch", "weight": 20, "mood": "busy"}, {"species_id": "storm_ram", "weight": 25, "mood": "guarded"}, {"species_id": "shell_pup", "weight": 12, "mood": "curious"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "gear_finch", "weight": 16, "mood": "busy"}, {"species_id": "storm_ram", "weight": 20, "mood": "guarded"}, {"species_id": "shell_pup", "weight": 9, "mood": "curious"}]}]}, {"habitat_id": "frost_mirror_lake", "weight_groups": [{"when": {}, "entries": [{"species_id": "glaze_crane", "weight": 25, "mood": "fragile"}, {"species_id": "shell_pup", "weight": 14, "mood": "cold"}, {"species_id": "moss_puff", "weight": 17, "mood": "calm"}]}, {"when": {"season": "winter"}, "entries": [{"species_id": "glaze_crane", "weight": 20, "mood": "fragile"}, {"species_id": "shell_pup", "weight": 11, "mood": "cold"}, {"species_id": "moss_puff", "weight": 14, "mood": "calm"}]}]}, {"habitat_id": "echo_broken_bridge", "weight_groups": [{"when": {}, "entries": [{"species_id": "gear_finch", "weight": 22, "mood": "curious"}, {"species_id": "glow_moth", "weight": 20, "mood": "fragile"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "gear_finch", "weight": 18, "mood": "curious"}, {"species_id": "glow_moth", "weight": 16, "mood": "fragile"}]}]}, {"habitat_id": "radiant_observatory", "weight_groups": [{"when": {}, "entries": [{"species_id": "glow_moth", "weight": 20, "mood": "fragile"}, {"species_id": "lumen_howler", "weight": 17, "mood": "wild"}]}, {"when": {"season": "winter"}, "entries": [{"species_id": "glow_moth", "weight": 16, "mood": "fragile"}, {"species_id": "lumen_howler", "weight": 14, "mood": "wild"}]}]}]}
+\ No newline at end of file
+diff --git a/data/encounter_tables_mda.json b/data/encounter_tables_mda.json
+index 279c685..5bd2314 100644
+--- a/data/encounter_tables_mda.json
++++ b/data/encounter_tables_mda.json
+@@ -1,2987 +1 @@
+-{
+-  "version": 2,
+-  "schema": "mda_bond_encounters_v2",
+-  "encounters": [
+-    {
+-      "habitat_id": "mist_moss_cave",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "bloom_lark_1",
+-              "weight": 40,
+-              "mood": "lively"
+-            },
+-            {
+-              "species_id": "moss_deer_1",
+-              "weight": 40,
+-              "mood": "kind"
+-            },
+-            {
+-              "species_id": "pebble_mole_1",
+-              "weight": 40,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "bloom_turtle_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "cedar_bear_1",
+-              "weight": 34,
+-              "mood": "protective"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 34,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "shade_bat_1",
+-              "weight": 34,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "thorn_boar_1",
+-              "weight": 34,
+-              "mood": "stubborn"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "bloom_lark_1",
+-              "weight": 40,
+-              "mood": "lively"
+-            },
+-            {
+-              "species_id": "moss_deer_1",
+-              "weight": 40,
+-              "mood": "kind"
+-            },
+-            {
+-              "species_id": "pebble_mole_1",
+-              "weight": 40,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "bloom_turtle_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "cedar_bear_1",
+-              "weight": 34,
+-              "mood": "protective"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 34,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "shade_bat_1",
+-              "weight": 34,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "thorn_boar_1",
+-              "weight": 34,
+-              "mood": "stubborn"
+-            },
+-            {
+-              "species_id": "bloom_lark_2",
+-              "weight": 22,
+-              "mood": "lively"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "crystal_creek",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "reed_frog_1",
+-              "weight": 48,
+-              "mood": "gentle"
+-            },
+-            {
+-              "species_id": "steam_otter_1",
+-              "weight": 48,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "ice_seal_1",
+-              "weight": 42,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "tide_ray_1",
+-              "weight": 42,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 34,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 34,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "echo_snail_1",
+-              "weight": 34,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "volt_carp_1",
+-              "weight": 34,
+-              "mood": "rash"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "reed_frog_1",
+-              "weight": 48,
+-              "mood": "gentle"
+-            },
+-            {
+-              "species_id": "steam_otter_1",
+-              "weight": 48,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "ice_seal_1",
+-              "weight": 42,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "tide_ray_1",
+-              "weight": 42,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 34,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 34,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "echo_snail_1",
+-              "weight": 34,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "volt_carp_1",
+-              "weight": 34,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_1",
+-              "weight": 32,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "marsh_slime_1",
+-              "weight": 32,
+-              "mood": "hungry"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "sky_post",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "breeze_swallow_1",
+-              "weight": 40,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "embercat_1",
+-              "weight": 40,
+-              "mood": "brave"
+-            },
+-            {
+-              "species_id": "prism_hare_1",
+-              "weight": 40,
+-              "mood": "cheerful"
+-            },
+-            {
+-              "species_id": "spark_mouse_1",
+-              "weight": 40,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "flare_rooster_1",
+-              "weight": 34,
+-              "mood": "proud"
+-            },
+-            {
+-              "species_id": "iron_pigeon_1",
+-              "weight": 34,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "shale_ram_1",
+-              "weight": 34,
+-              "mood": "bold"
+-            },
+-            {
+-              "species_id": "storm_yak_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "breeze_swallow_1",
+-              "weight": 40,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "embercat_1",
+-              "weight": 40,
+-              "mood": "brave"
+-            },
+-            {
+-              "species_id": "prism_hare_1",
+-              "weight": 40,
+-              "mood": "cheerful"
+-            },
+-            {
+-              "species_id": "spark_mouse_1",
+-              "weight": 40,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "flare_rooster_1",
+-              "weight": 34,
+-              "mood": "proud"
+-            },
+-            {
+-              "species_id": "iron_pigeon_1",
+-              "weight": 34,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "shale_ram_1",
+-              "weight": 34,
+-              "mood": "bold"
+-            },
+-            {
+-              "species_id": "storm_yak_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "breeze_swallow_2",
+-              "weight": 22,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "embercat_2",
+-              "weight": 22,
+-              "mood": "brave"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "ancient_platform",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "gear_hound_1",
+-              "weight": 40,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "pebble_mole_1",
+-              "weight": 40,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 34,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "echo_snail_1",
+-              "weight": 34,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 34,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "mind_owl_1",
+-              "weight": 34,
+-              "mood": "wise"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 34,
+-              "mood": "busy"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "gear_hound_1",
+-              "weight": 40,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "pebble_mole_1",
+-              "weight": 40,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 34,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "echo_snail_1",
+-              "weight": 34,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 34,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "mind_owl_1",
+-              "weight": 34,
+-              "mood": "wise"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 34,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "ruin_gecko_1",
+-              "weight": 24,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "gear_hound_2",
+-              "weight": 22,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "pebble_mole_2",
+-              "weight": 22,
+-              "mood": "patient"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 34,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "echo_snail_1",
+-              "weight": 34,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 34,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "mind_owl_1",
+-              "weight": 34,
+-              "mood": "wise"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 34,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "ruin_gecko_1",
+-              "weight": 24,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "gear_hound_2",
+-              "weight": 22,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "pebble_mole_2",
+-              "weight": 22,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "coil_lizard_2",
+-              "weight": 12,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "echo_snail_2",
+-              "weight": 12,
+-              "mood": "slow"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "time": "night"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "coil_lizard_2",
+-              "weight": 32,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "echo_snail_2",
+-              "weight": 32,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "forge_beetle_2",
+-              "weight": 32,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "gear_hound_2",
+-              "weight": 32,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "mind_owl_2",
+-              "weight": 32,
+-              "mood": "wise"
+-            },
+-            {
+-              "species_id": "ruin_gecko_2",
+-              "weight": 32,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "rune_ant_2",
+-              "weight": 32,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 28,
+-              "mood": "alert"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "weather": "clear"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "coil_lizard_2",
+-              "weight": 32,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "forge_beetle_2",
+-              "weight": 32,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "gear_hound_2",
+-              "weight": 32,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "rune_ant_2",
+-              "weight": 32,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 28,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 28,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "gear_hound_1",
+-              "weight": 28,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 28,
+-              "mood": "busy"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "copper_hammer_bazaar",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "gear_hound_1",
+-              "weight": 40,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 34,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "iron_pigeon_1",
+-              "weight": 34,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "gear_hound_1",
+-              "weight": 40,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 34,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "iron_pigeon_1",
+-              "weight": 34,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "flare_mantis_1",
+-              "weight": 24,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "solar_lizard_1",
+-              "weight": 24,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "gear_hound_2",
+-              "weight": 22,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "flare_mantis_2",
+-              "weight": 12,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "forge_beetle_2",
+-              "weight": 12,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "iron_pigeon_2",
+-              "weight": 12,
+-              "mood": "diligent"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 34,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "iron_pigeon_1",
+-              "weight": 34,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "flare_mantis_1",
+-              "weight": 24,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "solar_lizard_1",
+-              "weight": 24,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "gear_hound_2",
+-              "weight": 22,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "flare_mantis_2",
+-              "weight": 12,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "forge_beetle_2",
+-              "weight": 12,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "iron_pigeon_2",
+-              "weight": 12,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "magma_tortoise_2",
+-              "weight": 12,
+-              "mood": "steady"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "radiant_spire",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "dusk_wolf_1",
+-              "weight": 44,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "shade_bat_1",
+-              "weight": 44,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "mist_fox_1",
+-              "weight": 34,
+-              "mood": "shy"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "dusk_wolf_1",
+-              "weight": 44,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "shade_bat_1",
+-              "weight": 44,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "lunar_fennec_1",
+-              "weight": 34,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "mist_fox_1",
+-              "weight": 34,
+-              "mood": "shy"
+-            },
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 34,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "marsh_slime_1",
+-              "weight": 24,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "dusk_wolf_2",
+-              "weight": 22,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "lunar_fennec_2",
+-              "weight": 22,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "shade_bat_2",
+-              "weight": 22,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "marsh_slime_2",
+-              "weight": 12,
+-              "mood": "hungry"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "dusk_wolf_1",
+-              "weight": 44,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "shade_bat_1",
+-              "weight": 44,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "lunar_fennec_1",
+-              "weight": 34,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "mist_fox_1",
+-              "weight": 34,
+-              "mood": "shy"
+-            },
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 34,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "marsh_slime_1",
+-              "weight": 24,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "dusk_wolf_2",
+-              "weight": 22,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "lunar_fennec_2",
+-              "weight": 22,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "shade_bat_2",
+-              "weight": 22,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "marsh_slime_2",
+-              "weight": 12,
+-              "mood": "hungry"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "anomaly": "high"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "dusk_wolf_2",
+-              "weight": 32,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "lunar_fennec_2",
+-              "weight": 32,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "marsh_slime_2",
+-              "weight": 32,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "mist_fox_2",
+-              "weight": 32,
+-              "mood": "shy"
+-            },
+-            {
+-              "species_id": "shade_bat_2",
+-              "weight": 32,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "dusk_wolf_1",
+-              "weight": 28,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "lunar_fennec_1",
+-              "weight": 28,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "marsh_slime_1",
+-              "weight": 28,
+-              "mood": "hungry"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "winter"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "dusk_wolf_2",
+-              "weight": 32,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "lunar_fennec_2",
+-              "weight": 32,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "marsh_slime_2",
+-              "weight": 32,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "mist_fox_2",
+-              "weight": 32,
+-              "mood": "shy"
+-            },
+-            {
+-              "species_id": "shade_bat_2",
+-              "weight": 32,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "dusk_wolf_1",
+-              "weight": 28,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "lunar_fennec_1",
+-              "weight": 28,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "marsh_slime_1",
+-              "weight": 28,
+-              "mood": "hungry"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "thunder_meadow",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "breeze_swallow_1",
+-              "weight": 50,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "spark_mouse_1",
+-              "weight": 50,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "storm_yak_1",
+-              "weight": 44,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "volt_carp_1",
+-              "weight": 44,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "embercat_1",
+-              "weight": 40,
+-              "mood": "brave"
+-            },
+-            {
+-              "species_id": "prism_hare_1",
+-              "weight": 40,
+-              "mood": "cheerful"
+-            },
+-            {
+-              "species_id": "chapel_stag_1",
+-              "weight": 34,
+-              "mood": "noble"
+-            },
+-            {
+-              "species_id": "flare_rooster_1",
+-              "weight": 34,
+-              "mood": "proud"
+-            },
+-            {
+-              "species_id": "shale_ram_1",
+-              "weight": 34,
+-              "mood": "bold"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "breeze_swallow_1",
+-              "weight": 50,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "spark_mouse_1",
+-              "weight": 50,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "storm_yak_1",
+-              "weight": 44,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "volt_carp_1",
+-              "weight": 44,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "embercat_1",
+-              "weight": 40,
+-              "mood": "brave"
+-            },
+-            {
+-              "species_id": "prism_hare_1",
+-              "weight": 40,
+-              "mood": "cheerful"
+-            },
+-            {
+-              "species_id": "chapel_stag_1",
+-              "weight": 34,
+-              "mood": "noble"
+-            },
+-            {
+-              "species_id": "flare_rooster_1",
+-              "weight": 34,
+-              "mood": "proud"
+-            },
+-            {
+-              "species_id": "shale_ram_1",
+-              "weight": 34,
+-              "mood": "bold"
+-            },
+-            {
+-              "species_id": "breeze_swallow_2",
+-              "weight": 32,
+-              "mood": "restless"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "storm_yak_1",
+-              "weight": 44,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "volt_carp_1",
+-              "weight": 44,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "chapel_stag_1",
+-              "weight": 34,
+-              "mood": "noble"
+-            },
+-            {
+-              "species_id": "flare_rooster_1",
+-              "weight": 34,
+-              "mood": "proud"
+-            },
+-            {
+-              "species_id": "shale_ram_1",
+-              "weight": 34,
+-              "mood": "bold"
+-            },
+-            {
+-              "species_id": "breeze_swallow_2",
+-              "weight": 32,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "spark_mouse_2",
+-              "weight": 32,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "embercat_2",
+-              "weight": 22,
+-              "mood": "brave"
+-            },
+-            {
+-              "species_id": "prism_hare_2",
+-              "weight": 22,
+-              "mood": "cheerful"
+-            },
+-            {
+-              "species_id": "storm_yak_2",
+-              "weight": 22,
+-              "mood": "steady"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "weather": "storm"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "breeze_swallow_2",
+-              "weight": 32,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "flare_rooster_2",
+-              "weight": 32,
+-              "mood": "proud"
+-            },
+-            {
+-              "species_id": "shale_ram_2",
+-              "weight": 32,
+-              "mood": "bold"
+-            },
+-            {
+-              "species_id": "spark_mouse_2",
+-              "weight": 32,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "storm_yak_2",
+-              "weight": 32,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "volt_carp_2",
+-              "weight": 32,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "breeze_swallow_1",
+-              "weight": 28,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "flare_rooster_1",
+-              "weight": 28,
+-              "mood": "proud"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "breeze_swallow_2",
+-              "weight": 32,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "flare_rooster_2",
+-              "weight": 32,
+-              "mood": "proud"
+-            },
+-            {
+-              "species_id": "shale_ram_2",
+-              "weight": 32,
+-              "mood": "bold"
+-            },
+-            {
+-              "species_id": "spark_mouse_2",
+-              "weight": 32,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "storm_yak_2",
+-              "weight": 32,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "volt_carp_2",
+-              "weight": 32,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "breeze_swallow_1",
+-              "weight": 28,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "flare_rooster_1",
+-              "weight": 28,
+-              "mood": "proud"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "autumn_leaf_dojo",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "bloom_lark_1",
+-              "weight": 40,
+-              "mood": "lively"
+-            },
+-            {
+-              "species_id": "moss_deer_1",
+-              "weight": 40,
+-              "mood": "kind"
+-            },
+-            {
+-              "species_id": "bloom_turtle_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "cedar_bear_1",
+-              "weight": 34,
+-              "mood": "protective"
+-            },
+-            {
+-              "species_id": "chapel_stag_1",
+-              "weight": 34,
+-              "mood": "noble"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 34,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "dusk_wolf_1",
+-              "weight": 34,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "mind_owl_1",
+-              "weight": 34,
+-              "mood": "wise"
+-            },
+-            {
+-              "species_id": "mist_fox_1",
+-              "weight": 34,
+-              "mood": "shy"
+-            },
+-            {
+-              "species_id": "thorn_boar_1",
+-              "weight": 34,
+-              "mood": "stubborn"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "bloom_lark_1",
+-              "weight": 40,
+-              "mood": "lively"
+-            },
+-            {
+-              "species_id": "moss_deer_1",
+-              "weight": 40,
+-              "mood": "kind"
+-            },
+-            {
+-              "species_id": "bloom_turtle_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "cedar_bear_1",
+-              "weight": 34,
+-              "mood": "protective"
+-            },
+-            {
+-              "species_id": "chapel_stag_1",
+-              "weight": 34,
+-              "mood": "noble"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 34,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "dusk_wolf_1",
+-              "weight": 34,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "mind_owl_1",
+-              "weight": 34,
+-              "mood": "wise"
+-            },
+-            {
+-              "species_id": "mist_fox_1",
+-              "weight": 34,
+-              "mood": "shy"
+-            },
+-            {
+-              "species_id": "thorn_boar_1",
+-              "weight": 34,
+-              "mood": "stubborn"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "bloom_turtle_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "cedar_bear_1",
+-              "weight": 34,
+-              "mood": "protective"
+-            },
+-            {
+-              "species_id": "chapel_stag_1",
+-              "weight": 34,
+-              "mood": "noble"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 34,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "dusk_wolf_1",
+-              "weight": 34,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "mind_owl_1",
+-              "weight": 34,
+-              "mood": "wise"
+-            },
+-            {
+-              "species_id": "mist_fox_1",
+-              "weight": 34,
+-              "mood": "shy"
+-            },
+-            {
+-              "species_id": "thorn_boar_1",
+-              "weight": 34,
+-              "mood": "stubborn"
+-            },
+-            {
+-              "species_id": "bloom_lark_2",
+-              "weight": 22,
+-              "mood": "lively"
+-            },
+-            {
+-              "species_id": "moss_deer_2",
+-              "weight": 22,
+-              "mood": "kind"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "frost_mirror_lake",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 34,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 34,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_1",
+-              "weight": 34,
+-              "mood": "placid"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 34,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 34,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_1",
+-              "weight": 34,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_1",
+-              "weight": 24,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "lunar_fennec_1",
+-              "weight": 24,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "cloud_crane_2",
+-              "weight": 12,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_2",
+-              "weight": 12,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "frost_spider_2",
+-              "weight": 12,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_2",
+-              "weight": 12,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "lunar_fennec_2",
+-              "weight": 12,
+-              "mood": "evasive"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 34,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 34,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_1",
+-              "weight": 34,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_1",
+-              "weight": 24,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "lunar_fennec_1",
+-              "weight": 24,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "cloud_crane_2",
+-              "weight": 12,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_2",
+-              "weight": 12,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "frost_spider_2",
+-              "weight": 12,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_2",
+-              "weight": 12,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "lunar_fennec_2",
+-              "weight": 12,
+-              "mood": "evasive"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "winter"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "cloud_crane_2",
+-              "weight": 32,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_2",
+-              "weight": 32,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "frost_spider_2",
+-              "weight": 32,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_2",
+-              "weight": 32,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "lunar_fennec_2",
+-              "weight": 32,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 28,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_1",
+-              "weight": 28,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 28,
+-              "mood": "patient"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "weather": "snow"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "cloud_crane_2",
+-              "weight": 32,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_2",
+-              "weight": 32,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "frost_spider_2",
+-              "weight": 32,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_2",
+-              "weight": 32,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "lunar_fennec_2",
+-              "weight": 32,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 28,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_1",
+-              "weight": 28,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 28,
+-              "mood": "patient"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "echo_broken_bridge",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "gear_hound_1",
+-              "weight": 40,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "pebble_mole_1",
+-              "weight": 40,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 34,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "iron_pigeon_1",
+-              "weight": 34,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 34,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "shade_bat_1",
+-              "weight": 34,
+-              "mood": "sly"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "gear_hound_1",
+-              "weight": 40,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "pebble_mole_1",
+-              "weight": 40,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 34,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "iron_pigeon_1",
+-              "weight": 34,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 34,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "shade_bat_1",
+-              "weight": 34,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "ruin_gecko_1",
+-              "weight": 24,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "gear_hound_2",
+-              "weight": 22,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "pebble_mole_2",
+-              "weight": 22,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "coil_lizard_2",
+-              "weight": 12,
+-              "mood": "alert"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 34,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "iron_pigeon_1",
+-              "weight": 34,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 34,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "shade_bat_1",
+-              "weight": 34,
+-              "mood": "sly"
+-            },
+-            {
+-              "species_id": "ruin_gecko_1",
+-              "weight": 24,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "gear_hound_2",
+-              "weight": 22,
+-              "mood": "loyal"
+-            },
+-            {
+-              "species_id": "pebble_mole_2",
+-              "weight": 22,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "coil_lizard_2",
+-              "weight": 12,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "iron_pigeon_2",
+-              "weight": 12,
+-              "mood": "diligent"
+-            },
+-            {
+-              "species_id": "ruin_gecko_2",
+-              "weight": 12,
+-              "mood": "secretive"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "radiant_observatory",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 34,
+-              "mood": "mystic"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 34,
+-              "mood": "mystic"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "winter"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 28,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "null_fawn_2",
+-              "weight": 24,
+-              "mood": "mystic"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "anomaly": "high"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 28,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "null_fawn_2",
+-              "weight": 24,
+-              "mood": "mystic"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "ember_crater",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 34,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 34,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "flare_mantis_1",
+-              "weight": 24,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "solar_lizard_1",
+-              "weight": 24,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "flare_mantis_2",
+-              "weight": 12,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "forge_beetle_2",
+-              "weight": 12,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "magma_tortoise_2",
+-              "weight": 12,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "solar_lizard_2",
+-              "weight": 12,
+-              "mood": "sharp"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 34,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 34,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "flare_mantis_1",
+-              "weight": 24,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "solar_lizard_1",
+-              "weight": 24,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "flare_mantis_2",
+-              "weight": 12,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "forge_beetle_2",
+-              "weight": 12,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "magma_tortoise_2",
+-              "weight": 12,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "solar_lizard_2",
+-              "weight": 12,
+-              "mood": "sharp"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "flare_mantis_2",
+-              "weight": 32,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "forge_beetle_2",
+-              "weight": 32,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "magma_tortoise_2",
+-              "weight": 32,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "solar_lizard_2",
+-              "weight": 32,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "flare_mantis_1",
+-              "weight": 28,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 28,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 28,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "solar_lizard_1",
+-              "weight": 28,
+-              "mood": "sharp"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "weather": "clear"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "flare_mantis_2",
+-              "weight": 32,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "forge_beetle_2",
+-              "weight": 32,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "magma_tortoise_2",
+-              "weight": 32,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "solar_lizard_2",
+-              "weight": 32,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "flare_mantis_1",
+-              "weight": 28,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "forge_beetle_1",
+-              "weight": 28,
+-              "mood": "industrious"
+-            },
+-            {
+-              "species_id": "magma_tortoise_1",
+-              "weight": 28,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "solar_lizard_1",
+-              "weight": 28,
+-              "mood": "sharp"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "greenbark_grove",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "bloom_lark_1",
+-              "weight": 48,
+-              "mood": "lively"
+-            },
+-            {
+-              "species_id": "moss_deer_1",
+-              "weight": 48,
+-              "mood": "kind"
+-            },
+-            {
+-              "species_id": "bloom_turtle_1",
+-              "weight": 42,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "cedar_bear_1",
+-              "weight": 42,
+-              "mood": "protective"
+-            },
+-            {
+-              "species_id": "thorn_boar_1",
+-              "weight": 42,
+-              "mood": "stubborn"
+-            },
+-            {
+-              "species_id": "breeze_swallow_1",
+-              "weight": 40,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "embercat_1",
+-              "weight": 40,
+-              "mood": "brave"
+-            },
+-            {
+-              "species_id": "prism_hare_1",
+-              "weight": 40,
+-              "mood": "cheerful"
+-            },
+-            {
+-              "species_id": "spark_mouse_1",
+-              "weight": 40,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "chapel_stag_1",
+-              "weight": 34,
+-              "mood": "noble"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "bloom_lark_1",
+-              "weight": 48,
+-              "mood": "lively"
+-            },
+-            {
+-              "species_id": "moss_deer_1",
+-              "weight": 48,
+-              "mood": "kind"
+-            },
+-            {
+-              "species_id": "bloom_turtle_1",
+-              "weight": 42,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "cedar_bear_1",
+-              "weight": 42,
+-              "mood": "protective"
+-            },
+-            {
+-              "species_id": "thorn_boar_1",
+-              "weight": 42,
+-              "mood": "stubborn"
+-            },
+-            {
+-              "species_id": "breeze_swallow_1",
+-              "weight": 40,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "embercat_1",
+-              "weight": 40,
+-              "mood": "brave"
+-            },
+-            {
+-              "species_id": "prism_hare_1",
+-              "weight": 40,
+-              "mood": "cheerful"
+-            },
+-            {
+-              "species_id": "spark_mouse_1",
+-              "weight": 40,
+-              "mood": "curious"
+-            },
+-            {
+-              "species_id": "chapel_stag_1",
+-              "weight": 34,
+-              "mood": "noble"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "bloom_lark_2",
+-              "weight": 32,
+-              "mood": "lively"
+-            },
+-            {
+-              "species_id": "bloom_turtle_2",
+-              "weight": 32,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "breeze_swallow_2",
+-              "weight": 32,
+-              "mood": "restless"
+-            },
+-            {
+-              "species_id": "cedar_bear_2",
+-              "weight": 32,
+-              "mood": "protective"
+-            },
+-            {
+-              "species_id": "chapel_stag_2",
+-              "weight": 32,
+-              "mood": "noble"
+-            },
+-            {
+-              "species_id": "flare_mantis_2",
+-              "weight": 32,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "flare_rooster_2",
+-              "weight": 32,
+-              "mood": "proud"
+-            },
+-            {
+-              "species_id": "moss_deer_2",
+-              "weight": 32,
+-              "mood": "kind"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "bloom_lark_2",
+-              "weight": 32,
+-              "mood": "lively"
+-            },
+-            {
+-              "species_id": "bloom_turtle_2",
+-              "weight": 32,
+-              "mood": "steady"
+-            },
+-            {
+-              "species_id": "cedar_bear_2",
+-              "weight": 32,
+-              "mood": "protective"
+-            },
+-            {
+-              "species_id": "dusk_wolf_2",
+-              "weight": 32,
+-              "mood": "feral"
+-            },
+-            {
+-              "species_id": "flare_mantis_2",
+-              "weight": 32,
+-              "mood": "agile"
+-            },
+-            {
+-              "species_id": "mind_owl_2",
+-              "weight": 32,
+-              "mood": "wise"
+-            },
+-            {
+-              "species_id": "mist_fox_2",
+-              "weight": 32,
+-              "mood": "shy"
+-            },
+-            {
+-              "species_id": "moss_deer_2",
+-              "weight": 32,
+-              "mood": "kind"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "reed_mire",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "reed_frog_1",
+-              "weight": 48,
+-              "mood": "gentle"
+-            },
+-            {
+-              "species_id": "steam_otter_1",
+-              "weight": 48,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "tide_ray_1",
+-              "weight": 42,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 34,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "volt_carp_1",
+-              "weight": 34,
+-              "mood": "rash"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "reed_frog_1",
+-              "weight": 48,
+-              "mood": "gentle"
+-            },
+-            {
+-              "species_id": "steam_otter_1",
+-              "weight": 48,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "tide_ray_1",
+-              "weight": 42,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 34,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "volt_carp_1",
+-              "weight": 34,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "marsh_slime_1",
+-              "weight": 32,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "reed_frog_2",
+-              "weight": 30,
+-              "mood": "gentle"
+-            },
+-            {
+-              "species_id": "steam_otter_2",
+-              "weight": 30,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "marsh_slime_2",
+-              "weight": 20,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "tide_ray_2",
+-              "weight": 20,
+-              "mood": "smooth"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "tide_ray_1",
+-              "weight": 42,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 34,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "volt_carp_1",
+-              "weight": 34,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "marsh_slime_1",
+-              "weight": 32,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "reed_frog_2",
+-              "weight": 30,
+-              "mood": "gentle"
+-            },
+-            {
+-              "species_id": "steam_otter_2",
+-              "weight": 30,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "marsh_slime_2",
+-              "weight": 20,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "tide_ray_2",
+-              "weight": 20,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "dew_moth_2",
+-              "weight": 12,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "volt_carp_2",
+-              "weight": 12,
+-              "mood": "rash"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "weather": "fog"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "dew_moth_2",
+-              "weight": 32,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "marsh_slime_2",
+-              "weight": 32,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "reed_frog_2",
+-              "weight": 32,
+-              "mood": "gentle"
+-            },
+-            {
+-              "species_id": "steam_otter_2",
+-              "weight": 32,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "tide_ray_2",
+-              "weight": 32,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "volt_carp_2",
+-              "weight": 32,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 28,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "marsh_slime_1",
+-              "weight": 28,
+-              "mood": "hungry"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "dew_moth_2",
+-              "weight": 32,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "marsh_slime_2",
+-              "weight": 32,
+-              "mood": "hungry"
+-            },
+-            {
+-              "species_id": "reed_frog_2",
+-              "weight": 32,
+-              "mood": "gentle"
+-            },
+-            {
+-              "species_id": "steam_otter_2",
+-              "weight": 32,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "tide_ray_2",
+-              "weight": 32,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "volt_carp_2",
+-              "weight": 32,
+-              "mood": "rash"
+-            },
+-            {
+-              "species_id": "dew_moth_1",
+-              "weight": 28,
+-              "mood": "fragile"
+-            },
+-            {
+-              "species_id": "marsh_slime_1",
+-              "weight": 28,
+-              "mood": "hungry"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "saltglass_coast",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "steam_otter_1",
+-              "weight": 40,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 34,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "echo_snail_1",
+-              "weight": 34,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 34,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_1",
+-              "weight": 34,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "tide_ray_1",
+-              "weight": 34,
+-              "mood": "smooth"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "steam_otter_1",
+-              "weight": 40,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 34,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "echo_snail_1",
+-              "weight": 34,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 34,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_1",
+-              "weight": 34,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "tide_ray_1",
+-              "weight": 34,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_1",
+-              "weight": 24,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "lunar_fennec_1",
+-              "weight": 24,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "solar_lizard_1",
+-              "weight": 24,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "steam_otter_2",
+-              "weight": 22,
+-              "mood": "playful"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 34,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "echo_snail_1",
+-              "weight": 34,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "frost_spider_1",
+-              "weight": 34,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_1",
+-              "weight": 34,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "tide_ray_1",
+-              "weight": 34,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_1",
+-              "weight": 24,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "lunar_fennec_1",
+-              "weight": 24,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "solar_lizard_1",
+-              "weight": 24,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "steam_otter_2",
+-              "weight": 22,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "cloud_crane_2",
+-              "weight": 12,
+-              "mood": "calm"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "weather": "clear"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "cloud_crane_2",
+-              "weight": 32,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_2",
+-              "weight": 32,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "ice_seal_2",
+-              "weight": 32,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "solar_lizard_2",
+-              "weight": 32,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "steam_otter_2",
+-              "weight": 32,
+-              "mood": "playful"
+-            },
+-            {
+-              "species_id": "tide_ray_2",
+-              "weight": 32,
+-              "mood": "smooth"
+-            },
+-            {
+-              "species_id": "cloud_crane_1",
+-              "weight": 28,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_1",
+-              "weight": 28,
+-              "mood": "alert"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "winter"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "cloud_crane_2",
+-              "weight": 32,
+-              "mood": "calm"
+-            },
+-            {
+-              "species_id": "crystal_shrimp_2",
+-              "weight": 32,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "echo_snail_2",
+-              "weight": 32,
+-              "mood": "slow"
+-            },
+-            {
+-              "species_id": "frost_spider_2",
+-              "weight": 32,
+-              "mood": "patient"
+-            },
+-            {
+-              "species_id": "ice_seal_2",
+-              "weight": 32,
+-              "mood": "placid"
+-            },
+-            {
+-              "species_id": "lunar_fennec_2",
+-              "weight": 32,
+-              "mood": "evasive"
+-            },
+-            {
+-              "species_id": "solar_lizard_2",
+-              "weight": 32,
+-              "mood": "sharp"
+-            },
+-            {
+-              "species_id": "steam_otter_2",
+-              "weight": 32,
+-              "mood": "playful"
+-            }
+-          ]
+-        }
+-      ]
+-    },
+-    {
+-      "habitat_id": "moonfen_ruins",
+-      "weight_groups": [
+-        {
+-          "when": {
+-            "season": "spring"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 34,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 34,
+-              "mood": "busy"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "summer"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 34,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 34,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 34,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "ruin_gecko_1",
+-              "weight": 24,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "coil_lizard_2",
+-              "weight": 12,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "ruin_gecko_2",
+-              "weight": 12,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "rune_ant_2",
+-              "weight": 12,
+-              "mood": "busy"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 34,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 34,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 34,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "ruin_gecko_1",
+-              "weight": 24,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "coil_lizard_2",
+-              "weight": 12,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "ruin_gecko_2",
+-              "weight": 12,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "rune_ant_2",
+-              "weight": 12,
+-              "mood": "busy"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "anomaly": "high"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "ruin_gecko_2",
+-              "weight": 32,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "rune_ant_2",
+-              "weight": 32,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 28,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "ruin_gecko_1",
+-              "weight": 28,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 28,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "null_fawn_2",
+-              "weight": 24,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "coil_lizard_2",
+-              "weight": 14,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 10,
+-              "mood": "alert"
+-            }
+-          ]
+-        },
+-        {
+-          "when": {
+-            "season": "autumn"
+-          },
+-          "entries": [
+-            {
+-              "species_id": "ruin_gecko_2",
+-              "weight": 32,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "null_fawn_1",
+-              "weight": 28,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "ruin_gecko_1",
+-              "weight": 28,
+-              "mood": "secretive"
+-            },
+-            {
+-              "species_id": "null_fawn_2",
+-              "weight": 24,
+-              "mood": "mystic"
+-            },
+-            {
+-              "species_id": "coil_lizard_2",
+-              "weight": 14,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "rune_ant_2",
+-              "weight": 14,
+-              "mood": "busy"
+-            },
+-            {
+-              "species_id": "coil_lizard_1",
+-              "weight": 10,
+-              "mood": "alert"
+-            },
+-            {
+-              "species_id": "rune_ant_1",
+-              "weight": 10,
+-              "mood": "busy"
+-            }
+-          ]
+-        }
+-      ]
+-    }
+-  ]
+-}
+\ No newline at end of file
++{"version": 2, "schema": "mda_bond_encounters_v2", "encounters": [{"habitat_id": "mist_moss_cave", "weight_groups": [{"when": {}, "entries": [{"species_id": "bloom_lark_1", "weight": 22, "mood": "lively"}, {"species_id": "moss_deer_1", "weight": 22, "mood": "kind"}, {"species_id": "pebble_mole_1", "weight": 22, "mood": "patient"}, {"species_id": "bloom_turtle_1", "weight": 19, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 19, "mood": "protective"}, {"species_id": "frost_spider_1", "weight": 19, "mood": "patient"}, {"species_id": "magma_tortoise_1", "weight": 19, "mood": "steady"}, {"species_id": "shade_bat_1", "weight": 19, "mood": "sly"}, {"species_id": "thorn_boar_1", "weight": 19, "mood": "stubborn"}, {"species_id": "bloom_lark_2", "weight": 4, "mood": "lively"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "bloom_lark_1", "weight": 18, "mood": "lively"}, {"species_id": "moss_deer_1", "weight": 18, "mood": "kind"}, {"species_id": "pebble_mole_1", "weight": 18, "mood": "patient"}, {"species_id": "bloom_turtle_1", "weight": 15, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 15, "mood": "protective"}, {"species_id": "frost_spider_1", "weight": 15, "mood": "patient"}, {"species_id": "magma_tortoise_1", "weight": 15, "mood": "steady"}, {"species_id": "shade_bat_1", "weight": 15, "mood": "sly"}, {"species_id": "thorn_boar_1", "weight": 15, "mood": "stubborn"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "bloom_lark_1", "weight": 18, "mood": "lively"}, {"species_id": "moss_deer_1", "weight": 18, "mood": "kind"}, {"species_id": "pebble_mole_1", "weight": 18, "mood": "patient"}, {"species_id": "bloom_turtle_1", "weight": 15, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 15, "mood": "protective"}, {"species_id": "frost_spider_1", "weight": 15, "mood": "patient"}, {"species_id": "magma_tortoise_1", "weight": 15, "mood": "steady"}, {"species_id": "shade_bat_1", "weight": 15, "mood": "sly"}, {"species_id": "thorn_boar_1", "weight": 15, "mood": "stubborn"}, {"species_id": "bloom_lark_2", "weight": 10, "mood": "lively"}]}]}, {"habitat_id": "crystal_creek", "weight_groups": [{"when": {}, "entries": [{"species_id": "reed_frog_1", "weight": 27, "mood": "gentle"}, {"species_id": "steam_otter_1", "weight": 27, "mood": "playful"}, {"species_id": "ice_seal_1", "weight": 24, "mood": "placid"}, {"species_id": "tide_ray_1", "weight": 24, "mood": "smooth"}, {"species_id": "cloud_crane_1", "weight": 19, "mood": "calm"}, {"species_id": "dew_moth_1", "weight": 19, "mood": "fragile"}, {"species_id": "echo_snail_1", "weight": 19, "mood": "slow"}, {"species_id": "volt_carp_1", "weight": 19, "mood": "rash"}, {"species_id": "crystal_shrimp_1", "weight": 5, "mood": "alert"}, {"species_id": "marsh_slime_1", "weight": 5, "mood": "hungry"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "reed_frog_1", "weight": 22, "mood": "gentle"}, {"species_id": "steam_otter_1", "weight": 22, "mood": "playful"}, {"species_id": "ice_seal_1", "weight": 19, "mood": "placid"}, {"species_id": "tide_ray_1", "weight": 19, "mood": "smooth"}, {"species_id": "cloud_crane_1", "weight": 15, "mood": "calm"}, {"species_id": "dew_moth_1", "weight": 15, "mood": "fragile"}, {"species_id": "echo_snail_1", "weight": 15, "mood": "slow"}, {"species_id": "volt_carp_1", "weight": 15, "mood": "rash"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "reed_frog_1", "weight": 22, "mood": "gentle"}, {"species_id": "steam_otter_1", "weight": 22, "mood": "playful"}, {"species_id": "ice_seal_1", "weight": 19, "mood": "placid"}, {"species_id": "tide_ray_1", "weight": 19, "mood": "smooth"}, {"species_id": "cloud_crane_1", "weight": 15, "mood": "calm"}, {"species_id": "dew_moth_1", "weight": 15, "mood": "fragile"}, {"species_id": "echo_snail_1", "weight": 15, "mood": "slow"}, {"species_id": "volt_carp_1", "weight": 15, "mood": "rash"}, {"species_id": "crystal_shrimp_1", "weight": 14, "mood": "alert"}, {"species_id": "marsh_slime_1", "weight": 14, "mood": "hungry"}]}]}, {"habitat_id": "sky_post", "weight_groups": [{"when": {}, "entries": [{"species_id": "breeze_swallow_1", "weight": 22, "mood": "restless"}, {"species_id": "embercat_1", "weight": 22, "mood": "brave"}, {"species_id": "prism_hare_1", "weight": 22, "mood": "cheerful"}, {"species_id": "spark_mouse_1", "weight": 22, "mood": "curious"}, {"species_id": "flare_rooster_1", "weight": 19, "mood": "proud"}, {"species_id": "iron_pigeon_1", "weight": 19, "mood": "diligent"}, {"species_id": "shale_ram_1", "weight": 19, "mood": "bold"}, {"species_id": "storm_yak_1", "weight": 19, "mood": "steady"}, {"species_id": "breeze_swallow_2", "weight": 4, "mood": "restless"}, {"species_id": "embercat_2", "weight": 4, "mood": "brave"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "breeze_swallow_1", "weight": 18, "mood": "restless"}, {"species_id": "embercat_1", "weight": 18, "mood": "brave"}, {"species_id": "prism_hare_1", "weight": 18, "mood": "cheerful"}, {"species_id": "spark_mouse_1", "weight": 18, "mood": "curious"}, {"species_id": "flare_rooster_1", "weight": 15, "mood": "proud"}, {"species_id": "iron_pigeon_1", "weight": 15, "mood": "diligent"}, {"species_id": "shale_ram_1", "weight": 15, "mood": "bold"}, {"species_id": "storm_yak_1", "weight": 15, "mood": "steady"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "breeze_swallow_1", "weight": 18, "mood": "restless"}, {"species_id": "embercat_1", "weight": 18, "mood": "brave"}, {"species_id": "prism_hare_1", "weight": 18, "mood": "cheerful"}, {"species_id": "spark_mouse_1", "weight": 18, "mood": "curious"}, {"species_id": "flare_rooster_1", "weight": 15, "mood": "proud"}, {"species_id": "iron_pigeon_1", "weight": 15, "mood": "diligent"}, {"species_id": "shale_ram_1", "weight": 15, "mood": "bold"}, {"species_id": "storm_yak_1", "weight": 15, "mood": "steady"}, {"species_id": "breeze_swallow_2", "weight": 10, "mood": "restless"}, {"species_id": "embercat_2", "weight": 10, "mood": "brave"}]}]}, {"habitat_id": "ancient_platform", "weight_groups": [{"when": {}, "entries": [{"species_id": "gear_hound_1", "weight": 10, "mood": "loyal"}, {"species_id": "pebble_mole_1", "weight": 10, "mood": "patient"}, {"species_id": "coil_lizard_1", "weight": 19, "mood": "alert"}, {"species_id": "echo_snail_1", "weight": 19, "mood": "slow"}, {"species_id": "forge_beetle_1", "weight": 19, "mood": "industrious"}, {"species_id": "mind_owl_1", "weight": 19, "mood": "wise"}, {"species_id": "rune_ant_1", "weight": 19, "mood": "busy"}, {"species_id": "ruin_gecko_1", "weight": 6, "mood": "secretive"}, {"species_id": "gear_hound_2", "weight": 6, "mood": "loyal"}, {"species_id": "pebble_mole_2", "weight": 6, "mood": "patient"}, {"species_id": "coil_lizard_2", "weight": 1, "mood": "alert"}, {"species_id": "echo_snail_2", "weight": 1, "mood": "slow"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "gear_hound_1", "weight": 18, "mood": "loyal"}, {"species_id": "pebble_mole_1", "weight": 18, "mood": "patient"}, {"species_id": "coil_lizard_1", "weight": 15, "mood": "alert"}, {"species_id": "echo_snail_1", "weight": 15, "mood": "slow"}, {"species_id": "forge_beetle_1", "weight": 15, "mood": "industrious"}, {"species_id": "mind_owl_1", "weight": 15, "mood": "wise"}, {"species_id": "rune_ant_1", "weight": 15, "mood": "busy"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "gear_hound_1", "weight": 18, "mood": "loyal"}, {"species_id": "pebble_mole_1", "weight": 18, "mood": "patient"}, {"species_id": "coil_lizard_1", "weight": 15, "mood": "alert"}, {"species_id": "echo_snail_1", "weight": 15, "mood": "slow"}, {"species_id": "forge_beetle_1", "weight": 15, "mood": "industrious"}, {"species_id": "mind_owl_1", "weight": 15, "mood": "wise"}, {"species_id": "rune_ant_1", "weight": 15, "mood": "busy"}, {"species_id": "ruin_gecko_1", "weight": 11, "mood": "secretive"}, {"species_id": "gear_hound_2", "weight": 10, "mood": "loyal"}, {"species_id": "pebble_mole_2", "weight": 10, "mood": "patient"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "coil_lizard_1", "weight": 15, "mood": "alert"}, {"species_id": "echo_snail_1", "weight": 15, "mood": "slow"}, {"species_id": "forge_beetle_1", "weight": 15, "mood": "industrious"}, {"species_id": "mind_owl_1", "weight": 15, "mood": "wise"}, {"species_id": "rune_ant_1", "weight": 15, "mood": "busy"}, {"species_id": "ruin_gecko_1", "weight": 11, "mood": "secretive"}, {"species_id": "gear_hound_2", "weight": 10, "mood": "loyal"}, {"species_id": "pebble_mole_2", "weight": 10, "mood": "patient"}, {"species_id": "coil_lizard_2", "weight": 5, "mood": "alert"}, {"species_id": "echo_snail_2", "weight": 5, "mood": "slow"}]}, {"when": {"time": "night"}, "entries": [{"species_id": "coil_lizard_2", "weight": 32, "mood": "alert"}, {"species_id": "echo_snail_2", "weight": 32, "mood": "slow"}, {"species_id": "forge_beetle_2", "weight": 32, "mood": "industrious"}, {"species_id": "gear_hound_2", "weight": 32, "mood": "loyal"}, {"species_id": "mind_owl_2", "weight": 32, "mood": "wise"}, {"species_id": "ruin_gecko_2", "weight": 32, "mood": "secretive"}, {"species_id": "rune_ant_2", "weight": 32, "mood": "busy"}, {"species_id": "coil_lizard_1", "weight": 28, "mood": "alert"}]}, {"when": {"weather": "clear"}, "entries": [{"species_id": "coil_lizard_2", "weight": 32, "mood": "alert"}, {"species_id": "forge_beetle_2", "weight": 32, "mood": "industrious"}, {"species_id": "gear_hound_2", "weight": 32, "mood": "loyal"}, {"species_id": "rune_ant_2", "weight": 32, "mood": "busy"}, {"species_id": "coil_lizard_1", "weight": 28, "mood": "alert"}, {"species_id": "forge_beetle_1", "weight": 28, "mood": "industrious"}, {"species_id": "gear_hound_1", "weight": 28, "mood": "loyal"}, {"species_id": "rune_ant_1", "weight": 28, "mood": "busy"}]}]}, {"habitat_id": "copper_hammer_bazaar", "weight_groups": [{"when": {}, "entries": [{"species_id": "gear_hound_1", "weight": 10, "mood": "loyal"}, {"species_id": "forge_beetle_1", "weight": 19, "mood": "industrious"}, {"species_id": "iron_pigeon_1", "weight": 19, "mood": "diligent"}, {"species_id": "magma_tortoise_1", "weight": 19, "mood": "steady"}, {"species_id": "flare_mantis_1", "weight": 6, "mood": "agile"}, {"species_id": "solar_lizard_1", "weight": 6, "mood": "sharp"}, {"species_id": "gear_hound_2", "weight": 6, "mood": "loyal"}, {"species_id": "flare_mantis_2", "weight": 3, "mood": "agile"}, {"species_id": "forge_beetle_2", "weight": 3, "mood": "industrious"}, {"species_id": "iron_pigeon_2", "weight": 3, "mood": "diligent"}, {"species_id": "magma_tortoise_2", "weight": 1, "mood": "steady"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "gear_hound_1", "weight": 18, "mood": "loyal"}, {"species_id": "forge_beetle_1", "weight": 15, "mood": "industrious"}, {"species_id": "iron_pigeon_1", "weight": 15, "mood": "diligent"}, {"species_id": "magma_tortoise_1", "weight": 15, "mood": "steady"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "gear_hound_1", "weight": 18, "mood": "loyal"}, {"species_id": "forge_beetle_1", "weight": 15, "mood": "industrious"}, {"species_id": "iron_pigeon_1", "weight": 15, "mood": "diligent"}, {"species_id": "magma_tortoise_1", "weight": 15, "mood": "steady"}, {"species_id": "flare_mantis_1", "weight": 11, "mood": "agile"}, {"species_id": "solar_lizard_1", "weight": 11, "mood": "sharp"}, {"species_id": "gear_hound_2", "weight": 10, "mood": "loyal"}, {"species_id": "flare_mantis_2", "weight": 5, "mood": "agile"}, {"species_id": "forge_beetle_2", "weight": 5, "mood": "industrious"}, {"species_id": "iron_pigeon_2", "weight": 5, "mood": "diligent"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "forge_beetle_1", "weight": 15, "mood": "industrious"}, {"species_id": "iron_pigeon_1", "weight": 15, "mood": "diligent"}, {"species_id": "magma_tortoise_1", "weight": 15, "mood": "steady"}, {"species_id": "flare_mantis_1", "weight": 11, "mood": "agile"}, {"species_id": "solar_lizard_1", "weight": 11, "mood": "sharp"}, {"species_id": "gear_hound_2", "weight": 10, "mood": "loyal"}, {"species_id": "flare_mantis_2", "weight": 5, "mood": "agile"}, {"species_id": "forge_beetle_2", "weight": 5, "mood": "industrious"}, {"species_id": "iron_pigeon_2", "weight": 5, "mood": "diligent"}, {"species_id": "magma_tortoise_2", "weight": 5, "mood": "steady"}]}]}, {"habitat_id": "radiant_spire", "weight_groups": [{"when": {}, "entries": [{"species_id": "dusk_wolf_1", "weight": 22, "mood": "feral"}, {"species_id": "shade_bat_1", "weight": 14, "mood": "sly"}, {"species_id": "mist_fox_1", "weight": 11, "mood": "shy"}, {"species_id": "lunar_fennec_1", "weight": 10, "mood": "evasive"}, {"species_id": "null_fawn_1", "weight": 5, "mood": "mystic"}, {"species_id": "marsh_slime_1", "weight": 8, "mood": "hungry"}, {"species_id": "dusk_wolf_2", "weight": 8, "mood": "feral"}, {"species_id": "lunar_fennec_2", "weight": 8, "mood": "evasive"}, {"species_id": "shade_bat_2", "weight": 8, "mood": "sly"}, {"species_id": "marsh_slime_2", "weight": 6, "mood": "hungry"}, {"species_id": "mist_fox_2", "weight": 2, "mood": "shy"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "dusk_wolf_1", "weight": 20, "mood": "feral"}, {"species_id": "shade_bat_1", "weight": 20, "mood": "sly"}, {"species_id": "mist_fox_1", "weight": 15, "mood": "shy"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "dusk_wolf_1", "weight": 20, "mood": "feral"}, {"species_id": "shade_bat_1", "weight": 20, "mood": "sly"}, {"species_id": "lunar_fennec_1", "weight": 15, "mood": "evasive"}, {"species_id": "mist_fox_1", "weight": 15, "mood": "shy"}, {"species_id": "null_fawn_1", "weight": 15, "mood": "mystic"}, {"species_id": "marsh_slime_1", "weight": 11, "mood": "hungry"}, {"species_id": "dusk_wolf_2", "weight": 10, "mood": "feral"}, {"species_id": "lunar_fennec_2", "weight": 10, "mood": "evasive"}, {"species_id": "shade_bat_2", "weight": 10, "mood": "sly"}, {"species_id": "marsh_slime_2", "weight": 5, "mood": "hungry"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "dusk_wolf_1", "weight": 20, "mood": "feral"}, {"species_id": "shade_bat_1", "weight": 20, "mood": "sly"}, {"species_id": "lunar_fennec_1", "weight": 15, "mood": "evasive"}, {"species_id": "mist_fox_1", "weight": 15, "mood": "shy"}, {"species_id": "null_fawn_1", "weight": 15, "mood": "mystic"}, {"species_id": "marsh_slime_1", "weight": 11, "mood": "hungry"}, {"species_id": "dusk_wolf_2", "weight": 10, "mood": "feral"}, {"species_id": "lunar_fennec_2", "weight": 10, "mood": "evasive"}, {"species_id": "shade_bat_2", "weight": 10, "mood": "sly"}, {"species_id": "marsh_slime_2", "weight": 5, "mood": "hungry"}]}, {"when": {"season": "winter"}, "entries": [{"species_id": "dusk_wolf_2", "weight": 14, "mood": "feral"}, {"species_id": "lunar_fennec_2", "weight": 14, "mood": "evasive"}, {"species_id": "marsh_slime_2", "weight": 14, "mood": "hungry"}, {"species_id": "mist_fox_2", "weight": 14, "mood": "shy"}, {"species_id": "shade_bat_2", "weight": 14, "mood": "sly"}, {"species_id": "dusk_wolf_1", "weight": 13, "mood": "feral"}, {"species_id": "lunar_fennec_1", "weight": 13, "mood": "evasive"}, {"species_id": "marsh_slime_1", "weight": 13, "mood": "hungry"}]}, {"when": {"anomaly": "high"}, "entries": [{"species_id": "dusk_wolf_2", "weight": 32, "mood": "feral"}, {"species_id": "lunar_fennec_2", "weight": 32, "mood": "evasive"}, {"species_id": "marsh_slime_2", "weight": 32, "mood": "hungry"}, {"species_id": "mist_fox_2", "weight": 32, "mood": "shy"}, {"species_id": "shade_bat_2", "weight": 32, "mood": "sly"}, {"species_id": "dusk_wolf_1", "weight": 28, "mood": "feral"}, {"species_id": "lunar_fennec_1", "weight": 28, "mood": "evasive"}, {"species_id": "marsh_slime_1", "weight": 28, "mood": "hungry"}]}]}, {"habitat_id": "thunder_meadow", "weight_groups": [{"when": {}, "entries": [{"species_id": "breeze_swallow_1", "weight": 14, "mood": "restless"}, {"species_id": "spark_mouse_1", "weight": 7, "mood": "curious"}, {"species_id": "storm_yak_1", "weight": 14, "mood": "steady"}, {"species_id": "volt_carp_1", "weight": 14, "mood": "rash"}, {"species_id": "embercat_1", "weight": 6, "mood": "brave"}, {"species_id": "prism_hare_1", "weight": 6, "mood": "cheerful"}, {"species_id": "chapel_stag_1", "weight": 11, "mood": "noble"}, {"species_id": "flare_rooster_1", "weight": 18, "mood": "proud"}, {"species_id": "shale_ram_1", "weight": 11, "mood": "bold"}, {"species_id": "breeze_swallow_2", "weight": 10, "mood": "restless"}, {"species_id": "spark_mouse_2", "weight": 5, "mood": "curious"}, {"species_id": "embercat_2", "weight": 1, "mood": "brave"}, {"species_id": "prism_hare_2", "weight": 1, "mood": "cheerful"}, {"species_id": "storm_yak_2", "weight": 4, "mood": "steady"}, {"species_id": "flare_rooster_2", "weight": 2, "mood": "proud"}, {"species_id": "shale_ram_2", "weight": 2, "mood": "bold"}, {"species_id": "volt_carp_2", "weight": 2, "mood": "rash"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "breeze_swallow_1", "weight": 22, "mood": "restless"}, {"species_id": "spark_mouse_1", "weight": 22, "mood": "curious"}, {"species_id": "storm_yak_1", "weight": 20, "mood": "steady"}, {"species_id": "volt_carp_1", "weight": 20, "mood": "rash"}, {"species_id": "embercat_1", "weight": 18, "mood": "brave"}, {"species_id": "prism_hare_1", "weight": 18, "mood": "cheerful"}, {"species_id": "chapel_stag_1", "weight": 15, "mood": "noble"}, {"species_id": "flare_rooster_1", "weight": 15, "mood": "proud"}, {"species_id": "shale_ram_1", "weight": 15, "mood": "bold"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "breeze_swallow_1", "weight": 22, "mood": "restless"}, {"species_id": "spark_mouse_1", "weight": 22, "mood": "curious"}, {"species_id": "storm_yak_1", "weight": 20, "mood": "steady"}, {"species_id": "volt_carp_1", "weight": 20, "mood": "rash"}, {"species_id": "embercat_1", "weight": 18, "mood": "brave"}, {"species_id": "prism_hare_1", "weight": 18, "mood": "cheerful"}, {"species_id": "chapel_stag_1", "weight": 15, "mood": "noble"}, {"species_id": "flare_rooster_1", "weight": 15, "mood": "proud"}, {"species_id": "shale_ram_1", "weight": 15, "mood": "bold"}, {"species_id": "breeze_swallow_2", "weight": 14, "mood": "restless"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "storm_yak_1", "weight": 20, "mood": "steady"}, {"species_id": "volt_carp_1", "weight": 20, "mood": "rash"}, {"species_id": "chapel_stag_1", "weight": 15, "mood": "noble"}, {"species_id": "flare_rooster_1", "weight": 15, "mood": "proud"}, {"species_id": "shale_ram_1", "weight": 15, "mood": "bold"}, {"species_id": "breeze_swallow_2", "weight": 14, "mood": "restless"}, {"species_id": "spark_mouse_2", "weight": 14, "mood": "curious"}, {"species_id": "embercat_2", "weight": 10, "mood": "brave"}, {"species_id": "prism_hare_2", "weight": 10, "mood": "cheerful"}, {"species_id": "storm_yak_2", "weight": 10, "mood": "steady"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "breeze_swallow_2", "weight": 14, "mood": "restless"}, {"species_id": "flare_rooster_2", "weight": 14, "mood": "proud"}, {"species_id": "shale_ram_2", "weight": 14, "mood": "bold"}, {"species_id": "spark_mouse_2", "weight": 14, "mood": "curious"}, {"species_id": "storm_yak_2", "weight": 14, "mood": "steady"}, {"species_id": "volt_carp_2", "weight": 14, "mood": "rash"}, {"species_id": "breeze_swallow_1", "weight": 13, "mood": "restless"}, {"species_id": "flare_rooster_1", "weight": 13, "mood": "proud"}]}, {"when": {"weather": "storm"}, "entries": [{"species_id": "breeze_swallow_2", "weight": 32, "mood": "restless"}, {"species_id": "flare_rooster_2", "weight": 32, "mood": "proud"}, {"species_id": "shale_ram_2", "weight": 32, "mood": "bold"}, {"species_id": "spark_mouse_2", "weight": 32, "mood": "curious"}, {"species_id": "storm_yak_2", "weight": 32, "mood": "steady"}, {"species_id": "volt_carp_2", "weight": 32, "mood": "rash"}, {"species_id": "breeze_swallow_1", "weight": 28, "mood": "restless"}, {"species_id": "flare_rooster_1", "weight": 28, "mood": "proud"}]}]}, {"habitat_id": "autumn_leaf_dojo", "weight_groups": [{"when": {}, "entries": [{"species_id": "bloom_lark_1", "weight": 10, "mood": "lively"}, {"species_id": "moss_deer_1", "weight": 10, "mood": "kind"}, {"species_id": "bloom_turtle_1", "weight": 19, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 19, "mood": "protective"}, {"species_id": "chapel_stag_1", "weight": 19, "mood": "noble"}, {"species_id": "dew_moth_1", "weight": 19, "mood": "fragile"}, {"species_id": "dusk_wolf_1", "weight": 19, "mood": "feral"}, {"species_id": "mind_owl_1", "weight": 19, "mood": "wise"}, {"species_id": "mist_fox_1", "weight": 19, "mood": "shy"}, {"species_id": "thorn_boar_1", "weight": 19, "mood": "stubborn"}, {"species_id": "bloom_lark_2", "weight": 2, "mood": "lively"}, {"species_id": "moss_deer_2", "weight": 2, "mood": "kind"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "bloom_lark_1", "weight": 18, "mood": "lively"}, {"species_id": "moss_deer_1", "weight": 18, "mood": "kind"}, {"species_id": "bloom_turtle_1", "weight": 15, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 15, "mood": "protective"}, {"species_id": "chapel_stag_1", "weight": 15, "mood": "noble"}, {"species_id": "dew_moth_1", "weight": 15, "mood": "fragile"}, {"species_id": "dusk_wolf_1", "weight": 15, "mood": "feral"}, {"species_id": "mind_owl_1", "weight": 15, "mood": "wise"}, {"species_id": "mist_fox_1", "weight": 15, "mood": "shy"}, {"species_id": "thorn_boar_1", "weight": 15, "mood": "stubborn"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "bloom_lark_1", "weight": 18, "mood": "lively"}, {"species_id": "moss_deer_1", "weight": 18, "mood": "kind"}, {"species_id": "bloom_turtle_1", "weight": 15, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 15, "mood": "protective"}, {"species_id": "chapel_stag_1", "weight": 15, "mood": "noble"}, {"species_id": "dew_moth_1", "weight": 15, "mood": "fragile"}, {"species_id": "dusk_wolf_1", "weight": 15, "mood": "feral"}, {"species_id": "mind_owl_1", "weight": 15, "mood": "wise"}, {"species_id": "mist_fox_1", "weight": 15, "mood": "shy"}, {"species_id": "thorn_boar_1", "weight": 15, "mood": "stubborn"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "bloom_turtle_1", "weight": 15, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 15, "mood": "protective"}, {"species_id": "chapel_stag_1", "weight": 15, "mood": "noble"}, {"species_id": "dew_moth_1", "weight": 15, "mood": "fragile"}, {"species_id": "dusk_wolf_1", "weight": 15, "mood": "feral"}, {"species_id": "mind_owl_1", "weight": 15, "mood": "wise"}, {"species_id": "mist_fox_1", "weight": 15, "mood": "shy"}, {"species_id": "thorn_boar_1", "weight": 15, "mood": "stubborn"}, {"species_id": "bloom_lark_2", "weight": 10, "mood": "lively"}, {"species_id": "moss_deer_2", "weight": 10, "mood": "kind"}]}]}, {"habitat_id": "frost_mirror_lake", "weight_groups": [{"when": {}, "entries": [{"species_id": "cloud_crane_1", "weight": 18, "mood": "calm"}, {"species_id": "frost_spider_1", "weight": 18, "mood": "patient"}, {"species_id": "ice_seal_1", "weight": 11, "mood": "placid"}, {"species_id": "crystal_shrimp_1", "weight": 8, "mood": "alert"}, {"species_id": "lunar_fennec_1", "weight": 4, "mood": "evasive"}, {"species_id": "cloud_crane_2", "weight": 6, "mood": "calm"}, {"species_id": "crystal_shrimp_2", "weight": 6, "mood": "alert"}, {"species_id": "frost_spider_2", "weight": 6, "mood": "patient"}, {"species_id": "ice_seal_2", "weight": 6, "mood": "placid"}, {"species_id": "lunar_fennec_2", "weight": 6, "mood": "evasive"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "cloud_crane_1", "weight": 15, "mood": "calm"}, {"species_id": "frost_spider_1", "weight": 15, "mood": "patient"}, {"species_id": "ice_seal_1", "weight": 15, "mood": "placid"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "cloud_crane_1", "weight": 15, "mood": "calm"}, {"species_id": "frost_spider_1", "weight": 15, "mood": "patient"}, {"species_id": "ice_seal_1", "weight": 15, "mood": "placid"}, {"species_id": "crystal_shrimp_1", "weight": 11, "mood": "alert"}, {"species_id": "lunar_fennec_1", "weight": 11, "mood": "evasive"}, {"species_id": "cloud_crane_2", "weight": 5, "mood": "calm"}, {"species_id": "crystal_shrimp_2", "weight": 5, "mood": "alert"}, {"species_id": "frost_spider_2", "weight": 5, "mood": "patient"}, {"species_id": "ice_seal_2", "weight": 5, "mood": "placid"}, {"species_id": "lunar_fennec_2", "weight": 5, "mood": "evasive"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "cloud_crane_1", "weight": 15, "mood": "calm"}, {"species_id": "frost_spider_1", "weight": 15, "mood": "patient"}, {"species_id": "ice_seal_1", "weight": 15, "mood": "placid"}, {"species_id": "crystal_shrimp_1", "weight": 11, "mood": "alert"}, {"species_id": "lunar_fennec_1", "weight": 11, "mood": "evasive"}, {"species_id": "cloud_crane_2", "weight": 5, "mood": "calm"}, {"species_id": "crystal_shrimp_2", "weight": 5, "mood": "alert"}, {"species_id": "frost_spider_2", "weight": 5, "mood": "patient"}, {"species_id": "ice_seal_2", "weight": 5, "mood": "placid"}, {"species_id": "lunar_fennec_2", "weight": 5, "mood": "evasive"}]}, {"when": {"season": "winter"}, "entries": [{"species_id": "cloud_crane_2", "weight": 14, "mood": "calm"}, {"species_id": "crystal_shrimp_2", "weight": 14, "mood": "alert"}, {"species_id": "frost_spider_2", "weight": 14, "mood": "patient"}, {"species_id": "ice_seal_2", "weight": 14, "mood": "placid"}, {"species_id": "lunar_fennec_2", "weight": 14, "mood": "evasive"}, {"species_id": "cloud_crane_1", "weight": 13, "mood": "calm"}, {"species_id": "crystal_shrimp_1", "weight": 13, "mood": "alert"}, {"species_id": "frost_spider_1", "weight": 13, "mood": "patient"}]}, {"when": {"weather": "snow"}, "entries": [{"species_id": "cloud_crane_2", "weight": 32, "mood": "calm"}, {"species_id": "crystal_shrimp_2", "weight": 32, "mood": "alert"}, {"species_id": "frost_spider_2", "weight": 32, "mood": "patient"}, {"species_id": "ice_seal_2", "weight": 32, "mood": "placid"}, {"species_id": "lunar_fennec_2", "weight": 32, "mood": "evasive"}, {"species_id": "cloud_crane_1", "weight": 28, "mood": "calm"}, {"species_id": "crystal_shrimp_1", "weight": 28, "mood": "alert"}, {"species_id": "frost_spider_1", "weight": 28, "mood": "patient"}]}]}, {"habitat_id": "echo_broken_bridge", "weight_groups": [{"when": {}, "entries": [{"species_id": "gear_hound_1", "weight": 10, "mood": "loyal"}, {"species_id": "pebble_mole_1", "weight": 10, "mood": "patient"}, {"species_id": "coil_lizard_1", "weight": 19, "mood": "alert"}, {"species_id": "iron_pigeon_1", "weight": 19, "mood": "diligent"}, {"species_id": "rune_ant_1", "weight": 19, "mood": "busy"}, {"species_id": "shade_bat_1", "weight": 19, "mood": "sly"}, {"species_id": "ruin_gecko_1", "weight": 6, "mood": "secretive"}, {"species_id": "gear_hound_2", "weight": 6, "mood": "loyal"}, {"species_id": "pebble_mole_2", "weight": 6, "mood": "patient"}, {"species_id": "coil_lizard_2", "weight": 3, "mood": "alert"}, {"species_id": "iron_pigeon_2", "weight": 1, "mood": "diligent"}, {"species_id": "ruin_gecko_2", "weight": 1, "mood": "secretive"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "gear_hound_1", "weight": 18, "mood": "loyal"}, {"species_id": "pebble_mole_1", "weight": 18, "mood": "patient"}, {"species_id": "coil_lizard_1", "weight": 15, "mood": "alert"}, {"species_id": "iron_pigeon_1", "weight": 15, "mood": "diligent"}, {"species_id": "rune_ant_1", "weight": 15, "mood": "busy"}, {"species_id": "shade_bat_1", "weight": 15, "mood": "sly"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "gear_hound_1", "weight": 18, "mood": "loyal"}, {"species_id": "pebble_mole_1", "weight": 18, "mood": "patient"}, {"species_id": "coil_lizard_1", "weight": 15, "mood": "alert"}, {"species_id": "iron_pigeon_1", "weight": 15, "mood": "diligent"}, {"species_id": "rune_ant_1", "weight": 15, "mood": "busy"}, {"species_id": "shade_bat_1", "weight": 15, "mood": "sly"}, {"species_id": "ruin_gecko_1", "weight": 11, "mood": "secretive"}, {"species_id": "gear_hound_2", "weight": 10, "mood": "loyal"}, {"species_id": "pebble_mole_2", "weight": 10, "mood": "patient"}, {"species_id": "coil_lizard_2", "weight": 5, "mood": "alert"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "coil_lizard_1", "weight": 15, "mood": "alert"}, {"species_id": "iron_pigeon_1", "weight": 15, "mood": "diligent"}, {"species_id": "rune_ant_1", "weight": 15, "mood": "busy"}, {"species_id": "shade_bat_1", "weight": 15, "mood": "sly"}, {"species_id": "ruin_gecko_1", "weight": 11, "mood": "secretive"}, {"species_id": "gear_hound_2", "weight": 10, "mood": "loyal"}, {"species_id": "pebble_mole_2", "weight": 10, "mood": "patient"}, {"species_id": "coil_lizard_2", "weight": 5, "mood": "alert"}, {"species_id": "iron_pigeon_2", "weight": 5, "mood": "diligent"}, {"species_id": "ruin_gecko_2", "weight": 5, "mood": "secretive"}]}]}, {"habitat_id": "radiant_observatory", "weight_groups": [{"when": {}, "entries": [{"species_id": "null_fawn_1", "weight": 18, "mood": "mystic"}, {"species_id": "null_fawn_2", "weight": 2, "mood": "mystic"}, {"species_id": "null_fawn_3", "weight": 2, "mood": "mystic"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "null_fawn_1", "weight": 15, "mood": "mystic"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "null_fawn_1", "weight": 15, "mood": "mystic"}, {"species_id": "null_fawn_3", "weight": 2, "mood": "mystic"}]}, {"when": {"season": "winter"}, "entries": [{"species_id": "null_fawn_1", "weight": 13, "mood": "mystic"}, {"species_id": "null_fawn_2", "weight": 11, "mood": "mystic"}, {"species_id": "null_fawn_3", "weight": 3, "mood": "mystic"}]}, {"when": {"anomaly": "high"}, "entries": [{"species_id": "null_fawn_1", "weight": 28, "mood": "mystic"}, {"species_id": "null_fawn_2", "weight": 24, "mood": "mystic"}, {"species_id": "null_fawn_3", "weight": 2, "mood": "mystic"}]}]}, {"habitat_id": "ember_crater", "weight_groups": [{"when": {}, "entries": [{"species_id": "forge_beetle_1", "weight": 18, "mood": "industrious"}, {"species_id": "magma_tortoise_1", "weight": 18, "mood": "steady"}, {"species_id": "flare_mantis_1", "weight": 8, "mood": "agile"}, {"species_id": "solar_lizard_1", "weight": 8, "mood": "sharp"}, {"species_id": "flare_mantis_2", "weight": 6, "mood": "agile"}, {"species_id": "forge_beetle_2", "weight": 6, "mood": "industrious"}, {"species_id": "magma_tortoise_2", "weight": 6, "mood": "steady"}, {"species_id": "solar_lizard_2", "weight": 6, "mood": "sharp"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "forge_beetle_1", "weight": 15, "mood": "industrious"}, {"species_id": "magma_tortoise_1", "weight": 15, "mood": "steady"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "forge_beetle_1", "weight": 15, "mood": "industrious"}, {"species_id": "magma_tortoise_1", "weight": 15, "mood": "steady"}, {"species_id": "flare_mantis_1", "weight": 11, "mood": "agile"}, {"species_id": "solar_lizard_1", "weight": 11, "mood": "sharp"}, {"species_id": "flare_mantis_2", "weight": 5, "mood": "agile"}, {"species_id": "forge_beetle_2", "weight": 5, "mood": "industrious"}, {"species_id": "magma_tortoise_2", "weight": 5, "mood": "steady"}, {"species_id": "solar_lizard_2", "weight": 5, "mood": "sharp"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "forge_beetle_1", "weight": 15, "mood": "industrious"}, {"species_id": "magma_tortoise_1", "weight": 15, "mood": "steady"}, {"species_id": "flare_mantis_1", "weight": 11, "mood": "agile"}, {"species_id": "solar_lizard_1", "weight": 11, "mood": "sharp"}, {"species_id": "flare_mantis_2", "weight": 5, "mood": "agile"}, {"species_id": "forge_beetle_2", "weight": 5, "mood": "industrious"}, {"species_id": "magma_tortoise_2", "weight": 5, "mood": "steady"}, {"species_id": "solar_lizard_2", "weight": 5, "mood": "sharp"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "flare_mantis_2", "weight": 14, "mood": "agile"}, {"species_id": "forge_beetle_2", "weight": 14, "mood": "industrious"}, {"species_id": "magma_tortoise_2", "weight": 14, "mood": "steady"}, {"species_id": "solar_lizard_2", "weight": 14, "mood": "sharp"}, {"species_id": "flare_mantis_1", "weight": 13, "mood": "agile"}, {"species_id": "forge_beetle_1", "weight": 13, "mood": "industrious"}, {"species_id": "magma_tortoise_1", "weight": 13, "mood": "steady"}, {"species_id": "solar_lizard_1", "weight": 13, "mood": "sharp"}]}, {"when": {"weather": "clear"}, "entries": [{"species_id": "flare_mantis_2", "weight": 32, "mood": "agile"}, {"species_id": "forge_beetle_2", "weight": 32, "mood": "industrious"}, {"species_id": "magma_tortoise_2", "weight": 32, "mood": "steady"}, {"species_id": "solar_lizard_2", "weight": 32, "mood": "sharp"}, {"species_id": "flare_mantis_1", "weight": 28, "mood": "agile"}, {"species_id": "forge_beetle_1", "weight": 28, "mood": "industrious"}, {"species_id": "magma_tortoise_1", "weight": 28, "mood": "steady"}, {"species_id": "solar_lizard_1", "weight": 28, "mood": "sharp"}]}]}, {"habitat_id": "greenbark_grove", "weight_groups": [{"when": {}, "entries": [{"species_id": "bloom_lark_1", "weight": 7, "mood": "lively"}, {"species_id": "moss_deer_1", "weight": 7, "mood": "kind"}, {"species_id": "bloom_turtle_1", "weight": 6, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 6, "mood": "protective"}, {"species_id": "thorn_boar_1", "weight": 6, "mood": "stubborn"}, {"species_id": "breeze_swallow_1", "weight": 6, "mood": "restless"}, {"species_id": "embercat_1", "weight": 6, "mood": "brave"}, {"species_id": "prism_hare_1", "weight": 6, "mood": "cheerful"}, {"species_id": "spark_mouse_1", "weight": 6, "mood": "curious"}, {"species_id": "chapel_stag_1", "weight": 5, "mood": "noble"}, {"species_id": "bloom_lark_2", "weight": 5, "mood": "lively"}, {"species_id": "bloom_turtle_2", "weight": 5, "mood": "steady"}, {"species_id": "breeze_swallow_2", "weight": 2, "mood": "restless"}, {"species_id": "cedar_bear_2", "weight": 5, "mood": "protective"}, {"species_id": "chapel_stag_2", "weight": 2, "mood": "noble"}, {"species_id": "flare_mantis_2", "weight": 5, "mood": "agile"}, {"species_id": "flare_rooster_2", "weight": 2, "mood": "proud"}, {"species_id": "moss_deer_2", "weight": 5, "mood": "kind"}, {"species_id": "dusk_wolf_2", "weight": 2, "mood": "feral"}, {"species_id": "mind_owl_2", "weight": 2, "mood": "wise"}, {"species_id": "mist_fox_2", "weight": 2, "mood": "shy"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "bloom_lark_1", "weight": 22, "mood": "lively"}, {"species_id": "moss_deer_1", "weight": 22, "mood": "kind"}, {"species_id": "bloom_turtle_1", "weight": 19, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 19, "mood": "protective"}, {"species_id": "thorn_boar_1", "weight": 19, "mood": "stubborn"}, {"species_id": "breeze_swallow_1", "weight": 18, "mood": "restless"}, {"species_id": "embercat_1", "weight": 18, "mood": "brave"}, {"species_id": "prism_hare_1", "weight": 18, "mood": "cheerful"}, {"species_id": "spark_mouse_1", "weight": 18, "mood": "curious"}, {"species_id": "chapel_stag_1", "weight": 15, "mood": "noble"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "bloom_lark_1", "weight": 22, "mood": "lively"}, {"species_id": "moss_deer_1", "weight": 22, "mood": "kind"}, {"species_id": "bloom_turtle_1", "weight": 19, "mood": "steady"}, {"species_id": "cedar_bear_1", "weight": 19, "mood": "protective"}, {"species_id": "thorn_boar_1", "weight": 19, "mood": "stubborn"}, {"species_id": "breeze_swallow_1", "weight": 18, "mood": "restless"}, {"species_id": "embercat_1", "weight": 18, "mood": "brave"}, {"species_id": "prism_hare_1", "weight": 18, "mood": "cheerful"}, {"species_id": "spark_mouse_1", "weight": 18, "mood": "curious"}, {"species_id": "chapel_stag_1", "weight": 15, "mood": "noble"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "bloom_lark_2", "weight": 14, "mood": "lively"}, {"species_id": "bloom_turtle_2", "weight": 14, "mood": "steady"}, {"species_id": "breeze_swallow_2", "weight": 14, "mood": "restless"}, {"species_id": "cedar_bear_2", "weight": 14, "mood": "protective"}, {"species_id": "chapel_stag_2", "weight": 14, "mood": "noble"}, {"species_id": "flare_mantis_2", "weight": 14, "mood": "agile"}, {"species_id": "flare_rooster_2", "weight": 14, "mood": "proud"}, {"species_id": "moss_deer_2", "weight": 14, "mood": "kind"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "bloom_lark_2", "weight": 14, "mood": "lively"}, {"species_id": "bloom_turtle_2", "weight": 14, "mood": "steady"}, {"species_id": "cedar_bear_2", "weight": 14, "mood": "protective"}, {"species_id": "dusk_wolf_2", "weight": 14, "mood": "feral"}, {"species_id": "flare_mantis_2", "weight": 14, "mood": "agile"}, {"species_id": "mind_owl_2", "weight": 14, "mood": "wise"}, {"species_id": "mist_fox_2", "weight": 14, "mood": "shy"}, {"species_id": "moss_deer_2", "weight": 14, "mood": "kind"}]}]}, {"habitat_id": "reed_mire", "weight_groups": [{"when": {}, "entries": [{"species_id": "reed_frog_1", "weight": 7, "mood": "gentle"}, {"species_id": "steam_otter_1", "weight": 7, "mood": "playful"}, {"species_id": "tide_ray_1", "weight": 13, "mood": "smooth"}, {"species_id": "dew_moth_1", "weight": 18, "mood": "fragile"}, {"species_id": "volt_carp_1", "weight": 11, "mood": "rash"}, {"species_id": "marsh_slime_1", "weight": 10, "mood": "hungry"}, {"species_id": "reed_frog_2", "weight": 10, "mood": "gentle"}, {"species_id": "steam_otter_2", "weight": 10, "mood": "playful"}, {"species_id": "marsh_slime_2", "weight": 8, "mood": "hungry"}, {"species_id": "tide_ray_2", "weight": 8, "mood": "smooth"}, {"species_id": "dew_moth_2", "weight": 4, "mood": "fragile"}, {"species_id": "volt_carp_2", "weight": 4, "mood": "rash"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "reed_frog_1", "weight": 22, "mood": "gentle"}, {"species_id": "steam_otter_1", "weight": 22, "mood": "playful"}, {"species_id": "tide_ray_1", "weight": 19, "mood": "smooth"}, {"species_id": "dew_moth_1", "weight": 15, "mood": "fragile"}, {"species_id": "volt_carp_1", "weight": 15, "mood": "rash"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "reed_frog_1", "weight": 22, "mood": "gentle"}, {"species_id": "steam_otter_1", "weight": 22, "mood": "playful"}, {"species_id": "tide_ray_1", "weight": 19, "mood": "smooth"}, {"species_id": "dew_moth_1", "weight": 15, "mood": "fragile"}, {"species_id": "volt_carp_1", "weight": 15, "mood": "rash"}, {"species_id": "marsh_slime_1", "weight": 14, "mood": "hungry"}, {"species_id": "reed_frog_2", "weight": 14, "mood": "gentle"}, {"species_id": "steam_otter_2", "weight": 14, "mood": "playful"}, {"species_id": "marsh_slime_2", "weight": 9, "mood": "hungry"}, {"species_id": "tide_ray_2", "weight": 9, "mood": "smooth"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "tide_ray_1", "weight": 19, "mood": "smooth"}, {"species_id": "dew_moth_1", "weight": 15, "mood": "fragile"}, {"species_id": "volt_carp_1", "weight": 15, "mood": "rash"}, {"species_id": "marsh_slime_1", "weight": 14, "mood": "hungry"}, {"species_id": "reed_frog_2", "weight": 14, "mood": "gentle"}, {"species_id": "steam_otter_2", "weight": 14, "mood": "playful"}, {"species_id": "marsh_slime_2", "weight": 9, "mood": "hungry"}, {"species_id": "tide_ray_2", "weight": 9, "mood": "smooth"}, {"species_id": "dew_moth_2", "weight": 5, "mood": "fragile"}, {"species_id": "volt_carp_2", "weight": 5, "mood": "rash"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "dew_moth_2", "weight": 14, "mood": "fragile"}, {"species_id": "marsh_slime_2", "weight": 14, "mood": "hungry"}, {"species_id": "reed_frog_2", "weight": 14, "mood": "gentle"}, {"species_id": "steam_otter_2", "weight": 14, "mood": "playful"}, {"species_id": "tide_ray_2", "weight": 14, "mood": "smooth"}, {"species_id": "volt_carp_2", "weight": 14, "mood": "rash"}, {"species_id": "dew_moth_1", "weight": 13, "mood": "fragile"}, {"species_id": "marsh_slime_1", "weight": 13, "mood": "hungry"}]}, {"when": {"weather": "fog"}, "entries": [{"species_id": "dew_moth_2", "weight": 32, "mood": "fragile"}, {"species_id": "marsh_slime_2", "weight": 32, "mood": "hungry"}, {"species_id": "reed_frog_2", "weight": 32, "mood": "gentle"}, {"species_id": "steam_otter_2", "weight": 32, "mood": "playful"}, {"species_id": "tide_ray_2", "weight": 32, "mood": "smooth"}, {"species_id": "volt_carp_2", "weight": 32, "mood": "rash"}, {"species_id": "dew_moth_1", "weight": 28, "mood": "fragile"}, {"species_id": "marsh_slime_1", "weight": 28, "mood": "hungry"}]}]}, {"habitat_id": "saltglass_coast", "weight_groups": [{"when": {}, "entries": [{"species_id": "steam_otter_1", "weight": 6, "mood": "playful"}, {"species_id": "cloud_crane_1", "weight": 11, "mood": "calm"}, {"species_id": "echo_snail_1", "weight": 11, "mood": "slow"}, {"species_id": "frost_spider_1", "weight": 11, "mood": "patient"}, {"species_id": "ice_seal_1", "weight": 11, "mood": "placid"}, {"species_id": "tide_ray_1", "weight": 11, "mood": "smooth"}, {"species_id": "crystal_shrimp_1", "weight": 4, "mood": "alert"}, {"species_id": "lunar_fennec_1", "weight": 4, "mood": "evasive"}, {"species_id": "solar_lizard_1", "weight": 4, "mood": "sharp"}, {"species_id": "steam_otter_2", "weight": 8, "mood": "playful"}, {"species_id": "cloud_crane_2", "weight": 4, "mood": "calm"}, {"species_id": "crystal_shrimp_2", "weight": 2, "mood": "alert"}, {"species_id": "echo_snail_2", "weight": 2, "mood": "slow"}, {"species_id": "frost_spider_2", "weight": 2, "mood": "patient"}, {"species_id": "ice_seal_2", "weight": 2, "mood": "placid"}, {"species_id": "lunar_fennec_2", "weight": 2, "mood": "evasive"}, {"species_id": "solar_lizard_2", "weight": 2, "mood": "sharp"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "steam_otter_1", "weight": 18, "mood": "playful"}, {"species_id": "cloud_crane_1", "weight": 15, "mood": "calm"}, {"species_id": "echo_snail_1", "weight": 15, "mood": "slow"}, {"species_id": "frost_spider_1", "weight": 15, "mood": "patient"}, {"species_id": "ice_seal_1", "weight": 15, "mood": "placid"}, {"species_id": "tide_ray_1", "weight": 15, "mood": "smooth"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "steam_otter_1", "weight": 18, "mood": "playful"}, {"species_id": "cloud_crane_1", "weight": 15, "mood": "calm"}, {"species_id": "echo_snail_1", "weight": 15, "mood": "slow"}, {"species_id": "frost_spider_1", "weight": 15, "mood": "patient"}, {"species_id": "ice_seal_1", "weight": 15, "mood": "placid"}, {"species_id": "tide_ray_1", "weight": 15, "mood": "smooth"}, {"species_id": "crystal_shrimp_1", "weight": 11, "mood": "alert"}, {"species_id": "lunar_fennec_1", "weight": 11, "mood": "evasive"}, {"species_id": "solar_lizard_1", "weight": 11, "mood": "sharp"}, {"species_id": "steam_otter_2", "weight": 10, "mood": "playful"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "cloud_crane_1", "weight": 15, "mood": "calm"}, {"species_id": "echo_snail_1", "weight": 15, "mood": "slow"}, {"species_id": "frost_spider_1", "weight": 15, "mood": "patient"}, {"species_id": "ice_seal_1", "weight": 15, "mood": "placid"}, {"species_id": "tide_ray_1", "weight": 15, "mood": "smooth"}, {"species_id": "crystal_shrimp_1", "weight": 11, "mood": "alert"}, {"species_id": "lunar_fennec_1", "weight": 11, "mood": "evasive"}, {"species_id": "solar_lizard_1", "weight": 11, "mood": "sharp"}, {"species_id": "steam_otter_2", "weight": 10, "mood": "playful"}, {"species_id": "cloud_crane_2", "weight": 5, "mood": "calm"}]}, {"when": {"season": "winter"}, "entries": [{"species_id": "cloud_crane_2", "weight": 14, "mood": "calm"}, {"species_id": "crystal_shrimp_2", "weight": 14, "mood": "alert"}, {"species_id": "echo_snail_2", "weight": 14, "mood": "slow"}, {"species_id": "frost_spider_2", "weight": 14, "mood": "patient"}, {"species_id": "ice_seal_2", "weight": 14, "mood": "placid"}, {"species_id": "lunar_fennec_2", "weight": 14, "mood": "evasive"}, {"species_id": "solar_lizard_2", "weight": 14, "mood": "sharp"}, {"species_id": "steam_otter_2", "weight": 14, "mood": "playful"}]}, {"when": {"weather": "clear"}, "entries": [{"species_id": "cloud_crane_2", "weight": 32, "mood": "calm"}, {"species_id": "crystal_shrimp_2", "weight": 32, "mood": "alert"}, {"species_id": "ice_seal_2", "weight": 32, "mood": "placid"}, {"species_id": "solar_lizard_2", "weight": 32, "mood": "sharp"}, {"species_id": "steam_otter_2", "weight": 32, "mood": "playful"}, {"species_id": "tide_ray_2", "weight": 32, "mood": "smooth"}, {"species_id": "cloud_crane_1", "weight": 28, "mood": "calm"}, {"species_id": "crystal_shrimp_1", "weight": 28, "mood": "alert"}]}]}, {"habitat_id": "moonfen_ruins", "weight_groups": [{"when": {}, "entries": [{"species_id": "coil_lizard_1", "weight": 16, "mood": "alert"}, {"species_id": "rune_ant_1", "weight": 16, "mood": "busy"}, {"species_id": "null_fawn_1", "weight": 10, "mood": "mystic"}, {"species_id": "ruin_gecko_1", "weight": 8, "mood": "secretive"}, {"species_id": "coil_lizard_2", "weight": 4, "mood": "alert"}, {"species_id": "ruin_gecko_2", "weight": 6, "mood": "secretive"}, {"species_id": "rune_ant_2", "weight": 4, "mood": "busy"}, {"species_id": "null_fawn_2", "weight": 1, "mood": "mystic"}]}, {"when": {"season": "spring"}, "entries": [{"species_id": "coil_lizard_1", "weight": 15, "mood": "alert"}, {"species_id": "rune_ant_1", "weight": 15, "mood": "busy"}]}, {"when": {"season": "summer"}, "entries": [{"species_id": "coil_lizard_1", "weight": 15, "mood": "alert"}, {"species_id": "null_fawn_1", "weight": 15, "mood": "mystic"}, {"species_id": "rune_ant_1", "weight": 15, "mood": "busy"}, {"species_id": "ruin_gecko_1", "weight": 11, "mood": "secretive"}, {"species_id": "coil_lizard_2", "weight": 5, "mood": "alert"}, {"species_id": "ruin_gecko_2", "weight": 5, "mood": "secretive"}, {"species_id": "rune_ant_2", "weight": 5, "mood": "busy"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "coil_lizard_1", "weight": 15, "mood": "alert"}, {"species_id": "null_fawn_1", "weight": 15, "mood": "mystic"}, {"species_id": "rune_ant_1", "weight": 15, "mood": "busy"}, {"species_id": "ruin_gecko_1", "weight": 11, "mood": "secretive"}, {"species_id": "coil_lizard_2", "weight": 5, "mood": "alert"}, {"species_id": "ruin_gecko_2", "weight": 5, "mood": "secretive"}, {"species_id": "rune_ant_2", "weight": 5, "mood": "busy"}]}, {"when": {"season": "autumn"}, "entries": [{"species_id": "ruin_gecko_2", "weight": 14, "mood": "secretive"}, {"species_id": "null_fawn_1", "weight": 13, "mood": "mystic"}, {"species_id": "ruin_gecko_1", "weight": 13, "mood": "secretive"}, {"species_id": "null_fawn_2", "weight": 11, "mood": "mystic"}, {"species_id": "coil_lizard_2", "weight": 6, "mood": "alert"}, {"species_id": "rune_ant_2", "weight": 6, "mood": "busy"}, {"species_id": "coil_lizard_1", "weight": 4, "mood": "alert"}, {"species_id": "rune_ant_1", "weight": 4, "mood": "busy"}]}, {"when": {"anomaly": "high"}, "entries": [{"species_id": "ruin_gecko_2", "weight": 32, "mood": "secretive"}, {"species_id": "rune_ant_2", "weight": 32, "mood": "busy"}, {"species_id": "null_fawn_1", "weight": 28, "mood": "mystic"}, {"species_id": "ruin_gecko_1", "weight": 28, "mood": "secretive"}, {"species_id": "rune_ant_1", "weight": 28, "mood": "busy"}, {"species_id": "null_fawn_2", "weight": 24, "mood": "mystic"}, {"species_id": "coil_lizard_2", "weight": 14, "mood": "alert"}, {"species_id": "coil_lizard_1", "weight": 10, "mood": "alert"}]}]}]}
+\ No newline at end of file
+diff --git a/README.md b/README.md
+index 98e4936..8d3f97f 100644
+--- a/README.md
++++ b/README.md
+@@ -11,7 +11,7 @@
+ 
+ - 4 季 × 25 回合的百回合远征结构
+ - 掷骰走格主循环，支持每周重掷、赛季修正点和锚定兜底
+-- 季节轮换、天气与时段变化，以及地点开放链
++- 季节轮换、天气与时段变化，以及地区生态权重变化
+ - 区域棋盘推进、分叉路线与落点偶遇流程
+ - 固定 `2v2` 双打编成
+ - 背包容量随成长曲线提升，按“人口”而非传统格子计算
+@@ -82,7 +82,7 @@ godot --headless --path . -s res://scripts/custom_asset_sync_smoke_test.gd
+ 它们分别覆盖：
+ 
+ - 主场景可启动、可进入地点、可打开驻点总览
+-- 季节切换、地点开放、道馆首通奖励链
++- 季节切换、生态权重变化、道馆首通奖励链
+ - 双打编成、背包人口、升星、羁绊与建筑战前增益
+ - MDA120 成长曲线、遭遇权重、访问共鸣与进化链
+ - 扩展任务、事件、对话树、图鉴和百科表已被 `DataRepository` 正常读取
+diff --git a/scripts/season_upgrade_smoke_test.gd b/scripts/season_upgrade_smoke_test.gd
+index 3d34003..2572b8c 100644
+--- a/scripts/season_upgrade_smoke_test.gd
++++ b/scripts/season_upgrade_smoke_test.gd
+@@ -19,50 +19,53 @@ func _run_checks() -> void:
+ 		_fail("Upgrade smoke test failed: dojo definitions were not loaded.")
+ 		return
+ 	if game_state.is_habitat_unlocked("thunder_meadow"):
+-		_fail("Upgrade smoke test failed: thunder_meadow should not unlock during spring.")
++		_fail("Upgrade smoke test failed: thunder_meadow should still require progression, not season.")
+ 		return
+ 
+ 	game_state.set_building_level("mist_moss_cave", "warm_nest", 2)
+ 	game_state.note_build("warm_nest", 2)
+-	if not game_state.advance_to_next_season():
+-		_fail("Upgrade smoke test failed: could not advance to summer.")
+-		return
+-	if game_state.season_id != "summer":
+-		_fail("Upgrade smoke test failed: season did not advance to summer.")
+-		return
+ 	if not game_state.is_habitat_unlocked("thunder_meadow"):
+-		_fail("Upgrade smoke test failed: thunder_meadow did not unlock in summer.")
++		_fail("Upgrade smoke test failed: thunder_meadow did not unlock after reaching the rank gate.")
++		return
++	if not game_state.is_habitat_unlocked("autumn_leaf_dojo"):
++		_fail("Upgrade smoke test failed: autumn_leaf_dojo did not unlock after the building gate.")
+ 		return
+ 
+-	game_state.grant_items({"spark_reed": 1})
++	game_state.grant_items({"spark_reed": 2})
+ 	var dojo_service = load("res://scripts/services/dojo_service.gd").new()
+-	var summer_result: Dictionary = dojo_service.attempt_dojo("summer_storm_trial", "tier_1")
+-	if not bool(summer_result.get("ok", false)) or not bool(summer_result.get("success", false)):
++
++	var summer_t1: Dictionary = dojo_service.attempt_dojo("summer_storm_trial", "tier_1")
++	if not bool(summer_t1.get("ok", false)) or not bool(summer_t1.get("success", false)):
+ 		_fail("Upgrade smoke test failed: summer dojo tier 1 did not clear.")
+ 		return
+-	if not game_state.has_cleared_dojo("summer_storm_trial", "tier_1"):
+-		_fail("Upgrade smoke test failed: dojo clear flag was not stored.")
++	if game_state.is_habitat_unlocked("echo_broken_bridge"):
++		_fail("Upgrade smoke test failed: echo_broken_bridge should unlock on summer dojo tier 2, not tier 1.")
+ 		return
+-	if game_state.badge_count < 1:
+-		_fail("Upgrade smoke test failed: dojo rewards did not grant a badge.")
++
++	var summer_t2: Dictionary = dojo_service.attempt_dojo("summer_storm_trial", "tier_2")
++	if not bool(summer_t2.get("ok", false)) or not bool(summer_t2.get("success", false)):
++		_fail("Upgrade smoke test failed: summer dojo tier 2 did not clear.")
+ 		return
+ 	if not game_state.is_habitat_unlocked("echo_broken_bridge"):
+-		_fail("Upgrade smoke test failed: echo_broken_bridge was not unlocked by the summer dojo reward.")
++		_fail("Upgrade smoke test failed: echo_broken_bridge was not unlocked by the summer dojo tier 2 reward.")
+ 		return
+ 
+-	if not game_state.advance_to_next_season():
+-		_fail("Upgrade smoke test failed: could not advance to autumn.")
+-		return
+-	if not game_state.is_habitat_unlocked("autumn_leaf_dojo"):
+-		_fail("Upgrade smoke test failed: autumn_leaf_dojo did not unlock in autumn.")
++	game_state.add_trust("moss_keeper", 6)
++	if not game_state.is_habitat_unlocked("frost_mirror_lake"):
++		_fail("Upgrade smoke test failed: frost_mirror_lake did not unlock after the trust gate.")
+ 		return
+ 
+-	game_state.add_trust("moss_keeper", 6)
+-	if not game_state.advance_to_next_season():
+-		_fail("Upgrade smoke test failed: could not advance to winter.")
++	game_state.grant_items({"amber_resin": 2, "tea_leaf": 2})
++	var autumn_t1: Dictionary = dojo_service.attempt_dojo("autumn_leaf_dojo", "tier_1")
++	if not bool(autumn_t1.get("ok", false)) or not bool(autumn_t1.get("success", false)):
++		_fail("Upgrade smoke test failed: autumn dojo tier 1 did not clear.")
+ 		return
+-	if not game_state.is_habitat_unlocked("frost_mirror_lake"):
+-		_fail("Upgrade smoke test failed: frost_mirror_lake did not unlock in winter.")
++	var autumn_t2: Dictionary = dojo_service.attempt_dojo("autumn_leaf_dojo", "tier_2")
++	if not bool(autumn_t2.get("ok", false)) or not bool(autumn_t2.get("success", false)):
++		_fail("Upgrade smoke test failed: autumn dojo tier 2 did not clear.")
++		return
++	if not game_state.is_habitat_unlocked("radiant_observatory"):
++		_fail("Upgrade smoke test failed: radiant_observatory was not unlocked by the autumn dojo reward.")
+ 		return
+ 
+ 	await create_timer(0.05).timeout

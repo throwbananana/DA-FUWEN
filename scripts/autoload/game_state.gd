@@ -70,9 +70,9 @@ var season_points := 0
 var badge_count := 0
 var failed_dojo_streak := 0
 var current_available_habitats_cache: Array[String] = []
-var battle_slots: Array[String] = []
-var backpack_slots: Array[String] = []
-var backpack_capacity := 4
+var party_slots: Array[String] = []
+var reserve_slots: Array[String] = []
+var pet_capacity := 4
 var wallet_gold := 12
 var bank_gold := 0
 var shop_purchase_counts: Dictionary = {}
@@ -144,9 +144,9 @@ func reset_for_new_season() -> void:
 	badge_count = 0
 	failed_dojo_streak = 0
 	current_available_habitats_cache.clear()
-	battle_slots.clear()
-	backpack_slots.clear()
-	backpack_capacity = 4
+	party_slots.clear()
+	reserve_slots.clear()
+	pet_capacity = 4
 	wallet_gold = 12
 	bank_gold = 0
 	shop_purchase_counts.clear()
@@ -159,7 +159,7 @@ func reset_for_new_season() -> void:
 	quest_memory = _default_quest_memory()
 	_pet_serial = 1
 	_seed_companions()
-	_recalculate_backpack_capacity()
+	_recalculate_pet_capacity()
 	_sync_roster_slots()
 	_sync_current_season_rule()
 	refresh_season_unlocks()
@@ -522,9 +522,12 @@ func build_runtime_snapshot() -> Dictionary:
 		"season_points": season_points,
 		"badge_count": badge_count,
 		"failed_dojo_streak": failed_dojo_streak,
-		"battle_slots": battle_slots.duplicate(),
-		"backpack_slots": backpack_slots.duplicate(),
-		"backpack_capacity": backpack_capacity,
+		"party_slots": party_slots.duplicate(),
+		"reserve_slots": reserve_slots.duplicate(),
+		"pet_capacity": pet_capacity,
+		"battle_slots": party_slots.duplicate(),
+		"backpack_slots": reserve_slots.duplicate(),
+		"backpack_capacity": pet_capacity,
 		"wallet_gold": wallet_gold,
 		"bank_gold": bank_gold,
 		"shop_purchase_counts": shop_purchase_counts.duplicate(true),
@@ -584,9 +587,9 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	season_points = int(snapshot.get("season_points", 0))
 	badge_count = int(snapshot.get("badge_count", 0))
 	failed_dojo_streak = int(snapshot.get("failed_dojo_streak", 0))
-	battle_slots = _coerce_string_array(snapshot.get("battle_slots", []))
-	backpack_slots = _coerce_string_array(snapshot.get("backpack_slots", []))
-	backpack_capacity = int(snapshot.get("backpack_capacity", 4))
+	party_slots = _coerce_string_array(snapshot.get("party_slots", snapshot.get("battle_slots", [])))
+	reserve_slots = _coerce_string_array(snapshot.get("reserve_slots", snapshot.get("backpack_slots", [])))
+	pet_capacity = int(snapshot.get("pet_capacity", snapshot.get("backpack_capacity", 4)))
 	wallet_gold = int(snapshot.get("wallet_gold", 12))
 	bank_gold = int(snapshot.get("bank_gold", 0))
 	shop_purchase_counts = _duplicate_dictionary(snapshot.get("shop_purchase_counts", {}))
@@ -603,7 +606,7 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	trait_runtime_dirty = true
 	_sync_current_season_rule()
 	refresh_season_unlocks()
-	_recalculate_backpack_capacity()
+	_recalculate_pet_capacity()
 	_sync_roster_slots()
 	_sync_rival_wallets_from_ai_players()
 
@@ -876,7 +879,7 @@ func set_building_level(habitat_id: String, building_id: String, level: int) -> 
 	habitat_state["building_runtime_states"] = runtime_states
 	habitat_state["rank"] = _rank_from_state(habitat_state)
 	habitats[habitat_id] = habitat_state
-	_recalculate_backpack_capacity()
+	_recalculate_pet_capacity()
 	_sync_roster_slots()
 	refresh_season_unlocks()
 
@@ -1203,22 +1206,86 @@ func record_npc_intro_duel(npc_id: String, won: bool, base_trust: int) -> Dictio
 	refresh_season_unlocks()
 	return record.duplicate(true)
 
-func can_pay(cost: Dictionary) -> bool:
+func has_items(cost: Dictionary) -> bool:
 	for item_id in cost.keys():
 		if int(inventory.get(item_id, 0)) < int(cost[item_id]):
 			return false
 	return true
 
-func pay_cost(cost: Dictionary) -> bool:
-	if not can_pay(cost):
+func can_pay(cost: Dictionary) -> bool:
+	return has_items(cost)
+
+func remove_items(cost: Dictionary) -> bool:
+	if not has_items(cost):
 		return false
 	for item_id in cost.keys():
-		inventory[item_id] = int(inventory.get(item_id, 0)) - int(cost[item_id])
+		var remaining := int(inventory.get(item_id, 0)) - int(cost[item_id])
+		if remaining <= 0:
+			inventory.erase(item_id)
+		else:
+			inventory[item_id] = remaining
 	return true
 
-func grant_items(reward_items: Dictionary) -> void:
+func pay_cost(cost: Dictionary) -> bool:
+	return remove_items(cost)
+
+func add_items(reward_items: Dictionary) -> void:
 	for item_id in reward_items.keys():
 		inventory[item_id] = int(inventory.get(item_id, 0)) + int(reward_items[item_id])
+
+func grant_items(reward_items: Dictionary) -> void:
+	add_items(reward_items)
+
+func get_item_count(item_id: String) -> int:
+	return int(inventory.get(item_id, 0))
+
+func use_item(item_id: String, target: Dictionary = {}) -> Dictionary:
+	var item := DataRepository.get_item(item_id)
+	if item.is_empty():
+		return {"ok": false, "reason": "missing_item", "item_id": item_id}
+	if get_item_count(item_id) <= 0:
+		return {"ok": false, "reason": "insufficient_count", "item_id": item_id}
+	var use_mode := String(item.get("use_mode", "passive"))
+	if use_mode != "active":
+		return {"ok": false, "reason": "not_usable", "item_id": item_id, "use_mode": use_mode}
+	var effect_id := String(item.get("effect_id", "none"))
+	var result := {"ok": false, "reason": "effect_unimplemented", "item_id": item_id, "effect_id": effect_id}
+	match effect_id:
+		"restore_hunger_small":
+			result = {
+				"ok": true,
+				"item_id": item_id,
+				"effect_id": effect_id,
+				"kind": "hunger",
+				"new_hunger": restore_hunger(8),
+			}
+		"restore_hunger_medium":
+			result = {
+				"ok": true,
+				"item_id": item_id,
+				"effect_id": effect_id,
+				"kind": "hunger",
+				"new_hunger": restore_hunger(16),
+			}
+		"add_bond_small":
+			var pet_uid := String(target.get("pet_uid", ""))
+			if pet_uid.is_empty():
+				return {"ok": false, "reason": "missing_target", "item_id": item_id, "effect_id": effect_id}
+			var bond_result := add_pet_bond(pet_uid, 1)
+			if bond_result.is_empty():
+				return {"ok": false, "reason": "invalid_target", "item_id": item_id, "effect_id": effect_id, "pet_uid": pet_uid}
+			result = {
+				"ok": true,
+				"item_id": item_id,
+				"effect_id": effect_id,
+				"kind": "bond",
+				"pet_uid": pet_uid,
+				"bond_result": bond_result,
+			}
+		_:
+			return result
+	remove_items({item_id: 1})
+	return result
 
 func consume_hunger(amount: int) -> int:
 	hunger = maxi(0, hunger - maxi(amount, 0))
@@ -1256,7 +1323,7 @@ func apply_system_rewards(system_rewards: Dictionary) -> void:
 				anchor_points += int(system_rewards[reward_id])
 			"exploration_points":
 				exploration_points += int(system_rewards[reward_id])
-	_recalculate_backpack_capacity()
+	_recalculate_pet_capacity()
 	_sync_roster_slots()
 
 func accept_quest(quest_id: String) -> void:
@@ -1895,45 +1962,57 @@ func get_progression_summary() -> String:
 		parts.append(flow_goal)
 	return " ｜ ".join(parts)
 
-func _recalculate_backpack_capacity() -> void:
+func _recalculate_pet_capacity() -> void:
 	var curve_entry := DataRepository.get_population_curve_entry(get_progression_rank())
-	backpack_capacity = int(curve_entry.get("backpack_capacity", 4))
+	pet_capacity = int(curve_entry.get("pet_capacity", curve_entry.get("backpack_capacity", 4)))
+
+func _recalculate_backpack_capacity() -> void:
+	_recalculate_pet_capacity()
 
 func _sync_roster_slots() -> void:
 	trait_runtime_dirty = true
 	var valid_uids := {}
 	for companion in get_companions():
 		valid_uids[String(companion.get("uid", ""))] = true
-	var clean_battle: Array[String] = []
-	for pet_uid in battle_slots:
-		if valid_uids.has(pet_uid) and not clean_battle.has(pet_uid):
-			clean_battle.append(pet_uid)
-	var clean_backpack: Array[String] = []
-	for pet_uid in backpack_slots:
-		if valid_uids.has(pet_uid) and not clean_battle.has(pet_uid) and not clean_backpack.has(pet_uid):
-			if _population_used_for_uids(clean_backpack) + _population_cost_for_uid(String(pet_uid)) <= backpack_capacity:
-				clean_backpack.append(pet_uid)
+	var clean_party: Array[String] = []
+	for pet_uid in party_slots:
+		if valid_uids.has(pet_uid) and not clean_party.has(pet_uid):
+			clean_party.append(pet_uid)
+	var clean_reserve: Array[String] = []
+	for pet_uid in reserve_slots:
+		if valid_uids.has(pet_uid) and not clean_party.has(pet_uid) and not clean_reserve.has(pet_uid):
+			if _population_used_for_uids(clean_reserve) + _population_cost_for_uid(String(pet_uid)) <= pet_capacity:
+				clean_reserve.append(pet_uid)
 	for companion in get_companions():
 		var pet_uid := String(companion.get("uid", ""))
-		if clean_battle.size() < 2 and not clean_battle.has(pet_uid):
-			clean_battle.append(pet_uid)
+		if clean_party.size() < 2 and not clean_party.has(pet_uid):
+			clean_party.append(pet_uid)
 			continue
-		if not clean_battle.has(pet_uid) and not clean_backpack.has(pet_uid) and _population_used_for_uids(clean_backpack) + _population_cost_for_uid(pet_uid) <= backpack_capacity:
-			clean_backpack.append(pet_uid)
-	battle_slots = clean_battle
-	backpack_slots = clean_backpack
+		if not clean_party.has(pet_uid) and not clean_reserve.has(pet_uid) and _population_used_for_uids(clean_reserve) + _population_cost_for_uid(pet_uid) <= pet_capacity:
+			clean_reserve.append(pet_uid)
+	party_slots = clean_party
+	reserve_slots = clean_reserve
+
+func get_party_uids() -> Array[String]:
+	_sync_roster_slots()
+	return party_slots.duplicate()
 
 func get_battle_party_uids() -> Array[String]:
+	return get_party_uids()
+
+func get_reserve_uids() -> Array[String]:
 	_sync_roster_slots()
-	return battle_slots.duplicate()
+	return reserve_slots.duplicate()
 
 func get_backpack_uids() -> Array[String]:
+	return get_reserve_uids()
+
+func get_reserve_population_used() -> int:
 	_sync_roster_slots()
-	return backpack_slots.duplicate()
+	return _population_used_for_uids(reserve_slots)
 
 func get_backpack_population_used() -> int:
-	_sync_roster_slots()
-	return _population_used_for_uids(backpack_slots)
+	return get_reserve_population_used()
 
 func get_building_slot_uids() -> Array[String]:
 	var result: Array[String] = []
@@ -1945,36 +2024,42 @@ func get_building_slot_uids() -> Array[String]:
 			result.append(pet_uid)
 	return result
 
-func set_battle_slot(slot_index: int, pet_uid: String) -> void:
+func set_party_slot(slot_index: int, pet_uid: String) -> void:
 	if not pet_states.has(pet_uid):
 		return
 	_sync_roster_slots()
-	while battle_slots.size() <= slot_index:
-		battle_slots.append("")
-	var displaced_uid := String(battle_slots[slot_index])
-	battle_slots[slot_index] = pet_uid
-	for index in range(battle_slots.size()):
+	while party_slots.size() <= slot_index:
+		party_slots.append("")
+	var displaced_uid := String(party_slots[slot_index])
+	party_slots[slot_index] = pet_uid
+	for index in range(party_slots.size()):
 		if index == slot_index:
 			continue
-		if battle_slots[index] == pet_uid:
-			battle_slots[index] = displaced_uid
+		if party_slots[index] == pet_uid:
+			party_slots[index] = displaced_uid
 			break
 	_sync_roster_slots()
 
-func toggle_backpack_slot(pet_uid: String) -> void:
+func set_battle_slot(slot_index: int, pet_uid: String) -> void:
+	set_party_slot(slot_index, pet_uid)
+
+func toggle_reserve_slot(pet_uid: String) -> void:
 	if not pet_states.has(pet_uid):
 		return
 	_sync_roster_slots()
-	if battle_slots.has(pet_uid):
+	if party_slots.has(pet_uid):
 		return
-	if backpack_slots.has(pet_uid):
-		backpack_slots.erase(pet_uid)
+	if reserve_slots.has(pet_uid):
+		reserve_slots.erase(pet_uid)
 	else:
-		while not backpack_slots.is_empty() and get_backpack_population_used() + _population_cost_for_uid(pet_uid) > backpack_capacity:
-			backpack_slots.pop_back()
-		if get_backpack_population_used() + _population_cost_for_uid(pet_uid) <= backpack_capacity:
-			backpack_slots.append(pet_uid)
+		while not reserve_slots.is_empty() and get_reserve_population_used() + _population_cost_for_uid(pet_uid) > pet_capacity:
+			reserve_slots.pop_back()
+		if get_reserve_population_used() + _population_cost_for_uid(pet_uid) <= pet_capacity:
+			reserve_slots.append(pet_uid)
 	_sync_roster_slots()
+
+func toggle_backpack_slot(pet_uid: String) -> void:
+	toggle_reserve_slot(pet_uid)
 
 func get_pet_population_cost(pet_uid: String) -> int:
 	return _population_cost_for_uid(pet_uid)
@@ -2137,9 +2222,9 @@ func _build_active_species_tag_counts() -> Dictionary:
 	}
 	var seen_species := {}
 	var source_uids: Array[String] = []
-	for pet_uid in get_battle_party_uids():
+	for pet_uid in get_party_uids():
 		source_uids.append(String(pet_uid))
-	for pet_uid in get_backpack_uids():
+	for pet_uid in get_reserve_uids():
 		source_uids.append(String(pet_uid))
 	for pet_uid in get_building_slot_uids():
 		source_uids.append(String(pet_uid))
@@ -2253,6 +2338,6 @@ func _erase_pet(pet_uid: String) -> void:
 				changed = true
 		if changed:
 			habitats[habitat_id] = habitat_state
-	battle_slots.erase(pet_uid)
-	backpack_slots.erase(pet_uid)
+	party_slots.erase(pet_uid)
+	reserve_slots.erase(pet_uid)
 	pet_states.erase(pet_uid)

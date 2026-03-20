@@ -26,8 +26,8 @@ const DialogueService = preload("res://scripts/services/dialogue_service.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
 
 const GAME_TITLE := "雾野远征"
-const BACKPACK_RESOURCE_TYPES := ["material", "rare_material"]
-const BACKPACK_SUPPLY_TYPES := ["consumable", "tool", "trophy"]
+const INVENTORY_RESOURCE_TYPES := ["material", "rare_material"]
+const INVENTORY_SUPPLY_TYPES := ["consumable", "tool", "quest", "trophy"]
 const CODEX_RARITY_LABELS := {
 	"common": "常见",
 	"uncommon": "少见",
@@ -977,7 +977,7 @@ func _apply_starter_choice(species_id: String, random_choice := false) -> void:
 	starter_choice_pending = false
 	starter_choice_done = true
 	starter_companion_uid = GameState.add_companion(species_id)
-	GameState.set_battle_slot(0, starter_companion_uid)
+	GameState.set_party_slot(0, starter_companion_uid)
 	var profile := GameData.get_species_synergy_profile(species_id)
 	var mode_text := "随机分配" if random_choice else "已选择"
 	var body_lines: Array[String] = [
@@ -1018,7 +1018,7 @@ func _tutorial_entry(tutorial_id: String) -> Dictionary:
 			return {
 				"title": "经营教学",
 				"close_text": "继续整理",
-				"body": "[b]营地总览[/b]\n只有路过营地时才会自动弹出，这里处理队伍整备、驻守、建筑与留信。其他地点则统一改成落点偶遇。\n\n[b]经营重点[/b]\n双打位决定当前战斗核心；背包位补羁绊；驻守会影响据点建设和建筑共鸣。\n\n[b]信息入口[/b]\n平时随时能在 [b]系统手册 -> 背包[/b] 里看饥饿、库存、金钱和地点状态。"
+				"body": "[b]营地总览[/b]\n只有路过营地时才会自动弹出，这里处理队伍整备、驻守、建筑与留信。其他地点则统一改成落点偶遇。\n\n[b]经营重点[/b]\n双打位决定当前战斗核心；待命位补羁绊；驻守会影响据点建设和建筑共鸣。\n\n[b]信息入口[/b]\n平时随时能在 [b]系统手册 -> 背包[/b] 里看饥饿、库存、金钱和地点状态。"
 			}
 		"battle_intro":
 			return {
@@ -1758,7 +1758,7 @@ func _on_base_pressed(opened_from_travel: bool = false) -> void:
 		"active_quests": _quest_titles(GameState.active_quests),
 		"completed_quests": GameState.completed_quests.duplicate(),
 		"battle_slots": _battle_slot_names(),
-		"backpack_summary": "%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity],
+		"reserve_summary": "%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity],
 		"run_modifiers": run_modifier_service.format_lines(GameState.run_modifiers),
 		"weekly_objective_text": weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress),
 		"meta_points": GameState.exploration_points_total,
@@ -2187,7 +2187,7 @@ func _show_dojo_menu(payload: Dictionary) -> void:
 	lines.append("[b]推荐据点等级[/b] %d" % int(dojo.get("recommended_rank", 1)))
 	lines.append("[b]门票[/b] %s" % _format_item_cost(payload.get("entry_cost", {})))
 	lines.append("[b]当前双打位[/b] %s" % (" / ".join(payload.get("battle_slots", [])) if not payload.get("battle_slots", []).is_empty() else "尚未就绪"))
-	lines.append("[b]背包容量[/b] %s" % String(payload.get("backpack_summary", "0 / 0")))
+	lines.append("[b]宠物栏容量[/b] %s" % String(payload.get("reserve_summary", "0 / 0")))
 	for line in payload.get("synergy_lines", []):
 		lines.append("[b]已激活羁绊[/b] %s" % line)
 		break
@@ -2333,19 +2333,19 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 				"battle_1":
 					_open_battle_slot_picker(1)
 				"backpack":
-					_open_backpack_picker()
+					_open_pet_roster_picker()
 				"resident_sites":
 					_open_camp_resident_site_picker()
 				"mail_menu":
 					_show_camp_mail_menu()
 		"team_battle_slot":
-			GameState.set_battle_slot(int(context.get("slot_index", 0)), choice_id)
+			GameState.set_party_slot(int(context.get("slot_index", 0)), choice_id)
 			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
 			decision_panel.open_panel("队伍已更新", "%s 已被放到双打位 %d。" % [GameState.get_pet_display_name(choice_id), int(context.get("slot_index", 0)) + 1], [], "返回营地")
-		"team_backpack_slot":
-			GameState.toggle_backpack_slot(choice_id)
+		"team_reserve_slot":
+			GameState.toggle_reserve_slot(choice_id)
 			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
-			decision_panel.open_panel("背包已更新", "已切换 %s 的背包状态。" % GameState.get_pet_display_name(choice_id), [], "返回营地")
+			decision_panel.open_panel("宠物栏已更新", "已切换 %s 的待命状态。" % GameState.get_pet_display_name(choice_id), [], "返回营地")
 		"camp_resident_site":
 			_open_camp_resident_picker(choice_id)
 		"camp_resident_select":
@@ -2592,7 +2592,7 @@ func _open_pending_environment_battle() -> void:
 
 func _build_environment_battle_config(node: Dictionary) -> Dictionary:
 	var habitat_id := String(node.get("source_habitat_id", ""))
-	if habitat_id.is_empty() or GameState.get_battle_party_uids().size() < 2:
+	if habitat_id.is_empty() or GameState.get_party_uids().size() < 2:
 		return {}
 	var first_encounter := encounter_service.roll_encounter(habitat_id, "environment")
 	if not bool(first_encounter.get("ok", false)):
@@ -2623,7 +2623,7 @@ func _build_environment_battle_config(node: Dictionary) -> Dictionary:
 
 func _build_player_battle_team() -> Array:
 	var allies: Array = []
-	for pet_uid in GameState.get_battle_party_uids():
+	for pet_uid in GameState.get_party_uids():
 		var pet := GameState.get_pet(String(pet_uid))
 		if pet.is_empty():
 			continue
@@ -2886,7 +2886,7 @@ func _open_team_manage_menu() -> void:
 	var choices := [
 		{"id": "battle_0", "label": "双打位 1", "summary": "当前：%s" % _battle_slot_name_at(0)},
 		{"id": "battle_1", "label": "双打位 2", "summary": "当前：%s" % _battle_slot_name_at(1)},
-		{"id": "backpack", "label": "调整背包", "summary": "当前：%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity]},
+		{"id": "backpack", "label": "调整宠物栏", "summary": "当前：%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity]},
 		{"id": "resident_sites", "label": "安排驻守", "summary": "在营地统一调整各据点的主驻守。"},
 		{"id": "mail_menu", "label": "处理留信", "summary": "当前待处理：%d 处" % _pending_mail_targets().size(), "disabled": _pending_mail_targets().is_empty()},
 	]
@@ -2905,19 +2905,19 @@ func _open_battle_slot_picker(slot_index: int) -> void:
 	pending_context = {"kind": "team_battle_slot", "slot_index": slot_index, "on_close": "team_manage"}
 	decision_panel.open_panel("选择双打位 %d" % (slot_index + 1), "挑一只本场直接上阵的伙伴。", choices, "返回整备")
 
-func _open_backpack_picker() -> void:
+func _open_pet_roster_picker() -> void:
 	var choices := []
 	for companion in GameState.get_companions():
 		var pet_uid := String(companion.get("uid", ""))
-		var in_backpack := GameState.get_backpack_uids().has(pet_uid)
+		var in_reserve := GameState.get_reserve_uids().has(pet_uid)
 		choices.append({
 			"id": pet_uid,
 			"label": "%s ★%d" % [String(companion.get("display_name", "未命名伙伴")), int(companion.get("star_level", 1))],
-			"summary": "%s ｜ 人口 %d ｜ %s" % [String(companion.get("species_id", "")), GameState.get_pet_population_cost(pet_uid), "当前已在背包" if in_backpack else "当前未在背包"],
-			"disabled": GameState.get_battle_party_uids().has(pet_uid),
+			"summary": "%s ｜ 人口 %d ｜ %s" % [String(companion.get("species_id", "")), GameState.get_pet_population_cost(pet_uid), "当前已在待命位" if in_reserve else "当前未在待命位"],
+			"disabled": GameState.get_party_uids().has(pet_uid),
 		})
-	pending_context = {"kind": "team_backpack_slot", "on_close": "team_manage"}
-	decision_panel.open_panel("调整背包位", "背包位不上场，但会提供羁绊；每只会占用不同人口值，上阵位无法直接切到背包。元素/生态/职能按独特物种计数，特性羁绊按实际单位计数。", choices, "返回整备")
+	pending_context = {"kind": "team_reserve_slot", "on_close": "team_manage"}
+	decision_panel.open_panel("调整宠物栏", "待命位不上场，但会提供羁绊；每只会占用不同人口值。元素/生态/职能按独特物种计数，特性羁绊按实际单位计数。", choices, "返回整备")
 
 func _open_camp_resident_site_picker() -> void:
 	var choices := []
@@ -3692,7 +3692,7 @@ func _update_summaries() -> void:
 		"构筑 Lv%d ｜ 照料 %d" % [GameState.get_progression_rank(), GameState.get_care_progress()],
 		"徽章 %d ｜ 季节点 %d ｜ 探索点 %d" % [GameState.badge_count, GameState.season_points, GameState.exploration_points_total],
 		"资金 %d 金 ｜ 银行 %d 金" % [int(treasury.get("wallet_gold", 0)), int(treasury.get("bank_gold", 0))],
-		"饥饿 %d / %d ｜ 资源与补给请看背包 / 手册" % [GameState.hunger, GameState.max_hunger],
+		"饥饿 %d / %d ｜ 资源与补给请看背包页 / 手册" % [GameState.hunger, GameState.max_hunger],
 	])
 	GameState.set_trait_runtime_bonus(synergy_service.build_runtime_bonus(synergy_report))
 	var season_goal := String(GameState.get_current_season_rule().get("season_goal", "维持推进感。"))
@@ -3715,7 +3715,7 @@ func _update_summaries() -> void:
 	var active_synergies: Array[String] = synergy_service.format_active_lines(synergy_report, 2)
 	var control_lines: Array[String] = [
 		"双打：%s" % " / ".join(_battle_slot_names()),
-		"背包：%d / %d ｜ 伙伴总数 %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity, GameState.get_companions().size()],
+		"宠物栏：%d / %d ｜ 伙伴总数 %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity, GameState.get_companions().size()],
 		"访客：%s" % (" / ".join(npc_lines) if not npc_lines.is_empty() else "暂无重点访客"),
 		"威胁：%s" % (" / ".join(threat_lines) if not threat_lines.is_empty() else "暂无游走威胁"),
 	]
@@ -3729,8 +3729,8 @@ func _update_summaries() -> void:
 func _update_roster() -> void:
 	var lines: Array[String] = []
 	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
-	lines.append("背包人口：%d / %d ｜ 已安居据点 %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity, GameState.get_settled_habitat_count()])
-	lines.append("生存：饥饿 %d / %d ｜ 资源与补给请看背包 / 手册" % [GameState.hunger, GameState.max_hunger])
+	lines.append("待命人口：%d / %d ｜ 已安居据点 %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity, GameState.get_settled_habitat_count()])
+	lines.append("生存：饥饿 %d / %d ｜ 资源与补给请看背包页 / 手册" % [GameState.hunger, GameState.max_hunger])
 	if not starter_companion_uid.is_empty():
 		lines.append("起始伙伴：%s" % GameState.get_pet_display_name(starter_companion_uid))
 	else:
@@ -4064,23 +4064,23 @@ func _npc_names(npcs: Array) -> Array[String]:
 
 func _battle_slot_names() -> Array[String]:
 	var names: Array[String] = []
-	for pet_uid in GameState.get_battle_party_uids():
+	for pet_uid in GameState.get_party_uids():
 		names.append(GameState.get_pet_display_name(pet_uid))
 	if names.is_empty():
 		names.append("未配置")
 	return names
 
 func _battle_slot_name_at(slot_index: int) -> String:
-	var battle_uids := GameState.get_battle_party_uids()
+	var battle_uids := GameState.get_party_uids()
 	if slot_index < 0 or slot_index >= battle_uids.size():
 		return "未配置"
 	return GameState.get_pet_display_name(String(battle_uids[slot_index]))
 
 func _companion_slot_label(pet_uid: String) -> String:
-	if GameState.get_battle_party_uids().has(pet_uid):
+	if GameState.get_party_uids().has(pet_uid):
 		return "上阵"
-	if GameState.get_backpack_uids().has(pet_uid):
-		return "背包"
+	if GameState.get_reserve_uids().has(pet_uid):
+		return "待命"
 	for habitat_state in GameState.habitats.values():
 		if String(habitat_state.get("resident_uid", "")) == pet_uid or String(habitat_state.get("assistant_uid", "")) == pet_uid:
 			return "驻守"
@@ -4123,7 +4123,7 @@ func _build_fail_reason(reason: String) -> String:
 		_: return "这一步今天还做不了。"
 
 func _format_inventory_highlights() -> String:
-	var rows := _collect_inventory_rows(BACKPACK_RESOURCE_TYPES)
+	var rows := _collect_inventory_rows(INVENTORY_RESOURCE_TYPES)
 	if rows.is_empty():
 		return ""
 	var parts: Array[String] = []
@@ -4132,18 +4132,12 @@ func _format_inventory_highlights() -> String:
 	return " / ".join(parts)
 
 func _collect_inventory_rows(types: Array[String]) -> Array[String]:
-	var item_ids: Array[String] = []
-	for item_id in DataRepository.items.keys():
-		item_ids.append(String(item_id))
-	item_ids.sort()
 	var rows: Array[String] = []
-	for item_id in item_ids:
-		var item_data: Dictionary = DataRepository.items.get(item_id, {})
-		if item_data.is_empty():
+	for item_data in DataRepository.get_items_by_types(types):
+		var item_id := String(item_data.get("id", ""))
+		if item_id.is_empty():
 			continue
-		if not types.has(String(item_data.get("type", ""))):
-			continue
-		var amount := int(GameState.inventory.get(item_id, 0))
+		var amount := GameState.get_item_count(item_id)
 		if amount <= 0:
 			continue
 		rows.append("- %s x%d" % [String(item_data.get("name", item_id)), amount])
@@ -4156,14 +4150,14 @@ func _build_backpack_section_lines() -> Array[String]:
 		"",
 		"[b]资源材料[/b]",
 	]
-	var resource_rows := _collect_inventory_rows(BACKPACK_RESOURCE_TYPES)
+	var resource_rows := _collect_inventory_rows(INVENTORY_RESOURCE_TYPES)
 	if resource_rows.is_empty():
 		lines.append("- 暂无资源")
 	else:
 		lines.append_array(resource_rows)
 	lines.append("")
 	lines.append("[b]消耗 / 工具 / 纪念[/b]")
-	var supply_rows := _collect_inventory_rows(BACKPACK_SUPPLY_TYPES)
+	var supply_rows := _collect_inventory_rows(INVENTORY_SUPPLY_TYPES)
 	if supply_rows.is_empty():
 		lines.append("- 暂无补给")
 	else:
@@ -4174,7 +4168,7 @@ func _build_backpack_section_lines() -> Array[String]:
 	lines.append_array(_location_status_lines())
 	lines.append("")
 	lines.append("[b]生物图鉴[/b] %d / %d" % [_count_unlocked_codex_entries(), DataRepository.codex_entries.size()])
-	lines.append("图鉴入口已收进背包 / 手册，切到 [b]生物图鉴[/b] 页签即可查看。")
+	lines.append("图鉴入口已收进背包 / 手册；宠物编成请看宠物栏。切到 [b]生物图鉴[/b] 页签即可查看。")
 	lines.append("")
 	lines.append("资源与补给已经从主界面移走，统一放到这一页查看。")
 	return lines
@@ -4469,14 +4463,14 @@ func _build_main_menu_run_summary() -> String:
 		])
 	lines.append("周目标：%s" % weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress))
 	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
-	lines.append("背包人口：%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity])
+	lines.append("待命人口：%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity])
 	lines.append("饥饿：%d / %d" % [GameState.hunger, GameState.max_hunger])
 	lines.append("徽章：%d ｜ 季节点数：%d ｜ 照料进度：%d" % [
 		GameState.badge_count,
 		GameState.season_points,
 		GameState.get_care_progress(),
 	])
-	lines.append("资源与补给：打开背包 / 手册查看")
+	lines.append("资源与补给：打开背包页 / 手册查看")
 	if not GameState.run_modifiers.is_empty():
 		lines.append("")
 		lines.append("[b]本局词缀[/b]")
@@ -4538,7 +4532,7 @@ func _build_system_sections() -> Array:
 
 	var battle_lines: Array[String] = [
 		"[b]双打位[/b] %s" % " / ".join(_battle_slot_names()),
-		"[b]背包人口[/b] %d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity],
+		"[b]宠物栏容量[/b] %d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity],
 		"[b]已激活羁绊[/b] %s" % " / ".join(synergy_service.format_active_lines(synergy_report, 4)),
 	]
 	if not synergy_service.format_nearby_lines(synergy_report, 3).is_empty():
@@ -4578,8 +4572,8 @@ func _build_system_sections() -> Array:
 		},
 		{
 			"id": "battle",
-			"label": "战斗",
-			"summary": "[b]战斗构筑[/b]\n双打位、羁绊、建筑前置增益和战斗汇总。",
+			"label": "宠物栏",
+			"summary": "[b]宠物编成[/b]\n双打位、待命位、羁绊、建筑前置增益和战斗汇总。",
 			"body": "\n".join(battle_lines),
 		},
 		{
@@ -4685,7 +4679,7 @@ func _activated_battle_source_names(report: Dictionary, added: Array[String]) ->
 				return names
 	if not names.is_empty():
 		return names
-	for pet_uid in GameState.get_battle_party_uids():
+	for pet_uid in GameState.get_party_uids():
 		var display_name := GameState.get_pet_display_name(String(pet_uid))
 		if display_name.is_empty() or names.has(display_name):
 			continue

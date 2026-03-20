@@ -55,7 +55,7 @@ func load_all() -> void:
 	buildings = _index_by_id(_read_json("%s/building_blueprints.json" % DATA_ROOT).get("buildings", []))
 	buildings = _merge_indexed_rows(buildings, _read_json("%s/building_blueprints_mda.json" % DATA_ROOT).get("buildings", []))
 	quests = _index_by_id(_read_json("%s/quest_templates.json" % DATA_ROOT).get("quests", []))
-	items = _index_by_id(_read_json("%s/items.json" % DATA_ROOT).get("items", []))
+	items = _normalize_items(_index_by_id(_read_json("%s/items.json" % DATA_ROOT).get("items", [])))
 	shop_definitions = _index_by_id(_read_json("%s/shop_rules.json" % DATA_ROOT).get("shops", []))
 	events = _index_by_id(_read_json("%s/events.json" % DATA_ROOT).get("events", []))
 	dialogues = _index_by_id(_read_json("%s/dialogues.json" % DATA_ROOT).get("dialogues", []))
@@ -113,6 +113,53 @@ func _index_by_id(rows: Array) -> Dictionary:
 			continue
 		result[id] = row
 	return result
+
+func _normalize_items(source: Dictionary) -> Dictionary:
+	var result := {}
+	for item_id in source.keys():
+		result[String(item_id)] = _normalize_item_row(Dictionary(source[item_id]).duplicate(true))
+	return result
+
+func _normalize_item_row(row: Dictionary) -> Dictionary:
+	var normalized: Dictionary = Dictionary(row).duplicate(true)
+	var item_type := String(normalized.get("type", "material"))
+	if not normalized.has("stack_limit"):
+		normalized["stack_limit"] = 99
+	if not normalized.has("effect_id"):
+		normalized["effect_id"] = "none"
+	if not normalized.has("use_mode"):
+		match item_type:
+			"consumable":
+				normalized["use_mode"] = "active"
+			"tool":
+				normalized["use_mode"] = "manual"
+			_:
+				normalized["use_mode"] = "passive"
+	if not normalized.has("target_rule"):
+		match String(normalized.get("effect_id", "none")):
+			"add_bond_small":
+				normalized["target_rule"] = "pet_single"
+			"restore_hunger_small", "restore_hunger_medium":
+				normalized["target_rule"] = "self_run"
+			_:
+				normalized["target_rule"] = "none"
+	if not normalized.has("sell_price"):
+		match item_type:
+			"rare_material":
+				normalized["sell_price"] = 12
+			"material":
+				normalized["sell_price"] = 4
+			"consumable":
+				normalized["sell_price"] = 8
+			"tool":
+				normalized["sell_price"] = 10
+			"trophy":
+				normalized["sell_price"] = 0
+			_:
+				normalized["sell_price"] = 0
+	if not normalized.has("tags"):
+		normalized["tags"] = []
+	return normalized
 
 func _group_unlock_rules(rows: Array) -> Dictionary:
 	var result := {}
@@ -249,7 +296,22 @@ func get_quest(quest_id: String) -> Dictionary:
 	return quests.get(quest_id, {})
 
 func get_item(item_id: String) -> Dictionary:
-	return Dictionary(items.get(item_id, {})).duplicate(true)
+	return _normalize_item_row(Dictionary(items.get(item_id, {})).duplicate(true))
+
+func get_items_by_types(types: Array[String]) -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	var item_ids: Array[String] = []
+	for item_id in items.keys():
+		item_ids.append(String(item_id))
+	item_ids.sort()
+	for item_id in item_ids:
+		var item := get_item(item_id)
+		if item.is_empty():
+			continue
+		if not types.has(String(item.get("type", ""))):
+			continue
+		rows.append(item)
+	return rows
 
 func get_shop(shop_id: String) -> Dictionary:
 	return Dictionary(shop_definitions.get(shop_id, {})).duplicate(true)
@@ -354,12 +416,18 @@ func get_evolution_by_species(species_id: String) -> Dictionary:
 	return evolution_by_species.get(species_id, {})
 
 func get_population_curve() -> Array:
-	return progression_curves.get("population_curve", []).duplicate(true)
+	var rows: Array = progression_curves.get("population_curve", []).duplicate(true)
+	for index in range(rows.size()):
+		var row: Dictionary = Dictionary(rows[index]).duplicate(true)
+		if not row.has("pet_capacity"):
+			row["pet_capacity"] = int(row.get("backpack_capacity", 4))
+		rows[index] = row
+	return rows
 
 func get_population_curve_entry(rank: int) -> Dictionary:
 	var best_match: Dictionary = {}
 	var best_rank := -1
-	for row in progression_curves.get("population_curve", []):
+	for row in get_population_curve():
 		var row_rank := int(row.get("rank", 0))
 		if row_rank == rank:
 			return row

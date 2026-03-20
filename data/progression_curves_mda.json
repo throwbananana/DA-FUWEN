@@ -1,54 +1,62 @@
 {
-  "version": 2,
+  "version": 3,
   "schema": "mda_bond_progression_v1",
   "population_curve": [
     {
       "rank": 1,
       "backpack_capacity": 4,
       "new_system": "只看 2 层羁绊",
-      "flow_goal": "先学双打分工"
+      "flow_goal": "先学双打分工",
+      "pet_capacity": 4
     },
     {
       "rank": 2,
       "backpack_capacity": 5,
       "new_system": "开放第 1 个建筑驻守位",
-      "flow_goal": "理解前台/背包/建筑三源"
+      "flow_goal": "理解前台/宠物栏/建筑三源",
+      "pet_capacity": 5
     },
     {
       "rank": 3,
       "backpack_capacity": 6,
       "new_system": "允许出现双类型核心",
-      "flow_goal": "开始做 2+2 小体系"
+      "flow_goal": "开始做 2+2 小体系",
+      "pet_capacity": 6
     },
     {
       "rank": 4,
       "backpack_capacity": 7,
       "new_system": "开放第 2 个建筑共鸣",
-      "flow_goal": "出现“升星还是凑羁绊”的真实取舍"
+      "flow_goal": "出现“升星还是凑羁绊”的真实取舍",
+      "pet_capacity": 7
     },
     {
       "rank": 5,
       "backpack_capacity": 8,
       "new_system": "解锁 stage2 主力常态化",
-      "flow_goal": "稳定形成一套主力打法"
+      "flow_goal": "稳定形成一套主力打法",
+      "pet_capacity": 8
     },
     {
       "rank": 6,
       "backpack_capacity": 10,
       "new_system": "开放 4 层羁绊的主目标",
-      "flow_goal": "中后期表达构筑个性"
+      "flow_goal": "中后期表达构筑个性",
+      "pet_capacity": 10
     },
     {
       "rank": 7,
       "backpack_capacity": 12,
       "new_system": "late 家族加入常驻池",
-      "flow_goal": "承受高压地图但不失控"
+      "flow_goal": "承受高压地图但不失控",
+      "pet_capacity": 12
     },
     {
       "rank": 8,
       "backpack_capacity": 14,
       "new_system": "解锁最终观测与异常站",
-      "flow_goal": "追求 6 层或 1/3/5 特殊羁绊"
+      "flow_goal": "追求 6 层或 1/3/5 特殊羁绊",
+      "pet_capacity": 14
     }
   ],
   "shop_odds": [
@@ -86,7 +94,7 @@
     }
   ],
   "balance_rules": [
-    "同种物种在前台/背包/建筑中都不重复计入羁绊。",
+    "同种物种在前台/宠物栏/建筑中都不重复计入羁绊。",
     "stage3 或高稀有个体的人口值显著更高，以迫使高星单卡与复杂羁绊之间形成取舍。",
     "遭遇池早期以 stage1/common 为主，保障规则学习与反馈速度。",
     "建筑共鸣优先提供可读的战前增益，而不是隐藏乘区。",
@@ -95,7 +103,7 @@
   "mda_mapping": {
     "mechanics": [
       "2v2",
-      "背包人口",
+      "宠物栏人口",
       "建筑共鸣",
       "3合1 升星",
       "分支进化"

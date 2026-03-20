@@ -1,160 +1,442 @@
 {
-  "version": 1,
+  "version": 2,
   "items": [
     {
       "id": "soft_moss",
       "name": "软苔",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "fiber",
       "name": "纤维束",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "warm_stone",
       "name": "温石",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "amber_resin",
       "name": "琥脂",
-      "type": "rare_material"
+      "type": "rare_material",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "crafting",
+        "rare_material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "water_drop",
       "name": "净水滴",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "wood",
       "name": "木材",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "stone_chip",
       "name": "石片",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "clear_sand",
       "name": "净砂",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "reed",
       "name": "芦苇",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "rope",
       "name": "绳索",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "parts",
       "name": "机括零件",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "glass",
       "name": "玻片",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "glow_dust",
       "name": "辉尘",
-      "type": "rare_material"
+      "type": "rare_material",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "crafting",
+        "rare_material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "spring_core",
       "name": "簧芯",
-      "type": "rare_material"
+      "type": "rare_material",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "crafting",
+        "rare_material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "tea_leaf",
       "name": "茶叶",
-      "type": "consumable"
+      "type": "consumable",
+      "stack_limit": 99,
+      "sell_price": 8,
+      "tags": [
+        "consumable",
+        "tea",
+        "supply"
+      ],
+      "target_rule": "self_run",
+      "effect_id": "restore_hunger_small",
+      "use_mode": "active"
     },
     {
       "id": "cloth",
       "name": "布料",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "ink",
       "name": "墨汁",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "paper",
       "name": "信纸",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "metal",
       "name": "金属块",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "oil",
       "name": "润滑油",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "herbal_steam",
       "name": "草药蒸汽包",
-      "type": "consumable"
+      "type": "consumable",
+      "stack_limit": 99,
+      "sell_price": 8,
+      "tags": [
+        "consumable",
+        "healing",
+        "supply"
+      ],
+      "target_rule": "self_run",
+      "effect_id": "restore_hunger_medium",
+      "use_mode": "active"
     },
     {
       "id": "repair_kit",
       "name": "修理包",
-      "type": "tool"
+      "type": "tool",
+      "stack_limit": 99,
+      "sell_price": 10,
+      "tags": [
+        "tool",
+        "repair"
+      ],
+      "target_rule": "building_or_service",
+      "effect_id": "repair_contextual",
+      "use_mode": "manual"
     },
     {
       "id": "dew_crystal",
       "name": "露晶",
-      "type": "rare_material"
+      "type": "rare_material",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "crafting",
+        "rare_material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "spark_reed",
       "name": "电芒芦",
-      "type": "material"
+      "type": "material",
+      "stack_limit": 99,
+      "sell_price": 4,
+      "tags": [
+        "crafting",
+        "material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "storm_core",
       "name": "雷核",
-      "type": "rare_material"
+      "type": "rare_material",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "crafting",
+        "rare_material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "blueprint_scrap",
       "name": "蓝图碎片",
-      "type": "rare_material"
+      "type": "rare_material",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "crafting",
+        "rare_material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "master_badge",
       "name": "宗师徽章",
-      "type": "trophy"
+      "type": "trophy",
+      "stack_limit": 99,
+      "sell_price": 0,
+      "tags": [
+        "trophy",
+        "milestone"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "rare_decor_part",
       "name": "稀有饰件",
-      "type": "rare_material"
+      "type": "rare_material",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "crafting",
+        "rare_material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "training_note",
       "name": "试炼札记",
-      "type": "consumable"
+      "type": "consumable",
+      "stack_limit": 99,
+      "sell_price": 8,
+      "tags": [
+        "consumable",
+        "training",
+        "bond"
+      ],
+      "target_rule": "pet_single",
+      "effect_id": "add_bond_small",
+      "use_mode": "active"
     },
     {
       "id": "ice_glass",
       "name": "冰镜片",
-      "type": "rare_material"
+      "type": "rare_material",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "crafting",
+        "rare_material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     },
     {
       "id": "stability_shard",
       "name": "稳定碎片",
-      "type": "rare_material"
+      "type": "rare_material",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "crafting",
+        "rare_material"
+      ],
+      "target_rule": "none",
+      "effect_id": "none",
+      "use_mode": "passive"
     }
   ]
 }

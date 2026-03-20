@@ -19,50 +19,53 @@ func _run_checks() -> void:
 		_fail("Upgrade smoke test failed: dojo definitions were not loaded.")
 		return
 	if game_state.is_habitat_unlocked("thunder_meadow"):
-		_fail("Upgrade smoke test failed: thunder_meadow should not unlock during spring.")
+		_fail("Upgrade smoke test failed: thunder_meadow should still require progression, not season.")
 		return
 
 	game_state.set_building_level("mist_moss_cave", "warm_nest", 2)
 	game_state.note_build("warm_nest", 2)
-	if not game_state.advance_to_next_season():
-		_fail("Upgrade smoke test failed: could not advance to summer.")
-		return
-	if game_state.season_id != "summer":
-		_fail("Upgrade smoke test failed: season did not advance to summer.")
-		return
 	if not game_state.is_habitat_unlocked("thunder_meadow"):
-		_fail("Upgrade smoke test failed: thunder_meadow did not unlock in summer.")
-		return
-
-	game_state.grant_items({"spark_reed": 1})
-	var dojo_service = load("res://scripts/services/dojo_service.gd").new()
-	var summer_result: Dictionary = dojo_service.attempt_dojo("summer_storm_trial", "tier_1")
-	if not bool(summer_result.get("ok", false)) or not bool(summer_result.get("success", false)):
-		_fail("Upgrade smoke test failed: summer dojo tier 1 did not clear.")
-		return
-	if not game_state.has_cleared_dojo("summer_storm_trial", "tier_1"):
-		_fail("Upgrade smoke test failed: dojo clear flag was not stored.")
-		return
-	if game_state.badge_count < 1:
-		_fail("Upgrade smoke test failed: dojo rewards did not grant a badge.")
-		return
-	if not game_state.is_habitat_unlocked("echo_broken_bridge"):
-		_fail("Upgrade smoke test failed: echo_broken_bridge was not unlocked by the summer dojo reward.")
-		return
-
-	if not game_state.advance_to_next_season():
-		_fail("Upgrade smoke test failed: could not advance to autumn.")
+		_fail("Upgrade smoke test failed: thunder_meadow did not unlock after reaching the rank gate.")
 		return
 	if not game_state.is_habitat_unlocked("autumn_leaf_dojo"):
-		_fail("Upgrade smoke test failed: autumn_leaf_dojo did not unlock in autumn.")
+		_fail("Upgrade smoke test failed: autumn_leaf_dojo did not unlock after the building gate.")
+		return
+
+	game_state.grant_items({"spark_reed": 2})
+	var dojo_service = load("res://scripts/services/dojo_service.gd").new()
+
+	var summer_t1: Dictionary = dojo_service.attempt_dojo("summer_storm_trial", "tier_1")
+	if not bool(summer_t1.get("ok", false)) or not bool(summer_t1.get("success", false)):
+		_fail("Upgrade smoke test failed: summer dojo tier 1 did not clear.")
+		return
+	if game_state.is_habitat_unlocked("echo_broken_bridge"):
+		_fail("Upgrade smoke test failed: echo_broken_bridge should unlock on summer dojo tier 2, not tier 1.")
+		return
+
+	var summer_t2: Dictionary = dojo_service.attempt_dojo("summer_storm_trial", "tier_2")
+	if not bool(summer_t2.get("ok", false)) or not bool(summer_t2.get("success", false)):
+		_fail("Upgrade smoke test failed: summer dojo tier 2 did not clear.")
+		return
+	if not game_state.is_habitat_unlocked("echo_broken_bridge"):
+		_fail("Upgrade smoke test failed: echo_broken_bridge was not unlocked by the summer dojo tier 2 reward.")
 		return
 
 	game_state.add_trust("moss_keeper", 6)
-	if not game_state.advance_to_next_season():
-		_fail("Upgrade smoke test failed: could not advance to winter.")
-		return
 	if not game_state.is_habitat_unlocked("frost_mirror_lake"):
-		_fail("Upgrade smoke test failed: frost_mirror_lake did not unlock in winter.")
+		_fail("Upgrade smoke test failed: frost_mirror_lake did not unlock after the trust gate.")
+		return
+
+	game_state.grant_items({"amber_resin": 2, "tea_leaf": 2})
+	var autumn_t1: Dictionary = dojo_service.attempt_dojo("autumn_leaf_dojo", "tier_1")
+	if not bool(autumn_t1.get("ok", false)) or not bool(autumn_t1.get("success", false)):
+		_fail("Upgrade smoke test failed: autumn dojo tier 1 did not clear.")
+		return
+	var autumn_t2: Dictionary = dojo_service.attempt_dojo("autumn_leaf_dojo", "tier_2")
+	if not bool(autumn_t2.get("ok", false)) or not bool(autumn_t2.get("success", false)):
+		_fail("Upgrade smoke test failed: autumn dojo tier 2 did not clear.")
+		return
+	if not game_state.is_habitat_unlocked("radiant_observatory"):
+		_fail("Upgrade smoke test failed: radiant_observatory was not unlocked by the autumn dojo reward.")
 		return
 
 	await create_timer(0.05).timeout

@@ -104,7 +104,7 @@ func resolve_dojo_battle(battle_result: Dictionary) -> void:
 	pending_dojo_tier = ""
 
 func start_observation() -> void:
-	var source := GameState.consume_next_observation_source(current_habitat_id)
+	var source: String = GameState.consume_next_observation_source(current_habitat_id)
 	current_encounter = encounter_service.roll_encounter(current_habitat_id, source)
 	current_step = "encounter_preview"
 	state_changed.emit("encounter_preview", current_encounter)

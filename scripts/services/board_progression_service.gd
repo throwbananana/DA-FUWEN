@@ -250,7 +250,7 @@ func _seed_region_for_season(season_id: String) -> Dictionary:
 	return Dictionary(raw_region).duplicate(true)
 
 func _ensure_loop_progress(season_id: String) -> Dictionary:
-	var progress := GameState.get_board_loop_progress(season_id)
+	var progress: Dictionary = GameState.get_board_loop_progress(season_id)
 	if progress.is_empty():
 		progress = {
 			"unlocked_ring_count": START_UNLOCKED_RING_COUNT,
@@ -316,7 +316,7 @@ func _build_generated_region(seed_region: Dictionary, progress: Dictionary) -> D
 		var gate_offset := _gate_offset_for_ring(ring_ids.size())
 		var entrance_offset := 0
 		for offset in range(ring_ids.size()):
-			var node_id := ring_ids[offset]
+			var node_id: int = int(ring_ids[offset])
 			var node: Dictionary
 			if offset == entrance_offset and ring_index == 0:
 				node = _build_entry_node(season_id, node_id)
@@ -460,9 +460,9 @@ func _connect_layout(nodes: Array, ring_count: int) -> void:
 	for ring_index in range(ring_count):
 		var ring_ids: Array = _ring_node_ids[ring_index]
 		for offset in range(ring_ids.size()):
-			var current_id := ring_ids[offset]
-			var next_id := ring_ids[(offset + 1) % ring_ids.size()]
-			var prev_id := ring_ids[(offset - 1 + ring_ids.size()) % ring_ids.size()]
+			var current_id: int = int(ring_ids[offset])
+			var next_id: int = int(ring_ids[(offset + 1) % ring_ids.size()])
+			var prev_id: int = int(ring_ids[(offset - 1 + ring_ids.size()) % ring_ids.size()])
 			_append_edge_to_nodes(nodes, node_map, current_id, next_id)
 			_append_edge_to_nodes(nodes, node_map, current_id, prev_id)
 		if ring_index == 0 and not ring_ids.is_empty():
@@ -475,8 +475,8 @@ func _connect_layout(nodes: Array, ring_count: int) -> void:
 			var ratio := float(slot) / float(RING_GATE_COUNT)
 			var inner_index := int(round(ratio * float(inner_ids.size() - 1)))
 			var outer_index := int(round(ratio * float(outer_ids.size() - 1)))
-			var inner_id := inner_ids[clampi(inner_index, 0, inner_ids.size() - 1)]
-			var outer_id := outer_ids[clampi(outer_index, 0, outer_ids.size() - 1)]
+			var inner_id: int = int(inner_ids[clampi(inner_index, 0, inner_ids.size() - 1)])
+			var outer_id: int = int(outer_ids[clampi(outer_index, 0, outer_ids.size() - 1)])
 			_append_edge_to_nodes(nodes, node_map, inner_id, outer_id)
 			_append_edge_to_nodes(nodes, node_map, outer_id, inner_id)
 
@@ -503,7 +503,7 @@ func _gate_offset_for_ring(count: int) -> int:
 	return maxi(1, int(floor(float(count) * 0.25)))
 
 func _unlock_requirement_for_ring(ring_index: int, season_id: String) -> Dictionary:
-	var kind := GATE_REQUIREMENT_PATTERN[ring_index % GATE_REQUIREMENT_PATTERN.size()]
+	var kind: String = String(GATE_REQUIREMENT_PATTERN[ring_index % GATE_REQUIREMENT_PATTERN.size()])
 	if kind == "boss":
 		return {
 			"kind": "boss",

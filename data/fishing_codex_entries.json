@@ -4,24 +4,24 @@
     {
       "id": "codex_brook_lantern_fish",
       "species_id": "brook_lantern_fish",
-      "title": "溪灯鱼小记",
+      "title": "今天见到的溪灯鱼",
       "rarity": "common",
       "unlock_rule": {
         "type": "observe_marker",
         "marker": "fish_catch:brook_lantern_fish"
       },
-      "portrait_hint": "贴着浅滩绕石游动，群起时会先亮一下再散开。",
+      "portrait_hint": "贴着浅滩绕石游动，成群时会先亮一下，再呼啦一下散开。",
       "habitat_notes": [
         "晶溪浅滩和芦泽边汊都能见到",
-        "白昼与黄昏最稳"
+        "白天和傍晚都挺容易碰见"
       ],
       "behavior_notes": [
-        "更怕突然抬竿",
-        "风平时更容易靠岸"
+        "动静一大，它们就一下散开了",
+        "风平的时候，更爱往岸边靠"
       ],
       "care_notes": [
-        "基础挂饵足够",
-        "先看看鱼从哪边来，再出手也不迟"
+        "普通饵就够，不用特地折腾",
+        "先看看它往哪边游，慢一点反而更容易"
       ],
       "research_tags": [
         "fishing",
@@ -32,24 +32,24 @@
     {
       "id": "codex_reed_back_crab",
       "species_id": "reed_back_crab",
-      "title": "芦背蟹放流记",
+      "title": "抱卵的芦背蟹",
       "rarity": "uncommon",
       "unlock_rule": {
         "type": "observe_marker",
         "marker": "fish_release:reed_back_crab"
       },
-      "portrait_hint": "抱卵时会先把钳举高，再慢慢把腹面压回水里。",
+      "portrait_hint": "抱卵的时候，会先把钳子抬高一点，再慢慢把身子压回水里。",
       "habitat_notes": [
         "浅滩、边汊与芦根阴影里活跃",
-        "水稳时更容易处理"
+        "水面安静的时候，更容易把它慢慢放回去"
       ],
       "behavior_notes": [
-        "拖线时更喜欢往芦根里钻",
-        "放流后会先原地稳一息"
+        "一牵到线，就爱往芦根里缩",
+        "放回去以后，常会先在原地缓一缓"
       ],
       "care_notes": [
-        "处理旧线组比硬起鱼更有效",
-        "浅池升级后放流更稳"
+        "先把旧线理开，比硬拽省事多了",
+        "浅池收拾好以后，放回去会更顺手"
       ],
       "research_tags": [
         "fishing",
@@ -60,24 +60,24 @@
     {
       "id": "codex_moon_tide_eel",
       "species_id": "moon_tide_eel",
-      "title": "夜潮鳗小记",
+      "title": "夜里才露面的月潮鳗",
       "rarity": "epic",
       "unlock_rule": {
         "type": "observe_marker",
         "marker": "fish_catch:moon_tide_eel"
       },
-      "portrait_hint": "先拖线，不急着爆冲，像在把岸上的人慢慢拉离原位。",
+      "portrait_hint": "会先拖着线走，不急着猛冲，像在故意把岸边的人慢慢带开。",
       "habitat_notes": [
-        "秋冬夜场才会真正露头",
-        "盐镜潮滩与芦泽边汊最常见"
+        "秋冬夜里才比较容易碰见",
+        "盐镜潮滩和芦泽边汊都可能撞见"
       ],
       "behavior_notes": [
-        "极怕噪声",
-        "它一受惊，今晚多半就躲远了"
+        "岸边一吵，它整夜都不爱露面",
+        "这边闹腾起来，它这一晚多半就不出来了"
       ],
       "care_notes": [
-        "别急，先听潮声、看线头",
-        "今晚先看夜潮和风向，装备不用太讲究"
+        "别急着抢那一下，先顺着它的性子来",
+        "先看看夜潮和风向，往往比换装备更有用"
       ],
       "research_tags": [
         "fishing",

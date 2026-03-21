@@ -20,7 +20,7 @@
         "rope": 1,
         "water_drop": 1
       },
-      "journal_entry": "今天先理掉了一团旧线组，浅滩水面干净了不少。",
+      "journal_entry": "今天先理开了一团旧线组，浅滩看着清爽了不少。",
       "trust_rewards": {
         "washer_grandma": 1
       },
@@ -33,7 +33,7 @@
         }
       ],
       "pressure_delta": -1,
-      "log_line": "晶溪浅滩今天先处理掉了一团旧线组。"
+      "log_line": "晶溪浅滩今天先理开了一团旧线组。"
     },
     {
       "id": "creek_teacher_knots",
@@ -45,15 +45,15 @@
       ],
       "weight": 2,
       "repeatable": true,
-      "title": "婆婆教你理结",
+      "title": "婆婆顺手帮你理线",
       "body_lines": [
         "你还在理线，婆婆已经把手伸过来，顺手把最容易炸开的结拆成了两段。",
-        "她没抢你的鱼口，只是告诉你哪种风会先把线拖坏。"
+        "她没抢你的鱼口，只是随口说了句，哪种风最容易把线拖坏。"
       ],
       "items": {
         "paper": 1
       },
-      "journal_entry": "晶溪今天记下了一种更不伤线的收线方法。",
+      "journal_entry": "今天又跟婆婆学会了一种不容易把线弄乱的收法。",
       "trust_rewards": {
         "washer_grandma": 1
       },
@@ -64,7 +64,7 @@
         "fish_event:creek_teacher_knots"
       ],
       "pressure_delta": -1,
-      "log_line": "婆婆在晶溪边教了你一手更稳的理线法。"
+      "log_line": "婆婆在晶溪边教你把乱线慢慢理顺。"
     },
     {
       "id": "spring_release_day",
@@ -79,7 +79,7 @@
       ],
       "title": "春汛放流日",
       "body_lines": [
-        "岸边今天挂起了放流的小旗，你索性把这一回合留给抱卵个体和幼体。",
+        "岸边今天挂起了放流的小旗，你也就跟着收了收手，把这一回合让给抱卵个体和幼体。",
         "浅水区一下子热闹了起来，但不是争抢，而是重新聚拢。"
       ],
       "items": {
@@ -104,8 +104,8 @@
         "summer"
       ],
       "title": "河灯夜钓会",
-      "menu_summary": "把这回合拿来参加河灯夜钓会，成绩会记进当季榜单。",
-      "description": "岸边挂起河灯后，大家都慢了下来，想看看今晚这片水先把鱼带向哪一边。",
+      "menu_summary": "今晚河边会挂起河灯，想去的话，就当去凑个热闹顺手下两竿。",
+      "description": "河灯一亮，岸边就热闹起来了。有人钓鱼，有人看灯，谁也不急着催谁。",
       "items": {
         "paper": 1,
         "glass": 1
@@ -114,7 +114,7 @@
       "trust_rewards": {
         "washer_grandma": 1
       },
-      "journal_entry": "今年夏天的河灯夜钓会开始记榜了。",
+      "journal_entry": "今年夏天的河灯夜钓会又开张了。",
       "story_flags": [
         "summer_lantern_derby_joined"
       ],
@@ -141,18 +141,18 @@
       ],
       "title": "冰孔边的救护",
       "body_lines": [
-        "你今天几乎没把注意力放在起鱼上，而是先把冰孔边缘清开，防止擦伤上浮个体。",
-        "这种回合不会很热闹，但会让整片静湖安稳很多。"
+        "你今天没急着顾起鱼，而是先把冰孔边缘清开，免得上浮的鱼擦伤。",
+        "这回合不算热闹，但整片静湖都跟着安稳了些。"
       ],
       "items": {
         "ice_glass": 1
       },
-      "journal_entry": "今天在霜镜湖做了一次真正意义上的冰孔救护。",
+      "journal_entry": "今天在霜镜湖，先把冰孔边照看妥当了。",
       "pressure_delta": -2,
       "observe_markers": [
         "fish_event:winter_ice_rescue"
       ],
-      "log_line": "你在霜镜湖先做了冰孔救护，没有急着起鱼。"
+      "log_line": "你在霜镜湖先顾了顾冰孔边，没有急着下手。"
     },
     {
       "id": "winter_ice_classic",
@@ -161,15 +161,15 @@
       "seasons": [
         "winter"
       ],
-      "title": "冰孔静钓赛",
-      "menu_summary": "这场更适合慢慢来。安静守着、把放流收尾做好，这一回合就算钓得很圆满。",
-      "description": "冬天的静湖不爱热闹。能不惊水地把这一回合收好，榜上自然会记住你。",
+      "title": "冰孔静钓会",
+      "menu_summary": "这场更适合慢慢来，湖边安静，钓多少倒不是第一件事。",
+      "description": "冬天的湖面很静，来这儿的人也都收着声，像是在陪这片湖过一晚。",
       "items": {
         "paper": 1,
         "ice_glass": 1
       },
       "base_score": 4,
-      "journal_entry": "冰孔静钓赛今年另外记了放流和收尾的小榜。",
+      "journal_entry": "冰孔静钓会开始了，湖边一下安静了不少。",
       "story_flags": [
         "winter_ice_classic_joined"
       ],
@@ -189,21 +189,21 @@
       ],
       "weight": 3,
       "repeatable": true,
-      "title": "芦根旧线链",
+      "title": "芦根下的一串旧线",
       "body_lines": [
         "你顺着芦根摸出一串旧线组，才发现整片边汊一直被这些残线拖着。",
-        "这回合没那么像钓鱼，更像是在替下一轮鱼讯清路。"
+        "这一回合不太像钓鱼，倒像是先替这片边汊理了理路。"
       ],
       "items": {
         "rope": 1,
         "reed": 1
       },
-      "journal_entry": "芦泽边汊今天清出了一串旧线链。",
+      "journal_entry": "芦泽边汊今天清出了一串旧线。",
       "pressure_delta": -1,
       "observe_markers": [
         "fish_event:reed_mire_cleanup_chain"
       ],
-      "log_line": "你在芦泽先清掉了一串旧线链。"
+      "log_line": "你在芦泽先清掉了一串旧线。"
     },
     {
       "id": "autumn_big_catch_cup",
@@ -215,15 +215,15 @@
       "seasons": [
         "autumn"
       ],
-      "title": "丰渔大尾杯",
-      "menu_summary": "秋天这场更看这一尾够不够漂亮，未必要钓很多。",
-      "description": "秋天大家都盼着碰上一尾大的；肯多看一会儿潮和风的人，往往更容易等到它。",
+      "title": "秋岸丰渔会",
+      "menu_summary": "到了秋天，沿岸和湿地都热闹起来了，想去的话就去碰碰今天的手气。",
+      "description": "有人守着大鱼，也有人只是沿着岸边慢慢走一圈。到了秋天，大家总爱多待一会儿。",
       "items": {
         "paper": 1,
         "glass": 1
       },
       "base_score": 4,
-      "journal_entry": "丰渔大尾杯已经在沿岸和湿地同时开赛。",
+      "journal_entry": "沿岸和湿地今年的丰渔会都热闹起来了。",
       "story_flags": [
         "autumn_big_catch_cup_joined"
       ],
@@ -250,13 +250,13 @@
       "title": "潮声把线悄悄带走",
       "body_lines": [
         "你几乎没有看见真正的鱼，只听到一小段极轻的刮线声。",
-        "这种夜场不一定马上有收获，但会让你慢慢听懂这片潮水。"
+        "这种夜场不会立刻给你很多收获，但会让你慢慢记住这片潮声。"
       ],
       "items": {
         "paper": 1,
         "glow_dust": 1
       },
-      "journal_entry": "盐镜夜场的潮声总会先把人的脚步放慢。",
+      "journal_entry": "盐镜的夜潮总像在先把人心里的杂念吹走。",
       "observe_markers": [
         "fish_event:saltglass_night_whisper"
       ],

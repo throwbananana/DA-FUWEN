@@ -49,7 +49,7 @@ func build_fishing_menu(habitat_id: String) -> Dictionary:
 	var spot := DataRepository.get_fishing_spot(habitat_id)
 	if spot.is_empty():
 		return {"ok": false}
-	var pressure := GameState.get_fishing_spot_pressure(habitat_id)
+	var pressure: int = GameState.get_fishing_spot_pressure(habitat_id)
 	var seasonal_event := _get_seasonal_festival_event(spot)
 	var rig := _build_rig_snapshot(habitat_id, "cast_line")
 	var body_lines: Array[String] = [
@@ -122,7 +122,7 @@ func _resolve_cast_line(habitat_id: String, rig: Dictionary) -> Dictionary:
 	if not incident_event.is_empty() and roll <= event_threshold:
 		var event_payload := _build_event_payload(incident_event)
 		return _merge_payloads(event_payload, bait_result)
-	var pressure := GameState.get_fishing_spot_pressure(habitat_id)
+	var pressure: int = GameState.get_fishing_spot_pressure(habitat_id)
 	var failure_threshold := clampf(0.18 + float(pressure) * 0.05 - float(rig.get("catch_bonus", 0.0)), 0.05, 0.55)
 	if roll <= failure_threshold:
 		var empty_payload := {
@@ -281,7 +281,7 @@ func _resolve_competition(habitat_id: String, rig: Dictionary) -> Dictionary:
 	var bonus_items := _competition_bonus_reward(rarity)
 	for item_id in bonus_items.keys():
 		items[item_id] = int(items.get(item_id, 0)) + int(bonus_items[item_id])
-	var projected_total := GameState.get_festival_score(String(event_row.get("id", "festival"))) + score_delta
+	var projected_total: int = GameState.get_festival_score(String(event_row.get("id", "festival"))) + score_delta
 	var standings := _build_competition_rows(event_row, projected_total)
 	var body_lines: Array[String] = [
 		"[b]%s[/b]" % String(event_row.get("title", "水域比赛")),
@@ -341,16 +341,16 @@ func _build_rig_snapshot(habitat_id: String, choice_id: String) -> Dictionary:
 		snapshot["catch_bonus"] = float(snapshot.get("catch_bonus", 0.0)) + float(selected_bait.get("catch_bonus", 0.0))
 		snapshot["rare_bonus"] = int(snapshot.get("rare_bonus", 0)) + int(selected_bait.get("rare_bonus", 0))
 		snapshot["bonus_lines"].append("挂饵：%s" % String(selected_bait.get("summary", "")))
-	var shallow_pool_level := GameState.get_building_level(habitat_id, "shallow_pool")
+	var shallow_pool_level: int = GameState.get_building_level(habitat_id, "shallow_pool")
 	if shallow_pool_level > 0:
 		snapshot["release_bonus"] = int(snapshot.get("release_bonus", 0)) + 1
 		snapshot["bonus_lines"].append("浅池 Lv.%d：放流更稳" % shallow_pool_level)
-	var drying_rack_level := GameState.get_building_level(habitat_id, "sun_drying_rack")
+	var drying_rack_level: int = GameState.get_building_level(habitat_id, "sun_drying_rack")
 	if drying_rack_level > 0 and GameState.time_of_day != "night":
 		snapshot["catch_bonus"] = float(snapshot.get("catch_bonus", 0.0)) + 0.03
 		snapshot["score_bonus"] = int(snapshot.get("score_bonus", 0)) + 1
 		snapshot["bonus_lines"].append("晾架 Lv.%d：白天判断更稳" % drying_rack_level)
-	var reed_shed_level := GameState.get_building_level(habitat_id, "reed_shed")
+	var reed_shed_level: int = GameState.get_building_level(habitat_id, "reed_shed")
 	if reed_shed_level > 0:
 		snapshot["incident_bonus"] = float(snapshot.get("incident_bonus", 0.0)) + 0.04
 		snapshot["pressure_relief"] = int(snapshot.get("pressure_relief", 0)) + 1
@@ -540,7 +540,7 @@ func _merge_payloads(base_payload: Dictionary, extra_payload: Dictionary) -> Dic
 	return merged
 
 func _build_competition_preview_lines(event_row: Dictionary) -> Array[String]:
-	var current_total := GameState.get_festival_score(String(event_row.get("id", "festival")))
+	var current_total: int = GameState.get_festival_score(String(event_row.get("id", "festival")))
 	var rows := _build_competition_rows(event_row, current_total)
 	return _standings_lines(rows)
 

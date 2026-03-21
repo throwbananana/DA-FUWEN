@@ -1646,9 +1646,6 @@ func spend_wallet_gold(amount: int) -> bool:
 	wallet_gold -= cost
 	return true
 
-func get_item_count(item_id: String) -> int:
-	return int(inventory.get(item_id, 0))
-
 func get_shop_purchase_count(shop_id: String, offer_id: String) -> int:
 	return int(shop_purchase_counts.get(_shop_purchase_key(shop_id, offer_id), 0))
 

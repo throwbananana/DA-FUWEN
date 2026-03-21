@@ -7,10 +7,10 @@ func get_interaction_menu(habitat_id: String) -> Array:
 		var building_id := String(building.get("id", ""))
 		if building_id.is_empty():
 			continue
-		var level := GameState.get_building_level(habitat_id, building_id)
+		var level: int = GameState.get_building_level(habitat_id, building_id)
 		if level <= 0:
 			continue
-		var runtime_state := GameState.ensure_building_runtime_state(habitat_id, building_id)
+		var runtime_state: Dictionary = GameState.ensure_building_runtime_state(habitat_id, building_id)
 		var actions: Array = []
 		for action in _get_unlocked_actions(building, level):
 			var action_id := String(action.get("id", ""))
@@ -43,13 +43,13 @@ func execute_action(habitat_id: String, building_id: String, action_id: String) 
 		return {"ok": false, "reason": "building_missing", "building_id": building_id}
 	if String(building.get("site", "")) != habitat_id:
 		return {"ok": false, "reason": "site_mismatch", "building_id": building_id, "habitat_id": habitat_id}
-	var level := GameState.get_building_level(habitat_id, building_id)
+	var level: int = GameState.get_building_level(habitat_id, building_id)
 	if level <= 0:
 		return {"ok": false, "reason": "building_not_built", "building_id": building_id, "habitat_id": habitat_id}
 	var action := _find_action(building, level, action_id)
 	if action.is_empty():
 		return {"ok": false, "reason": "action_missing", "building_id": building_id, "action_id": action_id}
-	var runtime_state := GameState.ensure_building_runtime_state(habitat_id, building_id)
+	var runtime_state: Dictionary = GameState.ensure_building_runtime_state(habitat_id, building_id)
 	var cooldown_remaining := _get_cooldown_remaining(runtime_state, action_id)
 	if cooldown_remaining > 0:
 		return {

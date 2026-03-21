@@ -7,7 +7,7 @@ const MAX_ROLL := 6
 const REROLL_THRESHOLD := 2.25
 
 func simulate_turns(node_lookup: Dictionary, commit_results: bool = true) -> Dictionary:
-	var players := GameState.get_ai_players()
+	var players: Array = GameState.get_ai_players()
 	var reports: Array = []
 	for index in range(players.size()):
 		var rival := Dictionary(players[index]).duplicate(true)
@@ -35,7 +35,7 @@ func build_node_markers() -> Dictionary:
 	return markers
 
 func build_summary_entries(node_lookup: Dictionary) -> Array:
-	var players := GameState.get_ai_players()
+	var players: Array = GameState.get_ai_players()
 	players.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return _player_score(a) > _player_score(b)
 	)
@@ -323,7 +323,7 @@ func _resolve_battle_node(rival: Dictionary, node: Dictionary, is_boss: bool) ->
 	var battle_weight := GameData.get_ai_weight(personality_id, "battle")
 	var support_power := int(working.get("prestige", 0)) / 2 + int(working.get("control", 0)) / 2 + int(working.get("intel", 0)) / 3
 	var roll := _deterministic_roll(working, "battle_%d" % node_id, 1, 6)
-	var difficulty := 5 + GameState.get_node_danger(node_id)
+	var difficulty: int = 5 + int(GameState.get_node_danger(node_id))
 	if String(node.get("type", "")) == "dojo":
 		difficulty += 1
 	if String(node.get("type", "")) == "anomaly":

@@ -61,7 +61,7 @@ func can_build(habitat_id: String, building_id: String) -> Dictionary:
 	if resident_uid.is_empty() and DataRepository.get_habitat(habitat_id).get("type", "") == "habitat":
 		return {"ok": false, "reason": "resident_required"}
 
-	var current_level := GameState.get_building_level(habitat_id, building_id)
+	var current_level: int = GameState.get_building_level(habitat_id, building_id)
 	var levels: Array = _building_levels(building)
 	if current_level >= levels.size():
 		return {"ok": false, "reason": "max_level"}
@@ -131,7 +131,7 @@ func get_visit_summary(habitat_id: String) -> Dictionary:
 
 func get_access_report(habitat_id: String) -> Dictionary:
 	var habitat := DataRepository.get_habitat(habitat_id)
-	var status := GameState.get_habitat_unlock_status(habitat_id)
+	var status: Dictionary = GameState.get_habitat_unlock_status(habitat_id)
 	return {
 		"habitat_id": habitat_id,
 		"open": bool(status.get("open", false)),
@@ -144,7 +144,7 @@ func get_access_report(habitat_id: String) -> Dictionary:
 
 func _resident_matches_preferences(habitat_id: String, pet_uid: String) -> bool:
 	var habitat := DataRepository.get_habitat(habitat_id)
-	var pet := GameState.get_pet(pet_uid)
+	var pet: Dictionary = GameState.get_pet(pet_uid)
 	var preferences: Array = habitat.get("resident_preferences", [])
 	var resident_tags: Array = pet.get("resident_tags", [])
 	for tag in resident_tags:

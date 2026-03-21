@@ -332,13 +332,13 @@ func _score_enemy_skill(actor: MonsterInstance, skill_id: String) -> float:
 		if wounded_allies.is_empty():
 			return -1.0
 		var target: MonsterInstance = wounded_allies[0]
-		var missing_ratio := 1.0 - (float(target.current_hp) / max(1.0, float(target.max_hp)))
+		var missing_ratio: float = 1.0 - (float(target.current_hp) / max(1.0, float(target.max_hp)))
 		score += 14.0 * missing_ratio
 		if target.current_hp < target.max_hp / 2:
 			score += 8.0
 		return score
 	if effect == "guard":
-		var hp_ratio := float(actor.current_hp) / max(1.0, float(actor.max_hp))
+		var hp_ratio: float = float(actor.current_hp) / max(1.0, float(actor.max_hp))
 		if hp_ratio < 0.45:
 			score += 11.0
 		if float(temp_state[actor.uid].get("guard", 0.0)) > 0.0:
@@ -771,7 +771,7 @@ func _make_unit_button(unit: MonsterInstance, is_ally: bool) -> Button:
 	var root := VBoxContainer.new()
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	root.theme_override_constants.separation = 6
+	root.add_theme_constant_override("separation", 6)
 	margin.add_child(root)
 	var top_row := HBoxContainer.new()
 	top_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -801,7 +801,7 @@ func _make_unit_button(unit: MonsterInstance, is_ally: bool) -> Button:
 	root.add_child(hp_bar)
 	var stat_row := HBoxContainer.new()
 	stat_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stat_row.theme_override_constants.separation = 12
+	stat_row.add_theme_constant_override("separation", 12)
 	root.add_child(stat_row)
 	for stat_text in [
 		"%s %d/%d" % [_tr("battle.stat.hp"), unit.current_hp, unit.max_hp],
@@ -954,7 +954,7 @@ func _render_turn_order_bar() -> void:
 		chip.add_child(margin)
 		var column := VBoxContainer.new()
 		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		column.theme_override_constants.separation = 1
+		column.add_theme_constant_override("separation", 1)
 		margin.add_child(column)
 		var name_label := Label.new()
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE

@@ -111,7 +111,7 @@ func _pair_requirements_match(raw_requirements, is_minimum: bool) -> bool:
 		for stat_key in ["affinity", "familiarity", "fear", "rivalry"]:
 			if not requirement.has(stat_key):
 				continue
-			var current_value := GameState.get_social_relation_value(actor_a, actor_b, stat_key)
+			var current_value: int = GameState.get_social_relation_value(actor_a, actor_b, stat_key)
 			var expected_value := int(requirement.get(stat_key, 0))
 			if is_minimum and current_value < expected_value:
 				return false

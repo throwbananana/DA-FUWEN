@@ -3,7 +3,7 @@
   "quests": [
     {
       "id": "creek_first_lantern_catch",
-      "title": "替婆婆认出今天第一尾溪灯鱼",
+      "title": "陪婆婆看看今天先来的是哪条溪灯鱼",
       "giver": "washer_grandma",
       "category": "fishing",
       "target_habitat": "crystal_creek",
@@ -30,7 +30,7 @@
     },
     {
       "id": "creek_release_crab_brood",
-      "title": "帮婆婆放回抱卵的芦背蟹",
+      "title": "把抱卵的芦背蟹先送回水里",
       "giver": "washer_grandma",
       "category": "fishing",
       "target_habitat": "crystal_creek",
@@ -57,7 +57,7 @@
     },
     {
       "id": "post_lantern_board_run",
-      "title": "去把河灯夜钓会的小榜挂出来",
+      "title": "去驿站说说今晚河灯会有多热闹",
       "giver": "innkeeper_yun",
       "category": "fishing",
       "target_habitat": "crystal_creek",
@@ -77,12 +77,12 @@
       ],
       "rewards": {
         "trust": 1,
-        "journal_entry": "河灯夜钓会小榜"
+        "journal_entry": "河灯会边的小榜"
       }
     },
     {
       "id": "winter_ice_hole_notes",
-      "title": "陪叶衡记下今天的冰孔救护",
+      "title": "跟叶衡补一段冰孔边的见闻",
       "giver": "field_recorder",
       "category": "fishing",
       "target_habitat": "frost_mirror_lake",
@@ -102,7 +102,7 @@
       ],
       "rewards": {
         "trust": 1,
-        "journal_entry": "霜镜冰孔救护记"
+        "journal_entry": "霜镜冰孔边记"
       }
     }
   ]

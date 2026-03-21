@@ -104,9 +104,9 @@ func build_status_lines(max_lines: int = 3) -> Array[String]:
 
 func _forecast_next_stop(route: Dictionary, habitat_id: String, lookahead_turns: int = 10) -> Dictionary:
 	for offset in range(1, lookahead_turns + 1):
-		var next_global_turn := GameState.global_turn + offset
-		var next_weekly_turn := ((GameState.weekly_turn - 1 + offset) % 5) + 1
-		var next_week_index := GameState.week_index + int((GameState.weekly_turn - 1 + offset) / 5)
+		var next_global_turn: int = GameState.global_turn + offset
+		var next_weekly_turn: int = ((GameState.weekly_turn - 1 + offset) % 5) + 1
+		var next_week_index: int = GameState.week_index + int((GameState.weekly_turn - 1 + offset) / 5)
 		var next_habitat_id := _current_habitat_for_route(route, next_global_turn, next_week_index, next_weekly_turn)
 		if next_habitat_id == habitat_id:
 			return {

@@ -26,9 +26,9 @@ const DialogueService = preload("res://scripts/services/dialogue_service.gd")
 const FishingService = preload("res://scripts/services/fishing_service.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
 
-const GAME_TITLE := "雾野远征"
-const INVENTORY_RESOURCE_TYPES := ["material", "rare_material"]
-const INVENTORY_SUPPLY_TYPES := ["consumable", "tool", "quest", "trophy"]
+const GAME_TITLE := "雾野市"
+const INVENTORY_RESOURCE_TYPES: Array[String] = ["material", "rare_material"]
+const INVENTORY_SUPPLY_TYPES: Array[String] = ["consumable", "tool", "quest", "trophy"]
 const CODEX_RARITY_LABELS := {
 	"common": "常见",
 	"uncommon": "少见",
@@ -68,23 +68,23 @@ const AI_OBSERVE_LANDING_DELAY := 0.24
 const AI_OBSERVE_TURN_FINISH_DELAY := 0.18
 
 const NODE_TEMPLATES := [
-	{"id": 0, "name": "营地", "type": "camp", "description": "整理材料、查看笔记，然后决定今天去看望谁。", "position": Vector2(80, 280), "edges": [1, 2, 3], "travel_cost": 0, "habitat_id": ""},
-	{"id": 1, "name": "雾苔窟", "type": "habitat", "description": "湿冷又安静的巢居据点，适合慢慢照料。", "position": Vector2(280, 130), "edges": [4], "travel_cost": 1, "habitat_id": "mist_moss_cave"},
-	{"id": 2, "name": "晶溪滩", "type": "habitat", "description": "浅水和暖石交错的水边驻点。", "position": Vector2(470, 320), "edges": [5], "travel_cost": 1, "habitat_id": "crystal_creek"},
-	{"id": 3, "name": "云升驿", "type": "settlement", "description": "来往消息最灵通的聚落节点。", "position": Vector2(530, 90), "edges": [4, 5], "travel_cost": 1, "habitat_id": "sky_post"},
-	{"id": 4, "name": "古械平台", "type": "habitat", "description": "需要慢慢修复的遗迹据点。", "position": Vector2(830, 140), "edges": [6], "travel_cost": 2, "habitat_id": "ancient_platform"},
-	{"id": 5, "name": "铜锤集", "type": "settlement", "description": "手作和交换最热闹的工坊聚落。", "position": Vector2(840, 330), "edges": [6, 7], "travel_cost": 1, "habitat_id": "copper_hammer_bazaar"},
-	{"id": 6, "name": "裂辉尖塔", "type": "anomaly", "description": "季末才建议踏入的异常区域。", "position": Vector2(1150, 220), "edges": [9, 11], "travel_cost": 3, "habitat_id": "radiant_spire"},
-	{"id": 7, "name": "鸣雷草场", "type": "habitat", "description": "盛雷季会开放的训练型地点。", "position": Vector2(1040, 430), "edges": [8, 10], "travel_cost": 2, "habitat_id": "thunder_meadow"},
-	{"id": 8, "name": "赤叶演武场", "type": "dojo", "description": "秋季开启的主道馆，用于验证当前 build。", "position": Vector2(1250, 430), "edges": [10], "travel_cost": 2, "habitat_id": "autumn_leaf_dojo"},
-	{"id": 9, "name": "霜镜湖", "type": "habitat", "description": "冬季限定的低压高价值观察点。", "position": Vector2(1290, 70), "edges": [11], "travel_cost": 2, "habitat_id": "frost_mirror_lake"},
-	{"id": 10, "name": "回声断桥", "type": "settlement", "description": "通过夏秋试炼后会开放的中转节点。", "position": Vector2(1110, 320), "edges": [11], "travel_cost": 2, "habitat_id": "echo_broken_bridge"},
-	{"id": 11, "name": "裂辉观测台", "type": "anomaly", "description": "高阶试炼会通向这里。", "position": Vector2(1440, 220), "edges": [], "travel_cost": 3, "habitat_id": "radiant_observatory"},
-	{"id": 12, "name": "青栎林", "type": "habitat", "description": "新增的低压成长路线。", "position": Vector2(1480, 470), "edges": [10, 13], "travel_cost": 1, "habitat_id": "greenbark_grove"},
-	{"id": 13, "name": "烬火盆地", "type": "habitat", "description": "偏火系、锻炼与爆发的中压地点。", "position": Vector2(1710, 470), "edges": [16], "travel_cost": 2, "habitat_id": "ember_crater"},
-	{"id": 14, "name": "芦泽沼", "type": "habitat", "description": "净化与拖延风格的湿地路线。", "position": Vector2(1670, 330), "edges": [15, 16], "travel_cost": 2, "habitat_id": "reed_mire"},
-	{"id": 15, "name": "盐镜海岸", "type": "habitat", "description": "机动与潮汐构筑的新中期点。", "position": Vector2(1690, 110), "edges": [16], "travel_cost": 2, "habitat_id": "saltglass_coast"},
-	{"id": 16, "name": "月沼遗迹", "type": "anomaly", "description": "异常、侵蚀与控制流的高压终点。", "position": Vector2(1880, 230), "edges": [], "travel_cost": 3, "habitat_id": "moonfen_ruins"},
+	{"id": 0, "name": "营地", "type": "camp", "description": "在这里歇歇脚，翻翻小本，再想想今天去见谁。", "position": Vector2(80, 280), "edges": [1, 2, 3], "travel_cost": 0, "habitat_id": ""},
+	{"id": 1, "name": "雾苔窟", "type": "habitat", "description": "潮湿安静，适合慢慢待一会儿，也适合把心收下来。", "position": Vector2(280, 130), "edges": [4], "travel_cost": 1, "habitat_id": "mist_moss_cave"},
+	{"id": 2, "name": "晶溪滩", "type": "habitat", "description": "浅水贴着暖石，站一会儿就会不自觉慢下来。", "position": Vector2(470, 320), "edges": [5], "travel_cost": 1, "habitat_id": "crystal_creek"},
+	{"id": 3, "name": "云升驿", "type": "settlement", "description": "人来人往，风声和消息总比别处早一点。", "position": Vector2(530, 90), "edges": [4, 5], "travel_cost": 1, "habitat_id": "sky_post"},
+	{"id": 4, "name": "古械平台", "type": "habitat", "description": "旧东西很多，得一点点拾掇，急不来。", "position": Vector2(830, 140), "edges": [6], "travel_cost": 2, "habitat_id": "ancient_platform"},
+	{"id": 5, "name": "铜锤集", "type": "settlement", "description": "白天总是叮叮当当，想找东西时来这里最省心。", "position": Vector2(840, 330), "edges": [6, 7], "travel_cost": 1, "habitat_id": "copper_hammer_bazaar"},
+	{"id": 6, "name": "裂辉尖塔", "type": "anomaly", "description": "先别急着往里走，等你更熟这座城的时候再来。", "position": Vector2(1150, 220), "edges": [9, 11], "travel_cost": 3, "habitat_id": "radiant_spire"},
+	{"id": 7, "name": "鸣雷草场", "type": "habitat", "description": "雷声大的日子里会热闹些，适合来活动活动筋骨。", "position": Vector2(1040, 430), "edges": [8, 10], "travel_cost": 2, "habitat_id": "thunder_meadow"},
+	{"id": 8, "name": "赤叶演武场", "type": "dojo", "description": "入秋后才开门，正适合来试试现在这套搭配顺不顺手。", "position": Vector2(1250, 430), "edges": [10], "travel_cost": 2, "habitat_id": "autumn_leaf_dojo"},
+	{"id": 9, "name": "霜镜湖", "type": "habitat", "description": "天冷时才看得到它最安静的样子，值得慢慢看。", "position": Vector2(1290, 70), "edges": [11], "travel_cost": 2, "habitat_id": "frost_mirror_lake"},
+	{"id": 10, "name": "回声断桥", "type": "settlement", "description": "等前面的路走顺了，这里自然会接上。", "position": Vector2(1110, 320), "edges": [11], "travel_cost": 2, "habitat_id": "echo_broken_bridge"},
+	{"id": 11, "name": "裂辉观测台", "type": "anomaly", "description": "真想再往前看看，迟早会走到这里。", "position": Vector2(1440, 220), "edges": [], "travel_cost": 3, "habitat_id": "radiant_observatory"},
+	{"id": 12, "name": "青栎林", "type": "habitat", "description": "风很轻，适合刚想把脚步放稳的时候走走。", "position": Vector2(1480, 470), "edges": [10, 13], "travel_cost": 1, "habitat_id": "greenbark_grove"},
+	{"id": 13, "name": "烬火盆地", "type": "habitat", "description": "地方有点燥，适合想狠狠干一把的时候来。", "position": Vector2(1710, 470), "edges": [16], "travel_cost": 2, "habitat_id": "ember_crater"},
+	{"id": 14, "name": "芦泽沼", "type": "habitat", "description": "湿地会把节奏拖慢一点，急的人反而不太适合。", "position": Vector2(1670, 330), "edges": [15, 16], "travel_cost": 2, "habitat_id": "reed_mire"},
+	{"id": 15, "name": "盐镜海岸", "type": "habitat", "description": "潮水一来一回，这里的步子也总跟着活络起来。", "position": Vector2(1690, 110), "edges": [16], "travel_cost": 2, "habitat_id": "saltglass_coast"},
+	{"id": 16, "name": "月沼遗迹", "type": "anomaly", "description": "路走到这儿，气氛就会绷起来；没准备好也可以先记住它。", "position": Vector2(1880, 230), "edges": [], "travel_cost": 3, "habitat_id": "moonfen_ruins"},
 ]
 
 @onready var title_label: Label = %TitleLabel
@@ -242,6 +242,8 @@ func _ready() -> void:
 	call_deferred("_apply_responsive_layout")
 	install_visit_flow()
 	if _should_show_boot_menu():
+		if not _apply_run_payload(GameState.load_run_payload()):
+			start_new_game()
 		_show_main_menu()
 	else:
 		start_new_game()
@@ -1012,21 +1014,21 @@ func _tutorial_entry(tutorial_id: String) -> Dictionary:
 	match tutorial_id:
 		"run_intro":
 			return {
-				"title": "远征教学",
-				"close_text": "开始掷骰",
-				"body": "[b]主循环[/b]\n掷骰 -> 选路 -> 落点偶遇 -> 周结算 -> 季切换。\n\n[b]主界面减负后怎么找信息[/b]\n常驻区只保留全局值；任务、战斗构筑、经营状态和教学都收进了 [b]系统手册[/b]。\n\n[b]第一周建议[/b]\n先掷一次骰，找一个低压地点落脚；路过营地时会自动弹出营地总览，其余地点则更像一串现场偶遇。"
+				"title": "初来雾野市",
+				"close_text": "出门走走",
+				"body": "[b]刚来雾野市时[/b]\n先出门走一走，看看今天会碰上谁、会停在哪儿。\n\n[b]平时怎么看东西[/b]\n身上的物资、手边记着的事，还有伙伴近况，都收在 [b]雾野小本[/b] 里。\n不用一次记太多，缺什么再翻就行。\n\n[b]第一天怎么过[/b]\n先掷一次骰，找个不那么紧张的地方落脚。路过落脚处时，顺手把人和东西安顿一下；到了别处，就先接住眼前发生的小事。"
 			}
 		"management_intro":
 			return {
-				"title": "经营教学",
-				"close_text": "继续整理",
-				"body": "[b]营地总览[/b]\n只有路过营地时才会自动弹出，这里处理队伍整备、驻守、建筑与留信。其他地点则统一改成落点偶遇。\n\n[b]经营重点[/b]\n双打位决定当前战斗核心；待命位补羁绊；驻守会影响据点建设和建筑共鸣。\n\n[b]信息入口[/b]\n平时随时能在 [b]系统手册 -> 背包[/b] 里看饥饿、库存、金钱和地点状态。"
+				"title": "先把日子安顿下来",
+				"close_text": "接着收拾",
+				"body": "[b]落脚处是干什么的[/b]\n路过这里时，你会顺手把伙伴、住处和手边的事理一理。别的地方更像是在外头碰见的一段段小插曲。\n\n[b]平时最重要的事[/b]\n先把身边同行的人安稳下来，再慢慢想谁适合住下、谁适合帮忙。\n\n[b]东西去哪看[/b]\n饥饿、物资、金钱，还有各地的近况，都放在 [b]雾野小本 -> 背包[/b] 里。"
 			}
 		"battle_intro":
 			return {
-				"title": "战斗教学",
-				"close_text": "进入战斗",
-				"body": "[b]双打战斗[/b]\n我方固定 2v2。轮到己方行动时，先点头像选目标，再点技能。\n\n[b]看什么最关键[/b]\n速度决定先后手；护盾与建筑减伤会写在单位状态上；回合上限到了会按剩余战力结算。\n\n[b]战前准备[/b]\n如果想补羁绊、双打位或驻守增益，先去 [b]系统手册 -> 战斗[/b] 或在下一次路过营地时整备。"
+				"title": "真闹起来时怎么办",
+				"close_text": "去应付一下",
+				"body": "[b]起冲突时[/b]\n真闹起来时，就是两边的人正面对上。轮到你出手，就先挑这一手要怎么做，再点一下对象。\n\n[b]最该先看的[/b]\n谁先动、谁还能撑、谁现在更危险，先看这三样就够了。\n\n[b]打之前能做什么[/b]\n想换同行、补状态，或者先把人安顿好，就回 [b]雾野小本[/b] 看看，或者等下次回到落脚处再慢慢收拾。"
 			}
 		_:
 			return {}
@@ -1120,7 +1122,7 @@ func start_new_game() -> void:
 	if _stage_transition_layer != null:
 		_stage_transition_layer.visible = false
 	_assign_weekly_objective()
-	_push_log("%s远征开始。目标是用 4 个赛季的 100 回合，把路线、养成和战斗重新缝成一个主循环。" % _season_name())
+	_push_log("%s的日子开始了。先慢慢在城里走走，认识人，也给自己找个落脚的节奏。" % _season_name())
 	for modifier_line in run_modifier_service.format_lines(GameState.run_modifiers):
 		_push_log("本局词缀：%s" % modifier_line)
 	for line in ai_player_service.build_status_lines(board_lookup, 3):
@@ -1133,6 +1135,13 @@ func _load_run_state_from_save() -> void:
 		pending_context.clear()
 		decision_panel.open_panel("没有存档", "当前没有可读取的运行存档。开始游戏会创建一局新的远征。", [], "返回开始界面")
 		return
+	_apply_run_payload(payload)
+	_hide_main_menu()
+	_push_log("已读取最近一次日初存档。")
+
+func _apply_run_payload(payload: Dictionary) -> bool:
+	if payload.is_empty():
+		return false
 	DataRepository.load_all()
 	GameState.apply_runtime_snapshot(payload.get("game_state", {}))
 	_restore_scene_runtime_state(payload.get("scene_state", {}))
@@ -1140,8 +1149,7 @@ func _load_run_state_from_save() -> void:
 	_refresh_board_region(true)
 	current_node_id = GameState.current_board_node_id
 	_update_ui()
-	_hide_main_menu()
-	_push_log("已读取最近一次日初存档。")
+	return true
 
 func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
 	season_finished = bool(scene_state.get("season_finished", false))
@@ -1555,10 +1563,10 @@ func _on_support_pressed() -> void:
 	var sections := _build_support_sections()
 	if sections.is_empty():
 		return
-	var title := "系统手册"
+	var title := "雾野小本"
 	var initial_section_id := "backpack"
 	if not _last_ai_turn_report.is_empty() and String(sections[0].get("id", "")).begins_with("ai_"):
-		title = "系统手册 / AI 观察"
+		title = "雾野小本 / 外头动静"
 		initial_section_id = String(sections[0].get("id", "ai_0"))
 	system_panel.open_panel(title, sections, initial_section_id)
 
@@ -1912,7 +1920,7 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 	if GameState.has_node_ambush(current_node_id):
 		lines.append("[b]袭扰预警[/b] 这里留下了潜伏痕迹。")
 	if int(habitat.get("recommended_rank", 0)) > 0:
-		lines.append("[b]推荐等级[/b] %d" % int(habitat.get("recommended_rank", 0)))
+		lines.append("[b]什么时候来更合适[/b] %d 级左右会更轻松" % int(habitat.get("recommended_rank", 0)))
 	if not String(habitat.get("dojo_id", "")).is_empty():
 		lines.append("[b]试炼状态[/b] %s" % _dojo_status_text(String(habitat.get("dojo_id", ""))))
 
@@ -1921,7 +1929,7 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 		choices.append({
 			"id": primary_action,
 			"label": _primary_content_label(primary_action),
-			"summary": "%s\n这是这次落点里最值得先接住的一件事。" % _primary_content_summary(primary_action),
+			"summary": "%s\n这就是你到这儿后最值得先顾上的那件事。" % _primary_content_summary(primary_action),
 		})
 	pending_context = {"kind": "visit_arrival", "on_close": "finish_visit"}
 	decision_panel.open_panel(String(habitat.get("name", "地点")), "\n".join(lines), choices, "继续前进")
@@ -1960,40 +1968,40 @@ func _is_primary_action_available(action_id: String, habitat: Dictionary, buildi
 func _primary_content_label(action_id: String) -> String:
 	match action_id:
 		"build_menu":
-			return "推进建设"
+			return "把这里收拾一下"
 		"shop_menu":
-			return "进入商店"
+			return "去摊子上看看"
 		"npc_menu":
-			return "与人交谈"
+			return "和人聊聊"
 		"observe":
-			return "观察野外"
+			return "四处看看"
 		"fishing_menu":
-			return "在水边垂钓"
+			return "去水边坐会儿"
 		"dojo_menu":
-			return "进入试炼"
+			return "去试试看"
 		"mail_menu":
-			return "寄送留信"
+			return "捎个话"
 		_:
-			return "处理节点主玩法"
+			return "先做眼前这件事"
 
 func _primary_content_summary(action_id: String) -> String:
 	match action_id:
 		"build_menu":
-			return "这是建设型路遇，主收益来自推进建筑和后续共鸣。"
+			return "这里最要紧的，是把地方慢慢收拾得更像个能落脚的去处。"
 		"shop_menu":
-			return "这是市集型路遇，主收益来自按季节与事件轮换的商品补给，以及摊位熟人的额外服务。"
+			return "这里更适合去摊子上转转，顺手把缺的东西补一补。"
 		"npc_menu":
-			return "这是关系型路遇，主收益来自情报、委托和关系推进。"
+			return "这里最值当的，通常是和人聊一聊，把关系慢慢走近。"
 		"observe":
-			return "这是野外型路遇，主收益来自观察、结缘和风险处理。"
+			return "这里适合先看看四周，别急着动手，先摸清气氛。"
 		"fishing_menu":
-			return "这是水域型路遇，主收益来自消耗回合钓鱼、放流、节庆比赛与水系生物互动。"
+			return "这里不必太赶，去水边坐会儿，常常会有意外收获。"
 		"dojo_menu":
-			return "这是验证型路遇，主收益来自试炼和阶段奖励。"
+			return "这里就是来试试手感的，看看现在这套搭配顺不顺手。"
 		"mail_menu":
-			return "这是中转型路遇，主收益来自跨点处理和路线信息。"
+			return "这里更像顺路帮人捎个话，也顺便听听别处的动静。"
 		_:
-			return "处理这个节点最核心的内容。"
+			return "先把这里眼前最值得做的一件事接住。"
 
 func _show_build_menu(payload: Dictionary) -> void:
 	var choices := []
@@ -2192,7 +2200,7 @@ func _show_dojo_menu(payload: Dictionary) -> void:
 		decision_panel.open_panel("试炼入口", "这里今天没有可进行的试炼。", [], "返回地点")
 		return
 	var lines: Array[String] = []
-	lines.append("[b]推荐据点等级[/b] %d" % int(dojo.get("recommended_rank", 1)))
+	lines.append("[b]什么时候来更轻松[/b] %d 级左右" % int(dojo.get("recommended_rank", 1)))
 	lines.append("[b]门票[/b] %s" % _format_item_cost(payload.get("entry_cost", {})))
 	lines.append("[b]当前双打位[/b] %s" % (" / ".join(payload.get("battle_slots", [])) if not payload.get("battle_slots", []).is_empty() else "尚未就绪"))
 	lines.append("[b]宠物栏容量[/b] %s" % String(payload.get("reserve_summary", "0 / 0")))
@@ -2547,9 +2555,9 @@ func _apply_board_event_package(event_package: Dictionary) -> void:
 			Array(event_package.get("tags", [])).duplicate(true),
 			current_visit_habitat_id
 		)
-	for event_id in event_package.get("completed_events", []):
-		if not String(event_id).is_empty():
-			GameState.mark_event_completed(String(event_id))
+	for completed_event_id in event_package.get("completed_events", []):
+		if not String(completed_event_id).is_empty():
+			GameState.mark_event_completed(String(completed_event_id))
 	for dialogue_id in event_package.get("unlocked_dialogues", []):
 		if not String(dialogue_id).is_empty():
 			GameState.unlock_dialogue(String(dialogue_id))
@@ -2958,7 +2966,7 @@ func _show_ai_turn_report(ai_result: Dictionary) -> void:
 	var sections := _build_ai_report_sections(_last_ai_turn_report)
 	if sections.is_empty():
 		return
-	system_panel.open_panel("AI 回合观察", sections, String(sections[0].get("id", "ai_0")))
+	system_panel.open_panel("外头动静", sections, String(sections[0].get("id", "ai_0")))
 
 func _on_base_closed() -> void:
 	if camp_panel_requires_finish:
@@ -3681,7 +3689,7 @@ func _finish_season() -> void:
 	for track in reward_result.get("new_tracks", []):
 		GameState.register_meta_track(String(track.get("id", "")), track.get("unlock", {}))
 	GameState.save_meta_progression()
-	action_hint_label.text = "[b]年度回顾[/b]\n照料进度 %d ｜ 已安居据点 %d ｜ 图鉴 %d ｜ 徽章 %d ｜ 季节点数 %d\n本局探索点 %d ｜ 累计探索点 %d" % [
+	action_hint_label.text = "[b]这一年的收获[/b]\n照料进度 %d ｜ 已安居据点 %d ｜ 图鉴 %d ｜ 徽章 %d ｜ 季节点数 %d\n本局探索点 %d ｜ 累计探索点 %d" % [
 		GameState.get_care_progress(),
 		GameState.get_settled_habitat_count(),
 		GameState.discovered_species.size(),
@@ -3691,11 +3699,11 @@ func _finish_season() -> void:
 		GameState.exploration_points_total,
 	]
 	_play_stage_transition(
-		"年度远征结束",
+		"这一年的日子先告一段落",
 		"本局探索点 +%d\n累计探索点 %d" % [int(reward_result.get("points", 0)), GameState.exploration_points_total],
 		Color(1.0, 0.84, 0.38, 1.0)
 	)
-	_push_log("年度远征结束，获得探索点 %d。" % int(reward_result.get("points", 0)))
+	_push_log("这一年的日子先告一段落，获得探索点 %d。" % int(reward_result.get("points", 0)))
 	for line in meta_progression_service.format_new_tracks(reward_result.get("new_tracks", [])):
 		_push_log("元成长解锁：%s。" % line)
 	_update_ui()
@@ -3822,9 +3830,9 @@ func _update_action_ui() -> void:
 	else:
 		board_route_label.text = "待命中 ｜ 今日 %s · %s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
 	roll_button.text = "掷骰"
-	support_button.text = "背包 / 手册"
-	base_button.text = "营地总览"
-	new_game_button.text = "主界面"
+	support_button.text = "背包 / 小本"
+	base_button.text = "落脚处"
+	new_game_button.text = "回到开头"
 	roll_button.disabled = season_finished or _is_modal_open() or awaiting_destination
 	plus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) >= 6
 	minus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) <= 1
@@ -3833,17 +3841,17 @@ func _update_action_ui() -> void:
 	base_button.disabled = _is_modal_open() and not base_panel.visible
 	new_game_button.disabled = ai_turn_in_progress or battle_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible
 	if season_finished:
-		action_hint_label.text = "[b]年度结算完成[/b]\n打开右上角主界面，查看局外成长并开始下一轮远征。"
+		action_hint_label.text = "[b]这一年先告一段落[/b]\n回到上面看看这一年的收获，也能顺手开始下一段日子。"
 		return
 	if ai_turn_in_progress:
 		action_hint_label.text = "[b]对手回合[/b]\n%s" % (_active_ai_observation_line if not _active_ai_observation_line.is_empty() else "正在结算其他远征队的掷骰、推进和落点。")
 		return
 	if awaiting_destination:
-		action_hint_label.text = "[b]正在确认落点[/b]\n若只有一个精确落点会自动前进，只有出现分叉时才需要你手动选路。"
+		action_hint_label.text = "[b]先看看脚会停在哪儿[/b]\n要是只有一个顺路的去处，就会自己走过去；只有真遇到岔路，才轮到你拿主意。"
 	else:
-		action_hint_label.text = "[b]从当前节点继续推进[/b]\n先掷骰，再看精确落点；系统会自动处理单一路径，只在分叉处停下来。"
+		action_hint_label.text = "[b]先出门，再看会停在哪儿[/b]\n先掷一次骰，看看今天会被带到哪里。只有遇到岔路，才需要你挑。"
 	if GameState.is_hunger_low() and not season_finished and not ai_turn_in_progress:
-		action_hint_label.text = "[b]饥饿偏低[/b]\n路过营地会自动恢复一部分饱腹感；详细补给请打开背包 / 手册。"
+		action_hint_label.text = "[b]肚子有点空了[/b]\n路过落脚处会顺手垫一点；更细的东西，翻背包 / 小本就行。"
 
 func _update_summaries() -> void:
 	var synergy_report := synergy_service.build_synergy_report()
@@ -4083,7 +4091,7 @@ func _today_focus_text() -> String:
 	if GameState.season_id == "summer" and GameState.is_habitat_unlocked("thunder_meadow") and not GameState.has_cleared_dojo("summer_storm_trial", "tier_1"):
 		return "去鸣雷草场试试夏季一阶试炼，拿第一枚季节徽章。"
 	if GameState.season_id == "autumn" and GameState.is_habitat_unlocked("autumn_leaf_dojo") and not GameState.has_cleared_dojo("autumn_leaf_dojo", "tier_1"):
-		return "赤叶演武场已经开放，适合验证当前 build。"
+		return "赤叶演武场已经开门，适合去试试现在这套搭配顺不顺手。"
 	if GameState.season_id == "winter" and GameState.is_habitat_unlocked("frost_mirror_lake"):
 		return "霜镜湖已开放，优先收集冬季限定素材与观察条目。"
 	if GameState.get_settled_habitat_count() < 2:
@@ -4271,19 +4279,19 @@ func _encounter_outcome_text(outcome: String) -> String:
 
 func _build_fail_reason(reason: String) -> String:
 	match reason:
-		"resident_required": return "这里还没有主驻守伙伴，得先让谁住下来。"
-		"insufficient_items": return "材料还不够，先再回访几次或做做委托。"
-		"max_level": return "这项建设已经走到当前上限。"
-		"site_mismatch": return "这项建设不属于当前地点。"
-		"building_missing": return "蓝图暂时没有准备好。"
-		"pet_missing": return "这只伙伴现在不在照料名册里。"
-		"tier_locked": return "需要先通过前一阶试炼。"
-		"entry_cost_missing": return "门票材料还没凑齐，先去当季地点收集。"
-		"payment_failed": return "扣除门票时出现问题，请重试。"
-		"battle_slots_missing": return "双打位还没凑齐 2 只伙伴，当前 build 无法进入试炼。"
-		"battle_config_missing": return "试炼战斗配置缺失，当前无法开战。"
-		"dojo_missing": return "这里还没有可用的试炼定义。"
-		"tier_missing": return "这个阶位暂时没有配置。"
+		"resident_required": return "这里还没人住下，先替它找个合适的伴。"
+		"insufficient_items": return "手头东西还差一点，改天再来会更稳。"
+		"max_level": return "这里已经收拾到眼下能做到的头了。"
+		"site_mismatch": return "这事不该在这儿做，换个地方更合适。"
+		"building_missing": return "这一步还没想好怎么搭，先放一放。"
+		"pet_missing": return "这位伙伴这会儿不在身边。"
+		"tier_locked": return "前面的路还得先走顺，再来试这一步。"
+		"entry_cost_missing": return "还差点进门要用的东西，先去别处转转。"
+		"payment_failed": return "刚才没扣成，再试一次看看。"
+		"battle_slots_missing": return "现在身边还没站稳两位同行，进去会太吃力。"
+		"battle_config_missing": return "这里今天还闹不起来，先去别处看看。"
+		"dojo_missing": return "这里暂时还没准备好让你试手。"
+		"tier_missing": return "这一步今天还轮不到。"
 		_: return "这一步今天还做不了。"
 
 func _format_inventory_highlights() -> String:
@@ -4342,9 +4350,9 @@ func _build_backpack_section_lines() -> Array[String]:
 			lines.append("- %s：%d 分" % [festival_id, GameState.get_festival_score(String(festival_id))])
 	lines.append("")
 	lines.append("[b]生物图鉴[/b] %d / %d" % [_count_unlocked_codex_entries(), DataRepository.codex_entries.size()])
-	lines.append("图鉴入口已收进背包 / 手册；宠物编成请看宠物栏。切到 [b]生物图鉴[/b] 页签即可查看。")
+	lines.append("图鉴入口已经收进背包 / 小本；想看同行和编成，就去宠物栏那一页。切到 [b]生物图鉴[/b] 就能翻。")
 	lines.append("")
-	lines.append("资源与补给已经从主界面移走，统一放到这一页查看。")
+	lines.append("平时缺什么、手上还剩多少，都来这一页翻一眼就行。")
 	return lines
 
 func _count_unlocked_codex_entries() -> int:
@@ -4634,9 +4642,9 @@ func _format_reward_bundle(reward_result: Dictionary) -> String:
 	return " / ".join(parts)
 
 func _build_main_menu_run_summary() -> String:
-	var lines: Array[String] = ["[b]当前远征[/b]"]
+	var lines: Array[String] = ["[b]这阵子的日子[/b]"]
 	if season_finished:
-		lines.append("本轮年度已经结算完毕，可以查看局外成长后直接开始下一轮。")
+		lines.append("这一年的账已经算完了，歇口气后就能开始下一段日子。")
 	else:
 		lines.append("%s · 第 %d / %d 回合 · 第 %d 周 · 总回合 %d / 100" % [
 			_season_name(),
@@ -4750,32 +4758,32 @@ func _build_system_sections() -> Array:
 	return [
 		{
 			"id": "quest",
-			"label": "目标",
-			"summary": "[b]任务总览[/b]\n周目标、委托和本局词缀都集中放在这里。",
+			"label": "手边的事",
+			"summary": "[b]手边惦记的事[/b]\n今天想顾上的、答应过的，还有这一阵子的变化，都记在这里。",
 			"body": "\n".join(quest_lines),
 		},
 		{
 			"id": "battle",
-			"label": "宠物栏",
-			"summary": "[b]宠物编成[/b]\n双打位、待命位、羁绊、建筑前置增益和战斗汇总。",
+			"label": "同行",
+			"summary": "[b]现在和谁一起[/b]\n谁在身边、谁在待命、彼此合不合拍，都在这里看。",
 			"body": "\n".join(battle_lines),
 		},
 		{
 			"id": "backpack",
 			"label": "背包",
-			"summary": "[b]背包与生存[/b]\n饥饿、资源、补给、金钱与图鉴入口都收口到这里。",
+			"summary": "[b]背包与日常[/b]\n饥饿、物资、钱，还有图鉴入口，都收在这里。",
 			"body": "\n".join(backpack_lines),
 		},
 		{
 			"id": "codex",
 			"label": "生物图鉴",
-			"summary": "[b]观察档案[/b]\n已解锁的生物观察记录会沉淀到这里。",
+			"summary": "[b]看过的那些生灵[/b]\n一路记下来的观察，都慢慢收在这里。",
 			"body": "\n".join(codex_lines),
 		},
 		{
 			"id": "tutorial",
-			"label": "教学",
-			"summary": "[b]教学手册[/b]\n首次开局、第一次进营地和第一次进战斗都会自动弹一次，这里可以回看。",
+			"label": "刚来时的提醒",
+			"summary": "[b]刚来时的提醒[/b]\n第一次遇到的说明都留在这里，想翻随时翻。",
 			"body": "\n".join(tutorial_lines),
 		},
 	]

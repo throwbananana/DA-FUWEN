@@ -1,0 +1,236 @@
+diff --git a/scripts/services/localization_service.gd b/scripts/services/localization_service.gd
+--- a/scripts/services/localization_service.gd
++++ b/scripts/services/localization_service.gd
+@@ -167,43 +167,43 @@ const TEXT := {
+-		"battle.start": "战斗开始",
+-		"battle.end": "战斗结束",
+-		"battle.end.win": "胜利",
+-		"battle.end.lose": "败退",
++		"battle.start": "闹起来了",
++		"battle.end": "先停手了",
++		"battle.end.win": "稳住了",
++		"battle.end.lose": "先退一步",
+ 		"battle.round": "第 {round} 轮",
+ 		"battle.round_actor": "第 {round} 轮 · {actor}",
+-		"battle.turn.player": "我方回合",
+-		"battle.turn.enemy": "敌方行动",
+-		"battle.roster.allies": "我方单位",
+-		"battle.roster.enemies": "敌方单位",
+-		"battle.prompt.player": "轮到 {actor} 行动。先选技能，再点击目标确认。",
+-		"battle.prompt.choose_target": "{actor} 准备使用 {skill}。点击合法目标确认行动。",
+-		"battle.prompt.choose_enemy_column": "请点击右侧敌方单位列表中的目标。",
+-		"battle.prompt.choose_ally_column": "请点击左侧我方单位列表中的目标。",
+-		"battle.prompt.enemy_target": "敌方目标：{target}",
+-		"battle.prompt.ally_target": "友方目标：{target}",
+-		"battle.prompt.none": "未选目标",
+-		"battle.prompt.target": "当前锁定：{target}",
+-		"battle.prompt.target_none": "当前锁定：未选目标",
+-		"battle.prompt.enemy_thinking": "{actor} 正在评估局势…",
+-		"battle.prompt.enemy_intent": "{actor} 锁定 {target}，准备使用 {skill}。",
+-		"battle.prompt.action_locked": "{actor} 锁定 {target}，即将使用 {skill}。",
+-		"battle.prompt.capture_locked": "{actor} 锁定 {target}，准备尝试捕缚。",
+-		"battle.capture": "尝试捕缚",
+-		"battle.capture_hint": "对低生命野怪成功率更高",
+-		"battle.capture_success_title": "捕缚成功",
+-		"battle.preview.idle": "等待行动预览",
+-		"battle.preview.idle_detail": "选择技能后，这里会显示行动者、目标和预计影响。",
+-		"battle.preview.await_actor": "{actor} 待命中",
+-		"battle.preview.await_detail": "先选择技能，再点击目标确认。",
+-		"battle.preview.estimate_damage": "预计伤害 {min}-{max}",
+-		"battle.preview.estimate_heal": "预计治疗 {value}",
+-		"battle.preview.guard": "获得防御姿态",
+-		"battle.preview.status_apply": "附加 {status}",
+-		"battle.preview.enemy_all_damage": "范围伤害 {value}",
+-		"battle.preview.click_target": "点击高亮目标确认",
+-		"battle.preview.cancel": "取消当前预览",
++		"battle.turn.player": "轮到你这边",
++		"battle.turn.enemy": "对面出手",
++		"battle.roster.allies": "身边的人",
++		"battle.roster.enemies": "对面的人",
++		"battle.prompt.player": "轮到 {actor} 了。先想好这一手，再点一下对象。",
++		"battle.prompt.choose_target": "{actor} 已经想好要用 {skill}。点一下亮着的对象，就能出手。",
++		"battle.prompt.choose_enemy_column": "去点右边那个你想招呼的对象。",
++		"battle.prompt.choose_ally_column": "去点左边那个你想照应的对象。",
++		"battle.prompt.enemy_target": "对面这位：{target}",
++		"battle.prompt.ally_target": "自己这边：{target}",
++		"battle.prompt.none": "还没选",
++		"battle.prompt.target": "现在看的是：{target}",
++		"battle.prompt.target_none": "现在还没看定",
++		"battle.prompt.enemy_thinking": "{actor} 正在打量局势……",
++		"battle.prompt.enemy_intent": "{actor} 盯上了 {target}，看样子要用 {skill}。",
++		"battle.prompt.action_locked": "{actor} 已经盯住 {target}，下一手会用 {skill}。",
++		"battle.prompt.capture_locked": "{actor} 盯住了 {target}，想试着把它留住。",
++		"battle.capture": "试着留住它",
++		"battle.capture_hint": "对方越虚弱，越容易把它留下",
++		"battle.capture_success_title": "留住了",
++		"battle.preview.idle": "先看看这一手会怎样",
++		"battle.preview.idle_detail": "选好招式后，这里会告诉你大概会发生什么。",
++		"battle.preview.await_actor": "{actor} 正在等你拿主意",
++		"battle.preview.await_detail": "先挑这一手，再点一下对象。",
++		"battle.preview.estimate_damage": "大概会打出 {min}-{max} 点伤害",
++		"battle.preview.estimate_heal": "大概会回 {value} 点",
++		"battle.preview.guard": "会先护住自己",
++		"battle.preview.status_apply": "可能会挂上 {status}",
++		"battle.preview.enemy_all_damage": "会波及对面所有人，大概 {value}",
++		"battle.preview.click_target": "点亮着的对象，就能确认",
++		"battle.preview.cancel": "把这一手先收回来",
+ 		"battle.turn_order.now": "当前行动",
+ 		"battle.turn_order.next": "下一个",
+ 		"battle.turn_order.done": "已行动",
+@@ -219,10 +219,10 @@ const TEXT := {
+-		"battle.title.intro_duel": "{npc} · 初见切磋",
+-		"battle.subtitle.intro_duel": "第一次拜访前必须先决斗。\n胜利：基础信赖 {win} ｜ 失败：基础信赖 {lose}",
+-		"dojo.summary.recommended_rank": "推荐据点等级 {value}",
++		"battle.title.intro_duel": "{npc} · 先过过手",
++		"battle.subtitle.intro_duel": "第一次见面，总得先试试彼此的分量。\n赢了：基础信赖 {win} ｜ 没赢：基础信赖 {lose}",
++		"dojo.summary.recommended_rank": "准备到 {value} 级左右会更轻松",
+ 		"dojo.summary.opponents": "对手：{value}",
+ 		"dojo.summary.first_clear": "已首通",
+-		"dojo.summary.require_previous": "需先通过前一阶",
+-		"dojo.summary.ticket_missing": "缺少门票材料",
++		"dojo.summary.require_previous": "前面的路还得先走顺",
++		"dojo.summary.ticket_missing": "进门要用的东西还没凑齐",
+ 		"dojo.summary.modifiers": "修正：{value}",
+ 		"dojo.tier_1": "试炼一阶",
+ 		"dojo.tier_2": "试炼二阶",
+diff --git a/scripts/main.gd b/scripts/main.gd
+--- a/scripts/main.gd
++++ b/scripts/main.gd
+@@ -53,16 +53,16 @@ const AI_OBSERVE_TURN_FINISH_DELAY := 0.18
+ const NODE_TEMPLATES := [
+-	{"id": 0, "name": "营地", "type": "camp", "description": "整理材料、查看笔记，然后决定今天去看望谁。", "position": Vector2(80, 280), "edges": [1, 2, 3], "travel_cost": 0, "habitat_id": ""},
+-	{"id": 1, "name": "雾苔窟", "type": "habitat", "description": "湿冷又安静的巢居据点，适合慢慢照料。", "position": Vector2(280, 130), "edges": [4], "travel_cost": 1, "habitat_id": "mist_moss_cave"},
+-	{"id": 2, "name": "晶溪滩", "type": "habitat", "description": "浅水和暖石交错的水边驻点。", "position": Vector2(470, 320), "edges": [5], "travel_cost": 1, "habitat_id": "crystal_creek"},
+-	{"id": 3, "name": "云升驿", "type": "settlement", "description": "来往消息最灵通的聚落节点。", "position": Vector2(530, 90), "edges": [4, 5], "travel_cost": 1, "habitat_id": "sky_post"},
+-	{"id": 4, "name": "古械平台", "type": "habitat", "description": "需要慢慢修复的遗迹据点。", "position": Vector2(830, 140), "edges": [6], "travel_cost": 2, "habitat_id": "ancient_platform"},
+-	{"id": 5, "name": "铜锤集", "type": "settlement", "description": "手作和交换最热闹的工坊聚落。", "position": Vector2(840, 330), "edges": [6, 7], "travel_cost": 1, "habitat_id": "copper_hammer_bazaar"},
+-	{"id": 6, "name": "裂辉尖塔", "type": "anomaly", "description": "季末才建议踏入的异常区域。", "position": Vector2(1150, 220), "edges": [9, 11], "travel_cost": 3, "habitat_id": "radiant_spire"},
+-	{"id": 7, "name": "鸣雷草场", "type": "habitat", "description": "盛雷季会开放的训练型地点。", "position": Vector2(1040, 430), "edges": [8, 10], "travel_cost": 2, "habitat_id": "thunder_meadow"},
+-	{"id": 8, "name": "赤叶演武场", "type": "dojo", "description": "秋季开启的主道馆，用于验证当前 build。", "position": Vector2(1250, 430), "edges": [10], "travel_cost": 2, "habitat_id": "autumn_leaf_dojo"},
+-	{"id": 9, "name": "霜镜湖", "type": "habitat", "description": "冬季限定的低压高价值观察点。", "position": Vector2(1290, 70), "edges": [11], "travel_cost": 2, "habitat_id": "frost_mirror_lake"},
+-	{"id": 10, "name": "回声断桥", "type": "settlement", "description": "通过夏秋试炼后会开放的中转节点。", "position": Vector2(1110, 320), "edges": [11], "travel_cost": 2, "habitat_id": "echo_broken_bridge"},
+-	{"id": 11, "name": "裂辉观测台", "type": "anomaly", "description": "高阶试炼会通向这里。", "position": Vector2(1440, 220), "edges": [], "travel_cost": 3, "habitat_id": "radiant_observatory"},
+-	{"id": 12, "name": "青栎林", "type": "habitat", "description": "新增的低压成长路线。", "position": Vector2(1480, 470), "edges": [10, 13], "travel_cost": 1, "habitat_id": "greenbark_grove"},
+-	{"id": 13, "name": "烬火盆地", "type": "habitat", "description": "偏火系、锻炼与爆发的中压地点。", "position": Vector2(1710, 470), "edges": [16], "travel_cost": 2, "habitat_id": "ember_crater"},
+-	{"id": 14, "name": "芦泽沼", "type": "habitat", "description": "净化与拖延风格的湿地路线。", "position": Vector2(1670, 330), "edges": [15, 16], "travel_cost": 2, "habitat_id": "reed_mire"},
+-	{"id": 15, "name": "盐镜海岸", "type": "habitat", "description": "机动与潮汐构筑的新中期点。", "position": Vector2(1690, 110), "edges": [16], "travel_cost": 2, "habitat_id": "saltglass_coast"},
+-	{"id": 16, "name": "月沼遗迹", "type": "anomaly", "description": "异常、侵蚀与控制流的高压终点。", "position": Vector2(1880, 230), "edges": [], "travel_cost": 3, "habitat_id": "moonfen_ruins"},
++	{"id": 0, "name": "营地", "type": "camp", "description": "在这里歇歇脚，翻翻小本，再想想今天去见谁。", "position": Vector2(80, 280), "edges": [1, 2, 3], "travel_cost": 0, "habitat_id": ""},
++	{"id": 1, "name": "雾苔窟", "type": "habitat", "description": "潮湿安静，适合慢慢待一会儿，也适合把心收下来。", "position": Vector2(280, 130), "edges": [4], "travel_cost": 1, "habitat_id": "mist_moss_cave"},
++	{"id": 2, "name": "晶溪滩", "type": "habitat", "description": "浅水贴着暖石，站一会儿就会不自觉慢下来。", "position": Vector2(470, 320), "edges": [5], "travel_cost": 1, "habitat_id": "crystal_creek"},
++	{"id": 3, "name": "云升驿", "type": "settlement", "description": "人来人往，风声和消息总比别处早一点。", "position": Vector2(530, 90), "edges": [4, 5], "travel_cost": 1, "habitat_id": "sky_post"},
++	{"id": 4, "name": "古械平台", "type": "habitat", "description": "旧东西很多，得一点点拾掇，急不来。", "position": Vector2(830, 140), "edges": [6], "travel_cost": 2, "habitat_id": "ancient_platform"},
++	{"id": 5, "name": "铜锤集", "type": "settlement", "description": "白天总是叮叮当当，想找东西时来这里最省心。", "position": Vector2(840, 330), "edges": [6, 7], "travel_cost": 1, "habitat_id": "copper_hammer_bazaar"},
++	{"id": 6, "name": "裂辉尖塔", "type": "anomaly", "description": "先别急着往里走，等你更熟这座城的时候再来。", "position": Vector2(1150, 220), "edges": [9, 11], "travel_cost": 3, "habitat_id": "radiant_spire"},
++	{"id": 7, "name": "鸣雷草场", "type": "habitat", "description": "雷声大的日子里会热闹些，适合来活动活动筋骨。", "position": Vector2(1040, 430), "edges": [8, 10], "travel_cost": 2, "habitat_id": "thunder_meadow"},
++	{"id": 8, "name": "赤叶演武场", "type": "dojo", "description": "入秋后才开门，正适合来试试现在这套搭配顺不顺手。", "position": Vector2(1250, 430), "edges": [10], "travel_cost": 2, "habitat_id": "autumn_leaf_dojo"},
++	{"id": 9, "name": "霜镜湖", "type": "habitat", "description": "天冷时才看得到它最安静的样子，值得慢慢看。", "position": Vector2(1290, 70), "edges": [11], "travel_cost": 2, "habitat_id": "frost_mirror_lake"},
++	{"id": 10, "name": "回声断桥", "type": "settlement", "description": "等前面的路走顺了，这里自然会接上。", "position": Vector2(1110, 320), "edges": [11], "travel_cost": 2, "habitat_id": "echo_broken_bridge"},
++	{"id": 11, "name": "裂辉观测台", "type": "anomaly", "description": "真想再往前看看，迟早会走到这里。", "position": Vector2(1440, 220), "edges": [], "travel_cost": 3, "habitat_id": "radiant_observatory"},
++	{"id": 12, "name": "青栎林", "type": "habitat", "description": "风很轻，适合刚想把脚步放稳的时候走走。", "position": Vector2(1480, 470), "edges": [10, 13], "travel_cost": 1, "habitat_id": "greenbark_grove"},
++	{"id": 13, "name": "烬火盆地", "type": "habitat", "description": "地方有点燥，适合想狠狠干一把的时候来。", "position": Vector2(1710, 470), "edges": [16], "travel_cost": 2, "habitat_id": "ember_crater"},
++	{"id": 14, "name": "芦泽沼", "type": "habitat", "description": "湿地会把节奏拖慢一点，急的人反而不太适合。", "position": Vector2(1670, 330), "edges": [15, 16], "travel_cost": 2, "habitat_id": "reed_mire"},
++	{"id": 15, "name": "盐镜海岸", "type": "habitat", "description": "潮水一来一回，这里的步子也总跟着活络起来。", "position": Vector2(1690, 110), "edges": [16], "travel_cost": 2, "habitat_id": "saltglass_coast"},
++	{"id": 16, "name": "月沼遗迹", "type": "anomaly", "description": "路走到这儿，气氛就会绷起来；没准备好也可以先记住它。", "position": Vector2(1880, 230), "edges": [], "travel_cost": 3, "habitat_id": "moonfen_ruins"},
+ ]
+@@ -1058,12 +1058,12 @@ func _show_arrival_menu(payload: Dictionary) -> void:
+ 		lines.append("[b]区域危险[/b] %d / 3" % node_danger)
+ 	if GameState.has_node_ambush(current_node_id):
+ 		lines.append("[b]袭扰预警[/b] 这里留下了潜伏痕迹。")
+ 	if int(habitat.get("recommended_rank", 0)) > 0:
+-		lines.append("[b]推荐等级[/b] %d" % int(habitat.get("recommended_rank", 0)))
++		lines.append("[b]什么时候来更合适[/b] %d 级左右会更轻松" % int(habitat.get("recommended_rank", 0)))
+ 	if not String(habitat.get("dojo_id", "")).is_empty():
+ 		lines.append("[b]试炼状态[/b] %s" % _dojo_status_text(String(habitat.get("dojo_id", ""))))
+@@ -1065,7 +1065,7 @@ func _show_arrival_menu(payload: Dictionary) -> void:
+ 	var choices := []
+ 	if not primary_action.is_empty():
+ 		choices.append({
+ 			"id": primary_action,
+ 			"label": _primary_content_label(primary_action),
+-			"summary": "%s\n这是这次落点里最值得先接住的一件事。" % _primary_content_summary(primary_action),
++			"summary": "%s\n这就是你到这儿后最值得先顾上的那件事。" % _primary_content_summary(primary_action),
+ 		})
+@@ -1193,13 +1193,13 @@ func _show_dojo_menu(payload: Dictionary) -> void:
+ 		decision_panel.open_panel("试炼入口", "这里今天没有可进行的试炼。", [], "返回地点")
+ 		return
+ 	var lines: Array[String] = []
+-	lines.append("[b]推荐据点等级[/b] %d" % int(dojo.get("recommended_rank", 1)))
++	lines.append("[b]什么时候来更轻松[/b] %d 级左右" % int(dojo.get("recommended_rank", 1)))
+ 	lines.append("[b]门票[/b] %s" % _format_item_cost(payload.get("entry_cost", {})))
+ 	lines.append("[b]当前双打位[/b] %s" % (" / ".join(payload.get("battle_slots", [])) if not payload.get("battle_slots", []).is_empty() else "尚未就绪"))
+ 	lines.append("[b]宠物栏容量[/b] %s" % String(payload.get("reserve_summary", "0 / 0")))
+@@ -1932,19 +1932,19 @@ func _update_action_ui() -> void:
+ 		]
+ 	else:
+ 		board_route_label.text = "待命中 ｜ 今日 %s · %s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
+ 	roll_button.text = "掷骰"
+ 	support_button.text = "背包 / 小本"
+-	base_button.text = "营地总览"
+-	new_game_button.text = "主界面"
++	base_button.text = "落脚处"
++	new_game_button.text = "回到开头"
+@@ -1950,13 +1950,13 @@ func _update_action_ui() -> void:
+ 	if season_finished:
+-		action_hint_label.text = "[b]年度结算完成[/b]\n打开右上角主界面，查看局外成长并开始下一轮远征。"
++		action_hint_label.text = "[b]这一年先告一段落[/b]\n回到上面看看这一年的收获，也能顺手开始下一段日子。"
+ 		return
+ 	if ai_turn_in_progress:
+ 		action_hint_label.text = "[b]对手回合[/b]\n%s" % (_active_ai_observation_line if not _active_ai_observation_line.is_empty() else "正在结算其他远征队的掷骰、推进和落点。")
+ 		return
+ 	if awaiting_destination:
+-		action_hint_label.text = "[b]正在确认落点[/b]\n若只有一个精确落点会自动前进，只有出现分叉时才需要你手动选路。"
++		action_hint_label.text = "[b]先看看脚会停在哪儿[/b]\n要是只有一个顺路的去处，就会自己走过去；只有真遇到岔路，才轮到你拿主意。"
+ 	else:
+-		action_hint_label.text = "[b]从当前节点继续推进[/b]\n先掷骰，再看精确落点；系统会自动处理单一路径，只在分叉处停下来。"
++		action_hint_label.text = "[b]先出门，再看会停在哪儿[/b]\n先掷一次骰，看看今天会被带到哪里。只有遇到岔路，才需要你挑。"
+ 	if GameState.is_hunger_low() and not season_finished and not ai_turn_in_progress:
+-		action_hint_label.text = "[b]饥饿偏低[/b]\n路过营地会自动恢复一部分饱腹感；详细补给请打开背包 / 手册。"
++		action_hint_label.text = "[b]肚子有点空了[/b]\n路过落脚处会顺手垫一点；更细的东西，翻背包 / 小本就行。"
+@@ -2117,7 +2117,7 @@ func _today_focus_text() -> String:
+ 	if GameState.season_id == "summer" and GameState.is_habitat_unlocked("thunder_meadow") and not GameState.has_cleared_dojo("summer_storm_trial", "tier_1"):
+ 		return "去鸣雷草场试试夏季一阶试炼，拿第一枚季节徽章。"
+ 	if GameState.season_id == "autumn" and GameState.is_habitat_unlocked("autumn_leaf_dojo") and not GameState.has_cleared_dojo("autumn_leaf_dojo", "tier_1"):
+-		return "赤叶演武场已经开放，适合验证当前 build。"
++		return "赤叶演武场已经开门，适合去试试现在这套搭配顺不顺手。"
+ 	if GameState.season_id == "winter" and GameState.is_habitat_unlocked("frost_mirror_lake"):
+ 		return "霜镜湖已开放，优先收集冬季限定素材与观察条目。"
+@@ -2520,13 +2520,13 @@ func _build_fail_reason(reason: String) -> String:
+ 	match reason:
+-		"resident_required": return "这里还没有主驻守伙伴，得先让谁住下来。"
+-		"insufficient_items": return "材料还不够，先再回访几次或做做委托。"
+-		"max_level": return "这项建设已经走到当前上限。"
+-		"site_mismatch": return "这项建设不属于当前地点。"
+-		"building_missing": return "蓝图暂时没有准备好。"
+-		"pet_missing": return "这只伙伴现在不在照料名册里。"
+-		"tier_locked": return "需要先通过前一阶试炼。"
+-		"entry_cost_missing": return "门票材料还没凑齐，先去当季地点收集。"
+-		"payment_failed": return "扣除门票时出现问题，请重试。"
+-		"battle_slots_missing": return "双打位还没凑齐 2 只伙伴，当前 build 无法进入试炼。"
+-		"battle_config_missing": return "试炼战斗配置缺失，当前无法开战。"
+-		"dojo_missing": return "这里还没有可用的试炼定义。"
+-		"tier_missing": return "这个阶位暂时没有配置。"
++		"resident_required": return "这里还没人住下，先替它找个合适的伴。"
++		"insufficient_items": return "手头东西还差一点，改天再来会更稳。"
++		"max_level": return "这里已经收拾到眼下能做到的头了。"
++		"site_mismatch": return "这事不该在这儿做，换个地方更合适。"
++		"building_missing": return "这一步还没想好怎么搭，先放一放。"
++		"pet_missing": return "这位伙伴这会儿不在身边。"
++		"tier_locked": return "前面的路还得先走顺，再来试这一步。"
++		"entry_cost_missing": return "还差点进门要用的东西，先去别处转转。"
++		"payment_failed": return "刚才没扣成，再试一次看看。"
++		"battle_slots_missing": return "现在身边还没站稳两位同行，进去会太吃力。"
++		"battle_config_missing": return "这里今天还闹不起来，先去别处看看。"
++		"dojo_missing": return "这里暂时还没准备好让你试手。"
++		"tier_missing": return "这一步今天还轮不到。"
+ 		_: return "这一步今天还做不了。"
+@@ -2608,9 +2608,9 @@ func _build_main_menu_run_summary() -> String:
+-	var lines: Array[String] = ["[b]当前远征[/b]"]
++	var lines: Array[String] = ["[b]这阵子的日子[/b]"]
+ 	if season_finished:
+-		lines.append("本轮年度已经结算完毕，可以查看局外成长后直接开始下一轮。")
++		lines.append("这一年的账已经算完了，歇口气后就能开始下一段日子。")
+ 	else:
+ 		lines.append("%s · 第 %d / %d 回合 · 第 %d 周 · 总回合 %d / 100" % [
+ 			_season_name(),
+ 			GameState.season_turn,

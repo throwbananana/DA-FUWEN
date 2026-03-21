@@ -31,7 +31,7 @@ func build_weighted_entries(habitat_id: String, source: String = "observe") -> A
 
 func _filter_entries_by_progression(entries: Array) -> Array:
 	var filtered: Array = []
-	var progression_rank := GameState.get_progression_rank()
+	var progression_rank: int = GameState.get_progression_rank()
 	for entry in entries:
 		var species_id := String(entry.get("species_id", ""))
 		var species := DataRepository.get_species(species_id)

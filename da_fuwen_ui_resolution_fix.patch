@@ -1,0 +1,347 @@
+--- a/scripts/main.gd
++++ b/scripts/main.gd
+@@ -1,15 +1,16 @@
+ func _ready() -> void:
+ 	rng.randomize()
+ 	get_window().min_size = Vector2i(1280, 720)
+ 	get_window().size_changed.connect(_on_window_size_changed)
+ 	title_label.text = GAME_TITLE
+ 	base_button.hide()
+ 	plus_button.hide()
+ 	minus_button.hide()
+ 	reroll_button.hide()
+ 	_connect_signals()
+ 	_apply_basic_styles()
++	_prepare_overlay_panels()
+ 	_configure_safe_ui_bounds()
+ 	_configure_text_overflow_guards()
+ 	_apply_responsive_layout()
+ 	_ensure_menu_custom_background()
+ 	_setup_asset_import_dialog()
+@@ -1,7 +1,37 @@
+ 	title_label.modulate = Color(0.98, 0.98, 1.0, 1.0)
+ 	meta_label.modulate = Color(0.72, 0.82, 0.92, 0.96)
+ 	round_label.modulate = Color(0.86, 0.92, 1.0, 1.0)
+ 	weather_label.modulate = Color(0.86, 0.92, 1.0, 1.0)
+ 	objective_label.modulate = Color(0.95, 0.93, 0.82, 1.0)
+ 
++func _prepare_overlay_panels() -> void:
++	var centered_panels := [
++		dice_roll_panel,
++		battle_panel,
++		decision_panel,
++		base_panel,
++		system_panel,
++		main_menu_panel,
++	]
++	for panel in centered_panels:
++		if panel == null:
++			continue
++		panel.anchor_left = 0.5
++		panel.anchor_top = 0.5
++		panel.anchor_right = 0.5
++		panel.anchor_bottom = 0.5
++		panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
++		panel.grow_vertical = Control.GROW_DIRECTION_BOTH
++
++func _apply_centered_panel_rect(panel: Control, panel_size: Vector2) -> void:
++	if panel == null:
++		return
++	var half_size := panel_size * 0.5
++	panel.custom_minimum_size = panel_size
++	panel.offset_left = -half_size.x
++	panel.offset_top = -half_size.y
++	panel.offset_right = half_size.x
++	panel.offset_bottom = half_size.y
++
++func _fit_overlay_panel(panel: Control, desired_size: Vector2, window_size: Vector2i, min_size: Vector2, padding: int) -> void:
++	if panel == null:
++		return
++	var safe_width := maxf(window_size.x - float(padding), 320.0)
++	var safe_height := maxf(window_size.y - float(padding), 220.0)
++	var clamped_min := Vector2(minf(min_size.x, safe_width), minf(min_size.y, safe_height))
++	var final_size := Vector2(clampf(desired_size.x, clamped_min.x, safe_width), clampf(desired_size.y, clamped_min.y, safe_height))
++	_apply_centered_panel_rect(panel, final_size)
++
+ func _on_window_size_changed() -> void:
+ 	_apply_responsive_layout()
+@@ -1,20 +1,21 @@
+ func _apply_responsive_layout() -> void:
+ 	var window_size := get_window().size
+ 	var compact_width := window_size.x < 1440
+ 	var short_height := window_size.y < 820
+ 	var tight_height := window_size.y < 760
+ 	var narrow_width := window_size.x < 1320
+ 	var portrait := window_size.y > window_size.x
++	var stacked_content := portrait or window_size.x < 1420 or (window_size.x < 1560 and short_height)
+ 	var outer_margin := 10 if tight_height else (12 if compact_width or short_height else 18)
+ 	var main_separation := 8 if tight_height else (10 if compact_width or short_height else 14)
+ 	var title_font_size := 26 if tight_height else (28 if compact_width else 32)
+ 	var meta_font_size := 13 if tight_height else (14 if compact_width else 15)
+ 	var chip_font_size := 13 if tight_height else (14 if compact_width else 15)
+@@
+ 	main_vbox.add_theme_constant_override("separation", main_separation)
+ 	header_bar.add_theme_constant_override("separation", 12 if compact_width else 18)
+ 	header_bar.custom_minimum_size = Vector2(0, 72 if short_height else 86)
+-	header_bar.vertical = portrait
++	header_bar.vertical = portrait or (compact_width and short_height)
+ 	run_status_row.add_theme_constant_override("separation", 6 if compact_width else 8)
+-	run_status_row.vertical = compact_width or narrow_width
++	run_status_row.vertical = compact_width or narrow_width or stacked_content
+ 	content_row.add_theme_constant_override("separation", 10 if compact_width else 14)
+-	content_row.vertical = portrait
++	content_row.vertical = stacked_content
+ 	top_strip_row.add_theme_constant_override("separation", 10 if compact_width else 12)
+-	top_strip_row.vertical = portrait or window_size.x < 1360
++	top_strip_row.vertical = stacked_content or window_size.x < 1360
+ 	roll_row.add_theme_constant_override("separation", 4 if tight_height else 6)
+ 	support_row.add_theme_constant_override("separation", 4 if tight_height else 6)
+ 	menu_content_row.add_theme_constant_override("separation", 12 if compact_width else 16)
+ 	menu_content_row.vertical = portrait or compact_width or short_height
+@@ -1,12 +1,16 @@
+ 	board_meta_column.custom_minimum_size = Vector2(0, 0) if top_strip_row.vertical else Vector2(160 if compact_width else 240, 0)
+ 	board_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if top_strip_row.vertical else HORIZONTAL_ALIGNMENT_RIGHT
+ 	board_route_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT if top_strip_row.vertical else HORIZONTAL_ALIGNMENT_RIGHT
+ 	action_hint_label.custom_minimum_size = Vector2(0, 44 if tight_height else 60)
+ 	action_hint_label.fit_content = false
+ 	action_hint_label.scroll_active = true
+ 
+-	board_view.custom_minimum_size = Vector2(0, 360 if tight_height else (430 if short_height else 520))
++	var board_height := 360 if tight_height else (430 if short_height else 520)
++	if stacked_content:
++		board_height = 380 if tight_height else (440 if short_height else 500)
++	board_view.custom_minimum_size = Vector2(0, board_height)
+ 	node_detail_card.custom_minimum_size = Vector2(0, 108 if tight_height else (132 if short_height else 172))
+ 	map_hint_label.scroll_active = true
+-	side_column.custom_minimum_size = Vector2(0, 0) if content_row.vertical else Vector2(320 if tight_height else (360 if compact_width else 420), 0)
++	side_column.custom_minimum_size = Vector2(0, 0) if content_row.vertical else Vector2(280 if tight_height else (320 if compact_width else 360), 0)
+ 
+-	_configure_summary_label(player_summary_label, short_height, 60, 84)
+-	_configure_summary_label(ai_summary_label, short_height, 60, 84)
+-	_configure_summary_label(control_summary_label, short_height, 64, 90)
+-	_configure_summary_label(roster_label, short_height, 96, 150)
++	var compact_summary := short_height or stacked_content
++	_configure_summary_label(player_summary_label, compact_summary, 60, 84)
++	_configure_summary_label(ai_summary_label, compact_summary, 60, 84)
++	_configure_summary_label(control_summary_label, compact_summary, 64, 90)
++	_configure_summary_label(roster_label, compact_summary, 96, 150)
+@@ -1,6 +1,13 @@
+ 	for button in [continue_button, menu_new_game_button, settings_button]:
+ 		button.custom_minimum_size = Vector2(0, 48 if tight_height else 54)
+ 
++	var overlay_padding := outer_margin * 6
+ 	var main_menu_size := Vector2(680, 460) if tight_height else (Vector2(720, 500) if compact_width or short_height else Vector2(760, 520))
+-	main_menu_panel.custom_minimum_size = _clamp_panel_size(main_menu_size, window_size, outer_margin * 6)
++	_fit_overlay_panel(main_menu_panel, main_menu_size, window_size, Vector2(420, 320), overlay_padding)
++	_fit_overlay_panel(dice_roll_panel, Vector2(400, 330) if tight_height else Vector2(420, 360), window_size, Vector2(320, 280), overlay_padding)
++	_fit_overlay_panel(decision_panel, Vector2(400, 300) if tight_height else Vector2(420, 320), window_size, Vector2(320, 240), overlay_padding)
++	_fit_overlay_panel(base_panel, Vector2(560, 500) if tight_height else Vector2(600, 560), window_size, Vector2(420, 320), overlay_padding)
++	_fit_overlay_panel(system_panel, Vector2(620, 460) if tight_height else Vector2(700, 520), window_size, Vector2(420, 320), overlay_padding)
++	_fit_overlay_panel(battle_panel, Vector2(700, 500) if tight_height else Vector2(760, 560), window_size, Vector2(520, 360), overlay_padding)
+ 	menu_action_column.custom_minimum_size = Vector2(0, 0) if menu_content_row.vertical else Vector2(200 if compact_width else 220, 0)
+ 	menu_run_summary_label.custom_minimum_size = Vector2(0, 148 if menu_content_row.vertical else (180 if compact_width else 200))
+--- a/scripts/board_view.gd
++++ b/scripts/board_view.gd
+@@ -1,11 +1,17 @@
+ const TYPE_COLORS := {
+ 	"camp": Color("7dd3fc"),
+ 	"empty": Color("94a3b8"),
+ 	"environment": Color("93c5fd"),
+ 	"event": Color("f9a8d4"),
+ 	"habitat": Color("86efac"),
+ 	"settlement": Color("fcd34d"),
+ 	"dojo": Color("fb7185"),
+ 	"anomaly": Color("c084fc"),
+ }
+ 
+-const BUTTON_SIZE := Vector2(118, 72)
+-const TRAVELER_OFFSET := Vector2(0, -42)
+-const OBSERVER_OFFSET := Vector2(30, -42)
+-const CAMERA_PADDING := Vector2(220, 140)
++const BASE_BUTTON_SIZE := Vector2(118, 72)
++const MIN_BUTTON_SCALE := 0.72
++const COMPACT_BUTTON_SCALE := 0.82
++const NARROW_BUTTON_SCALE := 0.90
++const BASE_TRAVELER_OFFSET := Vector2(0, -42)
++const BASE_OBSERVER_OFFSET := Vector2(30, -42)
++const BASE_CAMERA_PADDING := Vector2(220, 140)
+ const CAMERA_LERP_SPEED := 8.0
+@@ -1,9 +1,12 @@
+ var board_nodes: Array = []
+ var node_positions := {}
+ var buttons := {}
+ var selectable_nodes: Array[int] = []
+ var current_position := -1
+ var node_markers := {}
+ var locked_nodes: Array[int] = []
++var button_size := BASE_BUTTON_SIZE
++var button_scale := 1.0
++var camera_padding := BASE_CAMERA_PADDING
+ 
+ var traveler: ColorRect
+ var traveler_node_id := -1
+@@ -1,7 +1,8 @@
+ func _ready() -> void:
+ 	mouse_filter = Control.MOUSE_FILTER_PASS
+ 	clip_contents = true
+ 	_ensure_traveler()
+ 	_ensure_observer_traveler()
++	_refresh_responsive_metrics()
+ 	set_process(true)
+@@ -1,4 +1,5 @@
+ func _notification(what: int) -> void:
+ 	if what == NOTIFICATION_RESIZED:
++		_refresh_responsive_metrics()
+ 		_refresh_camera_target(true)
+@@ -1,35 +1,69 @@
+ func _ensure_observer_traveler() -> void:
+ 	if observer_traveler != null:
+ 		return
+ 
+ 	observer_traveler = ColorRect.new()
+ 	observer_traveler.name = "ObserverTraveler"
+ 	observer_traveler.size = Vector2(20, 20)
+ 	observer_traveler.color = Color("fb7185")
+ 	observer_traveler.mouse_filter = Control.MOUSE_FILTER_IGNORE
+ 	observer_traveler.z_index = 31
+ 	observer_traveler.visible = false
+ 	add_child(observer_traveler)
++
++func _refresh_responsive_metrics() -> void:
++	var viewport_size := Vector2(maxf(size.x, 1.0), maxf(size.y, 1.0))
++	if viewport_size.x < 960.0 or viewport_size.y < 540.0:
++		button_scale = MIN_BUTTON_SCALE
++	elif viewport_size.x < 1200.0 or viewport_size.y < 660.0:
++		button_scale = COMPACT_BUTTON_SCALE
++	elif viewport_size.x < 1500.0:
++		button_scale = NARROW_BUTTON_SCALE
++	else:
++		button_scale = 1.0
++
++	button_size = BASE_BUTTON_SIZE * button_scale
++	if button_scale <= MIN_BUTTON_SCALE:
++		camera_padding = BASE_CAMERA_PADDING * 0.78
++	elif button_scale < 1.0:
++		camera_padding = BASE_CAMERA_PADDING * 0.88
++	else:
++		camera_padding = BASE_CAMERA_PADDING
++
++	for raw_button in buttons.values():
++		var button := raw_button as Button
++		_apply_button_metrics(button)
++
++	if traveler != null:
++		traveler.size = Vector2(24, 24) * clampf(0.88 + button_scale * 0.12, 0.92, 1.0)
++	if observer_traveler != null:
++		observer_traveler.size = Vector2(20, 20) * clampf(0.88 + button_scale * 0.12, 0.92, 1.0)
++
++	_rebuild_board_bounds()
++	if traveler_node_id != -1 and buttons.has(traveler_node_id) and not is_traveling:
++		_snap_traveler_to(traveler_node_id)
++	if observer_traveler != null and observer_traveler.visible and observer_node_id != -1 and buttons.has(observer_node_id):
++		_snap_observer_to(observer_node_id)
++
++func _apply_button_metrics(button: Button) -> void:
++	if button == null:
++		return
++	button.size = button_size
++	button.custom_minimum_size = button_size
++	button.add_theme_font_size_override("font_size", 12 if button_scale <= MIN_BUTTON_SCALE else (13 if button_scale < 1.0 else 14))
+ 
+ func setup(nodes: Array) -> void:
+ 	board_nodes = nodes
+ 	node_positions.clear()
+ 
+ 	for child in get_children():
+ 		if child == traveler or child == observer_traveler:
+ 			continue
+ 		child.queue_free()
+ 
+ 	buttons.clear()
++	_refresh_responsive_metrics()
+ 
+ 	for node in board_nodes:
+ 		var button := Button.new()
+ 		var node_id := int(node.get("id", -1))
+ 		var world_position := Vector2(node.get("position", Vector2.ZERO))
+ 		node_positions[node_id] = world_position
+ 		button.name = "Node_%d" % node_id
+-		button.size = BUTTON_SIZE
+ 		button.focus_mode = Control.FOCUS_NONE
+ 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+ 		button.clip_text = true
+ 		button.flat = true
+ 		button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+-		button.add_theme_font_size_override("font_size", 14)
++		_apply_button_metrics(button)
+ 		button.pressed.connect(_on_node_pressed.bind(node_id))
+ 		add_child(button)
+ 		buttons[node_id] = button
+ 
+ 	_rebuild_board_bounds()
+@@ -1,13 +1,19 @@
+ func _snap_observer_to(node_id: int) -> void:
+ 	if observer_traveler == null or not buttons.has(node_id):
+ 		return
+ 	observer_traveler.visible = true
+ 	_observer_world_position = _observer_world_top_left(node_id)
+ 	observer_traveler.scale = Vector2.ONE
+ 	_apply_camera_transform()
++
++func _traveler_offset() -> Vector2:
++	return BASE_TRAVELER_OFFSET * button_scale
++
++func _observer_offset() -> Vector2:
++	return BASE_OBSERVER_OFFSET * button_scale
+ 
+ func _button_world_center(node_id: int) -> Vector2:
+ 	var world_position := Vector2(node_positions.get(node_id, Vector2.ZERO))
+-	return world_position + BUTTON_SIZE * 0.5
++	return world_position + button_size * 0.5
+ 
+ func _traveler_world_top_left(node_id: int) -> Vector2:
+-	return _button_world_center(node_id) - traveler.size * 0.5 + TRAVELER_OFFSET
++	return _button_world_center(node_id) - traveler.size * 0.5 + _traveler_offset()
+ 
+ func _observer_world_top_left(node_id: int) -> Vector2:
+-	return _button_world_center(node_id) - observer_traveler.size * 0.5 + OBSERVER_OFFSET
++	return _button_world_center(node_id) - observer_traveler.size * 0.5 + _observer_offset()
+@@ -1,7 +1,7 @@
+ 	for node_id in selectable_nodes:
+ 		var world_position := Vector2(node_positions.get(node_id, Vector2.ZERO))
+ 		draw_rect(
+-			Rect2(world_position - camera_offset - Vector2(4, 4), BUTTON_SIZE + Vector2(8, 8)),
++			Rect2(world_position - camera_offset - Vector2(4, 4), button_size + Vector2(8, 8)),
+ 			Color(0.96, 0.72, 0.26, 0.92),
+ 			false,
+ 			2.0
+ 		)
+@@ -1,13 +1,13 @@
+ func _rebuild_board_bounds() -> void:
+ 	if board_nodes.is_empty():
+ 		board_bounds = Rect2(Vector2.ZERO, size)
+ 		return
+ 	var first_position := Vector2(board_nodes[0].get("position", Vector2.ZERO))
+ 	var min_point := first_position
+-	var max_point := first_position + BUTTON_SIZE
++	var max_point := first_position + button_size
+ 	for node in board_nodes:
+ 		var world_position := Vector2(node.get("position", Vector2.ZERO))
+ 		min_point.x = minf(min_point.x, world_position.x)
+-		min_point.y = minf(min_point.y, world_position.y + TRAVELER_OFFSET.y)
+-		max_point.x = maxf(max_point.x, world_position.x + BUTTON_SIZE.x)
+-		max_point.y = maxf(max_point.y, world_position.y + BUTTON_SIZE.y)
++		min_point.y = minf(min_point.y, world_position.y + _traveler_offset().y)
++		max_point.x = maxf(max_point.x, world_position.x + button_size.x)
++		max_point.y = maxf(max_point.y, world_position.y + button_size.y)
+ 	board_bounds = Rect2(min_point, max_point - min_point)
+@@ -1,7 +1,7 @@
+ func _camera_target_for_focus(focus_world_point: Vector2) -> Vector2:
+ 	var viewport_size := Vector2(maxf(size.x, 1.0), maxf(size.y, 1.0))
+ 	var desired := focus_world_point - viewport_size * 0.5
+-	var max_corner := board_bounds.position + board_bounds.size + CAMERA_PADDING
++	var max_corner := board_bounds.position + board_bounds.size + camera_padding
+ 	var max_offset := Vector2(
+ 		maxf(0.0, max_corner.x - viewport_size.x),
+ 		maxf(0.0, max_corner.y - viewport_size.y)
+ 	)

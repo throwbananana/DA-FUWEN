@@ -232,6 +232,7 @@ func _ready() -> void:
 	reroll_button.hide()
 	_connect_signals()
 	_apply_basic_styles()
+	_prepare_overlay_panels()
 	_configure_safe_ui_bounds()
 	_configure_text_overflow_guards()
 	_apply_responsive_layout()
@@ -377,6 +378,44 @@ func _apply_basic_styles() -> void:
 	weather_label.modulate = Color(0.86, 0.92, 1.0, 1.0)
 	objective_label.modulate = Color(0.95, 0.93, 0.82, 1.0)
 
+func _prepare_overlay_panels() -> void:
+	var centered_panels := [
+		dice_roll_panel,
+		battle_panel,
+		decision_panel,
+		base_panel,
+		system_panel,
+		main_menu_panel,
+	]
+	for panel in centered_panels:
+		if panel == null:
+			continue
+		panel.anchor_left = 0.5
+		panel.anchor_top = 0.5
+		panel.anchor_right = 0.5
+		panel.anchor_bottom = 0.5
+		panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+
+func _apply_centered_panel_rect(panel: Control, panel_size: Vector2) -> void:
+	if panel == null:
+		return
+	var half_size := panel_size * 0.5
+	panel.custom_minimum_size = panel_size
+	panel.offset_left = -half_size.x
+	panel.offset_top = -half_size.y
+	panel.offset_right = half_size.x
+	panel.offset_bottom = half_size.y
+
+func _fit_overlay_panel(panel: Control, desired_size: Vector2, window_size: Vector2i, min_size: Vector2, padding: int) -> void:
+	if panel == null:
+		return
+	var safe_width := maxf(window_size.x - float(padding), 320.0)
+	var safe_height := maxf(window_size.y - float(padding), 220.0)
+	var clamped_min := Vector2(minf(min_size.x, safe_width), minf(min_size.y, safe_height))
+	var final_size := Vector2(clampf(desired_size.x, clamped_min.x, safe_width), clampf(desired_size.y, clamped_min.y, safe_height))
+	_apply_centered_panel_rect(panel, final_size)
+
 func _on_window_size_changed() -> void:
 	_apply_responsive_layout()
 
@@ -439,6 +478,7 @@ func _apply_responsive_layout() -> void:
 	var tight_height := window_size.y < 760
 	var narrow_width := window_size.x < 1320
 	var portrait := window_size.y > window_size.x
+	var stacked_content := portrait or window_size.x < 1420 or (window_size.x < 1560 and short_height)
 	var outer_margin := 10 if tight_height else (12 if compact_width or short_height else 18)
 	var main_separation := 8 if tight_height else (10 if compact_width or short_height else 14)
 	var title_font_size := 26 if tight_height else (28 if compact_width else 32)
@@ -451,13 +491,13 @@ func _apply_responsive_layout() -> void:
 	main_vbox.add_theme_constant_override("separation", main_separation)
 	header_bar.add_theme_constant_override("separation", 12 if compact_width else 18)
 	header_bar.custom_minimum_size = Vector2(0, 72 if short_height else 86)
-	header_bar.vertical = portrait
+	header_bar.vertical = portrait or (compact_width and short_height)
 	run_status_row.add_theme_constant_override("separation", 6 if compact_width else 8)
-	run_status_row.vertical = compact_width or narrow_width
+	run_status_row.vertical = compact_width or narrow_width or stacked_content
 	content_row.add_theme_constant_override("separation", 10 if compact_width else 14)
-	content_row.vertical = portrait
+	content_row.vertical = stacked_content
 	top_strip_row.add_theme_constant_override("separation", 10 if compact_width else 12)
-	top_strip_row.vertical = portrait or window_size.x < 1360
+	top_strip_row.vertical = stacked_content or window_size.x < 1360
 	roll_row.add_theme_constant_override("separation", 4 if tight_height else 6)
 	support_row.add_theme_constant_override("separation", 4 if tight_height else 6)
 	menu_content_row.add_theme_constant_override("separation", 12 if compact_width else 16)
@@ -479,15 +519,19 @@ func _apply_responsive_layout() -> void:
 	action_hint_label.fit_content = false
 	action_hint_label.scroll_active = true
 
-	board_view.custom_minimum_size = Vector2(0, 360 if tight_height else (430 if short_height else 520))
+	var board_height := 360 if tight_height else (430 if short_height else 520)
+	if stacked_content:
+		board_height = 380 if tight_height else (440 if short_height else 500)
+	board_view.custom_minimum_size = Vector2(0, board_height)
 	node_detail_card.custom_minimum_size = Vector2(0, 108 if tight_height else (132 if short_height else 172))
 	map_hint_label.scroll_active = true
-	side_column.custom_minimum_size = Vector2(0, 0) if content_row.vertical else Vector2(320 if tight_height else (360 if compact_width else 420), 0)
+	side_column.custom_minimum_size = Vector2(0, 0) if content_row.vertical else Vector2(280 if tight_height else (320 if compact_width else 360), 0)
 
-	_configure_summary_label(player_summary_label, short_height, 60, 84)
-	_configure_summary_label(ai_summary_label, short_height, 60, 84)
-	_configure_summary_label(control_summary_label, short_height, 64, 90)
-	_configure_summary_label(roster_label, short_height, 96, 150)
+	var compact_summary := short_height or stacked_content
+	_configure_summary_label(player_summary_label, compact_summary, 60, 84)
+	_configure_summary_label(ai_summary_label, compact_summary, 60, 84)
+	_configure_summary_label(control_summary_label, compact_summary, 64, 90)
+	_configure_summary_label(roster_label, compact_summary, 96, 150)
 
 	var small_button_height := 40 if tight_height else 44
 	var medium_button_height := 42 if tight_height else 48
@@ -498,8 +542,14 @@ func _apply_responsive_layout() -> void:
 	for button in [continue_button, menu_new_game_button, settings_button]:
 		button.custom_minimum_size = Vector2(0, 48 if tight_height else 54)
 
+	var overlay_padding := outer_margin * 6
 	var main_menu_size := Vector2(680, 460) if tight_height else (Vector2(720, 500) if compact_width or short_height else Vector2(760, 520))
-	main_menu_panel.custom_minimum_size = _clamp_panel_size(main_menu_size, window_size, outer_margin * 6)
+	_fit_overlay_panel(main_menu_panel, main_menu_size, window_size, Vector2(420, 320), overlay_padding)
+	_fit_overlay_panel(dice_roll_panel, Vector2(400, 330) if tight_height else Vector2(420, 360), window_size, Vector2(320, 280), overlay_padding)
+	_fit_overlay_panel(decision_panel, Vector2(400, 300) if tight_height else Vector2(420, 320), window_size, Vector2(320, 240), overlay_padding)
+	_fit_overlay_panel(base_panel, Vector2(560, 500) if tight_height else Vector2(600, 560), window_size, Vector2(420, 320), overlay_padding)
+	_fit_overlay_panel(system_panel, Vector2(620, 460) if tight_height else Vector2(700, 520), window_size, Vector2(420, 320), overlay_padding)
+	_fit_overlay_panel(battle_panel, Vector2(700, 500) if tight_height else Vector2(760, 560), window_size, Vector2(520, 360), overlay_padding)
 	menu_action_column.custom_minimum_size = Vector2(0, 0) if menu_content_row.vertical else Vector2(200 if compact_width else 220, 0)
 	menu_run_summary_label.custom_minimum_size = Vector2(0, 148 if menu_content_row.vertical else (180 if compact_width else 200))
 

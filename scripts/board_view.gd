@@ -27,10 +27,13 @@ const TYPE_COLORS := {
 	"anomaly": Color("c084fc"),
 }
 
-const BUTTON_SIZE := Vector2(118, 72)
-const TRAVELER_OFFSET := Vector2(0, -42)
-const OBSERVER_OFFSET := Vector2(30, -42)
-const CAMERA_PADDING := Vector2(220, 140)
+const BASE_BUTTON_SIZE := Vector2(118, 72)
+const MIN_BUTTON_SCALE := 0.72
+const COMPACT_BUTTON_SCALE := 0.82
+const NARROW_BUTTON_SCALE := 0.90
+const BASE_TRAVELER_OFFSET := Vector2(0, -42)
+const BASE_OBSERVER_OFFSET := Vector2(30, -42)
+const BASE_CAMERA_PADDING := Vector2(220, 140)
 const CAMERA_LERP_SPEED := 8.0
 
 var board_nodes: Array = []
@@ -40,6 +43,9 @@ var selectable_nodes: Array[int] = []
 var current_position := -1
 var node_markers := {}
 var locked_nodes: Array[int] = []
+var button_size := BASE_BUTTON_SIZE
+var button_scale := 1.0
+var camera_padding := BASE_CAMERA_PADDING
 
 var traveler: ColorRect
 var traveler_node_id := -1
@@ -79,6 +85,7 @@ func _ready() -> void:
 	clip_contents = true
 	_ensure_traveler()
 	_ensure_observer_traveler()
+	_refresh_responsive_metrics()
 	set_process(true)
 
 func _process(delta: float) -> void:
@@ -94,6 +101,7 @@ func _process(delta: float) -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
+		_refresh_responsive_metrics()
 		_refresh_camera_target(true)
 
 func _ensure_traveler() -> void:
@@ -122,6 +130,47 @@ func _ensure_observer_traveler() -> void:
 	observer_traveler.visible = false
 	add_child(observer_traveler)
 
+func _refresh_responsive_metrics() -> void:
+	var viewport_size := Vector2(maxf(size.x, 1.0), maxf(size.y, 1.0))
+	if viewport_size.x < 960.0 or viewport_size.y < 540.0:
+		button_scale = MIN_BUTTON_SCALE
+	elif viewport_size.x < 1200.0 or viewport_size.y < 660.0:
+		button_scale = COMPACT_BUTTON_SCALE
+	elif viewport_size.x < 1500.0:
+		button_scale = NARROW_BUTTON_SCALE
+	else:
+		button_scale = 1.0
+
+	button_size = BASE_BUTTON_SIZE * button_scale
+	if button_scale <= MIN_BUTTON_SCALE:
+		camera_padding = BASE_CAMERA_PADDING * 0.78
+	elif button_scale < 1.0:
+		camera_padding = BASE_CAMERA_PADDING * 0.88
+	else:
+		camera_padding = BASE_CAMERA_PADDING
+
+	for raw_button in buttons.values():
+		var button := raw_button as Button
+		_apply_button_metrics(button)
+
+	if traveler != null:
+		traveler.size = Vector2(24, 24) * clampf(0.88 + button_scale * 0.12, 0.92, 1.0)
+	if observer_traveler != null:
+		observer_traveler.size = Vector2(20, 20) * clampf(0.88 + button_scale * 0.12, 0.92, 1.0)
+
+	_rebuild_board_bounds()
+	if traveler_node_id != -1 and buttons.has(traveler_node_id) and not is_traveling:
+		_snap_traveler_to(traveler_node_id)
+	if observer_traveler != null and observer_traveler.visible and observer_node_id != -1 and buttons.has(observer_node_id):
+		_snap_observer_to(observer_node_id)
+
+func _apply_button_metrics(button: Button) -> void:
+	if button == null:
+		return
+	button.size = button_size
+	button.custom_minimum_size = button_size
+	button.add_theme_font_size_override("font_size", 12 if button_scale <= MIN_BUTTON_SCALE else (13 if button_scale < 1.0 else 14))
+
 func setup(nodes: Array) -> void:
 	board_nodes = nodes
 	node_positions.clear()
@@ -132,6 +181,7 @@ func setup(nodes: Array) -> void:
 		child.queue_free()
 
 	buttons.clear()
+	_refresh_responsive_metrics()
 
 	for node in board_nodes:
 		var button := Button.new()
@@ -139,13 +189,12 @@ func setup(nodes: Array) -> void:
 		var world_position := Vector2(node.get("position", Vector2.ZERO))
 		node_positions[node_id] = world_position
 		button.name = "Node_%d" % node_id
-		button.size = BUTTON_SIZE
 		button.focus_mode = Control.FOCUS_NONE
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.clip_text = true
 		button.flat = true
 		button.alignment = HORIZONTAL_ALIGNMENT_CENTER
-		button.add_theme_font_size_override("font_size", 14)
+		_apply_button_metrics(button)
 		button.pressed.connect(_on_node_pressed.bind(node_id))
 		add_child(button)
 		buttons[node_id] = button
@@ -348,15 +397,21 @@ func _snap_observer_to(node_id: int) -> void:
 	observer_traveler.scale = Vector2.ONE
 	_apply_camera_transform()
 
+func _traveler_offset() -> Vector2:
+	return BASE_TRAVELER_OFFSET * button_scale
+
+func _observer_offset() -> Vector2:
+	return BASE_OBSERVER_OFFSET * button_scale
+
 func _button_world_center(node_id: int) -> Vector2:
 	var world_position := Vector2(node_positions.get(node_id, Vector2.ZERO))
-	return world_position + BUTTON_SIZE * 0.5
+	return world_position + button_size * 0.5
 
 func _traveler_world_top_left(node_id: int) -> Vector2:
-	return _button_world_center(node_id) - traveler.size * 0.5 + TRAVELER_OFFSET
+	return _button_world_center(node_id) - traveler.size * 0.5 + _traveler_offset()
 
 func _observer_world_top_left(node_id: int) -> Vector2:
-	return _button_world_center(node_id) - observer_traveler.size * 0.5 + OBSERVER_OFFSET
+	return _button_world_center(node_id) - observer_traveler.size * 0.5 + _observer_offset()
 
 func refresh_view(current_pos: int, selectable: Array[int], markers: Dictionary, locked: Array[int]) -> void:
 	current_position = current_pos
@@ -423,7 +478,7 @@ func _draw() -> void:
 	for node_id in selectable_nodes:
 		var world_position := Vector2(node_positions.get(node_id, Vector2.ZERO))
 		draw_rect(
-			Rect2(world_position - camera_offset - Vector2(4, 4), BUTTON_SIZE + Vector2(8, 8)),
+			Rect2(world_position - camera_offset - Vector2(4, 4), button_size + Vector2(8, 8)),
 			Color(0.96, 0.72, 0.26, 0.92),
 			false,
 			2.0
@@ -441,13 +496,13 @@ func _rebuild_board_bounds() -> void:
 		return
 	var first_position := Vector2(board_nodes[0].get("position", Vector2.ZERO))
 	var min_point := first_position
-	var max_point := first_position + BUTTON_SIZE
+	var max_point := first_position + button_size
 	for node in board_nodes:
 		var world_position := Vector2(node.get("position", Vector2.ZERO))
 		min_point.x = minf(min_point.x, world_position.x)
-		min_point.y = minf(min_point.y, world_position.y + TRAVELER_OFFSET.y)
-		max_point.x = maxf(max_point.x, world_position.x + BUTTON_SIZE.x)
-		max_point.y = maxf(max_point.y, world_position.y + BUTTON_SIZE.y)
+		min_point.y = minf(min_point.y, world_position.y + _traveler_offset().y)
+		max_point.x = maxf(max_point.x, world_position.x + button_size.x)
+		max_point.y = maxf(max_point.y, world_position.y + button_size.y)
 	board_bounds = Rect2(min_point, max_point - min_point)
 
 func _refresh_camera_target(immediate := false) -> void:
@@ -470,7 +525,7 @@ func _current_focus_world_point() -> Vector2:
 func _camera_target_for_focus(focus_world_point: Vector2) -> Vector2:
 	var viewport_size := Vector2(maxf(size.x, 1.0), maxf(size.y, 1.0))
 	var desired := focus_world_point - viewport_size * 0.5
-	var max_corner := board_bounds.position + board_bounds.size + CAMERA_PADDING
+	var max_corner := board_bounds.position + board_bounds.size + camera_padding
 	var max_offset := Vector2(
 		maxf(0.0, max_corner.x - viewport_size.x),
 		maxf(0.0, max_corner.y - viewport_size.y)

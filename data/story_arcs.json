@@ -179,8 +179,8 @@
           "habitat_id": "radiant_spire",
           "npc_id": "anomaly_researcher",
           "dialogue_id": "dlg_story_spire_after_marks",
-          "requires_events": [
-            "evt_spire_signal_marks"
+          "requires_quests": [
+            "spire_safe_route"
           ],
           "set_story_flags": [
             "story_spire_marks_done"
@@ -221,8 +221,8 @@
           "habitat_id": "radiant_spire",
           "npc_id": "anomaly_researcher",
           "dialogue_id": "dlg_story_spire_resolve",
-          "requires_events": [
-            "evt_spire_calm_window"
+          "requires_quests": [
+            "howler_trace_log"
           ],
           "story_flags": [
             "story_spire_marks_done"

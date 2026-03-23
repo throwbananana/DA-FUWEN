@@ -6,6 +6,7 @@ extends RefCounted
 const NpcRouteServiceScript = preload("res://scripts/services/npc_route_service.gd")
 const MonsterInstance = preload("res://scripts/monster_instance.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
+const StoryServiceScript = preload("res://scripts/services/story_service.gd")
 
 const INTRO_DUEL_BASE_TRUST_WIN := 2
 const INTRO_DUEL_BASE_TRUST_LOSE := 0
@@ -13,6 +14,7 @@ const INTRO_DUEL_ROUND_LIMIT := 5
 
 var npc_route_service = NpcRouteServiceScript.new()
 var localization_service := LocalizationService.new()
+var story_service := StoryServiceScript.new()
 
 func get_visible_npcs(habitat_id: String) -> Array:
 	return npc_route_service.get_visible_npcs(habitat_id)
@@ -132,22 +134,34 @@ func finish_quest(quest_id: String) -> Dictionary:
 
 	var trust_gain := int(rewards.get("trust", 0))
 	var giver_id := String(quest.get("giver", ""))
+	var target_habitat_id := String(quest.get("target_habitat", ""))
 	var trust_result := {}
 	if trust_gain > 0 and not giver_id.is_empty():
 		trust_result = complete_trust_reward(giver_id, trust_gain)
 
 	if rewards.has("unlock_habitat"):
-		var habitat_id := String(rewards["unlock_habitat"])
-		GameState.unlock_habitat(habitat_id)
+		var unlock_habitat_id := String(rewards["unlock_habitat"])
+		GameState.unlock_habitat(unlock_habitat_id)
 
 	GameState.complete_quest(quest_id)
+
+	for raw_flag in rewards.get("set_story_flags", []):
+		var flag_id := String(raw_flag)
+		if flag_id.is_empty():
+			continue
+		GameState.set_story_flag(flag_id)
+
+	var pending_story := {}
+	if bool(rewards.get("try_story_from_giver", false)) and not giver_id.is_empty() and not target_habitat_id.is_empty():
+		pending_story = story_service.preview_story_dialogue(giver_id, target_habitat_id)
 
 	return {
 		"ok": true,
 		"quest_id": quest_id,
 		"trust_result": trust_result,
 		"items": items,
-		"journal_entry": rewards.get("journal_entry", "")
+		"journal_entry": rewards.get("journal_entry", ""),
+		"pending_story": pending_story
 	}
 
 func _collect_unlocked_rewards(npc: Dictionary, trust_now: int) -> Array:

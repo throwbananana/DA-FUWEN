@@ -183,7 +183,8 @@
         "trust": 2,
         "items": {
           "stability_shard": 1
-        }
+        },
+        "try_story_from_giver": true
       }
     },
     {
@@ -554,7 +555,8 @@
       ],
       "rewards": {
         "trust": 2,
-        "journal_entry": "辉嚎外缘轨迹"
+        "journal_entry": "辉嚎外缘轨迹",
+        "try_story_from_giver": true
       }
     }
   ]

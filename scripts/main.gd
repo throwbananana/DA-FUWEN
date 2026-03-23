@@ -25,6 +25,7 @@ const ThreatService = preload("res://scripts/services/threat_service.gd")
 const AIPlayerService = preload("res://scripts/services/ai_player_service.gd")
 const DialogueService = preload("res://scripts/services/dialogue_service.gd")
 const StoryService = preload("res://scripts/services/story_service.gd")
+const StoryDirector = preload("res://scripts/services/story_director.gd")
 const CutsceneService = preload("res://scripts/services/cutscene_service.gd")
 const CutscenePanel = preload("res://scripts/cutscene_panel.gd")
 const FishingService = preload("res://scripts/services/fishing_service.gd")
@@ -180,6 +181,7 @@ var dialogue_service := DialogueService.new()
 var fishing_service := FishingService.new()
 var localization_service := LocalizationService.new()
 var story_service := StoryService.new()
+var story_director = StoryDirector.new()
 var cutscene_service := CutsceneService.new()
 var cutscene_panel: CutscenePanel
 
@@ -231,7 +233,6 @@ var _stage_transition_tween: Tween
 var _event_log_typewriter_tween: Tween
 var _event_log_snapshot: Array[String] = []
 var runtime_session_started := false
-var pending_quest_story_beats: Array = []
 var ai_turn_in_progress := false
 var _active_ai_observation_line := ""
 var _last_ai_turn_report := {}
@@ -253,6 +254,15 @@ func _ready() -> void:
 	minus_button.hide()
 	reroll_button.hide()
 	_ensure_cutscene_panel()
+	story_director.configure(
+		story_service,
+		cutscene_service,
+		cutscene_panel,
+		Callable(self, "_play_dialogue_cutscene"),
+		Callable(self, "_is_modal_open"),
+		Callable(self, "_should_skip_cutscene_runtime"),
+		Callable(self, "_push_log")
+	)
 	_ensure_save_slot_panel()
 	_connect_signals()
 	_apply_basic_styles()
@@ -851,6 +861,7 @@ func _hide_main_menu() -> void:
 	root_margin.show()
 	_update_ui()
 	_resume_onboarding_flow()
+	story_director.try_flush_pending_quest_story_beats()
 
 func _refresh_main_menu() -> void:
 	var slot_meta := GameState.get_run_slot_meta(_menu_selected_slot_id)
@@ -983,6 +994,7 @@ func _on_save_slot_closed() -> void:
 		_refresh_main_menu()
 	else:
 		_update_ui()
+	story_director.try_flush_pending_quest_story_beats()
 
 func _start_new_game_in_slot(slot_id: String) -> void:
 	GameState.set_selected_run_slot_id(slot_id)
@@ -1373,7 +1385,7 @@ func start_new_game() -> void:
 	pending_tutorial_battle_source = ""
 	pending_tutorial_battle_log = ""
 	_last_ai_turn_report.clear()
-	pending_quest_story_beats.clear()
+	story_director.reset()
 	decision_panel.hide()
 	base_panel.hide()
 	system_panel.hide()
@@ -1448,7 +1460,7 @@ func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
 	pending_tutorial_battle_source = ""
 	pending_tutorial_battle_log = ""
 	_last_ai_turn_report.clear()
-	pending_quest_story_beats.clear()
+	story_director.reset()
 	decision_panel.hide()
 	base_panel.hide()
 	system_panel.hide()
@@ -2878,7 +2890,7 @@ func _on_decision_closed() -> void:
 			_on_base_pressed()
 		_:
 			pass
-	_try_flush_pending_quest_story_beats()
+	story_director.try_flush_pending_quest_story_beats()
 
 func _on_visit_finished(_report: Dictionary) -> void:
 	_resolve_visit_yield(current_visit_habitat_id)
@@ -3350,11 +3362,11 @@ func _on_base_closed() -> void:
 		_finish_camp_visit()
 		return
 	_update_ui()
-	_try_flush_pending_quest_story_beats()
+	story_director.try_flush_pending_quest_story_beats()
 
 func _on_system_panel_closed() -> void:
 	_update_ui()
-	_try_flush_pending_quest_story_beats()
+	story_director.try_flush_pending_quest_story_beats()
 
 func _on_base_manage_requested() -> void:
 	_open_team_manage_menu()
@@ -3760,70 +3772,6 @@ func _build_talk_reward_lines(active_npc_id: String, talk_package: Dictionary) -
 		if not relation_line.is_empty():
 			lines.append("- %s" % relation_line)
 	return lines
-
-func _queue_quest_story_beat(beat: Dictionary) -> void:
-	if beat.is_empty():
-		return
-	var arc_id := String(beat.get("arc_id", ""))
-	var beat_id := String(beat.get("id", ""))
-	if arc_id.is_empty() or beat_id.is_empty():
-		return
-	if GameState.has_completed_story_arc(arc_id) or GameState.has_story_beat_seen(arc_id, beat_id):
-		return
-	for raw_existing in pending_quest_story_beats:
-		var existing: Dictionary = Dictionary(raw_existing).duplicate(true)
-		if String(existing.get("arc_id", "")) == arc_id and String(existing.get("id", "")) == beat_id:
-			return
-	pending_quest_story_beats.append(Dictionary(beat).duplicate(true))
-	call_deferred("_try_flush_pending_quest_story_beats")
-
-func _try_flush_pending_quest_story_beats() -> void:
-	if pending_quest_story_beats.is_empty():
-		return
-	if _is_modal_open():
-		return
-	var beat: Dictionary = Dictionary(pending_quest_story_beats.pop_front()).duplicate(true)
-	call_deferred("_play_story_beat_after_quest", beat)
-
-func _play_story_beat_after_quest(beat: Dictionary) -> void:
-	if beat.is_empty():
-		_try_flush_pending_quest_story_beats()
-		return
-	var arc_id := String(beat.get("arc_id", ""))
-	var beat_id := String(beat.get("id", ""))
-	if arc_id.is_empty() or beat_id.is_empty():
-		_try_flush_pending_quest_story_beats()
-		return
-	if GameState.has_completed_story_arc(arc_id) or GameState.has_story_beat_seen(arc_id, beat_id):
-		_try_flush_pending_quest_story_beats()
-		return
-
-	var dialogue_id := String(beat.get("dialogue_id", ""))
-	var npc_id := String(beat.get("npc_id", ""))
-	var dialogue: Dictionary = DataRepository.get_dialogue(dialogue_id)
-	if dialogue.is_empty():
-		story_service.commit_story_beat(beat)
-		_try_flush_pending_quest_story_beats()
-		return
-
-	if _should_skip_cutscene_runtime():
-		story_service.commit_story_beat(beat)
-		_push_log("剧情推进：%s。" % String(dialogue.get("title", dialogue_id)))
-		_try_flush_pending_quest_story_beats()
-		return
-
-	var runtime := cutscene_service.build_dialogue_runtime(dialogue, npc_id)
-	if runtime.is_empty():
-		story_service.commit_story_beat(beat)
-		_try_flush_pending_quest_story_beats()
-		return
-
-	await _play_dialogue_cutscene(runtime)
-	cutscene_panel.hide()
-	cutscene_panel.modulate.a = 1.0
-	story_service.commit_story_beat(beat)
-	_push_log("剧情推进：%s。" % String(dialogue.get("title", dialogue_id)))
-	_try_flush_pending_quest_story_beats()
 
 func _format_relation_delta_line(relation_delta: Dictionary) -> String:
 	var actor_a := String(relation_delta.get("actor_a", ""))
@@ -5569,7 +5517,7 @@ func _check_active_quests() -> void:
 			_push_log("记录新增：%s。" % String(result.get("journal_entry", "")))
 		var pending_story: Dictionary = Dictionary(result.get("pending_story", {})).duplicate(true)
 		if not pending_story.is_empty():
-			_queue_quest_story_beat(pending_story)
+			story_director.queue_quest_story_beat(pending_story)
 
 func _quest_is_complete(quest: Dictionary) -> bool:
 	for step in quest.get("steps", []):

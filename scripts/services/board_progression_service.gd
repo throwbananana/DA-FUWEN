@@ -153,6 +153,49 @@ func get_shortest_path(from_node_id: int, to_node_id: int) -> Array[int]:
 			frontier.append(neighbor_id)
 	return []
 
+func get_next_route_options(current_node_id: int, steps_remaining: int, visited_nodes: Array) -> Array[int]:
+	var options: Array[int] = []
+	if current_node_id == -1 or steps_remaining <= 0:
+		return options
+
+	var visited := {}
+	for raw_node_id in visited_nodes:
+		visited[int(raw_node_id)] = true
+	if not visited.has(current_node_id):
+		visited[current_node_id] = true
+
+	for neighbor_id in _neighbors(current_node_id):
+		if is_node_locked(neighbor_id):
+			continue
+		if visited.has(neighbor_id):
+			continue
+
+		visited[neighbor_id] = true
+		if _can_finish_route_from(neighbor_id, steps_remaining - 1, visited):
+			options.append(neighbor_id)
+		visited.erase(neighbor_id)
+
+	options.sort()
+	return options
+
+func _can_finish_route_from(node_id: int, steps_remaining: int, visited: Dictionary) -> bool:
+	if steps_remaining <= 0:
+		return true
+
+	for neighbor_id in _neighbors(node_id):
+		if is_node_locked(neighbor_id):
+			continue
+		if visited.has(neighbor_id):
+			continue
+
+		visited[neighbor_id] = true
+		if _can_finish_route_from(neighbor_id, steps_remaining - 1, visited):
+			visited.erase(neighbor_id)
+			return true
+		visited.erase(neighbor_id)
+
+	return false
+
 func expand_reveal_from(node_id: int, radius: int = REVEAL_GRAPH_RADIUS) -> Array[int]:
 	if node_id == -1:
 		return []

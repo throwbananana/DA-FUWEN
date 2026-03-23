@@ -189,6 +189,13 @@ var board_anim_locked := false
 var pending_travel_path: Array[int] = []
 var pending_travel_target := -1
 var _queued_auto_travel_target := -1
+var branch_choice_pending := false
+var _queued_roll_start := false
+var pending_route_steps_remaining := 0
+var pending_route_history: Array[int] = []
+var pending_route_options: Array[int] = []
+var pending_route_forced_path: Array[int] = []
+var pending_route_forced_index := -1
 var anchor_override_active := false
 var camp_panel_requires_finish := false
 var starter_choice_pending := false
@@ -220,11 +227,13 @@ var _last_ai_turn_report := {}
 var _post_travel_resolution_in_progress := false
 var _asset_file_dialog: FileDialog
 var _menu_custom_background: TextureRect
+var _responsive_layout_queued := false
 
 func _ready() -> void:
 	rng.randomize()
-	get_window().min_size = Vector2i(1280, 720)
-	get_window().size_changed.connect(_on_window_size_changed)
+	var window := get_window()
+	window.min_size = GameState.minimum_window_size()
+	window.size_changed.connect(_on_window_size_changed)
 	title_label.text = GAME_TITLE
 	base_button.hide()
 	plus_button.hide()
@@ -235,12 +244,12 @@ func _ready() -> void:
 	_prepare_overlay_panels()
 	_configure_safe_ui_bounds()
 	_configure_text_overflow_guards()
-	_apply_responsive_layout()
+	_queue_responsive_layout()
 	_ensure_menu_custom_background()
 	_setup_asset_import_dialog()
 	_ensure_synergy_banner()
 	_ensure_stage_transition_overlay()
-	call_deferred("_apply_responsive_layout")
+	_queue_responsive_layout()
 	install_visit_flow()
 	if _should_show_boot_menu():
 		if not _apply_run_payload(GameState.load_run_payload()):
@@ -417,6 +426,18 @@ func _fit_overlay_panel(panel: Control, desired_size: Vector2, window_size: Vect
 	_apply_centered_panel_rect(panel, final_size)
 
 func _on_window_size_changed() -> void:
+	_queue_responsive_layout()
+
+func _queue_responsive_layout() -> void:
+	if _responsive_layout_queued:
+		return
+	_responsive_layout_queued = true
+	call_deferred("_flush_responsive_layout")
+
+func _flush_responsive_layout() -> void:
+	_responsive_layout_queued = false
+	if not is_inside_tree():
+		return
 	_apply_responsive_layout()
 
 func _configure_safe_ui_bounds() -> void:
@@ -1154,6 +1175,15 @@ func start_new_game() -> void:
 	pending_roll.clear()
 	reachable_paths.clear()
 	_queued_auto_travel_target = -1
+	branch_choice_pending = false
+	_queued_roll_start = false
+	pending_route_steps_remaining = 0
+	pending_route_history.clear()
+	pending_route_options.clear()
+	pending_route_forced_path.clear()
+	pending_route_forced_index = -1
+	pending_travel_path.clear()
+	pending_travel_target = -1
 	anchor_override_active = false
 	starter_choice_pending = not _should_skip_runtime_tutorials()
 	starter_choice_done = false
@@ -1217,6 +1247,13 @@ func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
 	pending_travel_path.clear()
 	pending_travel_target = -1
 	_queued_auto_travel_target = -1
+	branch_choice_pending = false
+	_queued_roll_start = false
+	pending_route_steps_remaining = 0
+	pending_route_history.clear()
+	pending_route_options.clear()
+	pending_route_forced_path.clear()
+	pending_route_forced_index = -1
 	anchor_override_active = false
 	camp_panel_requires_finish = false
 	starter_choice_pending = bool(scene_state.get("starter_choice_pending", false))
@@ -1380,6 +1417,15 @@ func _begin_next_day() -> void:
 	pending_roll.clear()
 	reachable_paths.clear()
 	_queued_auto_travel_target = -1
+	branch_choice_pending = false
+	_queued_roll_start = false
+	pending_route_steps_remaining = 0
+	pending_route_history.clear()
+	pending_route_options.clear()
+	pending_route_forced_path.clear()
+	pending_route_forced_index = -1
+	pending_travel_path.clear()
+	pending_travel_target = -1
 	anchor_override_active = false
 	var weather_pool: Array = GameState.get_current_season_rule().get("weather_pool", WEATHER_ORDER)
 	var next_weather: String = String(weather_pool[rng.randi_range(0, weather_pool.size() - 1)]) if not weather_pool.is_empty() else "clear"
@@ -1410,10 +1456,11 @@ func _sync_npc_routes_for_day() -> void:
 func _on_start_day_pressed() -> void:
 	if season_finished or _is_modal_open():
 		return
-	if awaiting_destination:
+	if awaiting_destination or branch_choice_pending:
 		return
 	pending_roll = dice_service.roll()
 	_queued_auto_travel_target = -1
+	_queued_roll_start = false
 	_apply_current_roll_routes()
 	_update_ui()
 	if DisplayServer.get_name() != "headless":
@@ -1461,7 +1508,7 @@ func _on_reroll_pressed() -> void:
 		dice_roll_panel.refresh_panel(pending_roll, _build_dice_roll_panel_state(), "reroll")
 
 func _build_dice_roll_panel_state() -> Dictionary:
-	var selectable_nodes := _get_selectable_nodes()
+	var selectable_nodes := _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
 	var reachable_names: Array[String] = []
 	for node_id in selectable_nodes.slice(0, 4):
 		reachable_names.append(String(board_lookup.get(int(node_id), {}).get("name", "未知节点")))
@@ -1470,12 +1517,9 @@ func _build_dice_roll_panel_state() -> Dictionary:
 		"[b]当前骰面[/b] %s" % dice_service.describe_roll(pending_roll),
 		"[b]剩余修正点[/b] %d ｜ [b]剩余周重掷[/b] %d" % [GameState.season_adjust_points, remaining_rerolls],
 	]
-	if awaiting_destination and selectable_nodes.size() == 1:
-		body_lines.append("[b]精确落点[/b] %s" % String(board_lookup.get(int(selectable_nodes[0]), {}).get("name", "未知节点")))
-		body_lines.append("确认后会自动前进；只有出现分叉时才需要手动选路。")
-	elif awaiting_destination and not reachable_names.is_empty():
-		body_lines.append("[b]当前可达落点[/b] %s" % " / ".join(reachable_names))
-		body_lines.append("确认后地图会保持高亮，你再从这些落点里选一个。")
+	if awaiting_destination and not reachable_names.is_empty():
+		body_lines.append("[b]可能停下的落点[/b] %s" % " / ".join(reachable_names))
+		body_lines.append("确认后会开始逐步前进，不会先选终点；只有走到真分叉时才需要决定方向。")
 	elif anchor_override_active:
 		body_lines.append("[b]锚定改线已触发[/b] 当前路线来自已显露节点，不是常规步数落点。")
 	else:
@@ -1484,23 +1528,21 @@ func _build_dice_roll_panel_state() -> Dictionary:
 		"title": "掷骰完成",
 		"subtitle": "本回合步数已经结算",
 		"body": "\n".join(body_lines),
-		"confirm_text": "确认并前进" if awaiting_destination and selectable_nodes.size() == 1 else "查看落点" if awaiting_destination else "收起结果",
+		"confirm_text": "开始前进" if awaiting_destination else "收起结果",
 		"can_plus": awaiting_destination and GameState.season_adjust_points > 0 and int(pending_roll.get("value", 0)) < 6,
 		"can_minus": awaiting_destination and GameState.season_adjust_points > 0 and int(pending_roll.get("value", 0)) > 1,
 		"can_reroll": awaiting_destination and GameState.weekly_reroll_count < GameState.weekly_reroll_limit,
 	}
 
 func _on_dice_roll_confirmed() -> void:
-	_queued_auto_travel_target = _get_auto_travel_target()
+	_queued_roll_start = true
 
 func _on_dice_roll_panel_closed() -> void:
 	_update_ui()
-	if _queued_auto_travel_target < 0 or _is_modal_open():
+	if not _queued_roll_start or _is_modal_open():
 		return
-	var target_id := _queued_auto_travel_target
-	_queued_auto_travel_target = -1
-	if _get_selectable_nodes().has(target_id):
-		_begin_travel_to_node(target_id)
+	_queued_roll_start = false
+	_start_roll_travel()
 
 func _on_dice_roll_plus_requested() -> void:
 	_on_plus_pressed()
@@ -1513,6 +1555,13 @@ func _on_dice_roll_reroll_requested() -> void:
 
 func _apply_current_roll_routes() -> void:
 	_queued_auto_travel_target = -1
+	_queued_roll_start = false
+	branch_choice_pending = false
+	pending_route_steps_remaining = 0
+	pending_route_history.clear()
+	pending_route_options.clear()
+	pending_route_forced_path.clear()
+	pending_route_forced_index = -1
 	reachable_paths = board_progression_service.get_reachable_paths(current_node_id, int(pending_roll.get("value", 0)))
 	anchor_override_active = false
 	var blocked_before_anchor := _get_blocked_reachable_nodes()
@@ -1574,32 +1623,142 @@ func _pick_anchor_override_target() -> int:
 	)
 	return int(candidates[0].get("node_id", -1))
 
-func _get_auto_travel_target() -> int:
-	if not awaiting_destination:
-		return -1
-	var selectable := _get_selectable_nodes()
-	if selectable.size() != 1:
-		return -1
-	return int(selectable[0])
+func _start_roll_travel() -> void:
+	if pending_roll.is_empty() or not awaiting_destination:
+		return
 
-func _begin_travel_to_node(node_id: int) -> void:
-	if season_finished or _is_modal_open() or board_anim_locked:
-		return
-	if not awaiting_destination or not _get_selectable_nodes().has(node_id):
-		return
+	branch_choice_pending = false
+	pending_route_history = [current_node_id]
+	pending_route_options.clear()
+	pending_route_forced_path.clear()
+	pending_route_forced_index = -1
+
+	if anchor_override_active and reachable_paths.size() == 1:
+		var only_target := int(reachable_paths.keys()[0])
+		for path_node_id in reachable_paths.get(only_target, []):
+			pending_route_forced_path.append(int(path_node_id))
+		pending_route_forced_index = 0
+		pending_route_steps_remaining = maxi(0, pending_route_forced_path.size() - 1)
+	else:
+		pending_route_steps_remaining = int(pending_roll.get("value", 0))
+
 	awaiting_destination = false
-	_queued_auto_travel_target = -1
-	pending_roll.clear()
+	_continue_roll_travel()
+
+func _continue_roll_travel() -> void:
+	if pending_route_steps_remaining <= 0:
+		_finalize_roll_arrival()
+		return
+
+	if not pending_route_forced_path.is_empty():
+		if pending_route_forced_index + 1 >= pending_route_forced_path.size():
+			_finalize_roll_arrival()
+			return
+		var next_id := int(pending_route_forced_path[pending_route_forced_index + 1])
+		pending_route_forced_index += 1
+		_travel_one_step_to(next_id)
+		return
+
+	var options := board_progression_service.get_next_route_options(
+		current_node_id,
+		pending_route_steps_remaining,
+		pending_route_history
+	)
+	options = _filter_blocked_selectable_nodes(options)
+
+	if options.is_empty():
+		_push_log("前方可继续推进的安全方向都被封住了，本次提前在当前节点停下。")
+		pending_route_steps_remaining = 0
+		_finalize_roll_arrival()
+		return
+
+	if options.size() == 1:
+		_travel_one_step_to(int(options[0]))
+		return
+
+	pending_route_options = options.duplicate()
+	branch_choice_pending = true
+	_update_ui()
+
+func _travel_one_step_to(node_id: int) -> void:
+	if season_finished or board_anim_locked:
+		return
+	branch_choice_pending = false
+	pending_route_options.clear()
 	pending_travel_target = node_id
-	pending_travel_path.clear()
-	for path_node_id in reachable_paths.get(node_id, []):
-		pending_travel_path.append(int(path_node_id))
-	if pending_travel_path.is_empty():
-		pending_travel_path.append(current_node_id)
-		pending_travel_path.append(node_id)
+	pending_travel_path = [current_node_id, node_id]
 	board_anim_locked = true
 	_update_ui()
 	board_view.play_travel(pending_travel_path)
+
+func _finalize_roll_arrival() -> void:
+	var final_node_id := current_node_id
+	var node: Dictionary = board_lookup[final_node_id]
+
+	current_visit_habitat_id = String(node.get("habitat_id", ""))
+	GameState.add_weekly_progress("visit_count", 1)
+	var hunger_after_move := GameState.consume_hunger(GameState.hunger_cost_per_travel)
+	_push_log("掷骰后前往 %s。路径：%s。" % [
+		String(node.get("name", "未知地点")),
+		_format_path_preview(pending_route_history),
+	])
+	_push_log("移动消耗饥饿 %d，当前 %d / %d。" % [GameState.hunger_cost_per_travel, hunger_after_move, GameState.max_hunger])
+
+	_clear_pending_route_state()
+
+	var gate_result := board_progression_service.try_resolve_unlock_gate(final_node_id)
+	if not gate_result.is_empty():
+		current_visit_habitat_id = ""
+		if bool(gate_result.get("ok", false)):
+			_apply_ring_unlock_result(gate_result)
+			_update_ui()
+			return
+		if String(gate_result.get("awaiting", "")) == "dojo":
+			_show_ring_gate_blocked(node, String(gate_result.get("message", "还需要先通过当前道馆。")))
+			_update_ui()
+			return
+
+	var type_id := String(node.get("type", ""))
+	if type_id == "camp":
+		_push_log("你路过营地，顺手整理队伍、驻守和留信。")
+		_on_base_pressed(true)
+		_update_ui()
+		return
+	if type_id in ["empty", "environment"]:
+		_resolve_environment_node(node)
+		_update_ui()
+		return
+	if not current_visit_habitat_id.is_empty() and not GameState.is_habitat_unlocked(current_visit_habitat_id) and type_id != "event":
+		_show_locked_board_stop(node)
+		_update_ui()
+		return
+	if not current_visit_habitat_id.is_empty():
+		GameState.note_visit(current_visit_habitat_id)
+	if type_id == "event":
+		_resolve_board_event_node(node)
+		_update_ui()
+		return
+	if _try_open_board_map_effect(node):
+		_update_ui()
+		return
+	_continue_board_stop_flow(node)
+
+func _clear_pending_route_state(clear_roll := true) -> void:
+	awaiting_destination = false
+	branch_choice_pending = false
+	_queued_auto_travel_target = -1
+	_queued_roll_start = false
+	pending_route_steps_remaining = 0
+	pending_route_history.clear()
+	pending_route_options.clear()
+	pending_route_forced_path.clear()
+	pending_route_forced_index = -1
+	reachable_paths.clear()
+	pending_travel_path.clear()
+	pending_travel_target = -1
+	anchor_override_active = false
+	if clear_roll:
+		pending_roll.clear()
 
 func _reachable_selectable_nodes() -> Array[int]:
 	var selectable: Array[int] = []
@@ -1831,57 +1990,25 @@ func _on_base_pressed(opened_from_travel: bool = false) -> void:
 		_show_tutorial_popup("management_intro")
 
 func _on_board_node_chosen(node_id: int) -> void:
-	_begin_travel_to_node(node_id)
+	if not branch_choice_pending:
+		return
+	if not pending_route_options.has(node_id):
+		return
+	_travel_one_step_to(node_id)
 
 func _on_board_travel_finished(node_id: int) -> void:
 	board_anim_locked = false
 	current_node_id = node_id
 	GameState.move_to_board_node(node_id)
 	GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(node_id))
-	var node: Dictionary = board_lookup[node_id]
-	current_visit_habitat_id = String(node.get("habitat_id", ""))
-	GameState.add_weekly_progress("visit_count", 1)
-	var hunger_after_move := GameState.consume_hunger(GameState.hunger_cost_per_travel)
-	_push_log("掷骰后前往 %s。路径：%s。" % [
-		String(node.get("name", "未知地点")),
-		_format_path_preview(pending_travel_path),
-	])
-	_push_log("移动消耗饥饿 %d，当前 %d / %d。" % [GameState.hunger_cost_per_travel, hunger_after_move, GameState.max_hunger])
-	var gate_result := board_progression_service.try_resolve_unlock_gate(node_id)
-	if not gate_result.is_empty():
-		current_visit_habitat_id = ""
-		if bool(gate_result.get("ok", false)):
-			_apply_ring_unlock_result(gate_result)
-			_update_ui()
-			return
-		if String(gate_result.get("awaiting", "")) == "dojo":
-			_show_ring_gate_blocked(node, String(gate_result.get("message", "还需要先通过当前道馆。")))
-			_update_ui()
-			return
-	var type_id := String(node.get("type", ""))
-	if type_id == "camp":
-		_push_log("你路过营地，顺手整理队伍、驻守和留信。")
-		_on_base_pressed(true)
-		_update_ui()
+	if pending_route_history.is_empty() or int(pending_route_history[pending_route_history.size() - 1]) != node_id:
+		pending_route_history.append(node_id)
+	if pending_route_steps_remaining > 0:
+		pending_route_steps_remaining = maxi(0, pending_route_steps_remaining - 1)
+	if pending_route_steps_remaining > 0:
+		_continue_roll_travel()
 		return
-	if type_id in ["empty", "environment"]:
-		_resolve_environment_node(node)
-		_update_ui()
-		return
-	if not current_visit_habitat_id.is_empty() and not GameState.is_habitat_unlocked(current_visit_habitat_id) and type_id != "event":
-		_show_locked_board_stop(node)
-		_update_ui()
-		return
-	if not current_visit_habitat_id.is_empty():
-		GameState.note_visit(current_visit_habitat_id)
-	if type_id == "event":
-		_resolve_board_event_node(node)
-		_update_ui()
-		return
-	if _try_open_board_map_effect(node):
-		_update_ui()
-		return
-	_continue_board_stop_flow(node)
+	_finalize_roll_arrival()
 
 func _continue_board_stop_flow(node: Dictionary) -> void:
 	_check_active_quests()
@@ -3880,7 +4007,12 @@ func _update_action_ui() -> void:
 		board_progression_service.get_region_name(),
 		String(current_node.get("name", "营地")),
 	]
-	if awaiting_destination:
+	if branch_choice_pending:
+		board_route_label.text = "分叉 %d 选 ｜ %s" % [
+			selectable_nodes.size(),
+			" / ".join(reachable_names) if not reachable_names.is_empty() else "等待方向列表",
+		]
+	elif awaiting_destination:
 		board_route_label.text = "可达 %d 处 ｜ %s" % [
 			selectable_nodes.size(),
 			" / ".join(reachable_names) if not reachable_names.is_empty() else "等待路线计算",
@@ -3891,7 +4023,7 @@ func _update_action_ui() -> void:
 	support_button.text = "背包 / 小本"
 	base_button.text = "落脚处"
 	new_game_button.text = "回到开头"
-	roll_button.disabled = season_finished or _is_modal_open() or awaiting_destination
+	roll_button.disabled = season_finished or _is_modal_open() or awaiting_destination or branch_choice_pending
 	plus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) >= 6
 	minus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) <= 1
 	reroll_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.weekly_reroll_count >= GameState.weekly_reroll_limit
@@ -3904,8 +4036,10 @@ func _update_action_ui() -> void:
 	if ai_turn_in_progress:
 		action_hint_label.text = "[b]对手回合[/b]\n%s" % (_active_ai_observation_line if not _active_ai_observation_line.is_empty() else "正在结算其他远征队的掷骰、推进和落点。")
 		return
-	if awaiting_destination:
-		action_hint_label.text = "[b]先看看脚会停在哪儿[/b]\n要是只有一个顺路的去处，就会自己走过去；只有真遇到岔路，才轮到你拿主意。"
+	if branch_choice_pending:
+		action_hint_label.text = "[b]来到分叉口了[/b]\n这一步先选方向，走完剩下的步数后才会真正落点。"
+	elif awaiting_destination:
+		action_hint_label.text = "[b]先看看这次会走多远[/b]\n确认后会开始逐步前进，不会直接选终点；只有遇到岔路，才需要你拿主意。"
 	else:
 		action_hint_label.text = "[b]先出门，再看会停在哪儿[/b]\n先掷一次骰，看看今天会被带到哪里。只有遇到岔路，才需要你挑。"
 	if GameState.is_hunger_low() and not season_finished and not ai_turn_in_progress:
@@ -4001,9 +4135,20 @@ func _update_map_hint() -> void:
 	var npc_markers := npc_route_service.build_node_markers()
 	var threat_markers := threat_service.build_node_markers()
 	var ai_markers := ai_player_service.build_node_markers()
+	if branch_choice_pending:
+		var lines: Array[String] = ["[b]当前分叉方向[/b]"]
+		for node_id in pending_route_options.slice(0, 4):
+			var node: Dictionary = board_lookup[node_id]
+			lines.append("%s [%s]" % [
+				String(node.get("name", "未知节点")),
+				_type_name(String(node.get("type", ""))),
+			])
+			lines.append("  下一步：%s" % _format_path_preview([current_node_id, node_id]))
+		map_hint_label.text = "\n".join(lines)
+		return
 	if awaiting_destination:
 		var lines: Array[String] = ["[b]可达节点[/b]"]
-		for node_id in _get_selectable_nodes().slice(0, 4):
+		for node_id in _filter_blocked_selectable_nodes(_reachable_selectable_nodes()).slice(0, 4):
 			var node: Dictionary = board_lookup[node_id]
 			var tags: Array[String] = [String(node.get("reward_hint", "查看详情"))]
 			if board_map_effect_service.has_pending_effect(node, node_id, GameState.board_region_id):
@@ -4120,9 +4265,11 @@ func _build_board_markers() -> Dictionary:
 
 func _get_selectable_nodes() -> Array[int]:
 	var selectable: Array[int] = []
-	if not awaiting_destination:
-		return selectable
-	return _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
+	if branch_choice_pending:
+		return _filter_blocked_selectable_nodes(pending_route_options)
+	if awaiting_destination:
+		return _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
+	return selectable
 
 func _get_locked_nodes() -> Array[int]:
 	var locked: Array[int] = []

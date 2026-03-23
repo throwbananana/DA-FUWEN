@@ -8,13 +8,21 @@ const SEASON_ORDER := ["spring", "summer", "autumn", "winter"]
 const META_SAVE_PATH := "user://meta_progression.save"
 const RUN_SAVE_PATH := "user://run_state.save"
 const SETTINGS_SAVE_PATH := "user://settings.save"
+const BASE_VIEWPORT_SIZE := Vector2i(1280, 720)
+const MIN_WINDOW_SIZE := Vector2i(1280, 720)
 const WINDOWED_RESOLUTION_PRESETS := [
 	{"id": "1280x720", "size": Vector2i(1280, 720), "label": "720p (1280 x 720)"},
+	{"id": "1366x768", "size": Vector2i(1366, 768), "label": "WXGA (1366 x 768)"},
+	{"id": "1536x864", "size": Vector2i(1536, 864), "label": "HD+ (1536 x 864)"},
 	{"id": "1600x900", "size": Vector2i(1600, 900), "label": "900p (1600 x 900)"},
+	{"id": "1680x1050", "size": Vector2i(1680, 1050), "label": "WSXGA+ (1680 x 1050)"},
 	{"id": "1920x1080", "size": Vector2i(1920, 1080), "label": "1080p (1920 x 1080)"},
+	{"id": "1920x1200", "size": Vector2i(1920, 1200), "label": "WUXGA (1920 x 1200)"},
 	{"id": "2560x1440", "size": Vector2i(2560, 1440), "label": "1440p (2560 x 1440)"},
+	{"id": "2560x1600", "size": Vector2i(2560, 1600), "label": "WQXGA (2560 x 1600)"},
+	{"id": "3440x1440", "size": Vector2i(3440, 1440), "label": "UWQHD (3440 x 1440)"},
 ]
-const DEFAULT_WINDOWED_RESOLUTION_ID := "1600x900"
+const DEFAULT_WINDOWED_RESOLUTION_ID := "1280x720"
 const PLAYER_ACTOR_ID := "player_main"
 const PLAYER_ACTOR_NAME := "玩家"
 
@@ -316,8 +324,9 @@ func apply_settings() -> void:
 	var window := get_window()
 	if window == null:
 		return
+	window.min_size = minimum_window_size()
 	if bool(settings.get("fullscreen", false)):
-		window.mode = Window.MODE_FULLSCREEN
+		window.mode = Window.MODE_EXCLUSIVE_FULLSCREEN
 		return
 	window.mode = Window.MODE_WINDOWED
 	var target_size := _clamp_windowed_resolution(current_window_resolution_size())
@@ -344,8 +353,14 @@ func current_language() -> String:
 	_ensure_settings_defaults()
 	return String(settings.get("language", "zh_cn"))
 
+func minimum_window_size() -> Vector2i:
+	return MIN_WINDOW_SIZE
+
 func get_window_resolution_presets() -> Array[Dictionary]:
 	var presets: Array[Dictionary] = []
+	var current_screen_preset := _dynamic_native_window_resolution_preset()
+	if not current_screen_preset.is_empty():
+		presets.append(current_screen_preset)
 	for preset in WINDOWED_RESOLUTION_PRESETS:
 		presets.append(Dictionary(preset).duplicate(true))
 	return presets
@@ -353,7 +368,7 @@ func get_window_resolution_presets() -> Array[Dictionary]:
 func get_available_window_resolution_presets() -> Array[Dictionary]:
 	var presets: Array[Dictionary] = []
 	var usable_size := _current_screen_usable_size()
-	for preset in WINDOWED_RESOLUTION_PRESETS:
+	for preset in get_window_resolution_presets():
 		var preset_size := Vector2i(preset.get("size", Vector2i(0, 0)))
 		if usable_size == Vector2i.ZERO or (preset_size.x <= usable_size.x and preset_size.y <= usable_size.y):
 			presets.append(Dictionary(preset).duplicate(true))
@@ -372,7 +387,7 @@ func current_window_resolution_id() -> String:
 
 func current_window_resolution_size() -> Vector2i:
 	var preset := _window_resolution_preset_from_id(current_window_resolution_id())
-	return Vector2i(preset.get("size", Vector2i(1600, 900)))
+	return Vector2i(preset.get("size", BASE_VIEWPORT_SIZE))
 
 func current_window_resolution_label() -> String:
 	var preset := _window_resolution_preset_from_id(current_window_resolution_id())
@@ -438,11 +453,17 @@ func _duplicate_array(value: Variant) -> Array:
 		return []
 	return Array(value).duplicate(true)
 
-func _window_resolution_preset_from_id(resolution_id: String) -> Dictionary:
+func _static_window_resolution_preset_from_id(resolution_id: String) -> Dictionary:
 	for preset in WINDOWED_RESOLUTION_PRESETS:
 		if String(preset.get("id", "")) == resolution_id:
 			return Dictionary(preset).duplicate(true)
 	return {}
+
+func _window_resolution_preset_from_id(resolution_id: String) -> Dictionary:
+	var dynamic_preset := _dynamic_native_window_resolution_preset()
+	if not dynamic_preset.is_empty() and String(dynamic_preset.get("id", "")) == resolution_id:
+		return dynamic_preset
+	return _static_window_resolution_preset_from_id(resolution_id)
 
 func _best_fit_window_resolution_id() -> String:
 	var screen_size := _current_screen_usable_size()
@@ -450,7 +471,7 @@ func _best_fit_window_resolution_id() -> String:
 		return DEFAULT_WINDOWED_RESOLUTION_ID
 	var best_id := DEFAULT_WINDOWED_RESOLUTION_ID
 	var best_area := 0
-	for preset in WINDOWED_RESOLUTION_PRESETS:
+	for preset in get_window_resolution_presets():
 		var preset_size := Vector2i(preset.get("size", Vector2i(0, 0)))
 		if preset_size.x > screen_size.x or preset_size.y > screen_size.y:
 			continue
@@ -466,11 +487,31 @@ func _current_screen_usable_size() -> Vector2i:
 	var usable_rect := DisplayServer.screen_get_usable_rect()
 	return usable_rect.size
 
+func _dynamic_native_window_resolution_preset() -> Dictionary:
+	var usable_size := _current_screen_usable_size()
+	if usable_size == Vector2i.ZERO:
+		return {}
+	if usable_size.x < MIN_WINDOW_SIZE.x or usable_size.y < MIN_WINDOW_SIZE.y:
+		return {}
+	var preset_id := "%dx%d" % [usable_size.x, usable_size.y]
+	if not _static_window_resolution_preset_from_id(preset_id).is_empty():
+		return {}
+	return {
+		"id": preset_id,
+		"size": usable_size,
+		"label": "当前屏幕可用区 (%d x %d)" % [usable_size.x, usable_size.y],
+	}
+
 func _clamp_windowed_resolution(size: Vector2i) -> Vector2i:
 	var usable_size := _current_screen_usable_size()
 	if usable_size == Vector2i.ZERO:
-		return size
-	return Vector2i(mini(size.x, usable_size.x), mini(size.y, usable_size.y))
+		return Vector2i(maxi(size.x, MIN_WINDOW_SIZE.x), maxi(size.y, MIN_WINDOW_SIZE.y))
+	var min_width := MIN_WINDOW_SIZE.x if usable_size.x >= MIN_WINDOW_SIZE.x else usable_size.x
+	var min_height := MIN_WINDOW_SIZE.y if usable_size.y >= MIN_WINDOW_SIZE.y else usable_size.y
+	return Vector2i(
+		clampi(size.x, min_width, usable_size.x),
+		clampi(size.y, min_height, usable_size.y)
+	)
 
 func _center_window(window: Window, size: Vector2i) -> void:
 	if DisplayServer.get_name() == "headless":

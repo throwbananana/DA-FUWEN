@@ -7,6 +7,9 @@ const DEFAULT_SEASON_LENGTH := 6
 const SEASON_ORDER := ["spring", "summer", "autumn", "winter"]
 const META_SAVE_PATH := "user://meta_progression.save"
 const RUN_SAVE_PATH := "user://run_state.save"
+const SAVE_DIR := "user://save_slots"
+const SAVE_INDEX_PATH := "user://save_slots/index.json"
+const SAVE_SLOT_COUNT := 6
 const SETTINGS_SAVE_PATH := "user://settings.save"
 const BASE_VIEWPORT_SIZE := Vector2i(1280, 720)
 const MIN_WINDOW_SIZE := Vector2i(1280, 720)
@@ -60,6 +63,7 @@ var meta_unlocks: Dictionary = {
 	"dice_modules": [],
 }
 var settings: Dictionary = {}
+var _selected_run_slot_id := "slot_01"
 
 var inventory: Dictionary = {}
 var habitats: Dictionary = {}
@@ -399,30 +403,204 @@ func current_window_resolution_label() -> String:
 func should_skip_animations() -> bool:
 	return DisplayServer.get_name() == "headless" or prefers_reduced_motion()
 
-func has_run_save() -> bool:
-	return FileAccess.file_exists(RUN_SAVE_PATH)
+func _slot_id_from_index(index: int) -> String:
+	return "slot_%02d" % index
 
-func save_run_payload(payload: Dictionary) -> void:
-	var file := FileAccess.open(RUN_SAVE_PATH, FileAccess.WRITE)
+func _slot_path(slot_id: String) -> String:
+	return "%s/%s.save" % [SAVE_DIR, slot_id]
+
+func _default_slot_meta(slot_id: String, index: int) -> Dictionary:
+	return {
+		"id": slot_id,
+		"title": "存档 %d" % index,
+		"exists": false,
+		"updated_at_unix": 0,
+		"summary": {},
+	}
+
+func ensure_save_index() -> void:
+	DirAccess.make_dir_absolute(ProjectSettings.globalize_path(SAVE_DIR))
+	if FileAccess.file_exists(SAVE_INDEX_PATH):
+		var existing := _load_save_index()
+		if not existing.is_empty():
+			return
+	var slots: Array = []
+	for index in range(SAVE_SLOT_COUNT):
+		slots.append(_default_slot_meta(_slot_id_from_index(index + 1), index + 1))
+	_save_save_index({
+		"version": 2,
+		"selected_slot_id": "slot_01",
+		"slots": slots,
+	})
+
+func _load_save_index() -> Dictionary:
+	if not FileAccess.file_exists(SAVE_INDEX_PATH):
+		return {}
+	var raw := FileAccess.get_file_as_string(SAVE_INDEX_PATH)
+	var parsed = JSON.parse_string(raw)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	var normalized := {
+		"version": 2,
+		"selected_slot_id": String(parsed.get("selected_slot_id", "slot_01")),
+		"slots": [],
+	}
+	var saved_slots: Array = Array(parsed.get("slots", [])).duplicate(true)
+	for index in range(SAVE_SLOT_COUNT):
+		var slot_id := _slot_id_from_index(index + 1)
+		var meta := _default_slot_meta(slot_id, index + 1)
+		for raw_slot in saved_slots:
+			var saved_meta: Dictionary = Dictionary(raw_slot).duplicate(true)
+			if String(saved_meta.get("id", "")) != slot_id:
+				continue
+			meta["title"] = String(saved_meta.get("title", meta.get("title", slot_id)))
+			meta["exists"] = bool(saved_meta.get("exists", false)) or FileAccess.file_exists(_slot_path(slot_id))
+			meta["updated_at_unix"] = int(saved_meta.get("updated_at_unix", 0))
+			meta["summary"] = _duplicate_dictionary(saved_meta.get("summary", {}))
+			break
+		normalized["slots"].append(meta)
+	if not _slot_id_exists(String(normalized.get("selected_slot_id", "slot_01"))):
+		normalized["selected_slot_id"] = "slot_01"
+	return normalized
+
+func _save_save_index(index_payload: Dictionary) -> void:
+	DirAccess.make_dir_absolute(ProjectSettings.globalize_path(SAVE_DIR))
+	var file := FileAccess.open(SAVE_INDEX_PATH, FileAccess.WRITE)
 	if file == null:
-		push_error("GameState: failed to open run save -> %s" % RUN_SAVE_PATH)
+		push_error("GameState: failed to open save index -> %s" % SAVE_INDEX_PATH)
 		return
-	file.store_string(JSON.stringify(payload, "\t"))
+	file.store_string(JSON.stringify(index_payload, "	"))
 
-func load_run_payload() -> Dictionary:
+func _slot_id_exists(slot_id: String) -> bool:
+	for index in range(SAVE_SLOT_COUNT):
+		if _slot_id_from_index(index + 1) == slot_id:
+			return true
+	return false
+
+func _resolve_run_slot_id(slot_id: String = "") -> String:
+	var resolved := slot_id if not slot_id.is_empty() else get_selected_run_slot_id()
+	return resolved if _slot_id_exists(resolved) else "slot_01"
+
+func _has_any_slot_save() -> bool:
+	for slot in list_run_slots():
+		if bool(Dictionary(slot).get("exists", false)):
+			return true
+	return false
+
+func load_legacy_run_payload() -> Dictionary:
 	if not FileAccess.file_exists(RUN_SAVE_PATH):
 		return {}
 	var raw := FileAccess.get_file_as_string(RUN_SAVE_PATH)
 	var parsed = JSON.parse_string(raw)
 	if typeof(parsed) != TYPE_DICTIONARY:
-		push_warning("GameState: invalid run save, ignoring %s" % RUN_SAVE_PATH)
+		push_warning("GameState: invalid legacy run save, ignoring %s" % RUN_SAVE_PATH)
 		return {}
 	return Dictionary(parsed).duplicate(true)
 
-func clear_run_save() -> void:
+func migrate_legacy_run_save() -> void:
+	ensure_save_index()
 	if not FileAccess.file_exists(RUN_SAVE_PATH):
 		return
+	if _has_any_slot_save():
+		return
+	var payload := load_legacy_run_payload()
+	if payload.is_empty():
+		return
+	save_run_payload(payload, "slot_01")
+	set_selected_run_slot_id("slot_01")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(RUN_SAVE_PATH))
+
+func list_run_slots() -> Array[Dictionary]:
+	ensure_save_index()
+	var index_payload := _load_save_index()
+	var slots: Array[Dictionary] = []
+	for slot in index_payload.get("slots", []):
+		slots.append(Dictionary(slot).duplicate(true))
+	return slots
+
+func get_run_slot_meta(slot_id: String = "") -> Dictionary:
+	var resolved := _resolve_run_slot_id(slot_id)
+	for slot in list_run_slots():
+		if String(slot.get("id", "")) == resolved:
+			return Dictionary(slot).duplicate(true)
+	return {}
+
+func get_selected_run_slot_id() -> String:
+	ensure_save_index()
+	var index_payload := _load_save_index()
+	_selected_run_slot_id = _resolve_run_slot_id(String(index_payload.get("selected_slot_id", _selected_run_slot_id)))
+	return _selected_run_slot_id
+
+func set_selected_run_slot_id(slot_id: String) -> void:
+	ensure_save_index()
+	var resolved := _resolve_run_slot_id(slot_id)
+	var index_payload := _load_save_index()
+	index_payload["selected_slot_id"] = resolved
+	_selected_run_slot_id = resolved
+	_save_save_index(index_payload)
+
+func has_run_save(slot_id: String = "") -> bool:
+	return bool(get_run_slot_meta(slot_id).get("exists", false))
+
+func has_any_run_save() -> bool:
+	return _has_any_slot_save()
+
+func save_run_payload(payload: Dictionary, slot_id: String = "") -> void:
+	ensure_save_index()
+	var resolved := _resolve_run_slot_id(slot_id)
+	var file := FileAccess.open(_slot_path(resolved), FileAccess.WRITE)
+	if file == null:
+		push_error("GameState: failed to open run save slot -> %s" % resolved)
+		return
+	file.store_string(JSON.stringify(payload, "	"))
+	var index_payload := _load_save_index()
+	var slots: Array = Array(index_payload.get("slots", [])).duplicate(true)
+	for index in range(slots.size()):
+		var meta: Dictionary = Dictionary(slots[index]).duplicate(true)
+		if String(meta.get("id", "")) != resolved:
+			continue
+		meta["exists"] = true
+		meta["updated_at_unix"] = Time.get_unix_time_from_system()
+		meta["summary"] = _duplicate_dictionary(payload.get("summary", {}))
+		slots[index] = meta
+		break
+	index_payload["slots"] = slots
+	index_payload["selected_slot_id"] = resolved
+	_selected_run_slot_id = resolved
+	_save_save_index(index_payload)
+
+func load_run_payload(slot_id: String = "") -> Dictionary:
+	ensure_save_index()
+	var resolved := _resolve_run_slot_id(slot_id)
+	var save_path := _slot_path(resolved)
+	if not FileAccess.file_exists(save_path):
+		return {}
+	var raw := FileAccess.get_file_as_string(save_path)
+	var parsed = JSON.parse_string(raw)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		push_warning("GameState: invalid run save, ignoring %s" % save_path)
+		return {}
+	return Dictionary(parsed).duplicate(true)
+
+func clear_run_save(slot_id: String = "") -> void:
+	ensure_save_index()
+	var resolved := _resolve_run_slot_id(slot_id)
+	var save_path := _slot_path(resolved)
+	if FileAccess.file_exists(save_path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(save_path))
+	var index_payload := _load_save_index()
+	var slots: Array = Array(index_payload.get("slots", [])).duplicate(true)
+	for index in range(slots.size()):
+		var meta: Dictionary = Dictionary(slots[index]).duplicate(true)
+		if String(meta.get("id", "")) != resolved:
+			continue
+		meta["exists"] = false
+		meta["updated_at_unix"] = 0
+		meta["summary"] = {}
+		slots[index] = meta
+		break
+	index_payload["slots"] = slots
+	_save_save_index(index_payload)
 
 func _coerce_string_array(values: Variant) -> Array[String]:
 	var result: Array[String] = []

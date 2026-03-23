@@ -8,6 +8,7 @@ const DiceRollPanel = preload("res://scripts/dice_roll_panel.gd")
 const DecisionPanel = preload("res://scripts/decision_panel.gd")
 const BasePanel = preload("res://scripts/base_panel.gd")
 const SystemPanel = preload("res://scripts/system_panel.gd")
+const SaveSlotPanel = preload("res://scripts/save_slot_panel.gd")
 const VisitFlowController = preload("res://scripts/services/visit_flow_controller.gd")
 const HabitatService = preload("res://scripts/services/habitat_service.gd")
 const NpcService = preload("res://scripts/services/npc_service.gd")
@@ -139,6 +140,7 @@ const NODE_TEMPLATES := [
 @onready var menu_meta_summary_label: RichTextLabel = %MenuMetaSummaryLabel
 @onready var menu_content_row: BoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow
 @onready var menu_action_column: VBoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn
+var save_slot_panel: SaveSlotPanel
 @onready var board_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel
 @onready var board_top_strip: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip
 @onready var board_stage_panel: PanelContainer = %BoardStagePanel
@@ -237,6 +239,8 @@ var _post_travel_resolution_in_progress := false
 var _asset_file_dialog: FileDialog
 var _menu_custom_background: TextureRect
 var _responsive_layout_queued := false
+var _menu_selected_slot_id := "slot_01"
+var _save_slot_panel_mode := "boot"
 
 func _ready() -> void:
 	rng.randomize()
@@ -249,6 +253,7 @@ func _ready() -> void:
 	minus_button.hide()
 	reroll_button.hide()
 	_ensure_cutscene_panel()
+	_ensure_save_slot_panel()
 	_connect_signals()
 	_apply_basic_styles()
 	_prepare_overlay_panels()
@@ -261,12 +266,13 @@ func _ready() -> void:
 	_ensure_stage_transition_overlay()
 	_queue_responsive_layout()
 	install_visit_flow()
+	GameState.ensure_save_index()
+	GameState.migrate_legacy_run_save()
+	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
 	if _should_show_boot_menu():
-		if not _apply_run_payload(GameState.load_run_payload()):
-			start_new_game()
 		_show_main_menu()
 	else:
-		start_new_game()
+		_start_new_game_in_slot(_menu_selected_slot_id)
 
 func install_visit_flow() -> void:
 	visit_flow = VisitFlowController.new()
@@ -282,6 +288,15 @@ func _ensure_cutscene_panel() -> void:
 	cutscene_panel.visible = false
 	cutscene_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	overlay.add_child(cutscene_panel)
+
+func _ensure_save_slot_panel() -> void:
+	if is_instance_valid(save_slot_panel):
+		return
+	save_slot_panel = SaveSlotPanel.new()
+	save_slot_panel.name = "SaveSlotPanel"
+	save_slot_panel.visible = false
+	save_slot_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	overlay.add_child(save_slot_panel)
 
 func _connect_signals() -> void:
 	roll_button.pressed.connect(_on_start_day_pressed)
@@ -307,6 +322,13 @@ func _connect_signals() -> void:
 	base_panel.closed.connect(_on_base_closed)
 	system_panel.closed.connect(_on_system_panel_closed)
 	battle_panel.battle_finished.connect(_on_battle_finished)
+	if is_instance_valid(save_slot_panel):
+		save_slot_panel.slot_selected.connect(_on_save_slot_selected)
+		save_slot_panel.load_requested.connect(_on_save_slot_load_requested)
+		save_slot_panel.new_requested.connect(_on_save_slot_new_requested)
+		save_slot_panel.save_requested.connect(_on_save_slot_save_requested)
+		save_slot_panel.delete_requested.connect(_on_save_slot_delete_requested)
+		save_slot_panel.close_requested.connect(_on_save_slot_closed)
 
 func _ensure_menu_custom_background() -> void:
 	if is_instance_valid(_menu_custom_background):
@@ -354,6 +376,8 @@ func _apply_basic_styles() -> void:
 	panel_style.corner_radius_bottom_left = 12
 	panel_style.corner_radius_bottom_right = 12
 	var overlay_panels := [battle_panel, dice_roll_panel, decision_panel, base_panel, system_panel, main_menu_panel]
+	if is_instance_valid(save_slot_panel):
+		overlay_panels.append(save_slot_panel)
 	if is_instance_valid(cutscene_panel):
 		overlay_panels.append(cutscene_panel)
 	for panel in overlay_panels:
@@ -417,6 +441,7 @@ func _prepare_overlay_panels() -> void:
 		base_panel,
 		system_panel,
 		main_menu_panel,
+		save_slot_panel,
 	]
 	if is_instance_valid(cutscene_panel):
 		centered_panels.append(cutscene_panel)
@@ -486,6 +511,7 @@ func _configure_safe_ui_bounds() -> void:
 		decision_panel,
 		base_panel,
 		system_panel,
+		save_slot_panel,
 		cutscene_panel,
 	]:
 		control.clip_contents = true
@@ -598,6 +624,8 @@ func _apply_responsive_layout() -> void:
 		_fit_overlay_panel(cutscene_panel, Vector2(560, 360) if tight_height else Vector2(620, 420), window_size, Vector2(360, 260), overlay_padding)
 	_fit_overlay_panel(base_panel, Vector2(560, 500) if tight_height else Vector2(600, 560), window_size, Vector2(420, 320), overlay_padding)
 	_fit_overlay_panel(system_panel, Vector2(620, 460) if tight_height else Vector2(700, 520), window_size, Vector2(420, 320), overlay_padding)
+	if is_instance_valid(save_slot_panel):
+		_fit_overlay_panel(save_slot_panel, Vector2(760, 520) if tight_height else Vector2(840, 580), window_size, Vector2(480, 360), overlay_padding)
 	_fit_overlay_panel(battle_panel, Vector2(700, 500) if tight_height else Vector2(760, 560), window_size, Vector2(520, 360), overlay_padding)
 	menu_action_column.custom_minimum_size = Vector2(0, 0) if menu_content_row.vertical else Vector2(200 if compact_width else 220, 0)
 	menu_run_summary_label.custom_minimum_size = Vector2(0, 148 if menu_content_row.vertical else (180 if compact_width else 200))
@@ -801,10 +829,13 @@ func _should_skip_runtime_tutorials() -> bool:
 
 func _show_main_menu() -> void:
 	CustomAssetRepository.sync_external_library()
+	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
 	_refresh_main_menu()
 	root_margin.hide()
 	if is_instance_valid(_menu_custom_background):
 		_menu_custom_background.visible = _menu_custom_background.texture != null
+	if is_instance_valid(save_slot_panel):
+		save_slot_panel.close_panel()
 	menu_backdrop.show()
 	menu_backdrop.move_to_front()
 	main_menu_panel.show()
@@ -813,6 +844,8 @@ func _show_main_menu() -> void:
 func _hide_main_menu() -> void:
 	if is_instance_valid(_menu_custom_background):
 		_menu_custom_background.hide()
+	if is_instance_valid(save_slot_panel):
+		save_slot_panel.close_panel()
 	menu_backdrop.hide()
 	main_menu_panel.hide()
 	root_margin.show()
@@ -820,40 +853,41 @@ func _hide_main_menu() -> void:
 	_resume_onboarding_flow()
 
 func _refresh_main_menu() -> void:
-	var has_run_save := GameState.has_run_save()
+	var slot_meta := GameState.get_run_slot_meta(_menu_selected_slot_id)
+	var slot_has_save := bool(slot_meta.get("exists", false))
 	menu_title_label.text = localization_service.text("menu.title")
 	if runtime_session_started:
 		menu_subtitle_label.text = localization_service.text("menu.subtitle.runtime")
 		continue_button.text = localization_service.text("menu.continue.season_end") if season_finished else localization_service.text("menu.continue.run")
-		menu_new_game_button.text = localization_service.text("menu.new_run")
+		menu_new_game_button.text = "存档槽位"
 		menu_new_game_button.disabled = false
-		menu_action_hint_label.text = localization_service.text("menu.hint.runtime")
+		menu_action_hint_label.text = "当前槽位：%s\n%s" % [_slot_title(slot_meta), localization_service.text("menu.hint.runtime")]
 		menu_run_summary_label.text = _build_main_menu_run_summary()
 	else:
 		menu_subtitle_label.text = localization_service.text("menu.subtitle.start")
-		continue_button.text = localization_service.text("menu.start_game")
-		menu_new_game_button.text = localization_service.text("menu.load_save")
-		menu_new_game_button.disabled = not has_run_save
-		menu_action_hint_label.text = localization_service.text("menu.hint.start")
+		continue_button.text = "读取当前槽位" if slot_has_save else localization_service.text("menu.start_game")
+		menu_new_game_button.text = "存档槽位"
+		menu_new_game_button.disabled = false
+		menu_action_hint_label.text = "当前槽位：%s\n按“继续”会读取这个槽位；空槽则会直接在这里开始新远征。" % _slot_title(slot_meta)
 		menu_run_summary_label.text = _build_saved_run_summary()
 	settings_button.text = localization_service.text("menu.settings")
 	menu_meta_summary_label.text = "%s\n\n%s" % [_build_main_menu_meta_summary(), _build_settings_summary()]
 	_refresh_main_menu_visuals()
 
 func _build_saved_run_summary() -> String:
-	var payload := GameState.load_run_payload()
-	if payload.is_empty():
-		return localization_service.text("menu.save.none")
-	var summary: Dictionary = payload.get("summary", {})
+	var slot_meta := GameState.get_run_slot_meta(_menu_selected_slot_id)
+	if slot_meta.is_empty() or not bool(slot_meta.get("exists", false)):
+		return "[b]%s[/b]\n这个槽位还没有存档。按“继续”会直接在这里开始一局新的远征。" % _slot_title(slot_meta)
+	var summary: Dictionary = slot_meta.get("summary", {})
 	if summary.is_empty():
-		return localization_service.text("menu.save.old")
+		return "[b]%s[/b]\n这个槽位里有旧版本存档，但还没有可展示的摘要。" % _slot_title(slot_meta)
 	var battle_slots: Array[String] = []
 	for entry in summary.get("battle_slots", []):
 		battle_slots.append(String(entry))
 	if battle_slots.is_empty():
 		battle_slots.append(localization_service.text("menu.summary.unassigned"))
 	var lines: Array[String] = [
-		localization_service.text("menu.save.latest"),
+		"[b]%s[/b]" % _slot_title(slot_meta),
 		"%s · 第 %d / %d 回合 · 第 %d 周 · 总回合 %d / 100" % [
 			String(summary.get("season_name", "未知季节")),
 			int(summary.get("season_turn", 1)),
@@ -866,6 +900,11 @@ func _build_saved_run_summary() -> String:
 		localization_service.text("menu.summary.weekly_objective", {"value": String(summary.get("objective_summary", localization_service.text("menu.summary.no_objective")))}),
 	]
 	return "\n".join(lines)
+
+func _slot_title(slot_meta: Dictionary) -> String:
+	if slot_meta.is_empty():
+		return "存档 1"
+	return String(slot_meta.get("title", slot_meta.get("id", "存档")))
 
 func _build_settings_summary() -> String:
 	var window_mode := localization_service.text("settings.window.fullscreen") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.windowed")
@@ -884,6 +923,73 @@ func _build_settings_summary() -> String:
 		"自定义素材：%d 张" % CustomAssetRepository.get_image_count(),
 		"主菜单背景：%s" % custom_bg_label,
 	])
+
+func _open_save_slot_panel(mode: String) -> void:
+	if not is_instance_valid(save_slot_panel):
+		return
+	_save_slot_panel_mode = mode
+	_refresh_save_slot_panel()
+	save_slot_panel.show()
+	save_slot_panel.move_to_front()
+
+func _refresh_save_slot_panel(mode: String = "") -> void:
+	if not is_instance_valid(save_slot_panel):
+		return
+	if not mode.is_empty():
+		_save_slot_panel_mode = mode
+	_menu_selected_slot_id = GameState.get_selected_run_slot_id() if _menu_selected_slot_id.is_empty() else _menu_selected_slot_id
+	save_slot_panel.open_panel(GameState.list_run_slots(), _menu_selected_slot_id, _save_slot_panel_mode)
+
+func _on_save_slot_selected(slot_id: String) -> void:
+	_menu_selected_slot_id = slot_id
+	GameState.set_selected_run_slot_id(slot_id)
+	if main_menu_panel.visible:
+		_refresh_main_menu()
+	if is_instance_valid(save_slot_panel) and save_slot_panel.visible:
+		_refresh_save_slot_panel()
+
+func _on_save_slot_load_requested(slot_id: String) -> void:
+	_load_run_state_from_save(slot_id)
+
+func _on_save_slot_new_requested(slot_id: String) -> void:
+	_start_new_game_in_slot(slot_id)
+
+func _on_save_slot_save_requested(slot_id: String) -> void:
+	if not runtime_session_started:
+		return
+	GameState.set_selected_run_slot_id(slot_id)
+	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
+	GameState.save_run_payload(_build_run_save_payload(), _menu_selected_slot_id)
+	if is_instance_valid(save_slot_panel):
+		save_slot_panel.close_panel()
+	if main_menu_panel.visible:
+		_refresh_main_menu()
+	_push_log("已保存到 %s。" % _slot_title(GameState.get_run_slot_meta(_menu_selected_slot_id)))
+
+func _on_save_slot_delete_requested(slot_id: String) -> void:
+	if runtime_session_started and not season_finished and slot_id == GameState.get_selected_run_slot_id():
+		decision_panel.open_panel("无法删除当前运行槽位", "当前这局正在使用这个槽位。请先另存到别的槽位，或回到标题后再删。", [], "知道了")
+		return
+	GameState.clear_run_save(slot_id)
+	if main_menu_panel.visible:
+		_refresh_main_menu()
+	if is_instance_valid(save_slot_panel) and save_slot_panel.visible:
+		_refresh_save_slot_panel()
+
+func _on_save_slot_closed() -> void:
+	if is_instance_valid(save_slot_panel):
+		save_slot_panel.close_panel()
+	if main_menu_panel.visible:
+		_refresh_main_menu()
+	else:
+		_update_ui()
+
+func _start_new_game_in_slot(slot_id: String) -> void:
+	GameState.set_selected_run_slot_id(slot_id)
+	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
+	start_new_game()
+	_save_run_state()
+	_hide_main_menu()
 
 func _open_settings_menu() -> void:
 	CustomAssetRepository.sync_external_library()
@@ -1219,15 +1325,13 @@ func _on_continue_pressed() -> void:
 	if runtime_session_started:
 		_hide_main_menu()
 		return
-	start_new_game()
-	_hide_main_menu()
+	if GameState.has_run_save(_menu_selected_slot_id):
+		_load_run_state_from_save(_menu_selected_slot_id)
+		return
+	_start_new_game_in_slot(_menu_selected_slot_id)
 
 func _on_menu_new_game_pressed() -> void:
-	if not runtime_session_started:
-		_load_run_state_from_save()
-		return
-	start_new_game()
-	_hide_main_menu()
+	_open_save_slot_panel("runtime" if runtime_session_started else "boot")
 
 func _on_settings_pressed() -> void:
 	_open_settings_menu()
@@ -1287,15 +1391,18 @@ func start_new_game() -> void:
 		_push_log("其他远征队：%s" % line)
 	_begin_next_day()
 
-func _load_run_state_from_save() -> void:
-	var payload := GameState.load_run_payload()
+func _load_run_state_from_save(slot_id: String = "") -> void:
+	var resolved_slot_id := slot_id if not slot_id.is_empty() else _menu_selected_slot_id
+	GameState.set_selected_run_slot_id(resolved_slot_id)
+	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
+	var payload := GameState.load_run_payload(_menu_selected_slot_id)
 	if payload.is_empty():
 		pending_context.clear()
-		decision_panel.open_panel("没有存档", "当前没有可读取的运行存档。开始游戏会创建一局新的远征。", [], "返回开始界面")
+		decision_panel.open_panel("没有存档", "当前槽位没有可读取的运行存档。按“继续”会在这个槽位创建新的远征。", [], "返回开始界面")
 		return
 	_apply_run_payload(payload)
 	_hide_main_menu()
-	_push_log("已读取最近一次日初存档。")
+	_push_log("已读取 %s。" % _slot_title(GameState.get_run_slot_meta(_menu_selected_slot_id)))
 
 func _apply_run_payload(payload: Dictionary) -> bool:
 	if payload.is_empty():
@@ -1355,7 +1462,7 @@ func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
 func _save_run_state() -> void:
 	if DisplayServer.get_name() == "headless" or not runtime_session_started or season_finished:
 		return
-	GameState.save_run_payload(_build_run_save_payload())
+	GameState.save_run_payload(_build_run_save_payload(), GameState.get_selected_run_slot_id())
 
 func _build_run_save_payload() -> Dictionary:
 	return {
@@ -4072,7 +4179,7 @@ func _apply_visit_growth_resonance(bond_gains: Dictionary) -> Array[String]:
 func _finish_season() -> void:
 	season_finished = true
 	awaiting_destination = false
-	GameState.clear_run_save()
+	GameState.clear_run_save(GameState.get_selected_run_slot_id())
 	var run_summary := meta_progression_service.build_run_summary()
 	var reward_result := meta_progression_service.award_run_points(run_summary)
 	GameState.exploration_points_total = int(reward_result.get("total_after", GameState.exploration_points_total))
@@ -5505,4 +5612,4 @@ func _step_is_complete(step: Dictionary) -> bool:
 			return false
 
 func _is_modal_open() -> bool:
-	return ai_turn_in_progress or battle_panel.visible or dice_roll_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible or main_menu_panel.visible or (is_instance_valid(cutscene_panel) and cutscene_panel.visible)
+	return ai_turn_in_progress or battle_panel.visible or dice_roll_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible or main_menu_panel.visible or (is_instance_valid(save_slot_panel) and save_slot_panel.visible) or (is_instance_valid(cutscene_panel) and cutscene_panel.visible)

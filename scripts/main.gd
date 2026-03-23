@@ -66,6 +66,8 @@ const EVENT_LOG_TYPEWRITER_MAX_DURATION := 0.82
 const AI_OBSERVE_PREPARE_DELAY := 0.18
 const AI_OBSERVE_LANDING_DELAY := 0.24
 const AI_OBSERVE_TURN_FINISH_DELAY := 0.18
+const CASUAL_INTRO_MAX_GLOBAL_TURN := 5
+const CASUAL_INTRO_VISIBLE_LOG_ENTRIES := 3
 
 const NODE_TEMPLATES := [
 	{"id": 0, "name": "营地", "type": "camp", "description": "在这里歇歇脚，翻翻小本，再想想今天去见谁。", "position": Vector2(80, 280), "edges": [1, 2, 3], "travel_cost": 0, "habitat_id": ""},
@@ -553,6 +555,7 @@ func _apply_responsive_layout() -> void:
 	_configure_summary_label(ai_summary_label, compact_summary, 60, 84)
 	_configure_summary_label(control_summary_label, compact_summary, 64, 90)
 	_configure_summary_label(roster_label, compact_summary, 96, 150)
+	_apply_casual_exposure_policy()
 
 	var small_button_height := 40 if tight_height else 44
 	var medium_button_height := 42 if tight_height else 48
@@ -594,6 +597,55 @@ func _configure_summary_label(label: RichTextLabel, compact: bool, compact_heigh
 	label.fit_content = false
 	label.scroll_active = true
 	label.custom_minimum_size = Vector2(0, compact_height if compact else regular_height)
+
+func _is_casual_intro_phase() -> bool:
+	if not runtime_session_started or season_finished or not GameState.tutorials_enabled():
+		return false
+	return GameState.global_turn <= CASUAL_INTRO_MAX_GLOBAL_TURN
+
+func _advanced_dice_controls_visible() -> bool:
+	if not awaiting_destination or pending_roll.is_empty():
+		return false
+	return not _is_casual_intro_phase()
+
+func _apply_casual_exposure_policy() -> void:
+	var intro := _is_casual_intro_phase()
+	rival_card.visible = not intro
+	control_card.visible = not intro
+	roster_panel.visible = not intro
+	board_meta_column.visible = not intro or awaiting_destination or branch_choice_pending
+
+func _branch_node_intent(node: Dictionary) -> String:
+	match String(node.get("type", "")):
+		"camp":
+			return "回营整备"
+		"habitat":
+			return "稳着推进"
+		"settlement", "shop":
+			return "补给 / 打听"
+		"dojo":
+			return "试试身手"
+		"anomaly":
+			return "冒险深入"
+		"event":
+			return "碰碰运气"
+		"environment", "empty":
+			return "顺路看看"
+		_:
+			return "继续前进"
+
+func _format_route_choice_preview(node_ids: Array[int], use_intent_labels := false) -> String:
+	var labels: Array[String] = []
+	for node_id in node_ids.slice(0, 3):
+		var node: Dictionary = board_lookup.get(int(node_id), {})
+		if node.is_empty():
+			continue
+		var node_name := String(node.get("name", "未知节点"))
+		if use_intent_labels:
+			labels.append("%s（%s）" % [_branch_node_intent(node), node_name])
+		else:
+			labels.append(node_name)
+	return " / ".join(labels)
 
 func _clamp_panel_size(desired_size: Vector2, window_size: Vector2i, padding: int) -> Vector2:
 	var safe_width := maxf(window_size.x - float(padding), 320.0)
@@ -1509,26 +1561,32 @@ func _on_reroll_pressed() -> void:
 
 func _build_dice_roll_panel_state() -> Dictionary:
 	var selectable_nodes := _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
-	var reachable_names: Array[String] = []
-	for node_id in selectable_nodes.slice(0, 4):
-		reachable_names.append(String(board_lookup.get(int(node_id), {}).get("name", "未知节点")))
+	var intro_copy := _is_casual_intro_phase()
+	var route_preview := _format_route_choice_preview(selectable_nodes, intro_copy and awaiting_destination)
 	var remaining_rerolls := maxi(0, GameState.weekly_reroll_limit - GameState.weekly_reroll_count)
 	var body_lines: Array[String] = [
 		"[b]当前骰面[/b] %s" % dice_service.describe_roll(pending_roll),
-		"[b]剩余修正点[/b] %d ｜ [b]剩余周重掷[/b] %d" % [GameState.season_adjust_points, remaining_rerolls],
 	]
-	if awaiting_destination and not reachable_names.is_empty():
-		body_lines.append("[b]可能停下的落点[/b] %s" % " / ".join(reachable_names))
-		body_lines.append("确认后会开始逐步前进，不会先选终点；只有走到真分叉时才需要决定方向。")
-	elif anchor_override_active:
-		body_lines.append("[b]锚定改线已触发[/b] 当前路线来自已显露节点，不是常规步数落点。")
+	if intro_copy:
+		body_lines.append("[b]这几步先交给系统带着走[/b]。确认后会沿路前进，只有遇到分叉才会停下来让你选。")
+		if awaiting_destination and not route_preview.is_empty():
+			body_lines.append("[b]这一步偏向[/b] %s" % route_preview)
+		body_lines.append("修正和重掷会在熟悉几回合后再放出来。")
 	else:
-		body_lines.append("[b]当前没有安全落点[/b] 这次结果只作为展示，你可以关掉面板后等待下一次掷骰。")
+		body_lines.append("[b]剩余修正点[/b] %d ｜ [b]剩余周重掷[/b] %d" % [GameState.season_adjust_points, remaining_rerolls])
+		if awaiting_destination and not route_preview.is_empty():
+			body_lines.append("[b]可能停下的落点[/b] %s" % route_preview)
+			body_lines.append("确认后会开始逐步前进，不会先选终点；只有走到真分叉时才需要决定方向。")
+		elif anchor_override_active:
+			body_lines.append("[b]锚定改线已触发[/b] 当前路线来自已显露节点，不是常规步数落点。")
+		else:
+			body_lines.append("[b]当前没有安全落点[/b] 这次结果只作为展示，你可以关掉面板后等待下一次掷骰。")
 	return {
 		"title": "掷骰完成",
-		"subtitle": "本回合步数已经结算",
+		"subtitle": "先确认今天会走多远" if intro_copy else "本回合步数已经结算",
 		"body": "\n".join(body_lines),
 		"confirm_text": "开始前进" if awaiting_destination else "收起结果",
+		"advanced_controls_visible": _advanced_dice_controls_visible(),
 		"can_plus": awaiting_destination and GameState.season_adjust_points > 0 and int(pending_roll.get("value", 0)) < 6,
 		"can_minus": awaiting_destination and GameState.season_adjust_points > 0 and int(pending_roll.get("value", 0)) > 1,
 		"can_reroll": awaiting_destination and GameState.weekly_reroll_count < GameState.weekly_reroll_limit,
@@ -3955,6 +4013,7 @@ func _build_habitat_summaries() -> Array:
 func _update_ui() -> void:
 	_update_header()
 	_update_action_ui()
+	_apply_casual_exposure_policy()
 	_update_summaries()
 	_update_roster()
 	_update_log()
@@ -3993,9 +4052,8 @@ func _update_action_ui() -> void:
 	var current_node: Dictionary = board_lookup.get(current_node_id, {})
 	var recent_roll: String = "待掷骰" if pending_roll.is_empty() else dice_service.describe_roll(pending_roll)
 	var selectable_nodes: Array[int] = _get_selectable_nodes()
-	var reachable_names: Array[String] = []
-	for node_id in selectable_nodes.slice(0, 3):
-		reachable_names.append(String(board_lookup.get(int(node_id), {}).get("name", "未知节点")))
+	var intro_copy := _is_casual_intro_phase()
+	var route_preview := _format_route_choice_preview(selectable_nodes, intro_copy and branch_choice_pending)
 	dice_label.text = "步数：%s" % recent_roll
 	dice_meta_label.text = "修正 %d ｜ 重掷 %d/%d ｜ 锚定 %d" % [
 		GameState.season_adjust_points,
@@ -4010,12 +4068,12 @@ func _update_action_ui() -> void:
 	if branch_choice_pending:
 		board_route_label.text = "分叉 %d 选 ｜ %s" % [
 			selectable_nodes.size(),
-			" / ".join(reachable_names) if not reachable_names.is_empty() else "等待方向列表",
+			route_preview if not route_preview.is_empty() else "等待方向列表",
 		]
 	elif awaiting_destination:
 		board_route_label.text = "可达 %d 处 ｜ %s" % [
 			selectable_nodes.size(),
-			" / ".join(reachable_names) if not reachable_names.is_empty() else "等待路线计算",
+			route_preview if not route_preview.is_empty() else "等待路线计算",
 		]
 	else:
 		board_route_label.text = "待命中 ｜ 今日 %s · %s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
@@ -4037,11 +4095,20 @@ func _update_action_ui() -> void:
 		action_hint_label.text = "[b]对手回合[/b]\n%s" % (_active_ai_observation_line if not _active_ai_observation_line.is_empty() else "正在结算其他远征队的掷骰、推进和落点。")
 		return
 	if branch_choice_pending:
-		action_hint_label.text = "[b]来到分叉口了[/b]\n这一步先选方向，走完剩下的步数后才会真正落点。"
+		if intro_copy:
+			action_hint_label.text = "[b]来到分叉口了[/b]\n先选一个你现在更想要的方向：%s。剩下的步数会继续自动走完。" % (route_preview if not route_preview.is_empty() else "稳着推进 / 补给打听 / 冒险深入")
+		else:
+			action_hint_label.text = "[b]来到分叉口了[/b]\n这一步先选方向，走完剩下的步数后才会真正落点。"
 	elif awaiting_destination:
-		action_hint_label.text = "[b]先看看这次会走多远[/b]\n确认后会开始逐步前进，不会直接选终点；只有遇到岔路，才需要你拿主意。"
+		if intro_copy:
+			action_hint_label.text = "[b]先确认步数[/b]\n确认后会沿路前进，只有真遇到分叉才会停下来让你选。"
+		else:
+			action_hint_label.text = "[b]先看看这次会走多远[/b]\n确认后会开始逐步前进，不会直接选终点；只有遇到岔路，才需要你拿主意。"
 	else:
-		action_hint_label.text = "[b]先出门，再看会停在哪儿[/b]\n先掷一次骰，看看今天会被带到哪里。只有遇到岔路，才需要你挑。"
+		if intro_copy:
+			action_hint_label.text = "[b]先出门，再看会停在哪儿[/b]\n先掷一次骰，今天先只看这一步；其他态势信息会随着进度慢慢展开。"
+		else:
+			action_hint_label.text = "[b]先出门，再看会停在哪儿[/b]\n先掷一次骰，看看今天会被带到哪里。只有遇到岔路，才需要你挑。"
 	if GameState.is_hunger_low() and not season_finished and not ai_turn_in_progress:
 		action_hint_label.text = "[b]肚子有点空了[/b]\n路过落脚处会顺手垫一点；更细的东西，翻背包 / 小本就行。"
 
@@ -4103,7 +4170,7 @@ func _update_roster() -> void:
 
 func _update_log() -> void:
 	var entries: Array[String] = GameState.journal_entries.duplicate()
-	var visible_entries: Array[String] = entries.slice(maxi(0, entries.size() - 3), entries.size())
+	var visible_entries: Array[String] = entries.slice(maxi(0, entries.size() - CASUAL_INTRO_VISIBLE_LOG_ENTRIES), entries.size())
 	if visible_entries.is_empty():
 		_render_event_log_text("等待新的记录…")
 		_event_log_snapshot = []

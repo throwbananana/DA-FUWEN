@@ -85,9 +85,11 @@ func _render(roll_state: Dictionary, panel_state: Dictionary) -> void:
 	detail_label.text = String(panel_state.get("body", ""))
 	detail_label.scroll_to_line(0)
 	confirm_button.text = String(panel_state.get("confirm_text", "查看落点"))
+	button_row.visible = bool(panel_state.get("advanced_controls_visible", true))
 	plus_button.disabled = not bool(panel_state.get("can_plus", false))
 	minus_button.disabled = not bool(panel_state.get("can_minus", false))
 	reroll_button.disabled = not bool(panel_state.get("can_reroll", false))
+	_apply_responsive_layout()
 	if GameState.should_skip_animations():
 		value_label.text = str(int(roll_state.get("value", 0)))
 
@@ -99,8 +101,11 @@ func _apply_responsive_layout() -> void:
 	title_label.add_theme_font_size_override("font_size", 24 if short_height else 28)
 	subtitle_label.add_theme_font_size_override("font_size", 16 if short_height else 18)
 	value_label.add_theme_font_size_override("font_size", 72 if short_height else 96)
-	detail_label.custom_minimum_size = Vector2(0, 80 if short_height else (96 if compact_width else 110))
-	button_row.vertical = compact_width and short_height
+	var detail_height := 72 if short_height else (86 if compact_width else 100)
+	if button_row.visible:
+		detail_height = 80 if short_height else (96 if compact_width else 110)
+	detail_label.custom_minimum_size = Vector2(0, detail_height)
+	button_row.vertical = button_row.visible and compact_width and short_height
 	button_row.add_theme_constant_override("separation", 6 if short_height else 8)
 	var button_height := 44 if short_height else 48
 	minus_button.custom_minimum_size = Vector2(0, button_height)

@@ -141,10 +141,16 @@ func _apply_action_result(habitat_id: String, building: Dictionary, runtime_stat
 		GameState.restore_hunger(restore_hunger)
 		applied["restored_hunger"] = restore_hunger
 	var bond_delta := int(result.get("bond_delta", 0))
+	var building_name := String(building.get("name", building.get("id", "建筑")))
 	if bond_delta != 0:
-		var bond_target_uid := _resolve_bond_target_uid(habitat_id, String(result.get("bond_target", "resident")))
+		var bond_target := _resolve_bond_target_actor(habitat_id, String(result.get("bond_target", "resident")))
+		var bond_target_uid := String(bond_target.get("id", ""))
+		var bond_target_type := String(bond_target.get("type", ""))
 		if not bond_target_uid.is_empty():
-			GameState.add_pet_bond(bond_target_uid, bond_delta)
+			if bond_target_type == "pet":
+				GameState.add_pet_bond(bond_target_uid, bond_delta)
+			elif bond_target_type == "player":
+				GameState.add_journal_entry("你在 %s 的看守中又摸熟了一点这处据点。" % building_name)
 			applied["bond_target_uid"] = bond_target_uid
 			applied["bond_delta"] = bond_delta
 	var next_observation_source := String(result.get("set_next_observation_source", ""))
@@ -168,15 +174,24 @@ func _apply_action_result(habitat_id: String, building: Dictionary, runtime_stat
 		GameState.add_journal_entry(String(applied["journal"]))
 	return applied
 
-func _resolve_bond_target_uid(habitat_id: String, target: String) -> String:
+func _resolve_bond_target_actor(habitat_id: String, target: String) -> Dictionary:
 	var habitat_state: Dictionary = GameState.habitats.get(habitat_id, {})
 	match target:
 		"assistant":
-			return String(habitat_state.get("assistant_uid", ""))
+			return {
+				"type": "pet",
+				"id": String(habitat_state.get("assistant_uid", "")),
+			}
 		"service_pet":
 			var assistant_uid := String(habitat_state.get("assistant_uid", ""))
 			if not assistant_uid.is_empty():
-				return assistant_uid
-			return String(habitat_state.get("resident_uid", ""))
+				return {"type": "pet", "id": assistant_uid}
+			return {
+				"type": String(habitat_state.get("resident_actor_type", "pet")),
+				"id": String(habitat_state.get("resident_actor_id", habitat_state.get("resident_uid", ""))),
+			}
 		_:
-			return String(habitat_state.get("resident_uid", ""))
+			return {
+				"type": String(habitat_state.get("resident_actor_type", "pet")),
+				"id": String(habitat_state.get("resident_actor_id", habitat_state.get("resident_uid", ""))),
+			}

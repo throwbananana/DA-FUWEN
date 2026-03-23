@@ -15,6 +15,8 @@ const WINDOWED_RESOLUTION_PRESETS := [
 	{"id": "2560x1440", "size": Vector2i(2560, 1440), "label": "1440p (2560 x 1440)"},
 ]
 const DEFAULT_WINDOWED_RESOLUTION_ID := "1600x900"
+const PLAYER_ACTOR_ID := "player_main"
+const PLAYER_ACTOR_NAME := "玩家"
 
 var season_id := DEFAULT_SEASON_ID
 var weather_id := "clear"
@@ -651,6 +653,8 @@ func _default_habitats() -> Dictionary:
 		"mist_moss_cave": {
 			"resident_uid": "",
 			"assistant_uid": "",
+			"resident_actor_type": "",
+			"resident_actor_id": "",
 			"building_levels": {
 				"warm_nest": 0,
 				"moss_bed": 0,
@@ -663,6 +667,8 @@ func _default_habitats() -> Dictionary:
 		"crystal_creek": {
 			"resident_uid": "",
 			"assistant_uid": "",
+			"resident_actor_type": "",
+			"resident_actor_id": "",
 			"building_levels": {
 				"shallow_pool": 0,
 				"sun_drying_rack": 0,
@@ -685,6 +691,8 @@ func _default_habitats() -> Dictionary:
 		"ancient_platform": {
 			"resident_uid": "",
 			"assistant_uid": "",
+			"resident_actor_type": "",
+			"resident_actor_id": "",
 			"building_levels": {
 				"watch_tower": 0,
 				"repair_bench": 0,
@@ -721,6 +729,10 @@ func _merge_habitat_state(state: Dictionary, habitat_id: String, habitat: Dictio
 			merged["resident_uid"] = ""
 		if not merged.has("assistant_uid"):
 			merged["assistant_uid"] = ""
+		if not merged.has("resident_actor_type"):
+			merged["resident_actor_type"] = ""
+		if not merged.has("resident_actor_id"):
+			merged["resident_actor_id"] = ""
 	var level_key := "service_levels" if _uses_service_levels(habitat) else "building_levels"
 	var building_ids: Array = habitat.get("buildings", [])
 	var runtime_states: Dictionary = merged.get("building_runtime_states", {})
@@ -751,6 +763,8 @@ func _build_default_habitat_state(habitat_id: String, habitat: Dictionary) -> Di
 	if _uses_resident_slots(habitat):
 		state["resident_uid"] = ""
 		state["assistant_uid"] = ""
+		state["resident_actor_type"] = ""
+		state["resident_actor_id"] = ""
 	var building_ids: Array = habitat.get("buildings", [])
 	if not building_ids.is_empty():
 		var levels := {}
@@ -836,6 +850,29 @@ func get_companions() -> Array:
 
 func get_pet(pet_uid: String) -> Dictionary:
 	return pet_states.get(pet_uid, {})
+
+func is_player_actor_id(actor_id: String) -> bool:
+	return actor_id == PLAYER_ACTOR_ID
+
+func get_player_profile() -> Dictionary:
+	return {
+		"uid": PLAYER_ACTOR_ID,
+		"display_name": PLAYER_ACTOR_NAME,
+		"actor_type": "player",
+		"resident_tags": ["human", "caretaker", "builder", "watch"],
+	}
+
+func get_actor_display_name(actor_id: String) -> String:
+	if is_player_actor_id(actor_id):
+		return PLAYER_ACTOR_NAME
+	return get_pet_display_name(actor_id)
+
+func get_habitat_resident_actor(habitat_id: String) -> Dictionary:
+	var habitat_state: Dictionary = habitats.get(habitat_id, {})
+	var actor_id := String(habitat_state.get("resident_actor_id", habitat_state.get("resident_uid", "")))
+	if actor_id.is_empty():
+		return {}
+	return get_player_profile() if is_player_actor_id(actor_id) else get_pet(actor_id)
 
 func add_pet_bond(pet_uid: String, amount: int) -> Dictionary:
 	if not pet_states.has(pet_uid) or amount == 0:
@@ -1939,7 +1976,8 @@ func get_settled_habitat_count() -> int:
 		var profile := DataRepository.get_habitat(habitat_id)
 		if String(profile.get("type", "")) != "habitat":
 			continue
-		if String(habitats[habitat_id].get("resident_uid", "")) != "":
+		var actor_id := String(habitats[habitat_id].get("resident_actor_id", habitats[habitat_id].get("resident_uid", "")))
+		if actor_id != "":
 			total += 1
 	return total
 
@@ -2511,6 +2549,9 @@ func _erase_pet(pet_uid: String) -> void:
 			if String(habitat_state.get(slot_key, "")) == pet_uid:
 				habitat_state[slot_key] = ""
 				changed = true
+		if String(habitat_state.get("resident_actor_id", "")) == pet_uid:
+			habitat_state["resident_actor_id"] = ""
+			habitat_state["resident_actor_type"] = ""
 		if changed:
 			habitats[habitat_id] = habitat_state
 	party_slots.erase(pet_uid)

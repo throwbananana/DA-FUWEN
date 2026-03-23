@@ -1952,7 +1952,7 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 	var lines: Array[String] = []
 	lines.append("[b]地点气氛[/b] %s" % "、".join(habitat.get("mood_tags", [])))
 	lines.append("[b]今日适合[/b] %s" % _seasonal_hook_text(habitat))
-	lines.append("[b]当前驻守[/b] %s" % String(resident.get("display_name", "暂无")))
+	lines.append("[b]当前看守[/b] %s" % String(resident.get("display_name", "暂无")))
 	lines.append("[b]据点等级[/b] %d" % int(state.get("rank", 0)))
 	lines.append("[b]常见人物[/b] %s" % (" / ".join(_npc_names(npcs)) if not npcs.is_empty() else "今天没有遇见谁"))
 	if not npc_presence.get("window_lines", []).is_empty():
@@ -1980,6 +1980,12 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 			"id": primary_action,
 			"label": _primary_content_label(primary_action),
 			"summary": "%s\n这就是你到这儿后最值得先顾上的那件事。" % _primary_content_summary(primary_action),
+		})
+	if String(habitat.get("type", "")) == "habitat":
+		choices.append({
+			"id": "assign_resident",
+			"label": "安排看守",
+			"summary": "把这里交给更合适的人或伙伴看着。",
 		})
 	pending_context = {"kind": "visit_arrival", "on_close": "finish_visit"}
 	decision_panel.open_panel(String(habitat.get("name", "地点")), "\n".join(lines), choices, "继续前进")
@@ -2299,7 +2305,7 @@ func _show_dojo_result(payload: Dictionary) -> void:
 		if payload.has("gap"):
 			lines.append("还差约 %d 点准备度，建议先补据点等级、信赖或门票素材。" % int(payload.get("gap", 1)))
 		else:
-			lines.append("建议先补双打位羁绊、建筑驻守或星级，再来验证这一阶。")
+			lines.append("建议先补双打位羁绊、建筑看守或星级，再来验证这一阶。")
 		if not reward_text.is_empty():
 			lines.append("[b]安慰奖励[/b] %s" % reward_text)
 		_push_log("%s 暂时没能通过 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
@@ -3047,11 +3053,11 @@ func _open_team_manage_menu() -> void:
 		{"id": "battle_0", "label": "双打位 1", "summary": "当前：%s" % _battle_slot_name_at(0)},
 		{"id": "battle_1", "label": "双打位 2", "summary": "当前：%s" % _battle_slot_name_at(1)},
 		{"id": "backpack", "label": "调整宠物栏", "summary": "当前：%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity]},
-		{"id": "resident_sites", "label": "安排驻守", "summary": "在营地统一调整各据点的主驻守。"},
+		{"id": "resident_sites", "label": "安排看守", "summary": "在营地统一调整各据点的主看守。"},
 		{"id": "mail_menu", "label": "处理留信", "summary": "当前待处理：%d 处" % _pending_mail_targets().size(), "disabled": _pending_mail_targets().is_empty()},
 	]
 	pending_context = {"kind": "team_manage", "on_close": "reopen_base"}
-	decision_panel.open_panel("营地整备", "营地只在路过时弹出；队伍、驻守和留信都改到这里统一处理。", choices, "返回营地")
+	decision_panel.open_panel("营地整备", "营地只在路过时弹出；队伍、看守和留信都改到这里统一处理。", choices, "返回营地")
 
 func _open_battle_slot_picker(slot_index: int) -> void:
 	var choices := []
@@ -3088,20 +3094,21 @@ func _open_camp_resident_site_picker() -> void:
 		if not GameState.is_habitat_unlocked(String(habitat_id)):
 			continue
 		var state: Dictionary = GameState.habitats.get(String(habitat_id), {})
-		var resident_uid := String(state.get("resident_uid", ""))
+		var resident_actor_id := String(state.get("resident_actor_id", state.get("resident_uid", "")))
 		choices.append({
 			"id": String(habitat_id),
 			"label": String(habitat.get("name", habitat_id)),
-			"summary": "当前驻守：%s ｜ 据点等级 %d" % [
-				GameState.get_pet_display_name(resident_uid) if not resident_uid.is_empty() else "暂无",
+			"summary": "当前看守：%s ｜ 据点等级 %d" % [
+				GameState.get_actor_display_name(resident_actor_id) if not resident_actor_id.is_empty() else "暂无",
 				int(state.get("rank", 0)),
 			],
 		})
 	pending_context = {"kind": "camp_resident_site", "on_close": "team_manage"}
-	decision_panel.open_panel("选择驻守地点", "先挑一个要在营地里统一调整的据点。", choices, "返回整备")
+	decision_panel.open_panel("选择看守地点", "先挑一个要在营地里统一调整的据点。", choices, "返回整备")
 
 func _open_camp_resident_picker(habitat_id: String) -> void:
 	var choices := []
+	choices.append({"id": GameState.PLAYER_ACTOR_ID, "label": "玩家", "summary": "由玩家本人临时看守这里；更适合先顶上空缺。"})
 	for companion in GameState.get_companions():
 		var pet_uid := String(companion.get("uid", ""))
 		var home_id := String(companion.get("residence_habitat_id", ""))
@@ -3114,21 +3121,21 @@ func _open_camp_resident_picker(habitat_id: String) -> void:
 			],
 		})
 	pending_context = {"kind": "camp_resident_select", "habitat_id": habitat_id, "on_close": "team_manage"}
-	decision_panel.open_panel("安排驻守", "为 %s 挑一只更适合住下来的伙伴。" % _habitat_name(habitat_id), choices, "返回整备")
+	decision_panel.open_panel("安排看守", "为 %s 挑一个更合适的看守者。" % _habitat_name(habitat_id), choices, "返回整备")
 
 func _assign_resident_to_habitat(habitat_id: String, pet_uid: String) -> void:
 	var result := habitat_service.assign_resident(habitat_id, pet_uid)
 	var body := ""
 	if bool(result.get("ok", false)):
-		var pet_name := GameState.get_pet_display_name(pet_uid)
+		var pet_name := GameState.get_actor_display_name(pet_uid)
 		var fit_text := "它对这里很有亲近感。" if bool(result.get("preference_match", false)) else "它还需要时间适应这里。"
-		body = "%s 被安顿在 %s。\n%s" % [pet_name, _habitat_name(habitat_id), fit_text]
+		body = "%s 被安排去看守 %s。\n%s" % [pet_name, _habitat_name(habitat_id), fit_text]
 		_push_log(body.replace("\n", " "))
 		_check_active_quests()
 	else:
 		body = _build_fail_reason(String(result.get("reason", "unknown")))
 	pending_context = {"kind": "resident_result", "on_close": "reopen_base"}
-	decision_panel.open_panel("驻守安排", body, [], "返回营地")
+	decision_panel.open_panel("看守安排", body, [], "返回营地")
 
 func _show_camp_mail_menu() -> void:
 	var targets := _pending_mail_targets()
@@ -3155,6 +3162,7 @@ func _handle_camp_mail_selection(destination: String) -> void:
 
 func _open_resident_picker() -> void:
 	var choices := []
+	choices.append({"id": GameState.PLAYER_ACTOR_ID, "label": "玩家", "summary": "由玩家本人临时看守这里；适合先补上空缺。"})
 	for companion in GameState.get_companions():
 		var pet_uid := String(companion.get("uid", ""))
 		var home_id := String(companion.get("residence_habitat_id", ""))
@@ -3167,7 +3175,7 @@ func _open_resident_picker() -> void:
 			],
 		})
 	pending_context = {"kind": "resident_select", "on_close": "arrival"}
-	decision_panel.open_panel("安排驻守", "挑一只更适合住在这里的伙伴。", choices, "返回地点")
+	decision_panel.open_panel("安排看守", "挑一个更适合看着这里的人或伙伴。", choices, "返回地点")
 
 func _show_mail_menu() -> void:
 	var targets := _pending_mail_targets()
@@ -3189,15 +3197,15 @@ func _assign_resident(pet_uid: String) -> void:
 	var result := habitat_service.assign_resident(current_visit_habitat_id, pet_uid)
 	var body := ""
 	if bool(result.get("ok", false)):
-		var pet_name := GameState.get_pet_display_name(pet_uid)
+		var pet_name := GameState.get_actor_display_name(pet_uid)
 		var fit_text := "它对这里很有亲近感。" if bool(result.get("preference_match", false)) else "它还需要时间适应这里。"
-		body = "%s 被安顿在 %s。\n%s" % [pet_name, _habitat_name(current_visit_habitat_id), fit_text]
+		body = "%s 被安排去看守 %s。\n%s" % [pet_name, _habitat_name(current_visit_habitat_id), fit_text]
 		_push_log(body.replace("\n", " "))
 		_check_active_quests()
 	else:
 		body = _build_fail_reason(String(result.get("reason", "unknown")))
 	pending_context = {"kind": "resident_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("驻守安排", body, [], "结束拜访")
+	decision_panel.open_panel("看守安排", body, [], "结束拜访")
 
 func _start_npc_intro_duel(npc_id: String) -> void:
 	var result := npc_service.prepare_intro_duel(npc_id, current_visit_habitat_id)
@@ -3557,7 +3565,7 @@ func _acquire_companion(species_id: String) -> Dictionary:
 	if is_new_species:
 		lines.append("%s 愿意靠近，并加入了你的照料名册。" % String(pet.get("display_name", species_id)))
 	else:
-		lines.append("%s 的新个体加入了队伍，可用于羁绊、驻守或升星。" % String(pet.get("display_name", species_id)))
+		lines.append("%s 的新个体加入了队伍，可用于羁绊、看守或升星。" % String(pet.get("display_name", species_id)))
 	var merge_result := GameState.merge_species_duplicates(species_id)
 	for upgrade in merge_result.get("upgrades", []):
 		var upgrade_line := "3 合 1：%s 升到 ★%d，并进化为 %s。" % [
@@ -3803,9 +3811,9 @@ func _build_habitat_summaries() -> Array:
 			continue
 		var state: Dictionary = GameState.habitats.get(habitat_id, {})
 		var resident_name := "暂无"
-		var resident_uid := String(state.get("resident_uid", ""))
+		var resident_uid := String(state.get("resident_actor_id", state.get("resident_uid", "")))
 		if not resident_uid.is_empty():
-			resident_name = GameState.get_pet_display_name(resident_uid)
+			resident_name = GameState.get_actor_display_name(resident_uid)
 		result.append({
 			"name": String(habitat.get("name", habitat_id)),
 			"type_name": _type_name(String(habitat.get("type", ""))),
@@ -4075,10 +4083,10 @@ func _build_board_markers() -> Dictionary:
 			markers[node_id] = locked_text
 			continue
 		var state: Dictionary = GameState.habitats.get(habitat_id, {})
-		var resident_uid := String(state.get("resident_uid", ""))
+		var resident_actor_id := String(state.get("resident_actor_id", state.get("resident_uid", "")))
 		var resident_text := ""
-		if not resident_uid.is_empty():
-			resident_text = "住着 %s" % GameState.get_pet_display_name(resident_uid)
+		if not resident_actor_id.is_empty():
+			resident_text = "看守：%s" % GameState.get_actor_display_name(resident_actor_id)
 		var quest_text := _quest_text_for_habitat(habitat_id)
 		var parts: Array[String] = []
 		if boss_node_id == node_id:
@@ -4145,7 +4153,7 @@ func _today_focus_text() -> String:
 	if GameState.season_id == "winter" and GameState.is_habitat_unlocked("frost_mirror_lake"):
 		return "霜镜湖已开放，优先收集冬季限定素材与观察条目。"
 	if GameState.get_settled_habitat_count() < 2:
-		return "先替据点安排驻守，让它们真正成为家。"
+		return "先替据点安排看守，让它们真正成为家。"
 	if GameState.get_habitat_rank_total() < 3:
 		return "该去古械平台补第一层建设了，先让据点真正运转起来。"
 	if not GameState.is_habitat_unlocked("radiant_spire"):
@@ -4172,10 +4180,10 @@ func _location_status_lines() -> Array[String]:
 			continue
 		var habitat := DataRepository.get_habitat(habitat_id)
 		var state: Dictionary = GameState.habitats.get(habitat_id, {})
-		var resident_uid := String(state.get("resident_uid", ""))
+		var resident_uid := String(state.get("resident_actor_id", state.get("resident_uid", "")))
 		var resident_name := "暂无"
 		if not resident_uid.is_empty():
-			resident_name = GameState.get_pet_display_name(resident_uid)
+			resident_name = GameState.get_actor_display_name(resident_uid)
 		var summary := resident_name
 		var dojo_id := String(habitat.get("dojo_id", ""))
 		if not dojo_id.is_empty():
@@ -4305,7 +4313,7 @@ func _companion_slot_label(pet_uid: String) -> String:
 		return "待命"
 	for habitat_state in GameState.habitats.values():
 		if String(habitat_state.get("resident_uid", "")) == pet_uid or String(habitat_state.get("assistant_uid", "")) == pet_uid:
-			return "驻守"
+			return "看守"
 	return "待命"
 
 func _action_name(action_id: String) -> String:
@@ -4329,7 +4337,7 @@ func _encounter_outcome_text(outcome: String) -> String:
 
 func _build_fail_reason(reason: String) -> String:
 	match reason:
-		"resident_required": return "这里还没人住下，先替它找个合适的伴。"
+		"resident_required": return "这里还没有人看守，先安排一个更合适的看守者。"
 		"insufficient_items": return "手头东西还差一点，改天再来会更稳。"
 		"max_level": return "这里已经收拾到眼下能做到的头了。"
 		"site_mismatch": return "这事不该在这儿做，换个地方更合适。"

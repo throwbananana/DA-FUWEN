@@ -2,6 +2,13 @@ class_name StoryService
 extends RefCounted
 
 func claim_story_dialogue(npc_id: String, habitat_id: String) -> Dictionary:
+	var beat := preview_story_dialogue(npc_id, habitat_id)
+	if beat.is_empty():
+		return {}
+	commit_story_beat(beat)
+	return beat
+
+func preview_story_dialogue(npc_id: String, habitat_id: String) -> Dictionary:
 	for raw_arc in DataRepository.get_story_arcs():
 		var arc: Dictionary = Dictionary(raw_arc).duplicate(true)
 		var arc_id := String(arc.get("id", ""))
@@ -9,11 +16,12 @@ func claim_story_dialogue(npc_id: String, habitat_id: String) -> Dictionary:
 			continue
 		if GameState.has_completed_story_arc(arc_id):
 			continue
-		if not GameState.is_story_arc_active(arc_id):
+		var should_activate := GameState.is_story_arc_active(arc_id)
+		if not should_activate:
 			var start_conditions: Dictionary = Dictionary(arc.get("start_conditions", {}))
 			if not _conditions_match(start_conditions, npc_id, habitat_id):
 				continue
-			GameState.activate_story_arc(arc_id)
+			should_activate = true
 		for raw_beat in arc.get("beats", []):
 			var beat: Dictionary = Dictionary(raw_beat).duplicate(true)
 			var beat_id := String(beat.get("id", ""))
@@ -26,23 +34,34 @@ func claim_story_dialogue(npc_id: String, habitat_id: String) -> Dictionary:
 			var dialogue_id := String(beat.get("dialogue_id", ""))
 			if dialogue_id.is_empty() or DataRepository.get_dialogue(dialogue_id).is_empty():
 				continue
-			GameState.mark_story_beat_seen(arc_id, beat_id)
-			var unlock_dialogue = beat.get("unlock_dialogue", "")
-			if unlock_dialogue is Array:
-				for raw_dialogue_id in unlock_dialogue:
-					GameState.unlock_dialogue(String(raw_dialogue_id))
-			elif not String(unlock_dialogue).is_empty():
-				GameState.unlock_dialogue(String(unlock_dialogue))
-			for raw_flag in beat.get("set_story_flags", []):
-				var flag_id := String(raw_flag)
-				if flag_id.is_empty():
-					continue
-				GameState.set_story_flag(flag_id)
-			if bool(beat.get("complete_arc", false)):
-				GameState.complete_story_arc(arc_id)
 			beat["arc_id"] = arc_id
+			beat["activate_arc"] = should_activate and not GameState.is_story_arc_active(arc_id)
 			return beat
 	return {}
+
+func commit_story_beat(beat: Dictionary) -> void:
+	var arc_id := String(beat.get("arc_id", ""))
+	var beat_id := String(beat.get("id", ""))
+	if arc_id.is_empty() or beat_id.is_empty():
+		return
+	if GameState.has_completed_story_arc(arc_id) or GameState.has_story_beat_seen(arc_id, beat_id):
+		return
+	if not GameState.is_story_arc_active(arc_id):
+		GameState.activate_story_arc(arc_id)
+	GameState.mark_story_beat_seen(arc_id, beat_id)
+	var unlock_dialogue = beat.get("unlock_dialogue", "")
+	if unlock_dialogue is Array:
+		for raw_dialogue_id in unlock_dialogue:
+			GameState.unlock_dialogue(String(raw_dialogue_id))
+	elif not String(unlock_dialogue).is_empty():
+		GameState.unlock_dialogue(String(unlock_dialogue))
+	for raw_flag in beat.get("set_story_flags", []):
+		var flag_id := String(raw_flag)
+		if flag_id.is_empty():
+			continue
+		GameState.set_story_flag(flag_id)
+	if bool(beat.get("complete_arc", false)):
+		GameState.complete_story_arc(arc_id)
 
 func _conditions_match(conditions: Dictionary, npc_id: String, habitat_id: String) -> bool:
 	if conditions.is_empty():

@@ -16,8 +16,9 @@ func build_talk_package(npc_id: String, habitat_id: String, context: Dictionary 
 	if npc.is_empty():
 		return {}
 	var forced_dialogue_id := String(context.get("forced_dialogue_id", ""))
+	var story_beat: Dictionary = {}
 	if forced_dialogue_id.is_empty():
-		var story_beat := story_service.claim_story_dialogue(npc_id, habitat_id)
+		story_beat = story_service.preview_story_dialogue(npc_id, habitat_id)
 		forced_dialogue_id = String(story_beat.get("dialogue_id", ""))
 	var event_result := _pick_social_or_ambient_event(npc_id, habitat_id)
 	var dialogue := {}
@@ -34,6 +35,8 @@ func build_talk_package(npc_id: String, habitat_id: String, context: Dictionary 
 		"npc_id": npc_id,
 		"dialogue_id": String(dialogue.get("id", "")),
 		"topic": String(dialogue.get("topic", "daily")),
+		"dialogue": Dictionary(dialogue).duplicate(true),
+		"story_beat": Dictionary(story_beat).duplicate(true),
 		"transcript_lines": transcript_lines,
 		"tags": _build_tags(dialogue, event_result, npc),
 		"event": event_result,

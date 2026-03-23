@@ -23,6 +23,9 @@ const NpcRouteService = preload("res://scripts/services/npc_route_service.gd")
 const ThreatService = preload("res://scripts/services/threat_service.gd")
 const AIPlayerService = preload("res://scripts/services/ai_player_service.gd")
 const DialogueService = preload("res://scripts/services/dialogue_service.gd")
+const StoryService = preload("res://scripts/services/story_service.gd")
+const CutsceneService = preload("res://scripts/services/cutscene_service.gd")
+const CutscenePanel = preload("res://scripts/cutscene_panel.gd")
 const FishingService = preload("res://scripts/services/fishing_service.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
 
@@ -174,6 +177,9 @@ var ai_player_service := AIPlayerService.new()
 var dialogue_service := DialogueService.new()
 var fishing_service := FishingService.new()
 var localization_service := LocalizationService.new()
+var story_service := StoryService.new()
+var cutscene_service := CutsceneService.new()
+var cutscene_panel: CutscenePanel
 
 var season_finished := false
 var awaiting_destination := false
@@ -241,6 +247,7 @@ func _ready() -> void:
 	plus_button.hide()
 	minus_button.hide()
 	reroll_button.hide()
+	_ensure_cutscene_panel()
 	_connect_signals()
 	_apply_basic_styles()
 	_prepare_overlay_panels()
@@ -265,6 +272,15 @@ func install_visit_flow() -> void:
 	add_child(visit_flow)
 	visit_flow.state_changed.connect(_on_visit_state_changed)
 	visit_flow.visit_finished.connect(_on_visit_finished)
+
+func _ensure_cutscene_panel() -> void:
+	if is_instance_valid(cutscene_panel):
+		return
+	cutscene_panel = CutscenePanel.new()
+	cutscene_panel.name = "CutscenePanel"
+	cutscene_panel.visible = false
+	cutscene_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	overlay.add_child(cutscene_panel)
 
 func _connect_signals() -> void:
 	roll_button.pressed.connect(_on_start_day_pressed)
@@ -336,7 +352,10 @@ func _apply_basic_styles() -> void:
 	panel_style.corner_radius_top_right = 12
 	panel_style.corner_radius_bottom_left = 12
 	panel_style.corner_radius_bottom_right = 12
-	for panel in [battle_panel, dice_roll_panel, decision_panel, base_panel, system_panel, main_menu_panel]:
+	var overlay_panels := [battle_panel, dice_roll_panel, decision_panel, base_panel, system_panel, main_menu_panel]
+	if is_instance_valid(cutscene_panel):
+		overlay_panels.append(cutscene_panel)
+	for panel in overlay_panels:
 		panel.add_theme_stylebox_override("panel", panel_style)
 	var surface_style := StyleBoxFlat.new()
 	surface_style.bg_color = Color(0.07, 0.11, 0.17, 0.96)
@@ -398,6 +417,8 @@ func _prepare_overlay_panels() -> void:
 		system_panel,
 		main_menu_panel,
 	]
+	if is_instance_valid(cutscene_panel):
+		centered_panels.append(cutscene_panel)
 	for panel in centered_panels:
 		if panel == null:
 			continue
@@ -464,6 +485,7 @@ func _configure_safe_ui_bounds() -> void:
 		decision_panel,
 		base_panel,
 		system_panel,
+		cutscene_panel,
 	]:
 		control.clip_contents = true
 
@@ -571,6 +593,8 @@ func _apply_responsive_layout() -> void:
 	_fit_overlay_panel(main_menu_panel, main_menu_size, window_size, Vector2(420, 320), overlay_padding)
 	_fit_overlay_panel(dice_roll_panel, Vector2(400, 330) if tight_height else Vector2(420, 360), window_size, Vector2(320, 280), overlay_padding)
 	_fit_overlay_panel(decision_panel, Vector2(400, 300) if tight_height else Vector2(420, 320), window_size, Vector2(320, 240), overlay_padding)
+	if is_instance_valid(cutscene_panel):
+		_fit_overlay_panel(cutscene_panel, Vector2(560, 360) if tight_height else Vector2(620, 420), window_size, Vector2(360, 260), overlay_padding)
 	_fit_overlay_panel(base_panel, Vector2(560, 500) if tight_height else Vector2(600, 560), window_size, Vector2(420, 320), overlay_padding)
 	_fit_overlay_panel(system_panel, Vector2(620, 460) if tight_height else Vector2(700, 520), window_size, Vector2(420, 320), overlay_padding)
 	_fit_overlay_panel(battle_panel, Vector2(700, 500) if tight_height else Vector2(760, 560), window_size, Vector2(520, 360), overlay_padding)
@@ -3461,6 +3485,7 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 	var trust_rewards: Dictionary = talk_package.get("trust_rewards", {})
 	var active_npc_bonus := int(trust_rewards.get(npc_id, 0))
 	var trust_result := npc_service.complete_trust_reward(npc_id, 1 + active_npc_bonus)
+	var cutscene_played := await _play_talk_cutscene(npc_id, npc, talk_package)
 	_apply_talk_side_effects(npc_id, talk_package)
 	var unlocked_lines: Array[String] = []
 	for entry in trust_result.get("unlocked", []):
@@ -3468,17 +3493,21 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 	var body_lines: Array[String] = []
 	body_lines.append("[b]%s[/b] 今天愿意多和你聊一点。" % String(npc.get("name", "某人")))
 	var event_result: Dictionary = talk_package.get("event", {})
-	if not event_result.is_empty():
-		body_lines.append("[b]今日小事：%s[/b]" % String(event_result.get("title", "临时插曲")))
-		for line in event_result.get("stage_lines", []):
+	if not cutscene_played:
+		if not event_result.is_empty():
+			body_lines.append("[b]今日小事：%s[/b]" % String(event_result.get("title", "临时插曲")))
+			for line in event_result.get("stage_lines", []):
+				body_lines.append(String(line))
+			var outcome := String(event_result.get("outcome", ""))
+			if not outcome.is_empty():
+				body_lines.append("结果：%s" % outcome)
+			body_lines.append("")
+		for line in talk_package.get("transcript_lines", []):
 			body_lines.append(String(line))
-		var outcome := String(event_result.get("outcome", ""))
-		if not outcome.is_empty():
-			body_lines.append("结果：%s" % outcome)
 		body_lines.append("")
-	for line in talk_package.get("transcript_lines", []):
-		body_lines.append(String(line))
-	body_lines.append("")
+	elif not event_result.is_empty():
+		body_lines.append("刚才那段插曲已经演完了，变化如下。")
+		body_lines.append("")
 	body_lines.append("当前信赖：%d" % int(trust_result.get("trust", 0)))
 	var reward_lines := _build_talk_reward_lines(npc_id, talk_package)
 	if not reward_lines.is_empty():
@@ -3502,7 +3531,55 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 	pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
 	decision_panel.open_panel("交谈结果", "\n".join(body_lines), [], "结束拜访")
 
+func _should_skip_cutscene_runtime() -> bool:
+	return DisplayServer.get_name() == "headless" or not is_instance_valid(cutscene_panel)
+
+func _play_talk_cutscene(npc_id: String, npc: Dictionary, talk_package: Dictionary) -> bool:
+	if _should_skip_cutscene_runtime():
+		return false
+	var cutscene_payload := cutscene_service.build_talk_cutscene(npc_id, npc, talk_package)
+	var steps: Array = Array(cutscene_payload.get("steps", [])).duplicate(true)
+	var dialogue_runtime: Dictionary = Dictionary(cutscene_payload.get("dialogue_runtime", {})).duplicate(true)
+	if steps.is_empty() and dialogue_runtime.is_empty():
+		return false
+	for raw_step in steps:
+		await _present_cutscene_step(Dictionary(raw_step).duplicate(true))
+	if not dialogue_runtime.is_empty():
+		await _play_dialogue_cutscene(dialogue_runtime)
+	cutscene_panel.hide()
+	cutscene_panel.modulate.a = 1.0
+	return true
+
+func _present_cutscene_step(step: Dictionary) -> String:
+	if _should_skip_cutscene_runtime():
+		return ""
+	cutscene_panel.open_step(step)
+	var choices: Array = Array(step.get("choices", [])).duplicate(true)
+	if choices.is_empty():
+		await cutscene_panel.continued
+		return ""
+	await cutscene_panel.choice_selected
+	return cutscene_panel.last_choice_id
+
+func _play_dialogue_cutscene(dialogue_runtime: Dictionary) -> void:
+	var current_id := String(dialogue_runtime.get("start_node_id", "start"))
+	var guard := 0
+	while guard < 24:
+		guard += 1
+		var step := cutscene_service.build_dialogue_step(dialogue_runtime, current_id)
+		if step.is_empty():
+			break
+		var choice_id := await _present_cutscene_step(step)
+		if bool(step.get("end", false)) and String(step.get("next", "")).is_empty() and choice_id.is_empty():
+			break
+		current_id = cutscene_service.resolve_dialogue_next(dialogue_runtime, current_id, choice_id)
+		if current_id.is_empty():
+			break
+
 func _apply_talk_side_effects(active_npc_id: String, talk_package: Dictionary) -> void:
+	var story_beat: Dictionary = Dictionary(talk_package.get("story_beat", {})).duplicate(true)
+	if not story_beat.is_empty():
+		story_service.commit_story_beat(story_beat)
 	var ambient_event: Dictionary = Dictionary(talk_package.get("event", {})).duplicate(true)
 	var ambient_event_id := String(ambient_event.get("id", ""))
 	if not ambient_event_id.is_empty():
@@ -4087,7 +4164,7 @@ func _update_action_ui() -> void:
 	reroll_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.weekly_reroll_count >= GameState.weekly_reroll_limit
 	support_button.disabled = _is_modal_open() and not system_panel.visible
 	base_button.disabled = _is_modal_open() and not base_panel.visible
-	new_game_button.disabled = ai_turn_in_progress or battle_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible
+	new_game_button.disabled = ai_turn_in_progress or battle_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible or (is_instance_valid(cutscene_panel) and cutscene_panel.visible)
 	if season_finished:
 		action_hint_label.text = "[b]这一年先告一段落[/b]\n回到上面看看这一年的收获，也能顺手开始下一段日子。"
 		return
@@ -5355,4 +5432,4 @@ func _step_is_complete(step: Dictionary) -> bool:
 			return false
 
 func _is_modal_open() -> bool:
-	return ai_turn_in_progress or battle_panel.visible or dice_roll_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible or main_menu_panel.visible
+	return ai_turn_in_progress or battle_panel.visible or dice_roll_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible or main_menu_panel.visible or (is_instance_valid(cutscene_panel) and cutscene_panel.visible)

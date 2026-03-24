@@ -5,6 +5,13 @@ extends RefCounted
 
 func roll_encounter(habitat_id: String, source: String = "observe") -> Dictionary:
 	var valid_entries := build_weighted_entries(habitat_id, source)
+	return _roll_from_entries(valid_entries, source)
+
+func roll_custom_entries(entries: Array, source: String = "observe") -> Dictionary:
+	var valid_entries := build_weighted_entries_from_rows(entries, source)
+	return _roll_from_entries(valid_entries, source)
+
+func _roll_from_entries(valid_entries: Array, source: String) -> Dictionary:
 	if valid_entries.is_empty():
 		return {"ok": false, "reason": "no_encounter", "source": source}
 	var chosen := _weighted_pick(valid_entries)
@@ -22,10 +29,15 @@ func roll_encounter(habitat_id: String, source: String = "observe") -> Dictionar
 func build_weighted_entries(habitat_id: String, source: String = "observe") -> Array:
 	var habitat_encounters: Dictionary = DataRepository.encounters.get(habitat_id, {})
 	var groups: Array = habitat_encounters.get("weight_groups", [])
-	var valid_entries: Array = []
+	var base_entries: Array = []
 	for group in groups:
 		if _matches_condition(group.get("when", {})):
-			valid_entries.append_array(_filter_entries_by_progression(group.get("entries", [])))
+			base_entries.append_array(group.get("entries", []))
+	return build_weighted_entries_from_rows(base_entries, source)
+
+func build_weighted_entries_from_rows(entries: Array, source: String = "observe") -> Array:
+	var valid_entries: Array = []
+	valid_entries.append_array(_filter_entries_by_progression(entries))
 	valid_entries = _apply_shop_odds(valid_entries)
 	return _apply_source_biases(valid_entries, source)
 

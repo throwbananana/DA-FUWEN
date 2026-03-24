@@ -438,6 +438,8 @@ func _reachable_paths(from_node_id: int, steps: int, node_lookup: Dictionary) ->
 		var current_path: Array = state.get("path", []).duplicate()
 		var spent := int(state.get("spent", 0))
 		for neighbor_id in _neighbors(current_id, node_lookup):
+			if bool(Dictionary(node_lookup.get(neighbor_id, {})).get("ring_locked", false)):
+				continue
 			if current_path.has(neighbor_id):
 				continue
 			var next_spent := spent + 1

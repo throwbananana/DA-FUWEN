@@ -29,6 +29,7 @@ signal battle_finished(result: Dictionary)
 var rng := RandomNumberGenerator.new()
 var battle_config := {}
 var allies: Array = []
+var ally_reserve: Array = []
 var enemies: Array = []
 var temp_state := {}
 var turn_queue: Array = []
@@ -62,6 +63,7 @@ var _selection_label: Label
 var _battle_log_lines: Array[String] = []
 var _unit_card_nodes := {}
 var localization_service := LocalizationService.new()
+var player_menu_mode := "root"
 
 func _ready() -> void:
 	hide()
@@ -82,6 +84,7 @@ func start_battle(config: Dictionary) -> void:
 		GameState.consume_pending_minigame_bonus()
 	_normalize_balance_overrides()
 	allies = config.get("allies", [])
+	ally_reserve = Array(config.get("ally_reserve", [])).duplicate()
 	enemies = config.get("enemies", [])
 	temp_state.clear()
 	turn_queue.clear()
@@ -100,7 +103,8 @@ func start_battle(config: Dictionary) -> void:
 	acted_actor_uids.clear()
 	action_locked = false
 	result_sent = false
-	for unit in allies + enemies:
+	player_menu_mode = "root"
+	for unit in allies + ally_reserve + enemies:
 		temp_state[unit.uid] = {
 			"cooldowns": {},
 			"statuses": {},
@@ -189,6 +193,7 @@ func _advance_turn() -> void:
 
 func _prompt_player_action(actor: MonsterInstance) -> void:
 	pending_action.clear()
+	player_menu_mode = "root"
 	_prompt_player_action_with_feedback(actor, true)
 
 func _prompt_player_action_with_feedback(actor: MonsterInstance, show_banner: bool) -> void:
@@ -200,61 +205,346 @@ func _prompt_player_action_with_feedback(actor: MonsterInstance, show_banner: bo
 	if selected_ally_uid == "" or _get_unit_by_uid(selected_ally_uid) == null or not _get_unit_by_uid(selected_ally_uid).is_alive():
 		selected_ally_uid = actor.uid if not alive_allies.is_empty() else ""
 
-	var intro := Label.new()
-	intro.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	intro.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	if pending_action.is_empty():
-		intro.text = _tr("battle.prompt.player", {"actor": actor.display_name})
-	else:
-		var pending_skill_id := String(pending_action.get("skill_id", ""))
-		var pending_skill: Dictionary = GameData.get_skill(pending_skill_id)
-		var target_mode := String(pending_skill.get("target", "enemy"))
-		intro.text = _tr("battle.prompt.choose_target", {
-			"actor": actor.display_name,
-			"skill": _skill_name(pending_skill_id, pending_skill),
-		})
-		var target_hint := _manual_target_hint_text(target_mode)
-		if not target_hint.is_empty():
-			intro.text += " " + target_hint
-	action_box.add_child(intro)
+	if _pending_target_selection_active():
+		player_menu_mode = "combat"
+	_add_action_info_label(_player_menu_intro_text(actor))
 	_update_selection_summary(actor)
 	if show_banner:
 		_show_battle_banner(_tr("battle.turn.player"), actor.display_name, Color(0.50, 0.84, 1.0, 1.0))
+	match player_menu_mode:
+		"status":
+			_render_status_action_buttons(actor)
+		"combat":
+			_render_combat_action_buttons(actor)
+		"bag":
+			_render_bag_action_buttons(actor)
+		"escape":
+			_render_escape_action_buttons(actor)
+		_:
+			_render_root_action_buttons(actor)
 
+func _player_menu_intro_text(actor: MonsterInstance) -> String:
+	if actor == null:
+		return ""
+	if not pending_action.is_empty():
+		var pending_skill_id := String(pending_action.get("skill_id", ""))
+		var pending_skill: Dictionary = GameData.get_skill(pending_skill_id)
+		var intro := _tr("battle.prompt.choose_target", {
+			"actor": actor.display_name,
+			"skill": _skill_name(pending_skill_id, pending_skill),
+		})
+		var target_hint := _manual_target_hint_text(String(pending_skill.get("target", "enemy")))
+		if not target_hint.is_empty():
+			intro += " " + target_hint
+		return intro
+	match player_menu_mode:
+		"status":
+			return "先看看双方现在的状态。点左右两列的角色卡，可以切换正在查看的对象。"
+		"combat":
+			return "挑这回合要出的招式；需要指向时，再点亮着的对象确认。"
+		"bag":
+			return "背包里可以换上待命宠物，也能用捕捉球或疗伤药。先看好左右两边当前选中的目标。"
+		"escape":
+			return "这回合可以尝试先撤开；一旦确认，就不会再打这一手。"
+		_:
+			return "轮到 %s 了。先选 状态 / 战斗 / 逃跑 / 背包，再继续这一手。" % actor.display_name
+
+func _add_action_info_label(text: String) -> void:
+	if text.is_empty():
+		return
+	var info := Label.new()
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	info.text = text
+	action_box.add_child(info)
+
+func _add_action_button(text: String, callback: Callable, disabled: bool = false, secondary: bool = false) -> Button:
+	var button := Button.new()
+	button.focus_mode = Control.FOCUS_NONE
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	button.custom_minimum_size = Vector2(0, _secondary_action_button_height() if secondary else _action_button_height())
+	button.text = text
+	button.disabled = disabled
+	button.pressed.connect(callback)
+	action_box.add_child(button)
+	return button
+
+func _set_player_menu_mode(actor_uid: String, mode: String) -> void:
+	var actor := _get_unit_by_uid(actor_uid)
+	if actor == null or actor.uid != active_actor_uid or action_locked:
+		return
+	player_menu_mode = mode
+	_prompt_player_action_with_feedback(actor, false)
+
+func _render_root_action_buttons(actor: MonsterInstance) -> void:
+	_add_action_button("状态", _set_player_menu_mode.bind(actor.uid, "status"))
+	_add_action_button("战斗", _set_player_menu_mode.bind(actor.uid, "combat"))
+	_add_action_button("逃跑", _set_player_menu_mode.bind(actor.uid, "escape"), not _can_attempt_escape())
+	_add_action_button("背包", _set_player_menu_mode.bind(actor.uid, "bag"))
+
+func _render_combat_action_buttons(actor: MonsterInstance) -> void:
 	for skill_id in actor.skills:
 		var skill: Dictionary = GameData.get_skill(String(skill_id))
 		var skill_name := _skill_name(String(skill_id), skill)
-		var button := Button.new()
-		button.focus_mode = Control.FOCUS_NONE
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.custom_minimum_size = Vector2(0, _action_button_height())
 		var cooldown_left := int(temp_state[actor.uid]["cooldowns"].get(skill_id, 0))
 		var prefix := "▶ " if String(pending_action.get("skill_id", "")) == String(skill_id) else ""
-		button.text = "%s%s  %s" % [prefix, skill_name, _skill_detail_text(skill_id, skill)]
-		button.disabled = cooldown_left > 0 or not _has_valid_target(skill)
+		var label := "%s%s  %s" % [prefix, skill_name, _skill_detail_text(skill_id, skill)]
 		if cooldown_left > 0:
-			button.text += "  CD:%d" % cooldown_left
-		button.pressed.connect(_on_skill_pressed.bind(actor.uid, skill_id))
-		action_box.add_child(button)
-
-	if bool(battle_config.get("allow_capture", false)):
-		var capture_button := Button.new()
-		capture_button.focus_mode = Control.FOCUS_NONE
-		capture_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		capture_button.custom_minimum_size = Vector2(0, _action_button_height())
-		capture_button.text = "%s  %s" % [_tr("battle.capture"), _tr("battle.capture_hint")]
-		capture_button.disabled = alive_enemies.is_empty()
-		capture_button.pressed.connect(_on_capture_pressed.bind(actor.uid))
-		action_box.add_child(capture_button)
-
+			label += "  CD:%d" % cooldown_left
+		_add_action_button(label, _on_skill_pressed.bind(actor.uid, skill_id), cooldown_left > 0 or not _has_valid_target(skill))
+	if actor.skills.is_empty():
+		_add_action_info_label("这只当前没有能立刻出的招式。")
 	if not pending_action.is_empty():
-		var cancel_button := Button.new()
-		cancel_button.focus_mode = Control.FOCUS_NONE
-		cancel_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		cancel_button.custom_minimum_size = Vector2(0, _secondary_action_button_height())
-		cancel_button.text = _tr("battle.preview.cancel")
-		cancel_button.pressed.connect(_cancel_pending_action.bind(actor.uid))
-		action_box.add_child(cancel_button)
+		_add_action_button(_tr("battle.preview.cancel"), _cancel_pending_action.bind(actor.uid), false, true)
+	else:
+		_add_action_button("返回四段菜单", _set_player_menu_mode.bind(actor.uid, "root"), false, true)
+
+func _render_status_action_buttons(actor: MonsterInstance) -> void:
+	var lines: Array[String] = []
+	lines.append("当前行动：%s" % actor.display_name)
+	lines.append("我方焦点：%s" % _unit_focus_summary(_get_unit_by_uid(selected_ally_uid)))
+	lines.append("敌方焦点：%s" % _unit_focus_summary(_get_unit_by_uid(selected_enemy_uid)))
+	lines.append("待命位：%d 只 ｜ 战斗道具：%d 种" % [ally_reserve.size(), _battle_item_rows().size()])
+	_add_action_info_label("\n".join(lines))
+	_add_action_button("返回四段菜单", _set_player_menu_mode.bind(actor.uid, "root"), false, true)
+
+func _render_bag_action_buttons(actor: MonsterInstance) -> void:
+	_add_action_info_label("背包操作会直接吃掉这回合。点左边可换当前上阵位，点右边可给当前锁定的敌人用捕捉球。")
+	_add_action_info_label("[换宠]")
+	if ally_reserve.is_empty():
+		_add_action_info_label("待命位里现在没有能换上的伙伴。")
+	else:
+		for unit_value in ally_reserve:
+			var reserve_unit: MonsterInstance = unit_value
+			var swap_text := "换上 %s  %d/%d" % [reserve_unit.display_name, reserve_unit.current_hp, reserve_unit.max_hp]
+			_add_action_button(swap_text, _on_swap_pressed.bind(actor.uid, reserve_unit.uid), not reserve_unit.is_alive())
+	_add_action_info_label("[道具]")
+	var item_rows := _battle_item_rows()
+	if item_rows.is_empty():
+		_add_action_info_label("包里没有能在战斗里立刻用掉的物品。")
+	else:
+		for row_value in item_rows:
+			var row: Dictionary = Dictionary(row_value).duplicate(true)
+			var item_id := String(row.get("id", ""))
+			var item_name := String(row.get("name", item_id))
+			var count := int(row.get("count", 0))
+			var disabled := count <= 0 or not _battle_item_has_valid_target(actor, row)
+			_add_action_button("%s x%d  %s" % [item_name, count, _battle_item_description(row)], _on_battle_item_pressed.bind(actor.uid, item_id), disabled)
+	_add_action_button("返回四段菜单", _set_player_menu_mode.bind(actor.uid, "root"), false, true)
+
+func _render_escape_action_buttons(actor: MonsterInstance) -> void:
+	if not _can_attempt_escape():
+		_add_action_info_label("这种战斗不允许主动撤退，得把这一场打完。")
+		_add_action_button("返回四段菜单", _set_player_menu_mode.bind(actor.uid, "root"), false, true)
+		return
+	_add_action_info_label("野外遭遇可以试着先撤开。当前脱身把握约 %d%%。" % int(round(_escape_chance(actor) * 100.0)))
+	_add_action_button("试着撤开", _on_escape_pressed.bind(actor.uid))
+	_add_action_button("返回四段菜单", _set_player_menu_mode.bind(actor.uid, "root"), false, true)
+
+func _unit_focus_summary(unit: MonsterInstance) -> String:
+	if unit == null:
+		return "还没看定"
+	var status_text := _status_text(unit.uid)
+	var summary := "%s %d/%d" % [unit.display_name, unit.current_hp, unit.max_hp]
+	if not status_text.is_empty():
+		summary += " ｜ %s" % status_text
+	return summary
+
+func _battle_item_rows() -> Array:
+	var rows: Array = []
+	var item_ids: Array[String] = []
+	for raw_item_id in DataRepository.items.keys():
+		item_ids.append(String(raw_item_id))
+	item_ids.sort()
+	for item_id in item_ids:
+		var item := DataRepository.get_item(item_id)
+		var target_rule := String(item.get("target_rule", ""))
+		if not target_rule.begins_with("battle_"):
+			continue
+		rows.append({
+			"id": item_id,
+			"name": String(item.get("name", item_id)),
+			"count": GameState.get_item_count(item_id),
+			"effect_id": String(item.get("effect_id", "")),
+			"target_rule": target_rule,
+			"effect_value": int(item.get("effect_value", 0)),
+		})
+	return rows
+
+func _battle_item_description(item: Dictionary) -> String:
+	match String(item.get("effect_id", "")):
+		"battle_capture":
+			return "对当前选中的野生宠物使用"
+		"battle_heal_small", "battle_heal_medium":
+			return "给当前选中的我方回复 %d 点生命" % int(item.get("effect_value", 0))
+		_:
+			return "战斗中使用"
+
+func _battle_item_has_valid_target(actor: MonsterInstance, item: Dictionary) -> bool:
+	return _resolve_battle_item_target(actor, item) != null
+
+func _resolve_battle_item_target(actor: MonsterInstance, item: Dictionary) -> MonsterInstance:
+	match String(item.get("target_rule", "")):
+		"battle_enemy_single":
+			if not bool(battle_config.get("allow_capture", false)):
+				return null
+			var selected_enemy := _get_unit_by_uid(selected_enemy_uid)
+			if selected_enemy != null and selected_enemy.is_alive():
+				return selected_enemy
+			var foes := _alive_enemies()
+			return foes[0] if not foes.is_empty() else null
+		"battle_ally_single":
+			var selected_ally := _get_unit_by_uid(selected_ally_uid)
+			if selected_ally != null and _is_ally(selected_ally) and selected_ally.is_alive():
+				return selected_ally
+			var wounded := _team_lowest_health(allies)
+			return wounded[0] if not wounded.is_empty() else actor
+		_:
+			return null
+
+func _on_swap_pressed(actor_uid: String, reserve_uid: String) -> void:
+	var actor := _get_unit_by_uid(actor_uid)
+	if actor == null or actor.uid != active_actor_uid or action_locked:
+		return
+	await _swap_in_reserve_pet(actor, reserve_uid)
+
+func _swap_in_reserve_pet(actor: MonsterInstance, reserve_uid: String) -> void:
+	var reserve_index := _find_reserve_unit_index(reserve_uid)
+	var slot_index := allies.find(actor)
+	if reserve_index == -1 or slot_index == -1:
+		return
+	var incoming: MonsterInstance = ally_reserve[reserve_index]
+	if incoming == null or not incoming.is_alive():
+		return
+	action_locked = true
+	_clear_action_buttons()
+	if _selection_label != null:
+		_selection_label.text = "%s 后撤，准备换上 %s。" % [actor.display_name, incoming.display_name]
+	if not GameState.should_skip_animations():
+		await get_tree().create_timer(PLAYER_COMMIT_DELAY).timeout
+	if result_sent or actor.uid != active_actor_uid:
+		return
+	GameState.set_battle_slot(slot_index, incoming.uid)
+	ally_reserve[reserve_index] = actor
+	allies[slot_index] = incoming
+	selected_ally_uid = incoming.uid
+	recent_actor_uid = actor.uid
+	recent_target_uid = incoming.uid
+	_show_unit_feedback(incoming.uid, "入场", Color(0.62, 0.92, 1.0, 1.0), 28.0, 0.72)
+	_show_battle_banner(actor.display_name, "换上 %s" % incoming.display_name, Color(0.62, 0.92, 1.0, 1.0))
+	_log("%s 后撤，换成 %s 上场。" % [actor.display_name, incoming.display_name])
+	_render_rosters()
+	await _end_actor_turn()
+
+func _find_reserve_unit_index(unit_uid: String) -> int:
+	for index in range(ally_reserve.size()):
+		var unit: MonsterInstance = ally_reserve[index]
+		if unit != null and unit.uid == unit_uid:
+			return index
+	return -1
+
+func _on_battle_item_pressed(actor_uid: String, item_id: String) -> void:
+	var actor := _get_unit_by_uid(actor_uid)
+	if actor == null or actor.uid != active_actor_uid or action_locked:
+		return
+	await _use_battle_item(actor, item_id)
+
+func _use_battle_item(actor: MonsterInstance, item_id: String) -> void:
+	var item := DataRepository.get_item(item_id)
+	if item.is_empty():
+		return
+	var target := _resolve_battle_item_target(actor, item)
+	if target == null:
+		return
+	var item_name := String(item.get("name", item_id))
+	action_locked = true
+	_clear_action_buttons()
+	if _selection_label != null:
+		_selection_label.text = "%s 准备使用 %s。" % [actor.display_name, item_name]
+	if not GameState.should_skip_animations():
+		await get_tree().create_timer(PLAYER_COMMIT_DELAY).timeout
+	if result_sent or actor.uid != active_actor_uid:
+		return
+	if not GameState.remove_items({item_id: 1}):
+		action_locked = false
+		_prompt_player_action_with_feedback(actor, false)
+		return
+	match String(item.get("effect_id", "")):
+		"battle_capture":
+			await _perform_capture_attempt(actor, target, item_name)
+		"battle_heal_small", "battle_heal_medium":
+			var heal_value := maxi(1, int(item.get("effect_value", 0)))
+			target.heal(heal_value)
+			_apply_target_focus(actor, target)
+			_show_unit_feedback(target.uid, "+%d" % heal_value, Color(0.32, 0.98, 0.70, 1.0))
+			_show_battle_banner(target.display_name, item_name, Color(0.32, 0.98, 0.70, 1.0))
+			_flash_feedback(Color(0.30, 0.94, 0.62, 0.12), 4.0)
+			_render_rosters()
+			_log("%s 用了 %s，%s 回复 %d 点生命。" % [actor.display_name, item_name, target.display_name, heal_value])
+			await _end_actor_turn()
+		_:
+			action_locked = false
+			_prompt_player_action_with_feedback(actor, false)
+
+func _perform_capture_attempt(actor: MonsterInstance, target: MonsterInstance, item_name: String = "") -> void:
+	if actor == null or target == null or not target.is_alive():
+		action_locked = false
+		return
+	_apply_target_focus(actor, target)
+	var chance := 0.2 + float(target.max_hp - target.current_hp) / float(target.max_hp) * 0.55
+	if target.current_hp <= target.max_hp / 3:
+		chance += 0.15
+	if rng.randf() <= chance:
+		target.current_hp = 0
+		_flash_feedback(Color(1.0, 0.88, 0.30, 0.14), 6.0)
+		_show_unit_feedback(target.uid, item_name if not item_name.is_empty() else _tr("battle.capture"), Color(1.0, 0.88, 0.30, 1.0), 28.0, 0.74)
+		_show_battle_banner(_tr("battle.capture_success_title"), target.display_name, Color(1.0, 0.88, 0.30, 1.0))
+		_log(_tr("battle.log.capture_success", {"actor": actor.display_name, "target": target.display_name}))
+		_finish_battle({
+			"player_won": true,
+			"captured_species": target.species_id,
+			"battle_kind": battle_config.get("kind", "wild"),
+		})
+		return
+	_log(_tr("battle.log.capture_fail", {"actor": actor.display_name, "target": target.display_name}))
+	_flash_feedback(Color(1.0, 0.58, 0.42, 0.10), 4.0)
+	await _end_actor_turn()
+
+func _can_attempt_escape() -> bool:
+	if battle_config.has("allow_escape"):
+		return bool(battle_config.get("allow_escape", false))
+	return String(battle_config.get("kind", "wild")) == "wild"
+
+func _escape_chance(actor: MonsterInstance) -> float:
+	var fastest_enemy_speed := 0
+	for enemy in _alive_enemies():
+		fastest_enemy_speed = maxi(fastest_enemy_speed, _get_effective_speed(enemy))
+	var chance := 0.35 + float(_get_effective_speed(actor) - fastest_enemy_speed) * 0.08 + float(round_index - 1) * 0.05
+	return clampf(chance, 0.15, 0.92)
+
+func _on_escape_pressed(actor_uid: String) -> void:
+	var actor := _get_unit_by_uid(actor_uid)
+	if actor == null or actor.uid != active_actor_uid or action_locked or not _can_attempt_escape():
+		return
+	action_locked = true
+	_clear_action_buttons()
+	if _selection_label != null:
+		_selection_label.text = "%s 准备先撤开这一场。" % actor.display_name
+	await get_tree().create_timer(0.05 if GameState.should_skip_animations() else PLAYER_COMMIT_DELAY).timeout
+	if result_sent or actor.uid != active_actor_uid:
+		return
+	if rng.randf() <= _escape_chance(actor):
+		_log("%s 带着队伍及时撤开了。" % actor.display_name)
+		_finish_battle({
+			"player_won": false,
+			"captured_species": "",
+			"battle_kind": battle_config.get("kind", "wild"),
+			"escaped": true,
+		})
+		return
+	_log("%s 想撤开，但对面缠得太紧了。" % actor.display_name)
+	_flash_feedback(Color(1.0, 0.58, 0.42, 0.10), 4.0)
+	await _end_actor_turn()
 
 func _schedule_enemy_action(actor: MonsterInstance) -> void:
 	_clear_action_buttons()
@@ -626,18 +916,14 @@ func _has_valid_target(skill: Dictionary) -> bool:
 			return not _alive_enemies().is_empty()
 
 func _end_actor_turn() -> void:
-	var actor := _get_unit_by_uid(active_actor_uid)
-	if actor != null:
-		for skill_id in temp_state[actor.uid]["cooldowns"].keys():
-			var value := int(temp_state[actor.uid]["cooldowns"][skill_id])
-			if value > 0:
-				temp_state[actor.uid]["cooldowns"][skill_id] = value
-		if not acted_actor_uids.has(actor.uid):
-			acted_actor_uids.append(actor.uid)
-		pending_action.clear()
-		_clear_action_preview()
-		_render_rosters()
-		_render_turn_order_bar()
+	var actor_uid := active_actor_uid
+	if not actor_uid.is_empty() and not acted_actor_uids.has(actor_uid):
+		acted_actor_uids.append(actor_uid)
+	pending_action.clear()
+	player_menu_mode = "root"
+	_clear_action_preview()
+	_render_rosters()
+	_render_turn_order_bar()
 	if _try_finish_battle():
 		return
 	active_actor_uid = ""
@@ -671,6 +957,9 @@ func _end_round() -> void:
 	_begin_round()
 
 func _try_finish_battle() -> bool:
+	if _alive_allies().is_empty() and _deploy_alive_reserve_into_open_slots():
+		_render_rosters()
+		return false
 	if _alive_allies().is_empty():
 		_finish_battle({
 			"player_won": false,
@@ -687,6 +976,25 @@ func _try_finish_battle() -> bool:
 		return true
 	return false
 
+func _deploy_alive_reserve_into_open_slots() -> bool:
+	var deployed_any := false
+	for slot_index in range(allies.size()):
+		var current_unit: MonsterInstance = allies[slot_index]
+		if current_unit != null and current_unit.is_alive():
+			continue
+		for reserve_index in range(ally_reserve.size()):
+			var reserve_unit: MonsterInstance = ally_reserve[reserve_index]
+			if reserve_unit == null or not reserve_unit.is_alive():
+				continue
+			ally_reserve[reserve_index] = current_unit
+			allies[slot_index] = reserve_unit
+			GameState.set_battle_slot(slot_index, reserve_unit.uid)
+			selected_ally_uid = reserve_unit.uid
+			_log("%s 顶上了空出来的位置。" % reserve_unit.display_name)
+			deployed_any = true
+			break
+	return deployed_any
+
 func _finish_battle(result: Dictionary) -> void:
 	if result_sent:
 		return
@@ -696,6 +1004,7 @@ func _finish_battle(result: Dictionary) -> void:
 	_clear_action_buttons()
 	active_actor_uid = ""
 	pending_action.clear()
+	player_menu_mode = "root"
 	_clear_action_preview()
 	round_order_uids.clear()
 	acted_actor_uids.clear()
@@ -1459,6 +1768,25 @@ func _update_selection_summary(actor: MonsterInstance = null, target: MonsterIns
 	var ally_target := _get_unit_by_uid(selected_ally_uid)
 	if ally_target != null and ally_target.is_alive():
 		ally_target_name = ally_target.display_name
+	if _is_ally(actor):
+		var prompt_head := ""
+		match player_menu_mode:
+			"status":
+				prompt_head = "正在查看状态。点左右两列切换焦点，看清楚再决定。"
+			"combat":
+				prompt_head = "正在准备出手。想打哪一手，就在战斗页里定下来。"
+			"bag":
+				prompt_head = "背包里可以换宠或用道具；左右两列的焦点会决定道具吃到谁。"
+			"escape":
+				prompt_head = "这回合可以直接用来撤开。"
+			_:
+				prompt_head = "轮到 %s 了。先选 状态 / 战斗 / 逃跑 / 背包。" % actor.display_name
+		_selection_label.text = "%s\n%s ｜ %s" % [
+			prompt_head,
+			_tr("battle.prompt.enemy_target", {"target": enemy_target_name}),
+			_tr("battle.prompt.ally_target", {"target": ally_target_name}),
+		]
+		return
 	_selection_label.text = "%s\n%s ｜ %s" % [
 		_tr("battle.prompt.player", {"actor": actor.display_name}),
 		_tr("battle.prompt.enemy_target", {"target": enemy_target_name}),

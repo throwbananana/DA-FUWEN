@@ -46,6 +46,9 @@ var weekly_objectives: Array = []
 var weekly_objectives_by_season: Dictionary = {}
 var season_boss_rules_by_season: Dictionary = {}
 var meta_progression_tracks: Array = []
+var annual_competition_event: Dictionary = {}
+var pet_growth_defaults: Dictionary = {}
+var pet_growth_rules: Dictionary = {}
 
 func _ready() -> void:
 	load_all()
@@ -84,11 +87,15 @@ func load_all() -> void:
 	_load_weekly_objectives(_read_json("%s/weekly_objectives.json" % DATA_ROOT).get("objectives", []))
 	_load_season_boss_rules(_read_json("%s/season_boss_rules.json" % DATA_ROOT).get("bosses", []))
 	meta_progression_tracks = _read_json("%s/meta_progression.json" % DATA_ROOT).get("tracks", []).duplicate(true)
+	annual_competition_event = Dictionary(_read_json("%s/annual_competition_rules.json" % DATA_ROOT).get("event", {})).duplicate(true)
 	unlock_rules_by_habitat = _group_unlock_rules(_read_json("%s/habitat_unlock_rules.json" % DATA_ROOT).get("rules", []))
 	dojos = _index_by_id(_read_json("%s/dojo_definitions.json" % DATA_ROOT).get("dojos", []))
 	reward_bundles = _read_json("%s/reward_tables.json" % DATA_ROOT).get("reward_bundles", {})
 	synergy_definitions = _read_json("%s/synergy_definitions_mda.json" % DATA_ROOT)
 	skill_library = _index_by_id(_read_json("%s/skill_library_mda.json" % DATA_ROOT).get("skills", []))
+	var pet_growth_payload := _read_json("%s/pet_growth_rules.json" % DATA_ROOT)
+	pet_growth_defaults = Dictionary(_deep_merge_dicts(_default_pet_growth_rule(), Dictionary(pet_growth_payload.get("defaults", {})).duplicate(true)))
+	pet_growth_rules = _index_by_id(Array(pet_growth_payload.get("species_rules", [])))
 	_build_evolution_indexes(_read_json("%s/evolution_chains_mda.json" % DATA_ROOT).get("families", []))
 	progression_curves = _read_json("%s/progression_curves_mda.json" % DATA_ROOT)
 	encounters.clear()
@@ -459,8 +466,77 @@ func get_season_boss_rule(season_id: String) -> Dictionary:
 func get_meta_progression_tracks() -> Array:
 	return meta_progression_tracks.duplicate(true)
 
+func get_annual_competition_event() -> Dictionary:
+	return annual_competition_event.duplicate(true)
+
 func get_skill(skill_id: String) -> Dictionary:
 	return skill_library.get(skill_id, {})
+
+func _default_pet_growth_rule() -> Dictionary:
+	return {
+		"starting_skill_count": 2,
+		"max_skill_slots": 4,
+		"stage_events": [
+			{
+				"stage": 2,
+				"type": "learn_species_skill",
+				"skill_slot": 3,
+			},
+			{
+				"stage": 3,
+				"type": "learn_species_skill",
+				"skill_slot": 4,
+			},
+		],
+	}
+
+func get_pet_growth_rule(species_id: String) -> Dictionary:
+	var rule: Dictionary = _default_pet_growth_rule().duplicate(true)
+	rule = Dictionary(_deep_merge_dicts(rule, pet_growth_defaults))
+	var override_rule: Dictionary = Dictionary(pet_growth_rules.get(species_id, {})).duplicate(true)
+	var merged_events: Array = Array(rule.get("stage_events", [])).duplicate(true)
+	merged_events.append_array(Array(override_rule.get("stage_events", [])))
+	override_rule.erase("stage_events")
+	rule = Dictionary(_deep_merge_dicts(rule, override_rule))
+	rule["stage_events"] = merged_events
+	return rule
+
+func get_pet_skill_capacity(species_id: String) -> int:
+	var rule := get_pet_growth_rule(species_id)
+	return clampi(int(rule.get("max_skill_slots", 4)), 1, 4)
+
+func get_pet_starting_skill_count(species_id: String) -> int:
+	var rule := get_pet_growth_rule(species_id)
+	return clampi(int(rule.get("starting_skill_count", 2)), 1, get_pet_skill_capacity(species_id))
+
+func get_pet_species_skill_ids(species_id: String) -> Array[String]:
+	var result: Array[String] = []
+	for raw_skill_id in Array(get_species(species_id).get("skill_ids", [])):
+		var skill_id := String(raw_skill_id)
+		if skill_id.is_empty() or result.has(skill_id):
+			continue
+		result.append(skill_id)
+	return result
+
+func get_pet_stage_events(species_id: String, stage: int) -> Array:
+	var result: Array = []
+	for raw_event in Array(get_pet_growth_rule(species_id).get("stage_events", [])):
+		var event: Dictionary = Dictionary(raw_event).duplicate(true)
+		if int(event.get("stage", 0)) != stage:
+			continue
+		result.append(event)
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var order_a := int(a.get("order", 0))
+		var order_b := int(b.get("order", 0))
+		if order_a == order_b:
+			var type_a := String(a.get("type", ""))
+			var type_b := String(b.get("type", ""))
+			if type_a == type_b:
+				return String(a.get("skill_id", a.get("target_species_id", ""))) < String(b.get("skill_id", b.get("target_species_id", "")))
+			return type_a < type_b
+		return order_a < order_b
+	)
+	return result
 
 func get_evolution_family(family_id: String) -> Dictionary:
 	return evolution_families.get(family_id, {})

@@ -143,6 +143,138 @@ const MINIGAME_VARIANTS := {
 	],
 }
 
+const TIME_NAMES := {
+	"day": "白昼",
+	"evening": "傍晚",
+	"night": "夜晚",
+}
+
+const SPECIAL_RING_DEFS := {
+	2: {
+		"id": "sky_island",
+		"name": "空岛环带",
+		"gate_name": "空岛升流门",
+		"gate_description": "更外侧已经抬升成一圈浮岛，只有掌握腾空翼并踩准白昼上升气流，才能把通路接起来。",
+		"unlock_summary": "白昼升流已经把空岛环带接起来了。",
+		"skill_id": "sky_glide",
+		"dojo_id": "summer_storm_trial",
+		"tier": "tier_1",
+		"time_windows": ["day"],
+		"source_habitat_id": "sky_post",
+		"encounter_pool": [
+			{"species_id": "iron_pigeon_2", "weight": 34, "mood": "diligent"},
+			{"species_id": "storm_yak_2", "weight": 28, "mood": "steady"},
+			{"species_id": "shale_ram_2", "weight": 22, "mood": "bold"},
+			{"species_id": "spark_mouse_2", "weight": 16, "mood": "curious"},
+		],
+		"variants": [
+			{
+				"name": "云绳补给栈",
+				"kind": "forage",
+				"focus": "空岛 / 补给",
+				"description": "几段云绳和浮木被绑成半空补给点，适合在高空路线里顺手收一轮材料。",
+				"reward_hint": "更容易在高空补给点带回轻量素材。",
+			},
+			{
+				"name": "断风观测脊",
+				"kind": "scout",
+				"focus": "空岛 / 侦察",
+				"description": "断风脊会把外层路况压得很清楚，正适合在切进更高处前先看一眼。",
+				"reward_hint": "会额外揭开前方一小段路线。",
+			},
+			{
+				"name": "悬桥惊翼道",
+				"kind": "wild_battle",
+				"focus": "空岛 / 遭遇",
+				"description": "悬桥边缘总有盘旋个体试探领空，路过时很容易直接起冲突。",
+				"reward_hint": "可能触发一次高空野外遭遇。",
+			},
+		],
+	},
+	4: {
+		"id": "swamp",
+		"name": "沼泽环带",
+		"gate_name": "沼泽浮栈门",
+		"gate_description": "更外侧是一整圈软泥和浮栈，得先学会涉泽步并完成赤叶演武场的一阶验证，才不会在入口就陷进去。",
+		"unlock_summary": "涉泽步已经稳住了沼泽环带的浮栈。",
+		"skill_id": "bog_stride",
+		"dojo_id": "autumn_leaf_dojo",
+		"tier": "tier_1",
+		"time_windows": [],
+		"source_habitat_id": "reed_mire",
+		"encounter_pool": [
+			{"species_id": "echo_snail_2", "weight": 30, "mood": "slow"},
+			{"species_id": "marsh_slime_2", "weight": 28, "mood": "hungry"},
+			{"species_id": "steam_otter_2", "weight": 24, "mood": "playful"},
+			{"species_id": "crystal_shrimp_2", "weight": 18, "mood": "alert"},
+		],
+		"variants": [
+			{
+				"name": "苇泥采集塘",
+				"kind": "forage",
+				"focus": "沼泽 / 采集",
+				"description": "浮苇和软泥把这段外环压成了采集塘，适合停一下摸清还能带走什么。",
+				"reward_hint": "更容易带回湿地素材与纤维。",
+			},
+			{
+				"name": "沉木探路口",
+				"kind": "scout",
+				"focus": "沼泽 / 探路",
+				"description": "沉木被踩出几条窄道，正适合先看哪边的泥面还能继续压。",
+				"reward_hint": "会多显露几格沼泽里的安全路。",
+			},
+			{
+				"name": "黑泽伏行带",
+				"kind": "wild_battle",
+				"focus": "沼泽 / 遭遇",
+				"description": "这里的泥面总会突然炸开，说明附近潜着不想被惊动的个体。",
+				"reward_hint": "可能直接引出一次伏击型遭遇。",
+			},
+		],
+	},
+	6: {
+		"id": "ocean",
+		"name": "海洋环带",
+		"gate_name": "海潮外闸",
+		"gate_description": "更外层会在傍晚到夜晚涨潮成整圈海路，必须先学会踏潮鳍，并完成更高一阶的演武验证，潮门才会接通。",
+		"unlock_summary": "涨潮已经把海洋环带推到了脚下。",
+		"skill_id": "tide_surf",
+		"dojo_id": "autumn_leaf_dojo",
+		"tier": "tier_2",
+		"time_windows": ["evening", "night"],
+		"source_habitat_id": "saltglass_coast",
+		"encounter_pool": [
+			{"species_id": "cloud_crane_2", "weight": 30, "mood": "calm"},
+			{"species_id": "crystal_shrimp_2", "weight": 26, "mood": "alert"},
+			{"species_id": "ice_seal_2", "weight": 22, "mood": "placid"},
+			{"species_id": "volt_carp_2", "weight": 22, "mood": "rash"},
+		],
+		"variants": [
+			{
+				"name": "潮脊拾贝线",
+				"kind": "forage",
+				"focus": "海洋 / 采集",
+				"description": "涨潮把外海碎贝和轻浮补给推成一条细线，正好能顺手捞一轮。",
+				"reward_hint": "更容易带回海边素材和玻璃碎料。",
+			},
+			{
+				"name": "外潮观测桩",
+				"kind": "scout",
+				"focus": "海洋 / 观势",
+				"description": "潮位标桩会把后段浪线暴露得很清楚，适合先判断这圈要不要继续深压。",
+				"reward_hint": "会额外显露一段潮路信息。",
+			},
+			{
+				"name": "夜潮冲击槽",
+				"kind": "wild_battle",
+				"focus": "海洋 / 遭遇",
+				"description": "夜潮一上来，这段外海就会有游弋个体贴着浪头冲线。",
+				"reward_hint": "可能爆发一次海路遭遇战。",
+			},
+		],
+	},
+}
+
 var current_region: Dictionary = {}
 var node_lookup: Dictionary = {}
 var _seed_regions_by_season: Dictionary = {}
@@ -323,24 +455,23 @@ func try_resolve_unlock_gate(node_id: int) -> Dictionary:
 	var target_ring := int(node.get("unlock_target_ring", -1))
 	if target_ring < 0:
 		return {}
-	match String(requirement.get("kind", "boss")):
-		"boss":
-			return _unlock_next_ring(target_ring, "击败了 %s。" % String(node.get("name", "路口领主")))
-		"dojo":
-			if _is_dojo_requirement_satisfied(requirement):
-				return _unlock_next_ring(target_ring, "通过了 %s。" % String(requirement.get("label", "当前道馆")))
-			var progress := _ensure_loop_progress(_current_season_id)
-			progress["pending_dojo_ring"] = target_ring
-			GameState.set_board_loop_progress(progress, _current_season_id)
-			_current_progress = progress.duplicate(true)
-			return {
-				"ok": false,
-				"awaiting": "dojo",
-				"message": String(requirement.get("blocked_text", "还需要先通过当前外环对应的道馆。")),
-				"revealed_nodes": [],
-			}
-		_:
-			return {}
+	var kind := String(requirement.get("kind", "boss"))
+	if kind == "boss":
+		return _unlock_next_ring(target_ring, "击败了 %s。" % String(node.get("name", "路口领主")))
+	var evaluation := _evaluate_gate_requirement(requirement)
+	if bool(evaluation.get("ok", false)):
+		return _unlock_next_ring(target_ring, String(evaluation.get("summary", "外环条件已经满足。")))
+	if String(evaluation.get("awaiting", "")) == "dojo":
+		var progress := _ensure_loop_progress(_current_season_id)
+		progress["pending_dojo_ring"] = target_ring
+		GameState.set_board_loop_progress(progress, _current_season_id)
+		_current_progress = progress.duplicate(true)
+	return {
+		"ok": false,
+		"awaiting": String(evaluation.get("awaiting", "")),
+		"message": String(evaluation.get("message", requirement.get("blocked_text", "还需要先满足外环条件。"))),
+		"revealed_nodes": [],
+	}
 
 func try_unlock_outer_ring_from_dojo(dojo_id: String, tier: String) -> Dictionary:
 	var progress := _ensure_loop_progress(_current_season_id)
@@ -348,14 +479,22 @@ func try_unlock_outer_ring_from_dojo(dojo_id: String, tier: String) -> Dictionar
 	if target_ring < 0:
 		return {}
 	var requirement := _unlock_requirement_for_ring(target_ring - 1, _current_season_id)
-	if String(requirement.get("kind", "")) != "dojo":
+	var kind := String(requirement.get("kind", ""))
+	if kind != "dojo" and kind != "special":
 		return {}
 	if String(requirement.get("tier", "tier_1")) != tier:
 		return {}
 	var expected_dojo_id := String(requirement.get("dojo_id", ""))
 	if not expected_dojo_id.is_empty() and expected_dojo_id != dojo_id:
 		return {}
-	return _unlock_next_ring(target_ring, "通过了 %s。" % String(requirement.get("label", dojo_id)))
+	var evaluation := _evaluate_gate_requirement(requirement)
+	if not bool(evaluation.get("ok", false)):
+		return {
+			"ok": false,
+			"awaiting": String(evaluation.get("awaiting", "")),
+			"message": String(evaluation.get("message", requirement.get("blocked_text", "还需要先满足外环条件。"))),
+		}
+	return _unlock_next_ring(target_ring, String(evaluation.get("summary", "外环条件已经满足。")))
 
 func get_active_gate_text(node_id: int) -> String:
 	var node: Dictionary = node_lookup.get(node_id, {})
@@ -364,7 +503,7 @@ func get_active_gate_text(node_id: int) -> String:
 	var requirement: Dictionary = node.get("unlock_requirement", {}).duplicate(true)
 	if String(requirement.get("kind", "boss")) == "boss":
 		return "击败此路口领主后，会打开下一圈外环。"
-	return String(requirement.get("blocked_text", "需要通过当前道馆后，外环才会解锁。"))
+	return String(requirement.get("blocked_text", "需要满足当前外环条件后，下一圈才会解锁。"))
 
 func _rebuild_lookup() -> void:
 	node_lookup.clear()
@@ -524,14 +663,20 @@ func _build_gate_node(season_id: String, boss_template: Dictionary, node_id: int
 		node["unlock_requirement"] = requirement.duplicate(true)
 		node["unlock_target_ring"] = ring_index + 1
 		return node
+	var special_loop_name := String(requirement.get("ring_name", ""))
+	var focus_label := "道馆验证 / 开环"
+	if kind == "special" and not special_loop_name.is_empty():
+		focus_label = "%s / 开环" % special_loop_name
 	return {
 		"id": node_id,
-		"name": String(requirement.get("label", "道馆门")),
+		"name": String(requirement.get("gate_name", requirement.get("label", "道馆门"))),
 		"type": "event",
-		"description": "这里通向更外侧的环路，但需要先通过当前层要求的道馆验证。",
+		"description": String(requirement.get("gate_description", "这里通向更外侧的环路，但需要先通过当前层要求的道馆验证。")),
 		"travel_cost": 1,
-		"focus": "道馆验证 / 开环",
+		"focus": focus_label,
 		"reward_hint": String(requirement.get("blocked_text", "需要先通过当前道馆。")),
+		"special_loop_id": String(requirement.get("ring_id", "")),
+		"special_loop_name": special_loop_name,
 		"unlock_gate": true,
 		"unlock_requirement": requirement.duplicate(true),
 		"unlock_target_ring": ring_index + 1,
@@ -544,6 +689,9 @@ func _build_ring_content_node(season_id: String, template: Dictionary, node_id: 
 		var minigame_variant_index := MINIGAME_RING_OFFSETS.find(offset)
 		if minigame_variant_index != -1:
 			return _build_minigame_node(season_id, node_id, ring_index, minigame_variant_index)
+	var special_ring := _special_ring_for_index(ring_index)
+	if not special_ring.is_empty():
+		return _build_special_ring_node(node_id, ring_index, offset, special_ring)
 	if (offset + ring_index) % 5 == 2:
 		return _build_environment_node(season_id, template, node_id, ring_index)
 	if (offset + ring_index) % 7 == 4 and not template.is_empty() and String(template.get("type", "")) != "dojo":
@@ -586,6 +734,38 @@ func _build_minigame_node(season_id: String, node_id: int, ring_index: int, vari
 		"focus": String(variant.get("focus", "小游戏 / 热身")),
 		"reward_hint": String(variant.get("reward_hint", "做完会给下一场战斗留下一点小幅属性热身。")),
 		"minigame_id": String(variant.get("id", "")),
+	}
+
+func _build_special_ring_node(node_id: int, ring_index: int, offset: int, special_ring: Dictionary) -> Dictionary:
+	var variants: Array = Array(special_ring.get("variants", [])).duplicate(true)
+	var variant: Dictionary = {}
+	if not variants.is_empty():
+		variant = Dictionary(variants[(offset + ring_index) % variants.size()]).duplicate(true)
+	var ring_name := String(special_ring.get("name", "特殊环带"))
+	var encounter_pool: Array = Array(special_ring.get("encounter_pool", [])).duplicate(true)
+	var encounter_hint := _special_encounter_hint(encounter_pool)
+	var reward_hint := String(variant.get("reward_hint", "这圈会提供一整段特殊地貌收益。"))
+	if String(variant.get("kind", "")) == "wild_battle" and not encounter_hint.is_empty():
+		reward_hint += " 常见个体：%s。" % encounter_hint
+	return {
+		"id": node_id,
+		"name": "%s · %02d" % [String(variant.get("name", ring_name)), node_id],
+		"type": "environment",
+		"description": "%s\n这里已经切入第 %d 圈的%s，整圈地块都会按这套特殊地形运转。" % [
+			String(variant.get("description", "这段外环已经被特殊地形整体接管。")),
+			ring_index + 1,
+			ring_name,
+		],
+		"travel_cost": 1,
+		"habitat_id": "",
+		"environment_kind": String(variant.get("kind", "forage")),
+		"focus": String(variant.get("focus", ring_name)),
+		"reward_hint": reward_hint,
+		"source_habitat_id": String(special_ring.get("source_habitat_id", "")),
+		"special_loop_id": String(special_ring.get("id", "")),
+		"special_loop_name": ring_name,
+		"special_encounter_pool": encounter_pool,
+		"special_encounter_hint": encounter_hint,
 	}
 
 func _build_environment_node(season_id: String, template: Dictionary, node_id: int, ring_index: int) -> Dictionary:
@@ -685,6 +865,9 @@ func _gate_offset_for_ring(count: int) -> int:
 	return maxi(1, int(floor(float(count) * 0.25)))
 
 func _unlock_requirement_for_ring(ring_index: int, season_id: String) -> Dictionary:
+	var special_requirement := _special_requirement_for_target_ring(ring_index + 1)
+	if not special_requirement.is_empty():
+		return special_requirement
 	var kind: String = String(GATE_REQUIREMENT_PATTERN[ring_index % GATE_REQUIREMENT_PATTERN.size()])
 	if kind == "boss":
 		return {
@@ -707,6 +890,7 @@ func _unlock_requirement_for_ring(ring_index: int, season_id: String) -> Diction
 		"tier": "tier_1",
 		"label": "%s一阶试炼" % dojo_name if not dojo_name.is_empty() else "当前道馆一阶试炼",
 		"blocked_text": "需要先通过 %s，下一圈外环才会解锁。" % ("%s的一阶试炼" % dojo_name if not dojo_name.is_empty() else "当前道馆的一阶试炼"),
+		"summary": "通过了 %s。" % String(dojo_name if not dojo_name.is_empty() else "当前道馆"),
 	}
 
 func _ring_lock_reason(ring_index: int, season_id: String) -> String:
@@ -715,7 +899,7 @@ func _ring_lock_reason(ring_index: int, season_id: String) -> String:
 	var requirement := _unlock_requirement_for_ring(ring_index - 1, season_id)
 	if String(requirement.get("kind", "boss")) == "boss":
 		return "需先击败上一圈的路口领主。"
-	return String(requirement.get("blocked_text", "需先通过当前道馆。"))
+	return String(requirement.get("blocked_text", "需先满足当前外环条件。"))
 
 func _boss_gate_name(season_id: String, ring_index: int) -> String:
 	match season_id:
@@ -737,6 +921,136 @@ func _is_dojo_requirement_satisfied(requirement: Dictionary) -> bool:
 		if GameState.has_cleared_dojo(String(dojo_id), tier):
 			return true
 	return false
+
+func _special_ring_for_index(ring_index: int) -> Dictionary:
+	return Dictionary(SPECIAL_RING_DEFS.get(ring_index, {})).duplicate(true)
+
+func _special_requirement_for_target_ring(target_ring: int) -> Dictionary:
+	var special_ring := _special_ring_for_index(target_ring)
+	if special_ring.is_empty():
+		return {}
+	var dojo_id := String(special_ring.get("dojo_id", ""))
+	var tier := String(special_ring.get("tier", "tier_1"))
+	var dojo_name := String(DataRepository.get_dojo(dojo_id).get("name", dojo_id))
+	var skill_id := String(special_ring.get("skill_id", ""))
+	var skill_name := GameState.get_traversal_skill_name(skill_id)
+	var blocked_text := _build_special_ring_blocked_text(
+		String(special_ring.get("name", "特殊环带")),
+		skill_name,
+		dojo_name,
+		tier,
+		Array(special_ring.get("time_windows", [])).duplicate()
+	)
+	return {
+		"kind": "special",
+		"ring_id": String(special_ring.get("id", "")),
+		"ring_name": String(special_ring.get("name", "特殊环带")),
+		"gate_name": String(special_ring.get("gate_name", "特殊外环门")),
+		"gate_description": String(special_ring.get("gate_description", "这里通向更外层的特殊地块环带。")),
+		"skill_id": skill_id,
+		"skill_name": skill_name,
+		"dojo_id": dojo_id,
+		"dojo_name": dojo_name,
+		"tier": tier,
+		"time_windows": Array(special_ring.get("time_windows", [])).duplicate(),
+		"label": String(special_ring.get("gate_name", special_ring.get("name", "特殊外环"))),
+		"blocked_text": blocked_text,
+		"summary": String(special_ring.get("unlock_summary", "特殊外环已经接通。")),
+	}
+
+func _evaluate_gate_requirement(requirement: Dictionary) -> Dictionary:
+	var kind := String(requirement.get("kind", "boss"))
+	if kind == "dojo":
+		if _is_dojo_requirement_satisfied(requirement):
+			return {
+				"ok": true,
+				"summary": String(requirement.get("summary", "通过了 %s。" % String(requirement.get("label", "当前道馆")))),
+			}
+		return {
+			"ok": false,
+			"awaiting": "dojo",
+			"message": String(requirement.get("blocked_text", "还需要先通过当前外环对应的道馆。")),
+		}
+	if kind != "special":
+		return {"ok": true, "summary": "外环条件已经满足。"}
+	var reasons: Array[String] = []
+	var awaiting := ""
+	var skill_id := String(requirement.get("skill_id", ""))
+	var skill_name := String(requirement.get("skill_name", GameState.get_traversal_skill_name(skill_id)))
+	if not skill_id.is_empty() and not GameState.has_traversal_skill(skill_id):
+		reasons.append("先学会 %s" % skill_name)
+		awaiting = "skill"
+	var dojo_required := not _is_dojo_requirement_satisfied(requirement)
+	if dojo_required:
+		var dojo_name := String(requirement.get("dojo_name", requirement.get("dojo_id", "当前道馆")))
+		reasons.append("通过 %s 的 %s" % [dojo_name, _tier_name(String(requirement.get("tier", "tier_1")))])
+		awaiting = "dojo"
+	var time_windows: Array = Array(requirement.get("time_windows", [])).duplicate()
+	if not time_windows.is_empty() and not time_windows.has(GameState.time_of_day):
+		reasons.append("等到 %s 再来" % _format_time_window_list(time_windows))
+		if awaiting.is_empty():
+			awaiting = "time"
+	if reasons.is_empty():
+		return {
+			"ok": true,
+			"summary": String(requirement.get("summary", "特殊外环已经接通。")),
+		}
+	return {
+		"ok": false,
+		"awaiting": awaiting,
+		"message": "想切进 %s，还需要 %s。" % [
+			String(requirement.get("ring_name", "更外侧环带")),
+			"、".join(reasons),
+		],
+	}
+
+func _build_special_ring_blocked_text(ring_name: String, skill_name: String, dojo_name: String, tier: String, time_windows: Array) -> String:
+	var parts: Array[String] = []
+	if not skill_name.is_empty():
+		parts.append("学会 %s" % skill_name)
+	if not dojo_name.is_empty():
+		parts.append("通过 %s 的 %s" % [dojo_name, _tier_name(tier)])
+	if not time_windows.is_empty():
+		parts.append("在 %s 切入" % _format_time_window_list(time_windows))
+	if parts.is_empty():
+		return "%s 暂时还没接通。" % ring_name
+	return "想进入 %s，需要先%s。" % [ring_name, "、".join(parts)]
+
+func _format_time_window_list(time_windows: Array) -> String:
+	var parts: Array[String] = []
+	for raw_time in time_windows:
+		var time_id := String(raw_time)
+		if time_id.is_empty():
+			continue
+		var label := String(TIME_NAMES.get(time_id, time_id))
+		if not parts.has(label):
+			parts.append(label)
+	return " / ".join(parts)
+
+func _tier_name(tier: String) -> String:
+	match tier:
+		"tier_1":
+			return "试炼一阶"
+		"tier_2":
+			return "试炼二阶"
+		"tier_3":
+			return "试炼三阶"
+		_:
+			return tier
+
+func _special_encounter_hint(encounter_pool: Array) -> String:
+	var names: Array[String] = []
+	for entry in encounter_pool:
+		var species_id := String(Dictionary(entry).get("species_id", ""))
+		if species_id.is_empty():
+			continue
+		var species_name := String(DataRepository.get_species(species_id).get("name", species_id))
+		if names.has(species_name):
+			continue
+		names.append(species_name)
+		if names.size() >= 4:
+			break
+	return " / ".join(names)
 
 func _initial_revealed_nodes(nodes: Array, unlocked_ring_count: int) -> Array[int]:
 	var adjacency := _build_undirected_adjacency(nodes)

@@ -138,6 +138,8 @@ func _render_summary(panel_state: Dictionary) -> void:
 	lines.append("[b]计数规则[/b] 同物种在上阵 / 背包 / 驻守中不重复计羁绊。")
 	lines.append("[b]轮换试炼[/b] %s" % " / ".join(season.get("dojo_rotation", ["暂无"])))
 	lines.append("[b]已激活羁绊[/b] %s" % " / ".join(synergy_lines))
+	if not String(season.get("annual_competition_text", "")).is_empty():
+		lines.append("[b]年赛[/b] %s" % String(season.get("annual_competition_text", "")))
 	if not nearby_synergy_lines.is_empty():
 		lines.append("[b]差 1 激活[/b] %s" % " / ".join(nearby_synergy_lines))
 	if not building_lines.is_empty():

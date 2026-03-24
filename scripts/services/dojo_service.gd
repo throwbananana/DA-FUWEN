@@ -5,10 +5,12 @@ const MonsterInstance = preload("res://scripts/monster_instance.gd")
 const SynergyService = preload("res://scripts/services/synergy_service.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
 const MinigameServiceScript = preload("res://scripts/services/minigame_service.gd")
+const BattleRosterServiceScript = preload("res://scripts/services/battle_roster_service.gd")
 
 var synergy_service := SynergyService.new()
 var localization_service := LocalizationService.new()
 var minigame_service := MinigameServiceScript.new()
+var battle_roster_service := BattleRosterServiceScript.new()
 
 func get_dojo_for_habitat(habitat_id: String) -> Dictionary:
 	var habitat := DataRepository.get_habitat(habitat_id)
@@ -116,7 +118,7 @@ func attempt_dojo(dojo_id: String, tier: String) -> Dictionary:
 	if success:
 		var bundle_id := _reward_bundle_id(dojo, tier, first_clear)
 		var reward_result := _apply_bundle(bundle_id)
-		GameState.mark_dojo_clear(dojo_id, tier, first_clear)
+		var unlocked_traversal_skills := GameState.mark_dojo_clear(dojo_id, tier, first_clear)
 		return {
 			"ok": true,
 			"success": true,
@@ -126,6 +128,7 @@ func attempt_dojo(dojo_id: String, tier: String) -> Dictionary:
 			"challenge_score": challenge_score,
 			"required_rank": required_rank,
 			"reward_result": reward_result,
+			"unlocked_traversal_skills": unlocked_traversal_skills,
 			"modifiers": round.get("modifiers", []),
 		}
 
@@ -205,7 +208,9 @@ func prepare_dojo_battle(dojo_id: String, tier: String) -> Dictionary:
 			"enemy_attack_penalty": int(battle_bonus.get("enemy_attack_penalty", 0)),
 			"consume_minigame_bonus": minigame_service.has_pending_bonus(),
 			"round_limit": 7,
+			"allow_escape": false,
 			"allies": _build_allies(),
+			"ally_reserve": battle_roster_service.build_reserve_allies(),
 			"enemies": _build_enemies(dojo, round, tier),
 		},
 	}
@@ -218,7 +223,7 @@ func resolve_dojo_battle(dojo_id: String, tier: String, battle_result: Dictionar
 		var first_clear := not GameState.has_cleared_dojo(dojo_id, tier)
 		var bundle_id := _reward_bundle_id(dojo, tier, first_clear)
 		var reward_result := _apply_bundle(bundle_id)
-		GameState.mark_dojo_clear(dojo_id, tier, first_clear)
+		var unlocked_traversal_skills := GameState.mark_dojo_clear(dojo_id, tier, first_clear)
 		return {
 			"ok": true,
 			"success": true,
@@ -226,6 +231,7 @@ func resolve_dojo_battle(dojo_id: String, tier: String, battle_result: Dictionar
 			"tier": tier,
 			"first_clear": first_clear,
 			"reward_result": reward_result,
+			"unlocked_traversal_skills": unlocked_traversal_skills,
 			"battle_result": battle_result,
 		}
 	GameState.note_dojo_failure()
@@ -365,6 +371,10 @@ func _preview_unlocks(dojo: Dictionary, tier: String) -> String:
 		var habitat_name := String(habitat.get("name", habitat_id))
 		if not habitat_name.is_empty() and not names.has(habitat_name):
 			names.append(habitat_name)
+	for skill_id in GameState.preview_dojo_traversal_skill_awards(String(dojo.get("id", "")), tier):
+		var label := "通行技 %s" % GameState.get_traversal_skill_name(skill_id)
+		if not names.has(label):
+			names.append(label)
 	return " / ".join(names)
 
 func _battle_slot_names() -> Array[String]:
@@ -374,17 +384,7 @@ func _battle_slot_names() -> Array[String]:
 	return names
 
 func _build_allies() -> Array:
-	var allies: Array = []
-	for pet_uid in GameState.get_battle_party_uids():
-		var pet := GameState.get_pet(pet_uid)
-		if pet.is_empty():
-			continue
-		var star_level := int(pet.get("star_level", 1))
-		var level := _pet_level_for_battle(pet)
-		var unit := MonsterInstance.new(String(pet.get("species_id", "")), level, star_level)
-		unit.display_name = String(pet.get("display_name", unit.display_name))
-		allies.append(unit)
-	return allies
+	return battle_roster_service.build_active_allies()
 
 func _build_enemies(dojo: Dictionary, round: Dictionary, tier: String) -> Array:
 	var enemies: Array = []

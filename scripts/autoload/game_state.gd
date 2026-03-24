@@ -30,6 +30,17 @@ const PLAYER_ACTOR_ID := "player_main"
 const PLAYER_ACTOR_NAME := "玩家"
 const NURSERY_PRIMARY_BUILDING_ID := "nursery_corner"
 const NURSERY_SUPPORT_BUILDING_ID := "warm_nest"
+const MAX_PET_SKILL_SLOTS := 4
+const TRAVERSAL_SKILL_NAMES := {
+	"sky_glide": "腾空翼",
+	"bog_stride": "涉泽步",
+	"tide_surf": "踏潮鳍",
+}
+const DOJO_TRAVERSAL_SKILL_AWARDS := {
+	"summer_storm_trial:tier_1": ["sky_glide"],
+	"autumn_leaf_dojo:tier_1": ["bog_stride"],
+	"autumn_leaf_dojo:tier_2": ["tide_surf"],
+}
 
 var season_id := DEFAULT_SEASON_ID
 var weather_id := "clear"
@@ -54,11 +65,15 @@ var npc_positions: Dictionary = {}
 var run_modifiers: Array = []
 var pending_minigame_bonus: Dictionary = {}
 var pending_minigame_bonus_notes: Array[String] = []
+var traversal_skills: Array[String] = []
 var weekly_objective: Dictionary = {}
 var weekly_progress: Dictionary = {}
 var completed_seasons := 0
 var exploration_points := 0
 var exploration_points_total := 0
+var annual_competition_history: Array = []
+var annual_competition_reminder_years: Array[int] = []
+var latest_annual_competition_result: Dictionary = {}
 var completed_tutorials: Array[String] = []
 var claimed_season_bosses: Array[String] = []
 var board_loop_progress: Dictionary = {}
@@ -146,10 +161,14 @@ func reset_for_new_season() -> void:
 	run_modifiers.clear()
 	pending_minigame_bonus.clear()
 	pending_minigame_bonus_notes.clear()
+	traversal_skills.clear()
 	weekly_objective.clear()
 	weekly_progress.clear()
 	completed_seasons = 0
 	exploration_points = 0
+	annual_competition_history.clear()
+	annual_competition_reminder_years.clear()
+	latest_annual_competition_result.clear()
 	claimed_season_bosses.clear()
 	board_loop_progress.clear()
 	inventory = _default_inventory()
@@ -739,10 +758,14 @@ func build_runtime_snapshot() -> Dictionary:
 		"run_modifiers": run_modifiers.duplicate(true),
 		"pending_minigame_bonus": pending_minigame_bonus.duplicate(true),
 		"pending_minigame_bonus_notes": pending_minigame_bonus_notes.duplicate(),
+		"traversal_skills": traversal_skills.duplicate(),
 		"weekly_objective": weekly_objective.duplicate(true),
 		"weekly_progress": weekly_progress.duplicate(true),
 		"completed_seasons": completed_seasons,
 		"exploration_points": exploration_points,
+		"annual_competition_history": annual_competition_history.duplicate(true),
+		"annual_competition_reminder_years": annual_competition_reminder_years.duplicate(),
+		"latest_annual_competition_result": latest_annual_competition_result.duplicate(true),
 		"claimed_season_bosses": claimed_season_bosses.duplicate(),
 		"board_loop_progress": board_loop_progress.duplicate(true),
 		"inventory": inventory.duplicate(true),
@@ -805,16 +828,21 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	run_modifiers = _duplicate_array(snapshot.get("run_modifiers", []))
 	pending_minigame_bonus = _duplicate_dictionary(snapshot.get("pending_minigame_bonus", {}))
 	pending_minigame_bonus_notes = _coerce_string_array(snapshot.get("pending_minigame_bonus_notes", []))
+	traversal_skills = _coerce_string_array(snapshot.get("traversal_skills", []))
 	weekly_objective = _duplicate_dictionary(snapshot.get("weekly_objective", {}))
 	weekly_progress = _duplicate_dictionary(snapshot.get("weekly_progress", {}))
 	completed_seasons = int(snapshot.get("completed_seasons", 0))
 	exploration_points = int(snapshot.get("exploration_points", 0))
+	annual_competition_history = _duplicate_array(snapshot.get("annual_competition_history", []))
+	annual_competition_reminder_years = _coerce_int_array(snapshot.get("annual_competition_reminder_years", []))
+	latest_annual_competition_result = _duplicate_dictionary(snapshot.get("latest_annual_competition_result", {}))
 	claimed_season_bosses = _coerce_string_array(snapshot.get("claimed_season_bosses", []))
 	board_loop_progress = _duplicate_dictionary(snapshot.get("board_loop_progress", {}))
 	inventory = _duplicate_dictionary(snapshot.get("inventory", {}))
 	habitats = _duplicate_dictionary(snapshot.get("habitats", {}))
 	_normalize_habitats_state()
 	pet_states = _duplicate_dictionary(snapshot.get("pet_states", {}))
+	_normalize_pet_states()
 	npc_trust = _duplicate_dictionary(snapshot.get("npc_trust", {}))
 	npc_duel_records = _duplicate_dictionary(snapshot.get("npc_duel_records", {}))
 	active_quests = _coerce_string_array(snapshot.get("active_quests", []))
@@ -879,6 +907,8 @@ func _default_inventory() -> Dictionary:
 		"oil": 2,
 		"metal": 3,
 		"tea_leaf": 4,
+		"capture_ball": 2,
+		"healing_potion": 2,
 		"cloth": 3,
 		"ink": 2,
 		"paper": 3,
@@ -1123,12 +1153,16 @@ func add_companion(species_id: String, nickname: String = "", extra_state: Dicti
 		"star_level": 1,
 		"residence_habitat_id": "",
 		"temperament": String(profile.get("temperament", "")),
+		"known_skill_ids": _build_initial_pet_skill_ids(species_id),
+		"pending_skill_id": "",
+		"pending_skill_context": {},
 		"resident_tags": profile.get("resident_tags", []).duplicate(),
 	}
 	for key in extra_state.keys():
 		if String(key) == "uid":
 			continue
 		pet_state[key] = extra_state[key]
+	pet_state = _normalize_pet_state(pet_state)
 	pet_states[uid] = pet_state
 	register_species_seen(species_id)
 	add_journal_entry("新伙伴加入照料名册：%s。" % display_name)
@@ -1137,15 +1171,227 @@ func add_companion(species_id: String, nickname: String = "", extra_state: Dicti
 
 func get_companions() -> Array:
 	var result: Array = []
-	for pet in pet_states.values():
-		result.append(pet)
+	for pet_uid in pet_states.keys():
+		result.append(get_pet(String(pet_uid)))
 	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return String(a.get("uid", "")) < String(b.get("uid", ""))
 	)
 	return result
 
 func get_pet(pet_uid: String) -> Dictionary:
-	return pet_states.get(pet_uid, {})
+	if not pet_states.has(pet_uid):
+		return {}
+	var normalized := _normalize_pet_state(Dictionary(pet_states.get(pet_uid, {})).duplicate(true))
+	pet_states[pet_uid] = normalized
+	return normalized
+
+func get_pet_skill_ids(pet_uid: String) -> Array[String]:
+	return _coerce_string_array(get_pet(pet_uid).get("known_skill_ids", []))
+
+func get_pet_pending_skill_id(pet_uid: String) -> String:
+	return String(get_pet(pet_uid).get("pending_skill_id", ""))
+
+func pet_has_pending_skill(pet_uid: String) -> bool:
+	return not get_pet_pending_skill_id(pet_uid).is_empty()
+
+func discard_pet_pending_skill(pet_uid: String) -> bool:
+	if not pet_states.has(pet_uid):
+		return false
+	var pet := get_pet(pet_uid)
+	if String(pet.get("pending_skill_id", "")).is_empty():
+		return false
+	pet["pending_skill_id"] = ""
+	pet["pending_skill_context"] = {}
+	pet_states[pet_uid] = pet
+	return true
+
+func replace_pet_skill_with_pending(pet_uid: String, forget_skill_id: String) -> Dictionary:
+	if not pet_states.has(pet_uid):
+		return {"ok": false, "reason": "pet_missing", "pet_uid": pet_uid}
+	var pet := get_pet(pet_uid)
+	var pending_skill_id := String(pet.get("pending_skill_id", ""))
+	if pending_skill_id.is_empty():
+		return {"ok": false, "reason": "no_pending_skill", "pet_uid": pet_uid}
+	var skill_ids := _coerce_string_array(pet.get("known_skill_ids", []))
+	var forget_index := skill_ids.find(forget_skill_id)
+	if forget_index == -1:
+		return {"ok": false, "reason": "skill_not_known", "pet_uid": pet_uid, "forget_skill_id": forget_skill_id}
+	skill_ids[forget_index] = pending_skill_id
+	pet["known_skill_ids"] = _prune_pet_skill_ids(skill_ids, String(pet.get("species_id", "")))
+	pet["pending_skill_id"] = ""
+	pet["pending_skill_context"] = {}
+	pet_states[pet_uid] = pet
+	return {
+		"ok": true,
+		"pet_uid": pet_uid,
+		"forgot_skill_id": forget_skill_id,
+		"learned_skill_id": pending_skill_id,
+		"known_skill_ids": get_pet_skill_ids(pet_uid),
+	}
+
+func _normalize_pet_states() -> void:
+	var normalized := {}
+	for pet_uid in pet_states.keys():
+		var pet: Dictionary = Dictionary(pet_states[pet_uid]).duplicate(true)
+		normalized[String(pet_uid)] = _normalize_pet_state(pet)
+	pet_states = normalized
+
+func _normalize_pet_state(pet: Dictionary) -> Dictionary:
+	if pet.is_empty():
+		return {}
+	var species_id := String(pet.get("species_id", ""))
+	var default_skill_ids := _build_initial_pet_skill_ids(species_id)
+	var known_skill_ids := _coerce_string_array(pet.get("known_skill_ids", pet.get("skills", default_skill_ids)))
+	if known_skill_ids.is_empty():
+		known_skill_ids = default_skill_ids
+	pet["known_skill_ids"] = _prune_pet_skill_ids(known_skill_ids, species_id)
+	var pending_skill_id := String(pet.get("pending_skill_id", pet.get("pending_skill", "")))
+	if pending_skill_id.is_empty() \
+	or DataRepository.get_skill(pending_skill_id).is_empty() \
+	or Array(pet.get("known_skill_ids", [])).has(pending_skill_id):
+		pending_skill_id = ""
+	pet["pending_skill_id"] = pending_skill_id
+	pet["pending_skill_context"] = _duplicate_dictionary(pet.get("pending_skill_context", {}))
+	pet.erase("pending_skill")
+	pet["bond_level"] = maxi(1, int(pet.get("bond_level", 1)))
+	pet["star_level"] = clampi(int(pet.get("star_level", 1)), 1, 3)
+	return pet
+
+func _build_initial_pet_skill_ids(species_id: String) -> Array[String]:
+	var known_skill_ids: Array[String] = []
+	var capacity := _max_skill_slots_for_species(species_id)
+	var starting_count := mini(DataRepository.get_pet_starting_skill_count(species_id), capacity)
+	for skill_id in DataRepository.get_pet_species_skill_ids(species_id):
+		if DataRepository.get_skill(skill_id).is_empty():
+			continue
+		if known_skill_ids.has(skill_id):
+			continue
+		known_skill_ids.append(skill_id)
+		if known_skill_ids.size() >= starting_count:
+			break
+	return known_skill_ids
+
+func _prune_pet_skill_ids(raw_skill_ids: Array[String], species_id: String) -> Array[String]:
+	var result: Array[String] = []
+	var capacity := _max_skill_slots_for_species(species_id)
+	for skill_id in raw_skill_ids:
+		if skill_id.is_empty() or result.has(skill_id):
+			continue
+		if DataRepository.get_skill(skill_id).is_empty():
+			continue
+		result.append(skill_id)
+		if result.size() >= capacity:
+			break
+	return result
+
+func _max_skill_slots_for_species(species_id: String) -> int:
+	return mini(MAX_PET_SKILL_SLOTS, DataRepository.get_pet_skill_capacity(species_id))
+
+func _resolve_pet_stage_growth_events(pet_uid: String, stage: int = -1) -> Dictionary:
+	if not pet_states.has(pet_uid):
+		return {}
+	var pet := get_pet(pet_uid)
+	var current_stage := stage if stage > 0 else int(pet.get("star_level", 1))
+	var applied_events: Array = []
+	var learned_skill_ids: Array[String] = []
+	var pending_skill_id := ""
+	var evolved_to := ""
+	for raw_event in DataRepository.get_pet_stage_events(String(pet.get("species_id", "")), current_stage):
+		var event: Dictionary = Dictionary(raw_event).duplicate(true)
+		var event_type := String(event.get("type", ""))
+		if event_type.is_empty():
+			continue
+		var event_report := _apply_pet_growth_event(pet, event, current_stage)
+		if event_report.is_empty():
+			continue
+		applied_events.append(event_report)
+		if event_report.has("learned_skill_id"):
+			learned_skill_ids.append(String(event_report.get("learned_skill_id", "")))
+		if not String(event_report.get("pending_skill_id", "")).is_empty():
+			pending_skill_id = String(event_report.get("pending_skill_id", ""))
+		if not String(event_report.get("evolved_to", "")).is_empty():
+			evolved_to = String(event_report.get("evolved_to", ""))
+		if not String(pet.get("pending_skill_id", "")).is_empty():
+			break
+	pet_states[pet_uid] = _normalize_pet_state(pet)
+	return {
+		"pet_uid": pet_uid,
+		"stage": current_stage,
+		"species_id": String(pet.get("species_id", "")),
+		"applied_events": applied_events,
+		"learned_skill_ids": learned_skill_ids,
+		"pending_skill_id": pending_skill_id,
+		"evolved_to": evolved_to,
+	}
+
+func _apply_pet_growth_event(pet: Dictionary, event: Dictionary, stage: int) -> Dictionary:
+	var event_type := String(event.get("type", ""))
+	match event_type:
+		"learn_species_skill", "learn_skill":
+			var skill_id := _resolve_growth_event_skill_id(pet, event)
+			if skill_id.is_empty():
+				return {}
+			var learn_result := _try_pet_learn_skill(pet, skill_id, {
+				"stage": stage,
+				"event_type": event_type,
+				"species_id": String(pet.get("species_id", "")),
+			})
+			if String(learn_result.get("status", "")) == "already_known":
+				return {}
+			return learn_result
+		"evolve_to":
+			var target_species_id := String(event.get("target_species_id", ""))
+			if target_species_id.is_empty() or DataRepository.get_species(target_species_id).is_empty():
+				return {}
+			if target_species_id == String(pet.get("species_id", "")):
+				return {}
+			pet["species_id"] = target_species_id
+			pet["known_skill_ids"] = _prune_pet_skill_ids(_coerce_string_array(pet.get("known_skill_ids", [])), target_species_id)
+			if not bool(pet.get("nickname_locked", false)):
+				pet["display_name"] = String(DataRepository.get_species(target_species_id).get("name", pet.get("display_name", target_species_id)))
+			return {
+				"status": "evolved",
+				"event_type": event_type,
+				"evolved_to": target_species_id,
+			}
+		_:
+			return {}
+
+func _resolve_growth_event_skill_id(pet: Dictionary, event: Dictionary) -> String:
+	if String(event.get("type", "")) == "learn_skill":
+		return String(event.get("skill_id", ""))
+	var skill_slot := int(event.get("skill_slot", 0))
+	if skill_slot <= 0:
+		return ""
+	var skill_pool := DataRepository.get_pet_species_skill_ids(String(pet.get("species_id", "")))
+	var index := skill_slot - 1
+	if index < 0 or index >= skill_pool.size():
+		return ""
+	return String(skill_pool[index])
+
+func _try_pet_learn_skill(pet: Dictionary, skill_id: String, pending_context: Dictionary = {}) -> Dictionary:
+	if skill_id.is_empty() or DataRepository.get_skill(skill_id).is_empty():
+		return {"status": "invalid_skill", "skill_id": skill_id}
+	var known_skill_ids := _coerce_string_array(pet.get("known_skill_ids", []))
+	if known_skill_ids.has(skill_id):
+		return {"status": "already_known", "skill_id": skill_id}
+	var capacity := _max_skill_slots_for_species(String(pet.get("species_id", "")))
+	if known_skill_ids.size() < capacity:
+		known_skill_ids.append(skill_id)
+		pet["known_skill_ids"] = _prune_pet_skill_ids(known_skill_ids, String(pet.get("species_id", "")))
+		return {
+			"status": "learned",
+			"learned_skill_id": skill_id,
+			"event_type": String(pending_context.get("event_type", "")),
+		}
+	pet["pending_skill_id"] = skill_id
+	pet["pending_skill_context"] = pending_context.duplicate(true)
+	return {
+		"status": "pending_replace",
+		"pending_skill_id": skill_id,
+		"current_skill_ids": known_skill_ids.duplicate(),
+		"event_type": String(pending_context.get("event_type", "")),
+	}
 
 func is_player_actor_id(actor_id: String) -> bool:
 	return actor_id == PLAYER_ACTOR_ID
@@ -2180,6 +2426,56 @@ func _apply_meta_dice_modules() -> void:
 func get_current_season_rule() -> Dictionary:
 	return DataRepository.get_season_rule(season_id)
 
+func get_current_year_index() -> int:
+	return int(completed_seasons / maxi(1, SEASON_ORDER.size())) + 1
+
+func get_annual_competition_history() -> Array:
+	return _duplicate_array(annual_competition_history)
+
+func get_latest_annual_competition_result() -> Dictionary:
+	return _duplicate_dictionary(latest_annual_competition_result)
+
+func get_annual_competition_result(year_index: int = -1) -> Dictionary:
+	var target_year := year_index if year_index > 0 else get_current_year_index()
+	for raw_result in annual_competition_history:
+		var result: Dictionary = _duplicate_dictionary(raw_result)
+		if int(result.get("year_index", 0)) == target_year:
+			return result
+	return {}
+
+func has_annual_competition_result(year_index: int = -1) -> bool:
+	return not get_annual_competition_result(year_index).is_empty()
+
+func has_annual_competition_reminder(year_index: int = -1) -> bool:
+	var target_year := year_index if year_index > 0 else get_current_year_index()
+	return annual_competition_reminder_years.has(target_year)
+
+func mark_annual_competition_reminder(year_index: int = -1) -> void:
+	var target_year := year_index if year_index > 0 else get_current_year_index()
+	if target_year <= 0 or annual_competition_reminder_years.has(target_year):
+		return
+	annual_competition_reminder_years.append(target_year)
+	annual_competition_reminder_years.sort()
+
+func record_annual_competition_result(result: Dictionary) -> void:
+	if result.is_empty():
+		return
+	var stored := _duplicate_dictionary(result)
+	var target_year := int(stored.get("year_index", get_current_year_index()))
+	stored["year_index"] = target_year
+	for index in range(annual_competition_history.size()):
+		var existing: Dictionary = _duplicate_dictionary(annual_competition_history[index])
+		if int(existing.get("year_index", 0)) != target_year:
+			continue
+		annual_competition_history[index] = stored
+		latest_annual_competition_result = stored.duplicate(true)
+		return
+	annual_competition_history.append(stored)
+	annual_competition_history.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("year_index", 0)) < int(b.get("year_index", 0))
+	)
+	latest_annual_competition_result = stored.duplicate(true)
+
 func set_trait_runtime_bonus(bonus: Dictionary) -> void:
 	active_trait_runtime_bonus = bonus.duplicate(true)
 	trait_runtime_dirty = false
@@ -2731,18 +3027,53 @@ func unlock_habitat(habitat_id: String) -> void:
 func has_cleared_dojo(dojo_id: String, tier: String) -> bool:
 	return bool(dojo_clear_flags.get("%s:%s" % [dojo_id, tier], false))
 
-func mark_dojo_clear(dojo_id: String, tier: String, first_clear: bool) -> void:
+func mark_dojo_clear(dojo_id: String, tier: String, first_clear: bool) -> Array[String]:
 	dojo_clear_flags["%s:%s" % [dojo_id, tier]] = true
 	failed_dojo_streak = 0
+	var unlocked_skills := _grant_dojo_traversal_skill_awards(dojo_id, tier)
 	if first_clear:
 		var dojo := DataRepository.get_dojo(dojo_id)
 		var unlocks: Array = dojo.get("unlock_on_clear", {}).get(tier, [])
 		for habitat_id in unlocks:
 			unlock_habitat(String(habitat_id))
 	refresh_season_unlocks()
+	return unlocked_skills
 
 func note_dojo_failure() -> void:
 	failed_dojo_streak += 1
+
+func get_traversal_skill_name(skill_id: String) -> String:
+	return String(TRAVERSAL_SKILL_NAMES.get(skill_id, skill_id))
+
+func get_traversal_skill_ids() -> Array[String]:
+	return traversal_skills.duplicate()
+
+func has_traversal_skill(skill_id: String) -> bool:
+	return traversal_skills.has(skill_id)
+
+func learn_traversal_skill(skill_id: String) -> bool:
+	if skill_id.is_empty() or has_traversal_skill(skill_id):
+		return false
+	traversal_skills.append(skill_id)
+	traversal_skills.sort()
+	return true
+
+func preview_dojo_traversal_skill_awards(dojo_id: String, tier: String) -> Array[String]:
+	var key := "%s:%s" % [dojo_id, tier]
+	var skill_ids: Array[String] = []
+	for raw_skill_id in Array(DOJO_TRAVERSAL_SKILL_AWARDS.get(key, [])):
+		var skill_id := String(raw_skill_id)
+		if skill_id.is_empty() or skill_ids.has(skill_id):
+			continue
+		skill_ids.append(skill_id)
+	return skill_ids
+
+func _grant_dojo_traversal_skill_awards(dojo_id: String, tier: String) -> Array[String]:
+	var unlocked: Array[String] = []
+	for skill_id in preview_dojo_traversal_skill_awards(dojo_id, tier):
+		if learn_traversal_skill(skill_id):
+			unlocked.append(skill_id)
+	return unlocked
 
 func get_current_dojo_rotation() -> Array:
 	return get_current_season_rule().get("dojo_rotation", []).duplicate()
@@ -2946,20 +3277,25 @@ func _merge_species_star(species_id: String, star_level: int) -> Dictionary:
 			base_pet["display_name"] = String(DataRepository.get_species(next_species_id).get("name", previous_name))
 	if not bool(base_pet.get("nickname_locked", false)) and evolution_chain.size() >= next_star:
 		base_pet["display_name"] = String(evolution_chain[next_star - 1])
-	pet_states[base_uid] = base_pet
+	pet_states[base_uid] = _normalize_pet_state(base_pet)
+	var growth_result := _resolve_pet_stage_growth_events(base_uid, next_star)
 	for consume_uid in consume_uids:
 		_erase_pet(consume_uid)
 	_sync_roster_slots()
-	register_species_seen(String(base_pet.get("species_id", species_id)))
+	var final_pet := get_pet(base_uid)
+	register_species_seen(String(final_pet.get("species_id", species_id)))
 	return {
 		"ok": true,
 		"species_id": species_id,
-		"new_species_id": String(base_pet.get("species_id", species_id)),
+		"new_species_id": String(final_pet.get("species_id", species_id)),
 		"pet_uid": base_uid,
 		"old_star": star_level,
 		"new_star": next_star,
 		"old_name": previous_name,
-		"new_name": String(base_pet.get("display_name", previous_name)),
+		"new_name": String(final_pet.get("display_name", previous_name)),
+		"known_skill_ids": get_pet_skill_ids(base_uid),
+		"pending_skill_id": get_pet_pending_skill_id(base_uid),
+		"growth_result": growth_result,
 	}
 
 func _get_next_evolution_requirements(species_id: String, species_profile: Dictionary) -> Dictionary:

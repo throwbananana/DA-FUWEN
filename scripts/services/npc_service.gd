@@ -8,6 +8,7 @@ const MonsterInstance = preload("res://scripts/monster_instance.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
 const StoryServiceScript = preload("res://scripts/services/story_service.gd")
 const MinigameServiceScript = preload("res://scripts/services/minigame_service.gd")
+const BattleRosterServiceScript = preload("res://scripts/services/battle_roster_service.gd")
 
 const INTRO_DUEL_BASE_TRUST_WIN := 2
 const INTRO_DUEL_BASE_TRUST_LOSE := 0
@@ -17,6 +18,7 @@ var npc_route_service = NpcRouteServiceScript.new()
 var localization_service := LocalizationService.new()
 var story_service := StoryServiceScript.new()
 var minigame_service := MinigameServiceScript.new()
+var battle_roster_service := BattleRosterServiceScript.new()
 
 func get_visible_npcs(habitat_id: String) -> Array:
 	return npc_route_service.get_visible_npcs(habitat_id)
@@ -80,7 +82,9 @@ func prepare_intro_duel(npc_id: String, habitat_id: String) -> Dictionary:
 			"enemy_attack_penalty": 0,
 			"consume_minigame_bonus": minigame_service.has_pending_bonus(),
 			"round_limit": INTRO_DUEL_ROUND_LIMIT,
+			"allow_escape": false,
 			"allies": _build_allies(),
+			"ally_reserve": battle_roster_service.build_reserve_allies(),
 			"enemies": _build_intro_duel_enemies(npc, enemy_species_ids)
 		}
 	}
@@ -187,17 +191,7 @@ func _collect_unlocked_rewards(npc: Dictionary, trust_now: int) -> Array:
 	return unlocked
 
 func _build_allies() -> Array:
-	var allies: Array = []
-	for pet_uid in GameState.get_battle_party_uids():
-		var pet := GameState.get_pet(pet_uid)
-		if pet.is_empty():
-			continue
-		var star_level := int(pet.get("star_level", 1))
-		var level := _pet_level_for_battle(pet)
-		var unit := MonsterInstance.new(String(pet.get("species_id", "")), level, star_level)
-		unit.display_name = String(pet.get("display_name", unit.display_name))
-		allies.append(unit)
-	return allies
+	return battle_roster_service.build_active_allies()
 
 func _build_intro_duel_enemies(npc: Dictionary, enemy_species_ids: Array[String]) -> Array:
 	var enemies: Array = []

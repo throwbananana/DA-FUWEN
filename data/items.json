@@ -298,6 +298,37 @@
       "use_mode": "active"
     },
     {
+      "id": "capture_ball",
+      "name": "捕捉球",
+      "type": "consumable",
+      "stack_limit": 99,
+      "sell_price": 10,
+      "tags": [
+        "consumable",
+        "battle",
+        "capture"
+      ],
+      "target_rule": "battle_enemy_single",
+      "effect_id": "battle_capture",
+      "use_mode": "active"
+    },
+    {
+      "id": "healing_potion",
+      "name": "疗伤药",
+      "type": "consumable",
+      "stack_limit": 99,
+      "sell_price": 10,
+      "tags": [
+        "consumable",
+        "battle",
+        "healing"
+      ],
+      "target_rule": "battle_ally_single",
+      "effect_id": "battle_heal_small",
+      "effect_value": 10,
+      "use_mode": "active"
+    },
+    {
       "id": "repair_kit",
       "name": "修理包",
       "type": "tool",

@@ -33,6 +33,8 @@ const LocalizationService = preload("res://scripts/services/localization_service
 const NurseryService = preload("res://scripts/services/nursery_service.gd")
 const BulletinService = preload("res://scripts/services/bulletin_service.gd")
 const MinigameService = preload("res://scripts/services/minigame_service.gd")
+const AnnualCompetitionService = preload("res://scripts/services/annual_competition_service.gd")
+const BattleRosterServiceScript = preload("res://scripts/services/battle_roster_service.gd")
 
 const GAME_TITLE := "雾野市"
 const INVENTORY_RESOURCE_TYPES: Array[String] = ["material", "rare_material"]
@@ -186,6 +188,8 @@ var localization_service := LocalizationService.new()
 var nursery_service := NurseryService.new()
 var bulletin_service := BulletinService.new()
 var minigame_service := MinigameService.new()
+var annual_competition_service := AnnualCompetitionService.new()
+var battle_roster_service := BattleRosterServiceScript.new()
 var story_service := StoryService.new()
 var story_director = StoryDirector.new()
 var cutscene_service := CutsceneService.new()
@@ -1409,6 +1413,7 @@ func start_new_game() -> void:
 	if _stage_transition_layer != null:
 		_stage_transition_layer.visible = false
 	_assign_weekly_objective()
+	_maybe_notify_annual_competition_reminder()
 	_push_log("%s的日子开始了。先慢慢在城里走走，认识人，也给自己找个落脚的节奏。" % _season_name())
 	for modifier_line in run_modifier_service.format_lines(GameState.run_modifiers):
 		_push_log("本局词缀：%s" % modifier_line)
@@ -1437,6 +1442,7 @@ func _apply_run_payload(payload: Dictionary) -> bool:
 	_restore_scene_runtime_state(payload.get("scene_state", {}))
 	runtime_session_started = true
 	_refresh_board_region(true)
+	_maybe_notify_annual_competition_reminder()
 	current_node_id = GameState.current_board_node_id
 	_update_ui()
 	return true
@@ -1612,6 +1618,7 @@ func _begin_next_day() -> void:
 		if GameState.advance_to_next_season():
 			_refresh_board_region(true)
 			_assign_weekly_objective()
+			_maybe_notify_annual_competition_reminder()
 			_play_stage_transition("%s来临" % _season_name(), "区域棋盘、周目标与路线分叉已经刷新。", _season_fx_color(GameState.season_id))
 			_push_log("%s来临，区域棋盘、周目标与路线分叉已刷新。" % _season_name())
 		else:
@@ -2195,6 +2202,7 @@ func _on_base_pressed(opened_from_travel: bool = false) -> void:
 			"badge_count": GameState.badge_count,
 			"season_points": GameState.season_points,
 			"dojo_rotation": _active_dojo_names(),
+			"annual_competition_text": _annual_competition_status_text(),
 		},
 		"inventory": GameState.inventory,
 		"companions": _build_companion_summaries(),
@@ -2724,6 +2732,7 @@ func _show_dojo_result(payload: Dictionary) -> void:
 	var dojo: Dictionary = payload.get("dojo", {})
 	var tier := String(payload.get("tier", "tier_1"))
 	var reward_result: Dictionary = payload.get("reward_result", {})
+	var unlocked_traversal_skills: Array = payload.get("unlocked_traversal_skills", []).duplicate()
 	var lines: Array[String] = []
 	if payload.has("challenge_score") and payload.has("required_rank"):
 		lines.append("[b]当前评分[/b] %d / %d" % [int(payload.get("challenge_score", 0)), int(payload.get("required_rank", 0))])
@@ -2739,10 +2748,14 @@ func _show_dojo_result(payload: Dictionary) -> void:
 		lines.append(result_line)
 		if not reward_text.is_empty():
 			lines.append("[b]获得[/b] %s" % reward_text)
+		if not unlocked_traversal_skills.is_empty():
+			lines.append("[b]学会通行技[/b] %s" % _format_traversal_skill_names(unlocked_traversal_skills))
 		var ring_result := board_progression_service.try_unlock_outer_ring_from_dojo(String(dojo.get("id", "")), tier)
 		if bool(ring_result.get("ok", false)):
 			_apply_ring_unlock_result(ring_result, false)
 			lines.append("[b]外环变化[/b] %s" % String(ring_result.get("message", "新的外环已经展开。")))
+		elif not ring_result.is_empty():
+			lines.append("[b]外环条件[/b] %s" % String(ring_result.get("message", "更外层还差一点条件。")))
 		_push_log("%s 通过了 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
 	else:
 		lines.append("[b]结果[/b] 暂未通过 %s" % _dojo_tier_name(tier))
@@ -3219,6 +3232,9 @@ func _prepare_environment_battle(node: Dictionary) -> void:
 		"",
 		"你刚靠近这里，就把附近游荡的个体惊了出来。",
 	]
+	var special_encounter_hint := String(node.get("special_encounter_hint", ""))
+	if not special_encounter_hint.is_empty():
+		body_lines.append("[b]这一圈常见个体[/b] %s" % special_encounter_hint)
 	if not enemy_names.is_empty():
 		body_lines.append("[b]出现个体[/b] %s" % " / ".join(enemy_names))
 	body_lines.append("这次会直接进入遭遇战，胜利后还能尝试捕缚。")
@@ -3246,10 +3262,12 @@ func _build_environment_battle_config(node: Dictionary) -> Dictionary:
 	var habitat_id := String(node.get("source_habitat_id", ""))
 	if habitat_id.is_empty() or GameState.get_party_uids().size() < 2:
 		return {}
-	var first_encounter := encounter_service.roll_encounter(habitat_id, "environment")
+	var special_pool: Array = Array(node.get("special_encounter_pool", [])).duplicate(true)
+	var using_special_pool := not special_pool.is_empty()
+	var first_encounter := encounter_service.roll_custom_entries(special_pool, "environment") if using_special_pool else encounter_service.roll_encounter(habitat_id, "environment")
 	if not bool(first_encounter.get("ok", false)):
 		return {}
-	var second_encounter := encounter_service.roll_encounter(habitat_id, "environment")
+	var second_encounter := encounter_service.roll_custom_entries(special_pool, "environment") if using_special_pool else encounter_service.roll_encounter(habitat_id, "environment")
 	var enemy_level := clampi(GameState.get_progression_rank() + 1, 1, 6)
 	var first_species_id := String(first_encounter.get("species_id", ""))
 	var second_species_id := String(second_encounter.get("species_id", first_species_id))
@@ -3259,6 +3277,12 @@ func _build_environment_battle_config(node: Dictionary) -> Dictionary:
 		"环境：%s" % String(node.get("focus", "行进 / 缓冲")),
 		"情绪：%s" % String(first_encounter.get("mood_id", "wild")),
 	]
+	var special_loop_name := String(node.get("special_loop_name", ""))
+	if not special_loop_name.is_empty():
+		subtitle_lines.append("环带：%s" % special_loop_name)
+	var special_encounter_hint := String(node.get("special_encounter_hint", ""))
+	if not special_encounter_hint.is_empty():
+		subtitle_lines.append("群落：%s" % special_encounter_hint)
 	if not pending_bonus_text.is_empty():
 		subtitle_lines.append(pending_bonus_text)
 	return {
@@ -3266,6 +3290,7 @@ func _build_environment_battle_config(node: Dictionary) -> Dictionary:
 		"subtitle": "\n".join(subtitle_lines),
 		"kind": "wild",
 		"allow_capture": true,
+		"allow_escape": true,
 		"ally_first_round_attack_bonus": false,
 		"ally_attack_bonus": int(pending_bonus.get("ally_attack_bonus", 0)),
 		"ally_speed_bonus": int(pending_bonus.get("ally_speed_bonus", 0)),
@@ -3274,8 +3299,11 @@ func _build_environment_battle_config(node: Dictionary) -> Dictionary:
 		"ally_guard_bonus": 0.0,
 		"enemy_attack_penalty": 0,
 		"consume_minigame_bonus": minigame_service.has_pending_bonus(),
+		"encounter_origin": "special_loop" if using_special_pool else "habitat",
+		"special_loop_id": String(node.get("special_loop_id", "")),
 		"round_limit": 6,
 		"allies": _build_player_battle_team(),
+		"ally_reserve": _build_player_battle_reserve(),
 		"enemies": [
 			MonsterInstance.new(first_species_id, enemy_level, 1),
 			MonsterInstance.new(second_species_id, enemy_level, 1),
@@ -3283,23 +3311,17 @@ func _build_environment_battle_config(node: Dictionary) -> Dictionary:
 	}
 
 func _build_player_battle_team() -> Array:
-	var allies: Array = []
-	for pet_uid in GameState.get_party_uids():
-		var pet := GameState.get_pet(String(pet_uid))
-		if pet.is_empty():
-			continue
-		var star_level := int(pet.get("star_level", 1))
-		var level := clampi(1 + int(GameState.get_habitat_rank_total() / 2) + int(pet.get("bond_level", 1)) - 1, 1, 6)
-		var unit := MonsterInstance.new(String(pet.get("species_id", "")), level, star_level)
-		unit.display_name = String(pet.get("display_name", unit.display_name))
-		allies.append(unit)
-	return allies
+	return battle_roster_service.build_active_allies()
+
+func _build_player_battle_reserve() -> Array:
+	return battle_roster_service.build_reserve_allies()
 
 func _resolve_environment_battle(result: Dictionary) -> void:
 	var payload := pending_environment_battle.duplicate(true)
 	pending_environment_battle.clear()
 	var node_name := String(payload.get("node_name", "沿途环境"))
 	var body_lines: Array[String] = []
+	var escaped := bool(result.get("escaped", false))
 	if bool(result.get("player_won", false)):
 		body_lines.append("[b]%s[/b] 已经被稳定下来。" % node_name)
 		var captured_species := String(result.get("captured_species", ""))
@@ -3314,6 +3336,11 @@ func _resolve_environment_battle(result: Dictionary) -> void:
 			_push_log("处理完 %s 的遭遇后，顺手带回了 %s。" % [node_name, _format_item_cost(reward)])
 		else:
 			_push_log("%s 的野外遭遇已经处理完毕。" % node_name)
+	elif escaped:
+		GameState.add_node_danger(current_node_id, 1)
+		body_lines.append("[b]%s[/b] 还没稳住，你先带队撤开了。" % node_name)
+		body_lines.append("这里的危险度上升到 %d / 3。" % GameState.get_node_danger(current_node_id))
+		_push_log("%s 的野外遭遇还没处理完，队伍先撤开了，危险度继续上升。" % node_name)
 	else:
 		GameState.add_node_danger(current_node_id, 1)
 		body_lines.append("[b]%s[/b] 把你逼退了。" % node_name)
@@ -4206,6 +4233,35 @@ func _resolve_weekly_settlement() -> void:
 	GameState.weekly_objective.clear()
 	GameState.weekly_progress.clear()
 
+func _annual_competition_status_text() -> String:
+	var status := annual_competition_service.build_status_snapshot()
+	return String(status.get("summary", ""))
+
+func _maybe_notify_annual_competition_reminder() -> void:
+	var reminder := annual_competition_service.maybe_issue_month_reminder()
+	if reminder.is_empty() or not bool(reminder.get("ok", false)):
+		return
+	_push_log(String(reminder.get("log_line", "")))
+
+func _resolve_annual_competition_if_needed() -> Dictionary:
+	var result := annual_competition_service.resolve_current_year()
+	if result.is_empty() or not bool(result.get("ok", false)):
+		return {}
+	_push_log(String(result.get("log_line", "")))
+	for line in Array(result.get("leaderboard_lines", [])).slice(0, 3):
+		_push_log("年赛榜：%s。" % String(line))
+	return result
+
+func _annual_competition_result_summary(result: Dictionary) -> String:
+	if result.is_empty():
+		return ""
+	var placement := int(result.get("player_placement", 0))
+	var reward_text := String(result.get("player_reward_text", ""))
+	var summary := "第 %d 名" % placement
+	if not reward_text.is_empty():
+		summary += "，获得 %s" % reward_text
+	return summary
+
 func _resolve_season_boss_reward() -> void:
 	var boss_rule := DataRepository.get_season_boss_rule(GameState.season_id)
 	if boss_rule.is_empty():
@@ -4288,6 +4344,7 @@ func _apply_visit_growth_resonance(bond_gains: Dictionary) -> Array[String]:
 	return lines
 
 func _finish_season() -> void:
+	var annual_competition_result := _resolve_annual_competition_if_needed()
 	season_finished = true
 	awaiting_destination = false
 	GameState.clear_run_save(GameState.get_selected_run_slot_id())
@@ -4306,6 +4363,9 @@ func _finish_season() -> void:
 		int(reward_result.get("points", 0)),
 		GameState.exploration_points_total,
 	]
+	var annual_summary := _annual_competition_result_summary(annual_competition_result)
+	if not annual_summary.is_empty():
+		action_hint_label.text += "\n年赛：%s" % annual_summary
 	_play_stage_transition(
 		"这一年的日子先告一段落",
 		"本局探索点 +%d\n累计探索点 %d" % [int(reward_result.get("points", 0)), GameState.exploration_points_total],
@@ -5358,6 +5418,19 @@ func _dojo_tier_name(tier: String) -> String:
 		_:
 			return tier
 
+func _format_traversal_skill_names(skill_ids: Array) -> String:
+	var labels: Array[String] = []
+	for raw_skill_id in skill_ids:
+		var skill_id := String(raw_skill_id)
+		if skill_id.is_empty():
+			continue
+		var label := GameState.get_traversal_skill_name(skill_id)
+		if not labels.has(label):
+			labels.append(label)
+	if labels.is_empty():
+		return "尚未掌握"
+	return " / ".join(labels)
+
 func _format_reward_bundle(reward_result: Dictionary) -> String:
 	var parts: Array[String] = []
 	var items := _format_item_cost(reward_result.get("items", {}))
@@ -5396,6 +5469,7 @@ func _build_main_menu_run_summary() -> String:
 	lines.append("周目标：%s" % weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress))
 	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
 	lines.append("待命人口：%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity])
+	lines.append("通行技：%s" % _format_traversal_skill_names(GameState.get_traversal_skill_ids()))
 	lines.append("饥饿：%d / %d" % [GameState.hunger, GameState.max_hunger])
 	lines.append("徽章：%d ｜ 季节点数：%d ｜ 照料进度：%d" % [
 		GameState.badge_count,
@@ -5403,6 +5477,9 @@ func _build_main_menu_run_summary() -> String:
 		GameState.get_care_progress(),
 	])
 	lines.append("资源与补给：打开背包页 / 手册查看")
+	var annual_competition_text := _annual_competition_status_text()
+	if not annual_competition_text.is_empty():
+		lines.append("年赛：%s" % annual_competition_text)
 	if not GameState.run_modifiers.is_empty():
 		lines.append("")
 		lines.append("[b]本局词缀[/b]")
@@ -5462,9 +5539,15 @@ func _build_system_sections() -> Array:
 		for line in run_modifier_service.format_lines(GameState.run_modifiers):
 			quest_lines.append("- %s" % line)
 
+	var annual_competition_text := _annual_competition_status_text()
+	if not annual_competition_text.is_empty():
+		quest_lines.append("")
+		quest_lines.append("[b]年赛[/b] %s" % annual_competition_text)
+
 	var battle_lines: Array[String] = [
 		"[b]双打位[/b] %s" % " / ".join(_battle_slot_names()),
 		"[b]宠物栏容量[/b] %d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity],
+		"[b]通行技[/b] %s" % _format_traversal_skill_names(GameState.get_traversal_skill_ids()),
 		"[b]已激活羁绊[/b] %s" % " / ".join(synergy_service.format_active_lines(synergy_report, 4)),
 	]
 	if not synergy_service.format_nearby_lines(synergy_report, 3).is_empty():

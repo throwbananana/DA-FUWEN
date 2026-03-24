@@ -233,6 +233,188 @@
           "complete_arc": true
         }
       ]
+    },
+    {
+      "id": "arc_greenbark_grove_route_signs",
+      "title": "青栎林的临时近路",
+      "priority": 50,
+      "start_conditions": {
+        "habitat_id": "greenbark_grove"
+      },
+      "beats": [
+        {
+          "id": "resolve",
+          "habitat_id": "greenbark_grove",
+          "npc_id": "grove_patrol",
+          "dialogue_id": "dlg_grove_patrol_seed_line",
+          "requires_events": [
+            "evt_grove_seed_path"
+          ],
+          "story_flags": [
+            "story_spire_arc_done"
+          ],
+          "set_story_flags": [
+            "story_grove_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_reed_mire_crossing_knots",
+      "title": "芦泽沼的渡线顺序",
+      "priority": 60,
+      "start_conditions": {
+        "habitat_id": "reed_mire"
+      },
+      "beats": [
+        {
+          "id": "resolve",
+          "habitat_id": "reed_mire",
+          "npc_id": "mire_guide",
+          "dialogue_id": "dlg_mire_guide_reed_knots",
+          "requires_events": [
+            "evt_mire_reed_knots"
+          ],
+          "story_flags": [
+            "story_grove_arc_done"
+          ],
+          "set_story_flags": [
+            "story_mire_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_saltglass_coast_return_tide",
+      "title": "盐镜海岸的回流判断",
+      "priority": 70,
+      "start_conditions": {
+        "habitat_id": "saltglass_coast"
+      },
+      "beats": [
+        {
+          "id": "resolve",
+          "habitat_id": "saltglass_coast",
+          "npc_id": "coast_keeper",
+          "dialogue_id": "dlg_coast_keeper_return_crate",
+          "requires_events": [
+            "evt_coast_return_crate"
+          ],
+          "story_flags": [
+            "story_mire_arc_done"
+          ],
+          "set_story_flags": [
+            "story_coast_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_thunder_meadow_stride_timing",
+      "title": "鸣雷草场的停步与爆发",
+      "priority": 80,
+      "start_conditions": {
+        "habitat_id": "thunder_meadow"
+      },
+      "beats": [
+        {
+          "id": "resolve",
+          "habitat_id": "thunder_meadow",
+          "npc_id": "storm_mentor",
+          "dialogue_id": "dlg_storm_mentor_markers",
+          "requires_events": [
+            "evt_meadow_charge_markers"
+          ],
+          "story_flags": [
+            "story_coast_arc_done"
+          ],
+          "set_story_flags": [
+            "story_meadow_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_broken_bridge_echo_gap",
+      "title": "回声断桥的回音差",
+      "priority": 90,
+      "start_conditions": {
+        "habitat_id": "echo_broken_bridge"
+      },
+      "beats": [
+        {
+          "id": "resolve",
+          "habitat_id": "echo_broken_bridge",
+          "npc_id": "bridge_scout",
+          "dialogue_id": "dlg_bridge_scout_echo_gap",
+          "requires_events": [
+            "evt_bridge_whistle_test"
+          ],
+          "story_flags": [
+            "story_meadow_arc_done"
+          ],
+          "set_story_flags": [
+            "story_bridge_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_frost_mirror_hold_point",
+      "title": "霜镜湖的守一点再看全局",
+      "priority": 100,
+      "start_conditions": {
+        "habitat_id": "frost_mirror_lake"
+      },
+      "beats": [
+        {
+          "id": "resolve",
+          "habitat_id": "frost_mirror_lake",
+          "npc_id": "mirror_keeper",
+          "dialogue_id": "dlg_mirror_keeper_reflection",
+          "requires_events": [
+            "evt_lake_mirror_fog"
+          ],
+          "story_flags": [
+            "story_bridge_arc_done"
+          ],
+          "set_story_flags": [
+            "story_lake_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_moonfen_second_echo",
+      "title": "月井边的第二道回响",
+      "priority": 110,
+      "start_conditions": {
+        "habitat_id": "moonfen_ruins"
+      },
+      "beats": [
+        {
+          "id": "resolve",
+          "habitat_id": "moonfen_ruins",
+          "npc_id": "ruin_diviner",
+          "dialogue_id": "dlg_ruin_diviner_second_echo",
+          "requires_events": [
+            "evt_moonfen_well_echo"
+          ],
+          "story_flags": [
+            "story_lake_arc_done"
+          ],
+          "set_story_flags": [
+            "story_moonfen_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
     }
   ]
 }

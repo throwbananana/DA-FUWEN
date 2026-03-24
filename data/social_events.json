@@ -354,6 +354,370 @@
         "监测站",
         "协作"
       ]
+    },
+    {
+      "id": "soc_post_rain_bench_wait",
+      "title": "驿站檐下的等雨空档",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "sky_post",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "innkeeper_yun"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "boarder_liu"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ],
+        "weather_in": [
+          "rain",
+          "storm"
+        ]
+      },
+      "summary": "{npc_a}把檐下最不进风的位置让出来后，{npc_b}也会顺手把最容易受潮的托管说明先压平。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}先把长凳往里挪了半掌，让来回进出的人不必一直侧身。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把几张快卷边的纸角按住，像是替第二天的忙乱提前留了点余裕。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "bench_shared",
+          "weight": 3,
+          "outcome": "这段等雨的时间没解决什么大事，却让驿站里“先替对方省一点麻烦”的默契更清楚了。",
+          "effects": {
+            "journal_entry": "转运镇夜记：真正稳住驿站节奏的，常常是那些替别人先挪开的半步。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "dry_edges",
+          "weight": 2,
+          "outcome": "{npc_b}把受潮最严重的那几张纸另压成一小叠，第二天清晨的人就不用从最乱的一堆里开始找了。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "转运站",
+        "天气"
+      ]
+    },
+    {
+      "id": "soc_platform_midnight_relay",
+      "title": "午夜交班前的最后一遍复述",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "ancient_platform",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "field_recorder"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "ruin_restorer"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "night"
+        ]
+      },
+      "summary": "{npc_a}会在交班前把最关键的两行记录重新念一遍，而{npc_b}只负责听有没有哪处顺序又被说反了。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}没有立刻翻页，只把刚才圈出来的那两组数据又慢慢念了一次。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}先听完，再把指尖点在最容易被误听成同一件事的那一列上。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "relay_order",
+          "weight": 3,
+          "outcome": "真正被保住的不是一页纸，而是这份记录仍然知道自己先说哪一句、后说哪一句。",
+          "effects": {
+            "journal_entry": "监测站夜记：交班时先复述顺序，再补结论，能把一半误差挡在夜里。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "spare_screw",
+          "weight": 2,
+          "outcome": "{npc_b}顺手把一颗差点滚走的小固定钉收好，明天一早就不必从头再找一遍。",
+          "effects": {
+            "items": {
+              "parts": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "监测站",
+        "夜间"
+      ]
+    },
+    {
+      "id": "soc_creek_stone_wrap",
+      "title": "浅滩边的暖石包角",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "crystal_creek",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "washer_grandma"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "stone_trader"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "clear",
+          "fog",
+          "mist"
+        ]
+      },
+      "summary": "{npc_a}会挑出更适合幼体靠着休息的暖石，而{npc_b}则只负责把边角磨得更不容易硌到背壳。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}先摸了摸石面的余温，再把太烫和太凉的都挪到一边。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}没多说话，只把最容易蹭到的一圈边缘又细细蹭平了一次。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "stone_fit",
+          "weight": 3,
+          "outcome": "暖石没有变贵重，但它终于更像是给小家伙们准备的，而不是给大人图省事准备的。",
+          "effects": {
+            "journal_entry": "晶溪照护记：真正好用的暖石，不止要暖，还要让靠上去的那一下足够安心。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "stone_chip_saved",
+          "weight": 2,
+          "outcome": "{npc_b}把磨下来的小石屑另外包起，说总有地方用得上这些不显眼的边角。",
+          "effects": {
+            "items": {
+              "stone_chip": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "晶溪",
+        "护理"
+      ]
+    },
+    {
+      "id": "soc_bazaar_spare_rhythm",
+      "title": "旧件摊前的敲击默契",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "copper_hammer_bazaar",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "tinker_bo"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "smith_ya"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "{npc_a}在讲旧件缺口的时候，{npc_b}会在一旁补上恰到好处的两三下敲击，让围观的人一下就听懂问题出在哪。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把旧零件举得不高，像是怕故事一旦喊得太响，真正的细节反而先丢了。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}只在最该出声的时候敲一下，剩下的时间都让摊前的人自己听回音。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "demo_sync",
+          "weight": 3,
+          "outcome": "摊前的人群没有立刻散去，因为他们第一次发现，旧件的“还能不能用”原来也能被慢慢听明白。",
+          "effects": {
+            "journal_entry": "机修市小记：讲得清和敲得准，是同一场演示里互相成全的两半。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "part_left",
+          "weight": 2,
+          "outcome": "{npc_a}把一枚暂时用不上的小件留给你，说等你哪天真听懂了，再决定把它装去哪。",
+          "effects": {
+            "items": {
+              "parts": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "机修市",
+        "旧件"
+      ]
     }
   ]
 }

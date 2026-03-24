@@ -501,6 +501,8 @@ func _legacy_type_for_node(node: Dictionary, node_lookup: Dictionary = {}) -> St
 	match type_id:
 		"camp":
 			return "camp"
+		"infirmary":
+			return "camp"
 		"bulletin":
 			return "research"
 		"minigame":

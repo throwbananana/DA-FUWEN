@@ -33,6 +33,7 @@ const LocalizationService = preload("res://scripts/services/localization_service
 const NurseryService = preload("res://scripts/services/nursery_service.gd")
 const BulletinService = preload("res://scripts/services/bulletin_service.gd")
 const MinigameService = preload("res://scripts/services/minigame_service.gd")
+const InfirmaryService = preload("res://scripts/services/infirmary_service.gd")
 const AnnualCompetitionService = preload("res://scripts/services/annual_competition_service.gd")
 const BattleRosterServiceScript = preload("res://scripts/services/battle_roster_service.gd")
 
@@ -188,6 +189,7 @@ var localization_service := LocalizationService.new()
 var nursery_service := NurseryService.new()
 var bulletin_service := BulletinService.new()
 var minigame_service := MinigameService.new()
+var infirmary_service := InfirmaryService.new()
 var annual_competition_service := AnnualCompetitionService.new()
 var battle_roster_service := BattleRosterServiceScript.new()
 var story_service := StoryService.new()
@@ -696,6 +698,8 @@ func _branch_node_intent(node: Dictionary) -> String:
 			return "先看公告"
 		"minigame":
 			return "带队热身"
+		"infirmary":
+			return "疗养收口"
 		"habitat":
 			return "稳着推进"
 		"settlement", "shop":
@@ -1960,6 +1964,10 @@ func _finalize_roll_arrival() -> void:
 		_show_minigame_stop(node)
 		_update_ui()
 		return
+	if type_id == "infirmary":
+		_show_infirmary_stop(node)
+		_update_ui()
+		return
 	if not current_visit_habitat_id.is_empty() and not GameState.is_habitat_unlocked(current_visit_habitat_id) and type_id != "event":
 		_show_locked_board_stop(node)
 		_update_ui()
@@ -2321,6 +2329,52 @@ func _show_minigame_result(result: Dictionary) -> void:
 		[],
 		"继续前进"
 	)
+
+func _show_infirmary_stop(node: Dictionary) -> void:
+	var payload: Dictionary = infirmary_service.build_stop_menu(node)
+	_push_log("路过 %s，这里可以免费做一轮主动疗养。" % String(payload.get("title", "疗养所")))
+	pending_context = {
+		"kind": "infirmary_menu",
+		"node_id": int(node.get("id", -1)),
+		"on_close": "finish_transit_stop",
+	}
+	decision_panel.open_panel(
+		String(payload.get("title", "疗养所")),
+		String(payload.get("body", "")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"先不休息"
+	)
+
+func _show_infirmary_result(payload: Dictionary, on_close: String) -> void:
+	pending_context = {"kind": "infirmary_result", "on_close": on_close}
+	decision_panel.open_panel(
+		String(payload.get("title", "疗养所")),
+		String(payload.get("body", "")),
+		[],
+		"继续前进"
+	)
+
+func _apply_forced_infirmary_transfer(defeated_node: Dictionary) -> Dictionary:
+	var infirmary_node := board_progression_service.find_best_infirmary_node(current_node_id)
+	if infirmary_node.is_empty():
+		var fallback: Dictionary = infirmary_service.resolve_forced_recovery({
+			"name": "临时医疗点",
+			"type": "infirmary",
+		}, defeated_node)
+		_push_log("战败后临时做了一轮紧急疗养，扣除了 %d 金。" % int(fallback.get("paid_gold", 0)))
+		return fallback
+
+	current_node_id = int(infirmary_node.get("id", current_node_id))
+	GameState.move_to_board_node(current_node_id)
+	GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(current_node_id))
+	board_view.set_current_node(current_node_id, true)
+
+	var report: Dictionary = infirmary_service.resolve_forced_recovery(infirmary_node, defeated_node)
+	_push_log("战败后被送往 %s 休整，疗养费扣除了 %d 金。" % [
+		String(infirmary_node.get("name", "疗养所")),
+		int(report.get("paid_gold", 0)),
+	])
+	return report
 
 func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
 	match step_id:
@@ -2766,6 +2820,8 @@ func _show_dojo_result(payload: Dictionary) -> void:
 		if not reward_text.is_empty():
 			lines.append("[b]安慰奖励[/b] %s" % reward_text)
 		_push_log("%s 暂时没能通过 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
+		lines.append("")
+		lines.append(String(_apply_forced_infirmary_transfer(board_lookup.get(current_node_id, {}).duplicate(true)).get("body", "")))
 	pending_context = {"kind": "dojo_result", "on_close": "finish_visit"}
 	decision_panel.open_panel("试炼结果", "\n".join(lines), [], "结束偶遇")
 
@@ -2940,6 +2996,12 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 			var node: Dictionary = board_lookup.get(int(context.get("node_id", -1)), {})
 			if not node.is_empty():
 				_show_minigame_result(minigame_service.resolve_board_minigame(node, choice_id))
+		"infirmary_menu":
+			var infirmary_node: Dictionary = board_lookup.get(int(context.get("node_id", -1)), {})
+			if not infirmary_node.is_empty() and choice_id == "rest":
+				var result: Dictionary = infirmary_service.resolve_voluntary_rest(infirmary_node)
+				_push_log("在 %s 主动做了一轮疗养，没有花钱。" % String(infirmary_node.get("name", "疗养所")))
+				_show_infirmary_result(result, "finish_transit_stop")
 		"resident_select":
 			_assign_resident(choice_id)
 		"build_select":
@@ -3222,6 +3284,7 @@ func _prepare_environment_battle(node: Dictionary) -> void:
 	for enemy in battle_config.get("enemies", []):
 		enemy_names.append(String(enemy.display_name))
 	pending_environment_battle = {
+		"node_id": int(node.get("id", current_node_id)),
 		"node_name": String(node.get("name", "沿途环境")),
 		"battle_config": battle_config,
 		"reward": _environment_travel_reward(node),
@@ -3346,6 +3409,10 @@ func _resolve_environment_battle(result: Dictionary) -> void:
 		body_lines.append("[b]%s[/b] 把你逼退了。" % node_name)
 		body_lines.append("这里的危险度上升到 %d / 3。" % GameState.get_node_danger(current_node_id))
 		_push_log("%s 的野外遭遇把队伍逼退了，危险度继续上升。" % node_name)
+		var defeated_node: Dictionary = board_lookup.get(int(payload.get("node_id", current_node_id)), {}).duplicate(true)
+		var infirmary_report: Dictionary = _apply_forced_infirmary_transfer(defeated_node if not defeated_node.is_empty() else {"ring_index": 0})
+		body_lines.append("")
+		body_lines.append(String(infirmary_report.get("body", "")))
 	pending_context = {"kind": "environment_battle_result", "on_close": "finish_transit_stop"}
 	decision_panel.open_panel("环境遭遇结果", "\n".join(body_lines), [], "继续前进")
 
@@ -3774,6 +3841,9 @@ func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
 		body_lines.append("[b]%s[/b] 记住了这场败局，但仍允许你之后再来偶遇。" % npc_name)
 		body_lines.append("基础信赖落在 %d。" % int(result.get("base_trust", 0)))
 		_push_log("第一次切磋没能赢过 %s，后续关系需要慢慢补。" % npc_name)
+		var infirmary_report: Dictionary = _apply_forced_infirmary_transfer(board_lookup.get(current_node_id, {}).duplicate(true))
+		body_lines.append("")
+		body_lines.append(String(infirmary_report.get("body", "")))
 	body_lines.append("当前信赖：%d" % int(result.get("trust", 0)))
 	var unlocked_lines: Array[String] = []
 	for entry in result.get("unlocked", []):
@@ -5318,6 +5388,7 @@ func _type_name(type_id: String) -> String:
 		"camp": return "营地"
 		"bulletin": return "公告板"
 		"minigame": return "小游戏格"
+		"infirmary": return "疗养所"
 		"empty": return "环境格"
 		"environment": return "环境格"
 		"event": return "事件格"

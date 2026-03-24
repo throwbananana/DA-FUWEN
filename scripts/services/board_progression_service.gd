@@ -143,6 +143,40 @@ const MINIGAME_VARIANTS := {
 	],
 }
 
+const INFIRMARY_VARIANTS := {
+	"spring": {
+		"description": "巡路医和照料员把这里布置成了能随时接队伍休整的轻疗点。",
+		"focus": "疗养 / 休整",
+	},
+	"summer": {
+		"description": "高压季里总得留一处能先降温、包扎和重新整顿呼吸的疗养点。",
+		"focus": "疗养 / 缓压",
+	},
+	"autumn": {
+		"description": "演武路线上专门留了这一处疗养棚，方便把伤势和节奏都先稳下来。",
+		"focus": "疗养 / 调整",
+	},
+	"winter": {
+		"description": "寒线队伍会把这里当成暖棚疗养站，先把身体和装备一起回温。",
+		"focus": "疗养 / 回温",
+	},
+}
+
+const SPECIAL_LOOP_INFIRMARY_VARIANTS := {
+	"sky_island": {
+		"name": "空岛风栈疗养台",
+		"description": "风栈上系着缓冲绳和热饮囊，是高空环带里专门留给失手队伍的安稳落脚点。",
+	},
+	"swamp": {
+		"name": "沼泽浮栈疗养棚",
+		"description": "浮栈边钉满了防陷木桩和药草包，正好能把陷泥后的队伍先托稳。",
+	},
+	"ocean": {
+		"name": "海潮泊位疗养舱",
+		"description": "涨潮线旁常备干燥布和热盐水，专门接应从外海路上退下来的队伍。",
+	},
+}
+
 const TIME_NAMES := {
 	"day": "白昼",
 	"evening": "傍晚",
@@ -282,6 +316,8 @@ var _ring_node_ids: Array = []
 var _ring_gate_nodes: Dictionary = {}
 var _current_progress: Dictionary = {}
 var _current_season_id := ""
+var _placed_settlement_infirmaries: Dictionary = {}
+var _placed_special_loop_infirmaries: Dictionary = {}
 
 func set_region_for_season(season_id: String) -> void:
 	_current_season_id = season_id
@@ -314,6 +350,47 @@ func get_nodes() -> Array:
 
 func get_node(node_id: int) -> Dictionary:
 	return Dictionary(node_lookup.get(node_id, {})).duplicate(true)
+
+func find_best_infirmary_node(from_node_id: int) -> Dictionary:
+	var candidates: Array = []
+	for raw_node in current_region.get("nodes", []):
+		var node := _normalize_node(raw_node)
+		if String(node.get("type", "")) != "infirmary":
+			continue
+		var node_id := int(node.get("id", -1))
+		if node_id < 0 or is_node_locked(node_id):
+			continue
+		candidates.append(node)
+	if candidates.is_empty():
+		return {}
+	if from_node_id == -1:
+		return Dictionary(candidates[0]).duplicate(true)
+
+	var from_node := get_node(from_node_id)
+	var preferred_habitat_id := String(from_node.get("habitat_id", ""))
+	var preferred_loop_id := String(from_node.get("special_loop_id", ""))
+	var best_score := INF
+	var best_node: Dictionary = Dictionary(candidates[0]).duplicate(true)
+	for raw_candidate in candidates:
+		var candidate: Dictionary = Dictionary(raw_candidate).duplicate(true)
+		var candidate_id := int(candidate.get("id", -1))
+		var score := 0.0
+		if not preferred_loop_id.is_empty():
+			if String(candidate.get("special_loop_id", "")) == preferred_loop_id:
+				score -= 600.0
+			elif not String(candidate.get("special_loop_id", "")).is_empty():
+				score += 120.0
+		if not preferred_habitat_id.is_empty() and String(candidate.get("linked_habitat_id", "")) == preferred_habitat_id:
+			score -= 260.0
+		var path := get_shortest_path(from_node_id, candidate_id)
+		var distance := 9999
+		if not path.is_empty():
+			distance = maxi(path.size() - 1, 0)
+		score += float(distance)
+		if score < best_score:
+			best_score = score
+			best_node = candidate
+	return best_node
 
 func get_reachable_paths(from_node_id: int, steps: int) -> Dictionary:
 	var result := {}
@@ -568,6 +645,8 @@ func _build_generated_region(seed_region: Dictionary, progress: Dictionary) -> D
 	var season_id := String(seed_region.get("season_id", _current_season_id))
 	var template_pool := _build_template_pool(seed_region, int(seed_region.get("boss_node_id", -1)))
 	var boss_template := _build_boss_template(seed_region)
+	_placed_settlement_infirmaries.clear()
+	_placed_special_loop_infirmaries.clear()
 	_ring_node_ids.clear()
 	_ring_gate_nodes.clear()
 	var nodes: Array = []
@@ -691,7 +770,11 @@ func _build_ring_content_node(season_id: String, template: Dictionary, node_id: 
 			return _build_minigame_node(season_id, node_id, ring_index, minigame_variant_index)
 	var special_ring := _special_ring_for_index(ring_index)
 	if not special_ring.is_empty():
+		if not _placed_special_loop_infirmaries.has(String(special_ring.get("id", ""))) and offset == 1:
+			return _build_special_infirmary_node(node_id, ring_index, special_ring)
 		return _build_special_ring_node(node_id, ring_index, offset, special_ring)
+	if _should_place_settlement_infirmary(template):
+		return _build_settlement_infirmary_node(season_id, template, node_id, ring_index)
 	if (offset + ring_index) % 5 == 2:
 		return _build_environment_node(season_id, template, node_id, ring_index)
 	if (offset + ring_index) % 7 == 4 and not template.is_empty() and String(template.get("type", "")) != "dojo":
@@ -734,6 +817,57 @@ func _build_minigame_node(season_id: String, node_id: int, ring_index: int, vari
 		"focus": String(variant.get("focus", "小游戏 / 热身")),
 		"reward_hint": String(variant.get("reward_hint", "做完会给下一场战斗留下一点小幅属性热身。")),
 		"minigame_id": String(variant.get("id", "")),
+	}
+
+func _should_place_settlement_infirmary(template: Dictionary) -> bool:
+	var habitat_id := String(template.get("habitat_id", ""))
+	if habitat_id.is_empty() or _placed_settlement_infirmaries.has(habitat_id):
+		return false
+	return String(DataRepository.get_habitat(habitat_id).get("type", "")) == "settlement"
+
+func _build_settlement_infirmary_node(season_id: String, template: Dictionary, node_id: int, ring_index: int) -> Dictionary:
+	var habitat_id := String(template.get("habitat_id", ""))
+	_placed_settlement_infirmaries[habitat_id] = true
+	var habitat := DataRepository.get_habitat(habitat_id)
+	var linked_name := String(habitat.get("name", _template_display_name(template)))
+	var variant: Dictionary = Dictionary(INFIRMARY_VARIANTS.get(season_id, INFIRMARY_VARIANTS.get("spring", {}))).duplicate(true)
+	return {
+		"id": node_id,
+		"name": "%s疗养所" % linked_name,
+		"type": "infirmary",
+		"description": "%s\n这是第 %d 圈里专门给 %s 配套的疗养点，失手队伍会先被送到这里收口。" % [
+			String(variant.get("description", "这里有人专门照看从外环退下来的队伍。")),
+			ring_index + 1,
+			linked_name,
+		],
+		"travel_cost": 1,
+		"habitat_id": "",
+		"focus": String(variant.get("focus", "疗养 / 休整")),
+		"reward_hint": "主动疗养免费；战败后被送来会扣一笔疗养费。",
+		"linked_habitat_id": habitat_id,
+		"linked_habitat_name": linked_name,
+	}
+
+func _build_special_infirmary_node(node_id: int, ring_index: int, special_ring: Dictionary) -> Dictionary:
+	var loop_id := String(special_ring.get("id", ""))
+	_placed_special_loop_infirmaries[loop_id] = true
+	var ring_name := String(special_ring.get("name", "特殊环带"))
+	var variant: Dictionary = Dictionary(SPECIAL_LOOP_INFIRMARY_VARIANTS.get(loop_id, {})).duplicate(true)
+	return {
+		"id": node_id,
+		"name": String(variant.get("name", "%s疗养站" % ring_name)),
+		"type": "infirmary",
+		"description": "%s\n这是第 %d 圈%s至少配套的一处疗养点，整圈失手后的队伍都会先往这里回收。" % [
+			String(variant.get("description", "这里专门接应从特殊外环退下来的队伍。")),
+			ring_index + 1,
+			ring_name,
+		],
+		"travel_cost": 1,
+		"habitat_id": "",
+		"focus": "疗养 / %s" % ring_name,
+		"reward_hint": "主动疗养免费；在这圈战败后自动送医会扣一笔疗养费。",
+		"special_loop_id": loop_id,
+		"special_loop_name": ring_name,
 	}
 
 func _build_special_ring_node(node_id: int, ring_index: int, offset: int, special_ring: Dictionary) -> Dictionary:

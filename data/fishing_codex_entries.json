@@ -84,6 +84,90 @@
         "night",
         "epic"
       ]
+    },
+    {
+      "id": "codex_glass_fin_koi",
+      "species_id": "glass_fin_koi",
+      "title": "薄雾里翻亮的雾鳍鲤",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_catch:glass_fin_koi"
+      },
+      "portrait_hint": "像一片会游的碎玻，先在雾里翻亮一下，再迅速贴回更深的暗水。",
+      "habitat_notes": [
+        "晶溪浅滩和盐镜潮滩都可能撞见",
+        "傍晚起雾或落雨的时候更容易靠岸"
+      ],
+      "behavior_notes": [
+        "受惊后不会立刻远走，而是会先贴着暗水边线滑开",
+        "风平雾稳的时候，翻身亮鳍的频率会明显变高"
+      ],
+      "care_notes": [
+        "先别抢最亮的那一下，等它回到第二段线路更稳",
+        "阴雨和薄雾比硬换饵更影响手感"
+      ],
+      "research_tags": [
+        "fishing",
+        "fog",
+        "rare"
+      ]
+    },
+    {
+      "id": "codex_mirror_ice_perch",
+      "species_id": "mirror_ice_perch",
+      "title": "冰纹鲈的暗带巡游",
+      "rarity": "uncommon",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_watch:mirror_ice_perch"
+      },
+      "portrait_hint": "总顺着冰面反光最弱的暗带慢慢游，真正发力往往都在你刚想收手以后。",
+      "habitat_notes": [
+        "冬季只会在霜镜冰孔附近活动",
+        "天光还没完全偏白的时候，孔边最容易看到它换线"
+      ],
+      "behavior_notes": [
+        "它会反复借着暗带绕回原位，不爱长距离乱窜",
+        "孔边一旦变吵，整段暗带都会空下来"
+      ],
+      "care_notes": [
+        "先看冰纹和反光，再决定孔位，比盲下竿更有效",
+        "别急着提线，等它把第二次试探做完更稳"
+      ],
+      "research_tags": [
+        "fishing",
+        "winter",
+        "ice"
+      ]
+    },
+    {
+      "id": "codex_snow_shell_turtle",
+      "species_id": "snow_shell_turtle",
+      "title": "冰面下慢慢偏过来的白影",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_watch:snow_shell_turtle"
+      },
+      "portrait_hint": "你往往先看到一小团缓慢偏过来的白影，才意识到那不是冰面反光。",
+      "habitat_notes": [
+        "冬季白天最容易在霜镜冰孔近岸撞见",
+        "不是每次都咬口，但常会在孔边长时间停留"
+      ],
+      "behavior_notes": [
+        "它比起争食，更像是在确认岸边今天是否足够安静",
+        "受到惊扰后会整天不再靠近同一个冰孔"
+      ],
+      "care_notes": [
+        "先清理冰孔边缘，别让上浮时擦伤壳缘和体表膜",
+        "看见它靠近时，收声和减动作比任何操作都重要"
+      ],
+      "research_tags": [
+        "fishing",
+        "winter",
+        "care"
+      ]
     }
   ]
 }

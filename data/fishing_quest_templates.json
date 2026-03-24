@@ -104,6 +104,123 @@
         "trust": 1,
         "journal_entry": "霜镜冰孔边记"
       }
+    },
+    {
+      "id": "creek_teacher_knots_notes",
+      "title": "把婆婆今天教的理线法记下来",
+      "giver": "washer_grandma",
+      "category": "fishing",
+      "target_habitat": "crystal_creek",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "washer_grandma"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_event:creek_teacher_knots"
+        },
+        {
+          "type": "return",
+          "npc": "washer_grandma"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "paper": 1
+        },
+        "journal_entry": "晶溪理线手记"
+      }
+    },
+    {
+      "id": "reed_cleanup_route",
+      "title": "把芦泽那串旧线的来路补成记录",
+      "giver": "field_recorder",
+      "category": "fishing",
+      "target_habitat": "reed_mire",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "field_recorder"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_event:reed_mire_cleanup_chain"
+        },
+        {
+          "type": "return",
+          "npc": "field_recorder"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "reed": 1,
+          "rope": 1
+        },
+        "journal_entry": "芦泽旧线清理记录"
+      }
+    },
+    {
+      "id": "saltglass_whisper_log",
+      "title": "给叶衡补一段盐镜夜潮的刮线声",
+      "giver": "field_recorder",
+      "category": "fishing",
+      "target_habitat": "saltglass_coast",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "field_recorder"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_event:saltglass_night_whisper"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_catch:moon_tide_eel"
+        },
+        {
+          "type": "return",
+          "npc": "field_recorder"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "glow_dust": 1
+        },
+        "journal_entry": "盐镜夜潮边记"
+      }
+    },
+    {
+      "id": "winter_white_shell_watch",
+      "title": "再陪叶衡看一次白壳龟换气",
+      "giver": "field_recorder",
+      "category": "fishing",
+      "target_habitat": "frost_mirror_lake",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "field_recorder"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_watch:snow_shell_turtle"
+        },
+        {
+          "type": "return",
+          "npc": "field_recorder"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "ice_glass": 1
+        },
+        "journal_entry": "白壳龟近岸换气记录"
+      }
     }
   ]
 }

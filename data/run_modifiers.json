@@ -28,6 +28,57 @@
         "visit_bonus_item": "soft_moss",
         "visit_bonus_amount": 1
       }
+    },
+    {
+      "id": "survey_cache",
+      "name": "踏勘缓存",
+      "weight": 2,
+      "description": "每周结算额外获得 1 点远征进度；每次落点访问额外获得 1 张纸页。",
+      "effects": {
+        "weekly_bonus_season_points": 1,
+        "visit_bonus_item": "paper",
+        "visit_bonus_amount": 1
+      }
+    },
+    {
+      "id": "veteran_pathing",
+      "name": "旧路熟手",
+      "weight": 2,
+      "description": "本局赛季修正点总量 +1；每次落点访问额外获得 1 段旧绳。",
+      "effects": {
+        "season_adjust_bonus": 1,
+        "visit_bonus_item": "rope",
+        "visit_bonus_amount": 1
+      }
+    },
+    {
+      "id": "deep_moss_year",
+      "name": "厚苔年景",
+      "weight": 2,
+      "description": "每次落点访问额外获得 2 份软苔。",
+      "effects": {
+        "visit_bonus_item": "soft_moss",
+        "visit_bonus_amount": 2
+      }
+    },
+    {
+      "id": "careful_journal",
+      "name": "细笔记录",
+      "weight": 1,
+      "description": "每周结算额外获得 2 点远征进度。",
+      "effects": {
+        "weekly_bonus_season_points": 2
+      }
+    },
+    {
+      "id": "clearwater_pull",
+      "name": "清流水脉",
+      "weight": 2,
+      "description": "每次落点访问额外获得 1 份水滴。",
+      "effects": {
+        "visit_bonus_item": "water_drop",
+        "visit_bonus_amount": 1
+      }
     }
   ]
 }

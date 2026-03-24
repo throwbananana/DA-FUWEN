@@ -8,8 +8,15 @@
       "description": "前线留下的标记把模糊路况重新整理成了可执行路线。",
       "once_per_node": true,
       "effects": [
-        { "type": "reveal_ahead", "amount": 4 },
-        { "type": "grant_resource", "resource": "season_adjust_points", "amount": 1 }
+        {
+          "type": "reveal_ahead",
+          "amount": 4
+        },
+        {
+          "type": "grant_resource",
+          "resource": "season_adjust_points",
+          "amount": 1
+        }
       ]
     },
     {
@@ -19,9 +26,20 @@
       "description": "桥头的短暂空档让这段高压路线终于有了可控的突破口。",
       "once_per_node": true,
       "effects": [
-        { "type": "clear_ambush", "scope": "current" },
-        { "type": "reduce_danger", "scope": "current", "amount": 1 },
-        { "type": "grant_resource", "resource": "anchor_points", "amount": 1 }
+        {
+          "type": "clear_ambush",
+          "scope": "current"
+        },
+        {
+          "type": "reduce_danger",
+          "scope": "current",
+          "amount": 1
+        },
+        {
+          "type": "grant_resource",
+          "resource": "anchor_points",
+          "amount": 1
+        }
       ]
     },
     {
@@ -31,8 +49,16 @@
       "description": "试作台把零散素材压成了更顺手的中段推进节奏。",
       "once_per_node": true,
       "effects": [
-        { "type": "reduce_danger", "scope": "current_and_neighbors", "amount": 1 },
-        { "type": "grant_resource", "resource": "season_adjust_points", "amount": 1 }
+        {
+          "type": "reduce_danger",
+          "scope": "current_and_neighbors",
+          "amount": 1
+        },
+        {
+          "type": "grant_resource",
+          "resource": "season_adjust_points",
+          "amount": 1
+        }
       ]
     },
     {
@@ -42,9 +68,90 @@
       "description": "最后的路线校正迫使敌群后撤，也让终局前的情报重新清晰起来。",
       "once_per_node": true,
       "effects": [
-        { "type": "retreat_threats", "amount": 1 },
-        { "type": "reveal_ahead", "amount": 3 },
-        { "type": "clear_ambush", "scope": "current" }
+        {
+          "type": "retreat_threats",
+          "amount": 1
+        },
+        {
+          "type": "reveal_ahead",
+          "amount": 3
+        },
+        {
+          "type": "clear_ambush",
+          "scope": "current"
+        }
+      ]
+    },
+    {
+      "id": "spring_side_trail_signs",
+      "trigger": "arrival",
+      "title": "岔路木牌",
+      "description": "春季侧路留下的手写木牌让你少走了几段弯路，也把当前节点的压力压低了一格。",
+      "once_per_node": true,
+      "effects": [
+        {
+          "type": "reveal_ahead",
+          "amount": 2
+        },
+        {
+          "type": "reduce_danger",
+          "scope": "current",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "summer_ferry_rope",
+      "trigger": "arrival",
+      "title": "临时摆渡索",
+      "description": "有人提前把桥边的摆渡索重新系好，让这一脚落地不至于直接撞上伏击。",
+      "once_per_node": true,
+      "effects": [
+        {
+          "type": "clear_ambush",
+          "scope": "current"
+        },
+        {
+          "type": "grant_resource",
+          "resource": "season_adjust_points",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "autumn_supply_staging",
+      "trigger": "arrival",
+      "title": "中段堆场",
+      "description": "秋季中段的临时堆场把补给和侦察都往前推了一截，周边节点也因此更容易处理。",
+      "once_per_node": true,
+      "effects": [
+        {
+          "type": "grant_resource",
+          "resource": "anchor_points",
+          "amount": 1
+        },
+        {
+          "type": "reduce_danger",
+          "scope": "current_and_neighbors",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "winter_snow_glare_read",
+      "trigger": "arrival",
+      "title": "雪面反光校读",
+      "description": "借着雪面的反光，你提前看清了前方路径，附近威胁也被迫往后撤了一步。",
+      "once_per_node": true,
+      "effects": [
+        {
+          "type": "reveal_ahead",
+          "amount": 2
+        },
+        {
+          "type": "retreat_threats",
+          "amount": 1
+        }
       ]
     }
   ]

@@ -48,6 +48,101 @@ const ENVIRONMENT_VARIANTS := {
 	],
 }
 
+const BULLETIN_VARIANTS := {
+	"spring": {
+		"name": "边境公告板",
+		"description": "巡路人会把本周野群出没和摊位折扣钉在这里，适合起手先看一眼。",
+		"focus": "传闻 / 折扣",
+		"reward_hint": "先看哪边会刷野群、哪边有折扣，再决定春季第一圈从哪边起手。",
+	},
+	"summer": {
+		"name": "雷汐公告板",
+		"description": "赶路人会把雷季野群动向和摊位折扣贴在这里，方便出发前先校准路线。",
+		"focus": "动向 / 折扣",
+		"reward_hint": "先看哪边有雷季野群和特价维修货，再决定练雷场还是补给线。",
+	},
+	"autumn": {
+		"name": "锻路公告板",
+		"description": "这块木板上会更新试炼补给和野群消息，方便你先排好这一圈的先后手。",
+		"focus": "排期 / 折扣",
+		"reward_hint": "先看哪边更容易遇见野群、哪档试炼补给在降价，再决定这圈先 build 还是先试炼。",
+	},
+	"winter": {
+		"name": "霜线公告板",
+		"description": "终局路上的巡线员会把本周野群动向和特价补给钉在这里，免得白白走冤枉路。",
+		"focus": "线索 / 折扣",
+		"reward_hint": "先看哪边野群更活跃、哪档终局补给在降价，再决定这一圈先稳态还是冲终局。",
+	},
+}
+
+const MINIGAME_RING_OFFSETS := [4, 5]
+const MINIGAME_VARIANTS := {
+	"spring": [
+		{
+			"id": "moss_dash",
+			"name": "苔径追跑垫",
+			"description": "有人在软苔地上摆了几枚折返点，正好适合带伙伴活动一下脚步。",
+			"focus": "小游戏 / 速度",
+			"reward_hint": "做完会给下一场战斗留下一点速度热身。",
+		},
+		{
+			"id": "warmup_nap",
+			"name": "暖石打盹垫",
+			"description": "暖石边围了一圈松苔垫，路过的人会顺手带伙伴做一轮短暂热身。",
+			"focus": "小游戏 / 体力",
+			"reward_hint": "做完会给下一场战斗留下一点体力热身。",
+		},
+	],
+	"summer": [
+		{
+			"id": "thunder_steps",
+			"name": "雷线折返场",
+			"description": "雷痕步点被画成了短跑格，适合刚出营时先把节奏踩热。",
+			"focus": "小游戏 / 速度",
+			"reward_hint": "做完会给下一场战斗留下一点速度热身。",
+		},
+		{
+			"id": "gear_pull",
+			"name": "拉杆牵引架",
+			"description": "旧牵引杆被改成了练力小游戏，正好给伙伴热一热发力感。",
+			"focus": "小游戏 / 攻击",
+			"reward_hint": "做完会给下一场战斗留下一点攻击热身。",
+		},
+	],
+	"autumn": [
+		{
+			"id": "ring_toss",
+			"name": "赤叶抛环台",
+			"description": "干燥木环被垒成一摞，路过时总会有人顺手来一轮扑接练习。",
+			"focus": "小游戏 / 攻击",
+			"reward_hint": "做完会给下一场战斗留下一点攻击热身。",
+		},
+		{
+			"id": "leaf_huddle",
+			"name": "落叶埋身堆",
+			"description": "叶堆被整理成一圈软垫，特别适合在试炼前让伙伴放松一下身体。",
+			"focus": "小游戏 / 体力",
+			"reward_hint": "做完会给下一场战斗留下一点体力热身。",
+		},
+	],
+	"winter": [
+		{
+			"id": "ice_steps",
+			"name": "霜点踏步灯",
+			"description": "暖灯在雪地上点成了几段踏步线，正好给伙伴踩踩节奏。",
+			"focus": "小游戏 / 速度",
+			"reward_hint": "做完会给下一场战斗留下一点速度热身。",
+		},
+		{
+			"id": "snow_roll",
+			"name": "暖棚雪垫堆",
+			"description": "软雪被堆成了翻身垫，路过的人总会带伙伴滚两圈再继续赶路。",
+			"focus": "小游戏 / 体力",
+			"reward_hint": "做完会给下一场战斗留下一点体力热身。",
+		},
+	],
+}
+
 var current_region: Dictionary = {}
 var node_lookup: Dictionary = {}
 var _seed_regions_by_season: Dictionary = {}
@@ -443,11 +538,55 @@ func _build_gate_node(season_id: String, boss_template: Dictionary, node_id: int
 	}
 
 func _build_ring_content_node(season_id: String, template: Dictionary, node_id: int, ring_index: int, offset: int) -> Dictionary:
+	if ring_index == 0 and offset == 1:
+		return _build_bulletin_node(season_id, node_id, ring_index)
+	if ring_index == 0:
+		var minigame_variant_index := MINIGAME_RING_OFFSETS.find(offset)
+		if minigame_variant_index != -1:
+			return _build_minigame_node(season_id, node_id, ring_index, minigame_variant_index)
 	if (offset + ring_index) % 5 == 2:
 		return _build_environment_node(season_id, template, node_id, ring_index)
 	if (offset + ring_index) % 7 == 4 and not template.is_empty() and String(template.get("type", "")) != "dojo":
 		return _build_event_node(template, node_id, ring_index)
 	return _build_path_node(template, node_id, ring_index)
+
+func _build_bulletin_node(season_id: String, node_id: int, ring_index: int) -> Dictionary:
+	var variant: Dictionary = Dictionary(BULLETIN_VARIANTS.get(season_id, BULLETIN_VARIANTS.get("spring", {}))).duplicate(true)
+	return {
+		"id": node_id,
+		"name": String(variant.get("name", "公告板")),
+		"type": "bulletin",
+		"description": "%s\n它是第 %d 圈最适合先停一下看消息的路线节点。" % [
+			String(variant.get("description", "路牌上贴着最近整理过的野群动向和集市折扣。")),
+			ring_index + 1,
+		],
+		"travel_cost": 1,
+		"habitat_id": "",
+		"focus": String(variant.get("focus", "传闻 / 折扣")),
+		"reward_hint": String(variant.get("reward_hint", "先看看本周哪些地方会出野群、哪些货在降价，再决定路线。")),
+	}
+
+func _build_minigame_node(season_id: String, node_id: int, ring_index: int, variant_index: int) -> Dictionary:
+	var season_variants: Array = Array(MINIGAME_VARIANTS.get(season_id, MINIGAME_VARIANTS.get("spring", []))).duplicate(true)
+	var variant: Dictionary = {}
+	if variant_index >= 0 and variant_index < season_variants.size():
+		variant = Dictionary(season_variants[variant_index]).duplicate(true)
+	elif not season_variants.is_empty():
+		variant = Dictionary(season_variants[0]).duplicate(true)
+	return {
+		"id": node_id,
+		"name": String(variant.get("name", "小游戏地块")),
+		"type": "minigame",
+		"description": "%s\n它是第 %d 圈开局就能用来热身的小游戏节点。" % [
+			String(variant.get("description", "这里正好能带伙伴做个短促小游戏，给下一场战斗留一点状态。")),
+			ring_index + 1,
+		],
+		"travel_cost": 1,
+		"habitat_id": "",
+		"focus": String(variant.get("focus", "小游戏 / 热身")),
+		"reward_hint": String(variant.get("reward_hint", "做完会给下一场战斗留下一点小幅属性热身。")),
+		"minigame_id": String(variant.get("id", "")),
+	}
 
 func _build_environment_node(season_id: String, template: Dictionary, node_id: int, ring_index: int) -> Dictionary:
 	var variants: Array = ENVIRONMENT_VARIANTS.get(season_id, ENVIRONMENT_VARIANTS.get("spring", []))
@@ -604,6 +743,13 @@ func _initial_revealed_nodes(nodes: Array, unlocked_ring_count: int) -> Array[in
 	var revealed := _collect_graph_nodes_with_adjacency(0, 2, adjacency)
 	if unlocked_ring_count > 0:
 		revealed.append_array(_unlock_reveal_nodes(0))
+	for raw_node in nodes:
+		var node: Dictionary = _normalize_node(raw_node)
+		if int(node.get("ring_index", -1)) != 0:
+			continue
+		if String(node.get("type", "")) != "minigame":
+			continue
+		revealed.append(int(node.get("id", -1)))
 	return _dedupe_sorted_ints(revealed)
 
 func _unlock_reveal_nodes(ring_index: int) -> Array[int]:

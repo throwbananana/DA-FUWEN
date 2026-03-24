@@ -118,33 +118,55 @@ func can_build(habitat_id: String, building_id: String) -> Dictionary:
 		return {"ok": false, "reason": "site_mismatch"}
 
 	var habitat_state: Dictionary = GameState.habitats.get(habitat_id, {})
-	var resident_uid := String(habitat_state.get("resident_uid", ""))
-	if not _has_guard_actor(habitat_state) and DataRepository.get_habitat(habitat_id).get("type", "") == "habitat":
-		return {"ok": false, "reason": "resident_required"}
-
 	var current_level: int = GameState.get_building_level(habitat_id, building_id)
 	var levels: Array = _building_levels(building)
+	var preview := _build_construction_preview(habitat_state, current_level, levels)
+	var response := {
+		"ok": false,
+		"habitat_id": habitat_id,
+		"building_id": building_id,
+		"building_name": String(building.get("name", building_id)),
+		"current_level": current_level,
+		"max_level": levels.size(),
+		"current_effects": preview.get("current_effects", []),
+		"habitat_rank_before": preview.get("habitat_rank_before", 0),
+		"habitat_rank_after": preview.get("habitat_rank_after", preview.get("habitat_rank_before", 0)),
+		"progression_rank_before": preview.get("progression_rank_before", GameState.get_progression_rank()),
+		"progression_rank_after": preview.get("progression_rank_after", GameState.get_progression_rank()),
+		"capacity_before": preview.get("capacity_before", GameState.pet_capacity),
+		"capacity_after": preview.get("capacity_after", GameState.pet_capacity),
+		"progression_summary_after": preview.get("progression_summary_after", ""),
+	}
+	if not _has_guard_actor(habitat_state) and DataRepository.get_habitat(habitat_id).get("type", "") == "habitat":
+		response["reason"] = "resident_required"
+		return response
+
 	if current_level >= levels.size():
-		return {"ok": false, "reason": "max_level"}
+		response["reason"] = "max_level"
+		return response
 
 	var next_level: Dictionary = levels[current_level]
 	var cost: Dictionary = _normalize_cost(next_level.get("cost", {}))
+	response["next_level"] = current_level + 1
+	response["cost"] = cost
+	response["effects"] = _level_effects(next_level)
+	response["interactions"] = next_level.get("interactions", []).duplicate(true)
 	if not GameState.can_pay(cost):
-		return {"ok": false, "reason": "insufficient_items", "cost": cost}
+		response["reason"] = "insufficient_items"
+		response["missing_cost"] = _missing_cost(cost)
+		return response
 
-	return {
-		"ok": true,
-		"next_level": current_level + 1,
-		"cost": cost,
-		"effects": _level_effects(next_level),
-		"interactions": next_level.get("interactions", []).duplicate(true),
-	}
+	response["ok"] = true
+	return response
 
 func build_on_site(habitat_id: String, building_id: String) -> Dictionary:
 	var check := can_build(habitat_id, building_id)
 	if not bool(check.get("ok", false)):
 		return check
 
+	var habitat_rank_before := int(check.get("habitat_rank_before", 0))
+	var progression_rank_before := int(check.get("progression_rank_before", GameState.get_progression_rank()))
+	var capacity_before := int(check.get("capacity_before", GameState.pet_capacity))
 	if not GameState.pay_cost(check.get("cost", {})):
 		return {"ok": false, "reason": "payment_failed"}
 
@@ -159,6 +181,13 @@ func build_on_site(habitat_id: String, building_id: String) -> Dictionary:
 		"habitat_id": habitat_id,
 		"building_id": building_id,
 		"level": new_level,
+		"habitat_rank_before": habitat_rank_before,
+		"habitat_rank_after": int(GameState.habitats.get(habitat_id, {}).get("rank", habitat_rank_before)),
+		"progression_rank_before": progression_rank_before,
+		"progression_rank_after": GameState.get_progression_rank(),
+		"capacity_before": capacity_before,
+		"capacity_after": GameState.pet_capacity,
+		"progression_summary_after": GameState.get_progression_summary(),
 		"effects": check.get("effects", []),
 		"interactions": check.get("interactions", []).duplicate(true),
 	}
@@ -255,6 +284,46 @@ func _level_effects(level_data: Dictionary) -> Array:
 		passive_effects = level_data.get("effects", [])
 	return passive_effects.duplicate(true)
 
+func _build_construction_preview(habitat_state: Dictionary, current_level: int, levels: Array) -> Dictionary:
+	var habitat_rank_before := int(habitat_state.get("rank", 0))
+	var current_total_rank := GameState.get_habitat_rank_total()
+	var progression_rank_before := GameState.get_progression_rank()
+	var capacity_before := GameState.pet_capacity
+	var habitat_rank_after := habitat_rank_before
+	var progression_rank_after := progression_rank_before
+	var capacity_after := capacity_before
+	var progression_summary_after := GameState.get_progression_summary()
+	if current_level < levels.size():
+		habitat_rank_after += 1
+		var total_rank_after := current_total_rank + 1
+		progression_rank_after = maxi(1, 1 + GameState.badge_count + int(total_rank_after / 2))
+		var curve_entry := DataRepository.get_population_curve_entry(progression_rank_after)
+		capacity_after = int(curve_entry.get("pet_capacity", curve_entry.get("backpack_capacity", capacity_before)))
+		progression_summary_after = _progression_summary_for_rank(progression_rank_after)
+	return {
+		"current_effects": _level_effects(levels[current_level - 1]) if current_level > 0 and current_level - 1 < levels.size() else [],
+		"habitat_rank_before": habitat_rank_before,
+		"habitat_rank_after": habitat_rank_after,
+		"progression_rank_before": progression_rank_before,
+		"progression_rank_after": progression_rank_after,
+		"capacity_before": capacity_before,
+		"capacity_after": capacity_after,
+		"progression_summary_after": progression_summary_after,
+	}
+
+func _progression_summary_for_rank(rank: int) -> String:
+	var entry := DataRepository.get_population_curve_entry(rank)
+	if entry.is_empty():
+		return ""
+	var parts: Array[String] = []
+	var new_system := String(entry.get("new_system", ""))
+	var flow_goal := String(entry.get("flow_goal", ""))
+	if not new_system.is_empty():
+		parts.append(new_system)
+	if not flow_goal.is_empty():
+		parts.append(flow_goal)
+	return " ｜ ".join(parts)
+
 func _normalize_cost(cost: Dictionary) -> Dictionary:
 	var normalized := {}
 	var alias_map := {
@@ -265,3 +334,12 @@ func _normalize_cost(cost: Dictionary) -> Dictionary:
 		var target_id := String(alias_map.get(String(item_id), String(item_id)))
 		normalized[target_id] = int(normalized.get(target_id, 0)) + int(cost[item_id])
 	return normalized
+
+func _missing_cost(cost: Dictionary) -> Dictionary:
+	var missing := {}
+	for item_id in cost.keys():
+		var required := int(cost[item_id])
+		var current := GameState.get_item_count(String(item_id))
+		if current < required:
+			missing[item_id] = required - current
+	return missing

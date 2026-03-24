@@ -148,6 +148,9 @@ func _render_summary(panel_state: Dictionary) -> void:
 		lines.append("[b]本周目标[/b] %s" % String(panel_state.get("weekly_objective_text", "")))
 	if not panel_state.get("run_modifiers", []).is_empty():
 		lines.append("[b]本局词缀[/b] %s" % " / ".join(panel_state.get("run_modifiers", [])))
+	var nursery_lines: Array = panel_state.get("nursery_lines", [])
+	if not nursery_lines.is_empty():
+		lines.append("[b]孵育概况[/b] %s" % " / ".join(nursery_lines))
 	lines.append("[b]累计探索点[/b] %d" % int(panel_state.get("meta_points", 0)))
 	lines.append("[b]当前委托[/b] %s" % (", ".join(active_quests) if not active_quests.is_empty() else "暂无"))
 	lines.append("[b]库存摘记[/b] %s" % _format_inventory(inventory))
@@ -212,11 +215,14 @@ func _render_habitats(panel_state: Dictionary) -> void:
 		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		var dojo_text := String(summary.get("dojo_text", ""))
 		var dojo_line := "\n试炼：%s" % dojo_text if not dojo_text.is_empty() else ""
-		detail.text = "驻守：%s\n建设：%s\n委托：%s\n状态：%s%s" % [
+		var nursery_text := String(summary.get("nursery_text", ""))
+		var nursery_line := "\n孵育：%s" % nursery_text if not nursery_text.is_empty() else ""
+		detail.text = "驻守：%s\n建设：%s\n委托：%s\n状态：%s%s%s" % [
 			String(summary.get("resident_name", "暂无")),
 			String(summary.get("building_text", "尚未推进")),
 			String(summary.get("quest_text", "暂无")),
 			String(summary.get("status_text", "可回访")),
+			nursery_line,
 			dojo_line,
 		]
 		card.add_child(detail)

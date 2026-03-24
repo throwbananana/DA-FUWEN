@@ -7,6 +7,7 @@ const NpcRouteServiceScript = preload("res://scripts/services/npc_route_service.
 const MonsterInstance = preload("res://scripts/monster_instance.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
 const StoryServiceScript = preload("res://scripts/services/story_service.gd")
+const MinigameServiceScript = preload("res://scripts/services/minigame_service.gd")
 
 const INTRO_DUEL_BASE_TRUST_WIN := 2
 const INTRO_DUEL_BASE_TRUST_LOSE := 0
@@ -15,6 +16,7 @@ const INTRO_DUEL_ROUND_LIMIT := 5
 var npc_route_service = NpcRouteServiceScript.new()
 var localization_service := LocalizationService.new()
 var story_service := StoryServiceScript.new()
+var minigame_service := MinigameServiceScript.new()
 
 func get_visible_npcs(habitat_id: String) -> Array:
 	return npc_route_service.get_visible_npcs(habitat_id)
@@ -48,6 +50,16 @@ func prepare_intro_duel(npc_id: String, habitat_id: String) -> Dictionary:
 	var enemy_species_ids := _pick_intro_duel_species_ids(habitat)
 	if enemy_species_ids.is_empty():
 		return {"ok": false, "reason": "enemy_pool_missing"}
+	var pending_bonus: Dictionary = GameState.peek_pending_minigame_bonus()
+	var subtitle_lines: Array[String] = [
+		localization_service.text("battle.subtitle.intro_duel", {
+			"win": INTRO_DUEL_BASE_TRUST_WIN,
+			"lose": INTRO_DUEL_BASE_TRUST_LOSE,
+		}),
+	]
+	var minigame_text := minigame_service.pending_bonus_summary()
+	if not minigame_text.is_empty():
+		subtitle_lines.append(minigame_text)
 
 	return {
 		"ok": true,
@@ -56,19 +68,17 @@ func prepare_intro_duel(npc_id: String, habitat_id: String) -> Dictionary:
 		"habitat_id": habitat_id,
 		"battle_config": {
 			"title": localization_service.text("battle.title.intro_duel", {"npc": String(npc.get("name", "初见者"))}),
-			"subtitle": localization_service.text("battle.subtitle.intro_duel", {
-				"win": INTRO_DUEL_BASE_TRUST_WIN,
-				"lose": INTRO_DUEL_BASE_TRUST_LOSE,
-			}),
+			"subtitle": "\n".join(subtitle_lines),
 			"kind": "dojo",
 			"allow_capture": false,
 			"ally_first_round_attack_bonus": false,
-			"ally_attack_bonus": 0,
-			"ally_speed_bonus": 0,
-			"ally_hp_bonus": 0,
+			"ally_attack_bonus": int(pending_bonus.get("ally_attack_bonus", 0)),
+			"ally_speed_bonus": int(pending_bonus.get("ally_speed_bonus", 0)),
+			"ally_hp_bonus": int(pending_bonus.get("ally_hp_bonus", 0)),
 			"ally_heal_bonus": 0,
 			"ally_guard_bonus": 0.0,
 			"enemy_attack_penalty": 0,
+			"consume_minigame_bonus": minigame_service.has_pending_bonus(),
 			"round_limit": INTRO_DUEL_ROUND_LIMIT,
 			"allies": _build_allies(),
 			"enemies": _build_intro_duel_enemies(npc, enemy_species_ids)

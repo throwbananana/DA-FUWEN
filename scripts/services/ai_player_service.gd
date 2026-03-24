@@ -499,6 +499,10 @@ func _legacy_type_for_node(node: Dictionary, node_lookup: Dictionary = {}) -> St
 	match type_id:
 		"camp":
 			return "camp"
+		"bulletin":
+			return "research"
+		"minigame":
+			return "resource"
 		"event":
 			return "event"
 		"settlement":
@@ -576,6 +580,10 @@ func _player_score(rival: Dictionary) -> float:
 	)
 
 func _boss_node_id(node_lookup: Dictionary) -> int:
+	var region := DataRepository.get_board_region(GameState.board_region_id)
+	var region_boss_id := int(region.get("boss_node_id", -1))
+	if region_boss_id >= 0 and node_lookup.has(region_boss_id):
+		return region_boss_id
 	var max_node_id := 0
 	for raw_node_id in node_lookup.keys():
 		max_node_id = maxi(max_node_id, int(raw_node_id))

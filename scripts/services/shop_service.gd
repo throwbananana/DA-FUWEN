@@ -17,6 +17,10 @@ func get_shop_menu(habitat_id: String) -> Dictionary:
 		}
 	var offers := _build_offers(shop)
 	var npc_services := _build_npc_services(shop)
+	var discounted_offer_count := 0
+	for offer in offers:
+		if bool(Dictionary(offer).get("is_discounted", false)):
+			discounted_offer_count += 1
 	return {
 		"ok": true,
 		"habitat_id": habitat_id,
@@ -27,6 +31,7 @@ func get_shop_menu(habitat_id: String) -> Dictionary:
 		"week_index": GameState.week_index,
 		"season_id": GameState.season_id,
 		"offers": offers,
+		"discounted_offer_count": discounted_offer_count,
 		"npc_services": npc_services,
 		"active_rotations": _build_active_rotation_titles(shop),
 	}
@@ -149,10 +154,31 @@ func _build_offers(shop: Dictionary, context: Dictionary = {}) -> Array:
 		var priority_a := int(a.get("priority", 0))
 		var priority_b := int(b.get("priority", 0))
 		if priority_a == priority_b:
+			return String(a.get("id", "")) < String(b.get("id", ""))
+		return priority_a > priority_b
+	)
+	var discount_lookup := _build_discount_lookup(shop, result, context)
+	var enriched: Array = []
+	for raw_offer in result:
+		var offer := Dictionary(raw_offer).duplicate(true)
+		var offer_id := String(offer.get("id", ""))
+		enriched.append(
+			_enrich_offer(
+				shop,
+				offer,
+				String(offer.get("_rotation_id", "base")),
+				context,
+				Dictionary(discount_lookup.get(offer_id, {})).duplicate(true)
+			)
+		)
+	enriched.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var priority_a := int(a.get("priority", 0))
+		var priority_b := int(b.get("priority", 0))
+		if priority_a == priority_b:
 			return String(a.get("label", "")) < String(b.get("label", ""))
 		return priority_a > priority_b
 	)
-	return result
+	return enriched
 
 func _build_npc_services(shop: Dictionary, context: Dictionary = {}) -> Array:
 	var result: Array = []
@@ -183,9 +209,11 @@ func _register_offer(offers_by_id: Dictionary, order: Array, shop: Dictionary, o
 		return
 	if not order.has(offer_id):
 		order.append(offer_id)
-	offers_by_id[offer_id] = _enrich_offer(shop, offer, rotation_id, context)
+	var staged_offer := Dictionary(offer).duplicate(true)
+	staged_offer["_rotation_id"] = rotation_id
+	offers_by_id[offer_id] = staged_offer
 
-func _enrich_offer(shop: Dictionary, offer: Dictionary, rotation_id: String, context: Dictionary = {}) -> Dictionary:
+func _enrich_offer(shop: Dictionary, offer: Dictionary, rotation_id: String, context: Dictionary = {}, discount_data: Dictionary = {}) -> Dictionary:
 	var item_id := String(offer.get("item_id", ""))
 	var item := DataRepository.get_item(item_id)
 	var shop_id := String(shop.get("id", ""))
@@ -194,21 +222,42 @@ func _enrich_offer(shop: Dictionary, offer: Dictionary, rotation_id: String, con
 	if _is_current_context(context):
 		purchased = GameState.get_shop_purchase_count(shop_id, String(offer.get("id", "")))
 	var label := String(offer.get("label", item.get("name", item_id)))
+	var base_price := maxi(0, int(offer.get("price", 0)))
+	var discount_percent := maxi(0, int(discount_data.get("percent", 0)))
+	var price := _discounted_price(base_price, discount_percent)
+	var tags: Array = Array(offer.get("tags", [])).duplicate()
+	if discount_percent > 0 and not tags.has("本周折扣"):
+		tags.append("本周折扣")
 	return {
 		"id": String(offer.get("id", "")),
 		"item_id": item_id,
 		"label": label,
 		"item_name": String(item.get("name", label)),
 		"item_type": String(item.get("type", "material")),
-		"price": maxi(0, int(offer.get("price", 0))),
+		"price": price,
+		"base_price": base_price,
+		"is_discounted": discount_percent > 0,
+		"discount_percent": discount_percent,
+		"discount_reason": String(discount_data.get("reason", "")),
 		"quantity": maxi(1, int(offer.get("quantity", 1))),
 		"stock": stock,
 		"purchased": purchased,
 		"remaining_stock": maxi(0, stock - purchased),
 		"priority": int(offer.get("priority", 0)),
 		"rotation_id": rotation_id,
-		"tags": Array(offer.get("tags", [])).duplicate(),
+		"tags": tags,
 	}
+
+func get_discounted_offers(habitat_id: String, context: Dictionary = {}) -> Array:
+	var shop := DataRepository.get_shop(habitat_id)
+	if shop.is_empty():
+		return []
+	var discounted: Array = []
+	for raw_offer in _build_offers(shop, context):
+		var offer := Dictionary(raw_offer).duplicate(true)
+		if bool(offer.get("is_discounted", false)):
+			discounted.append(offer)
+	return discounted
 
 func _enrich_npc_service(shop: Dictionary, service: Dictionary, context: Dictionary = {}) -> Dictionary:
 	var service_id := String(service.get("id", ""))
@@ -310,10 +359,82 @@ func _build_future_shop_preview(shop: Dictionary, week_offset: int, offer_count:
 		lines.append("[b]可能轮换[/b] %s" % " / ".join(future_rotations))
 	var preview_labels: Array[String] = []
 	for offer in future_offers.slice(0, maxi(1, offer_count)):
-		preview_labels.append("%s（%d 金）" % [String(offer.get("item_name", offer.get("label", "货物"))), int(offer.get("price", 0))])
+		preview_labels.append("%s（%s）" % [
+			String(offer.get("item_name", offer.get("label", "货物"))),
+			_format_offer_price_text(Dictionary(offer).duplicate(true)),
+		])
 	if not preview_labels.is_empty():
 		lines.append("[b]先看到的货单[/b] %s" % " / ".join(preview_labels))
 	return lines
+
+func _build_discount_lookup(shop: Dictionary, offers: Array, context: Dictionary = {}) -> Dictionary:
+	var result := {}
+	if offers.is_empty():
+		return result
+	var ranked: Array = []
+	var shop_id := String(shop.get("id", ""))
+	var season_id := String(context.get("season_id", GameState.season_id))
+	var week_index := int(context.get("week_index", GameState.week_index))
+	for raw_offer in offers:
+		var offer := Dictionary(raw_offer).duplicate(true)
+		var offer_id := String(offer.get("id", ""))
+		var base_price := maxi(0, int(offer.get("price", 0)))
+		if offer_id.is_empty() or base_price <= 1:
+			continue
+		var score: int = int(abs(hash("%s|%s|%s|%d" % [shop_id, offer_id, season_id, week_index])))
+		ranked.append({
+			"id": offer_id,
+			"score": score,
+			"base_price": base_price,
+		})
+	ranked.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var score_a := int(a.get("score", 0))
+		var score_b := int(b.get("score", 0))
+		if score_a == score_b:
+			return String(a.get("id", "")) < String(b.get("id", ""))
+		return score_a < score_b
+	)
+	for row in ranked.slice(0, mini(ranked.size(), _discount_slot_count(context))):
+		var offer_id := String(row.get("id", ""))
+		var percent := _discount_percent_for_score(int(row.get("score", 0)))
+		if _discounted_price(int(row.get("base_price", 0)), percent) >= int(row.get("base_price", 0)):
+			continue
+		result[offer_id] = {
+			"percent": percent,
+			"reason": "weekly_bulletin",
+		}
+	return result
+	
+func _discount_slot_count(context: Dictionary = {}) -> int:
+	var week_index := int(context.get("week_index", GameState.week_index))
+	if week_index >= 4:
+		return 3
+	if week_index >= 2:
+		return 2
+	return 1
+
+func _discount_percent_for_score(score: int) -> int:
+	match posmod(score, 3):
+		0:
+			return 25
+		1:
+			return 30
+		_:
+			return 35
+
+func _discounted_price(base_price: int, discount_percent: int) -> int:
+	if base_price <= 0 or discount_percent <= 0:
+		return maxi(0, base_price)
+	var reduced := int(floor(float(base_price) * float(100 - discount_percent) / 100.0))
+	if base_price > 1:
+		reduced = mini(base_price - 1, maxi(1, reduced))
+	return maxi(1, reduced)
+
+func _format_offer_price_text(offer: Dictionary) -> String:
+	var price := int(offer.get("price", 0))
+	if not bool(offer.get("is_discounted", false)):
+		return "%d 金" % price
+	return "%d→%d 金" % [int(offer.get("base_price", price)), price]
 
 func _conditions_match(source: Dictionary, context: Dictionary = {}) -> bool:
 	var season_id := String(context.get("season_id", GameState.season_id))

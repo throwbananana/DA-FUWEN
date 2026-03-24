@@ -95,10 +95,10 @@
             "water_drop": 2
           },
           "effects": [
-            "每次拜访产出软苔"
+            "每次偶遇产出软苔"
           ],
           "passive_effects": [
-            "每次拜访产出软苔"
+            "每次偶遇产出软苔"
           ],
           "interactions": [
             {

@@ -31,6 +31,12 @@ func _run_checks() -> void:
 		_fail("Upgrade smoke test failed: autumn_leaf_dojo did not unlock after the building gate.")
 		return
 
+	var habitat_service = load("res://scripts/services/habitat_service.gd").new()
+	var assign_result: Dictionary = habitat_service.assign_resident("mist_moss_cave", "pet_001")
+	if not bool(assign_result.get("ok", false)):
+		_fail("Upgrade smoke test failed: could not assign a resident before dojo validation.")
+		return
+
 	game_state.grant_items({"spark_reed": 2})
 	var dojo_service = load("res://scripts/services/dojo_service.gd").new()
 

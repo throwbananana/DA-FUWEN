@@ -78,6 +78,8 @@ func start_battle(config: Dictionary) -> void:
 		_finish_tween.kill()
 		_finish_tween = null
 	battle_config = config.duplicate(true)
+	if bool(battle_config.get("consume_minigame_bonus", false)):
+		GameState.consume_pending_minigame_bonus()
 	_normalize_balance_overrides()
 	allies = config.get("allies", [])
 	enemies = config.get("enemies", [])

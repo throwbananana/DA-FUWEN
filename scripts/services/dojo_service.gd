@@ -4,9 +4,11 @@ extends RefCounted
 const MonsterInstance = preload("res://scripts/monster_instance.gd")
 const SynergyService = preload("res://scripts/services/synergy_service.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
+const MinigameServiceScript = preload("res://scripts/services/minigame_service.gd")
 
 var synergy_service := SynergyService.new()
 var localization_service := LocalizationService.new()
+var minigame_service := MinigameServiceScript.new()
 
 func get_dojo_for_habitat(habitat_id: String) -> Dictionary:
 	var habitat := DataRepository.get_habitat(habitat_id)
@@ -20,31 +22,60 @@ func get_dojo_menu(habitat_id: String) -> Dictionary:
 	if dojo.is_empty():
 		return {}
 	var synergy_report := synergy_service.build_synergy_report()
+	var battle_slots_ready := GameState.get_battle_party_uids().size() >= 2
+	var backpack_summary := "%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity]
 	var rounds: Array = []
 	var round_defs: Array = dojo.get("rounds", [])
 	var previous_cleared := true
 	for round_def in round_defs:
 		var tier := String(round_def.get("tier", ""))
+		var modifiers: Array = round_def.get("modifiers", [])
 		var already_cleared := GameState.has_cleared_dojo(String(dojo.get("id", "")), tier)
 		var required_rank := _required_rank(dojo, tier)
+		var challenge_score := _player_challenge_score(dojo, tier)
+		var score_gap := maxi(required_rank - challenge_score, 0)
 		var affordable := GameState.can_pay(dojo.get("entry_cost", {}))
 		var locked_by_progress := not previous_cleared
-		var summary_parts := [
-			localization_service.text("dojo.summary.recommended_rank", {"value": required_rank}),
-			localization_service.text("dojo.summary.opponents", {"value": " / ".join(_enemy_names(round_def.get("enemy_pool", [])))}),
-		]
-		if already_cleared:
-			summary_parts.append(localization_service.text("dojo.summary.first_clear"))
-		elif locked_by_progress:
+		var summary_parts := ["准备 %d / %d" % [challenge_score, required_rank]]
+		if locked_by_progress:
 			summary_parts.append(localization_service.text("dojo.summary.require_previous"))
+		elif not battle_slots_ready:
+			summary_parts.append("双打位未齐")
 		elif not affordable:
 			summary_parts.append(localization_service.text("dojo.summary.ticket_missing"))
+		elif score_gap > 0:
+			summary_parts.append("建议再补 %d 点" % score_gap)
+		else:
+			summary_parts.append("可以开打")
+		summary_parts.append("已首通" if already_cleared else "首通未过")
+		summary_parts.append(localization_service.text("dojo.summary.opponents", {"value": " / ".join(_enemy_names(round_def.get("enemy_pool", [])))}))
+		var tooltip_lines: Array[String] = []
+		tooltip_lines.append(localization_service.text("dojo.summary.recommended_rank", {"value": required_rank}))
+		tooltip_lines.append("当前准备度 %d" % challenge_score)
+		tooltip_lines.append("门票：%s" % _format_cost(dojo.get("entry_cost", {})))
+		if not modifiers.is_empty():
+			tooltip_lines.append(localization_service.text("dojo.summary.modifiers", {"value": " / ".join(modifiers)}))
+		var first_reward_text := _preview_reward_bundle(_reward_bundle_id(dojo, tier, true))
+		if not first_reward_text.is_empty():
+			tooltip_lines.append("首通奖励：%s" % first_reward_text)
+		var repeat_reward_text := _preview_reward_bundle(_reward_bundle_id(dojo, tier, false))
+		if not repeat_reward_text.is_empty():
+			tooltip_lines.append("复刷奖励：%s" % repeat_reward_text)
+		var unlock_text := _preview_unlocks(dojo, tier)
+		if not unlock_text.is_empty():
+			tooltip_lines.append("通关开放：%s" % unlock_text)
+		if score_gap > 0 and not locked_by_progress:
+			tooltip_lines.append("还差约 %d 点准备度，建议先补据点等级、信赖或徽章。" % score_gap)
 		rounds.append({
 			"id": tier,
 			"label": _tier_name(tier),
 			"summary": " ｜ ".join(summary_parts),
-			"tooltip": localization_service.text("dojo.summary.modifiers", {"value": " / ".join(round_def.get("modifiers", []))}),
-			"disabled": locked_by_progress,
+			"tooltip": "\n".join(tooltip_lines),
+			"disabled": locked_by_progress or not battle_slots_ready or not affordable,
+			"challenge_score": challenge_score,
+			"required_rank": required_rank,
+			"gap": score_gap,
+			"already_cleared": already_cleared,
 		})
 		previous_cleared = already_cleared
 	return {
@@ -53,7 +84,11 @@ func get_dojo_menu(habitat_id: String) -> Dictionary:
 		"entry_cost": dojo.get("entry_cost", {}),
 		"hint": String(dojo.get("ui_hint", "")),
 		"battle_slots": _battle_slot_names(),
-		"backpack_summary": "%d / %d" % [GameState.get_backpack_population_used(), GameState.backpack_capacity],
+		"battle_slots_ready": battle_slots_ready,
+		"backpack_summary": backpack_summary,
+		"reserve_summary": backpack_summary,
+		"progression_rank": GameState.get_progression_rank(),
+		"habitat_rank_total": GameState.get_habitat_rank_total(),
 		"synergy_lines": synergy_service.format_active_lines(synergy_report, 4),
 		"nearby_synergy_lines": synergy_service.format_nearby_lines(synergy_report, 2),
 		"building_lines": synergy_service.build_facility_bonus().get("lines", []),
@@ -129,10 +164,11 @@ func prepare_dojo_battle(dojo_id: String, tier: String) -> Dictionary:
 		return {"ok": false, "reason": "payment_failed", "cost": entry_cost}
 	var synergy_report := synergy_service.build_synergy_report()
 	var facility_bonus := synergy_service.build_facility_bonus()
-	var battle_bonus := synergy_service.merge_battle_bonus([
+	var base_battle_bonus := synergy_service.merge_battle_bonus([
 		synergy_service.build_battle_bonus(synergy_report),
 		facility_bonus.get("bonus", {}),
 	])
+	var battle_bonus := minigame_service.merge_with_pending_battle_bonus(base_battle_bonus)
 	var battle_bonus_lines := synergy_service.describe_battle_bonus(battle_bonus)
 	var subtitle_lines: Array[String] = []
 	subtitle_lines.append(localization_service.text("battle.subtitle.slots", {"value": " / ".join(_battle_slot_names())}))
@@ -142,6 +178,9 @@ func prepare_dojo_battle(dojo_id: String, tier: String) -> Dictionary:
 	var facility_lines: Array = facility_bonus.get("lines", [])
 	if not facility_lines.is_empty():
 		subtitle_lines.append(localization_service.text("battle.subtitle.buildings", {"value": " / ".join(facility_lines.slice(0, 2))}))
+	var minigame_text := minigame_service.pending_bonus_summary()
+	if not minigame_text.is_empty():
+		subtitle_lines.append(minigame_text)
 	if not battle_bonus_lines.is_empty():
 		subtitle_lines.append(localization_service.text("battle.subtitle.prebattle", {"value": " / ".join(battle_bonus_lines)}))
 	return {
@@ -157,13 +196,14 @@ func prepare_dojo_battle(dojo_id: String, tier: String) -> Dictionary:
 			"subtitle": "\n".join(subtitle_lines),
 			"kind": "dojo",
 			"allow_capture": false,
-			"ally_first_round_attack_bonus": int(battle_bonus.get("ally_attack_bonus", 0)) > 0,
+			"ally_first_round_attack_bonus": int(base_battle_bonus.get("ally_attack_bonus", 0)) > 0,
 			"ally_attack_bonus": int(battle_bonus.get("ally_attack_bonus", 0)),
 			"ally_speed_bonus": int(battle_bonus.get("ally_speed_bonus", 0)),
 			"ally_hp_bonus": int(battle_bonus.get("ally_hp_bonus", 0)),
 			"ally_heal_bonus": int(battle_bonus.get("ally_heal_bonus", 0)),
 			"ally_guard_bonus": float(battle_bonus.get("ally_guard_bonus", 0.0)),
 			"enemy_attack_penalty": int(battle_bonus.get("enemy_attack_penalty", 0)),
+			"consume_minigame_bonus": minigame_service.has_pending_bonus(),
 			"round_limit": 7,
 			"allies": _build_allies(),
 			"enemies": _build_enemies(dojo, round, tier),
@@ -279,6 +319,53 @@ func _enemy_names(enemy_pool: Array) -> Array[String]:
 		var profile := DataRepository.get_species(String(species_id))
 		result.append(String(profile.get("name", species_id)))
 	return result
+
+func _format_cost(cost: Dictionary) -> String:
+	if Dictionary(cost).is_empty():
+		return "无"
+	var item_ids: Array[String] = []
+	for item_id in cost.keys():
+		item_ids.append(String(item_id))
+	item_ids.sort()
+	var parts: Array[String] = []
+	for item_id in item_ids:
+		var item := DataRepository.get_item(item_id)
+		parts.append("%s x%d" % [String(item.get("name", item_id)), int(cost[item_id])])
+	return " / ".join(parts)
+
+func _preview_reward_bundle(bundle_id: String) -> String:
+	if bundle_id.is_empty():
+		return ""
+	var bundle := DataRepository.get_reward_bundle(bundle_id)
+	if bundle.is_empty():
+		return ""
+	var parts: Array[String] = []
+	var items: Dictionary = bundle.get("items", {})
+	if not items.is_empty():
+		parts.append(_format_cost(items))
+	var systems: Dictionary = bundle.get("systems", {})
+	if int(systems.get("badge_count", 0)) > 0:
+		parts.append("徽章 +%d" % int(systems.get("badge_count", 0)))
+	if int(systems.get("season_points", 0)) > 0:
+		parts.append("季节点 +%d" % int(systems.get("season_points", 0)))
+	if int(systems.get("exploration_points", 0)) > 0:
+		parts.append("探索点 +%d" % int(systems.get("exploration_points", 0)))
+	return " / ".join(parts)
+
+func _preview_unlocks(dojo: Dictionary, tier: String) -> String:
+	var names: Array[String] = []
+	for habitat_id in dojo.get("unlock_on_clear", {}).get(tier, []):
+		var habitat := DataRepository.get_habitat(String(habitat_id))
+		var habitat_name := String(habitat.get("name", habitat_id))
+		if not habitat_name.is_empty() and not names.has(habitat_name):
+			names.append(habitat_name)
+	var reward_bundle := DataRepository.get_reward_bundle(_reward_bundle_id(dojo, tier, true))
+	for habitat_id in reward_bundle.get("unlocks", []):
+		var habitat := DataRepository.get_habitat(String(habitat_id))
+		var habitat_name := String(habitat.get("name", habitat_id))
+		if not habitat_name.is_empty() and not names.has(habitat_name):
+			names.append(habitat_name)
+	return " / ".join(names)
 
 func _battle_slot_names() -> Array[String]:
 	var names: Array[String] = []

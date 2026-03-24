@@ -515,7 +515,26 @@ func get_habitat_npcs(habitat_id: String) -> Array:
 
 func get_buildings_for_habitat(habitat_id: String) -> Array:
 	var result: Array = []
-	for building in buildings.values():
-		if String(building.get("site", "")) == habitat_id:
-			result.append(building)
+	var appended := {}
+	var habitat := get_habitat(habitat_id)
+	for raw_building_id in habitat.get("buildings", []):
+		var building_id := String(raw_building_id)
+		var building := get_building(building_id)
+		if building.is_empty():
+			continue
+		if String(building.get("site", "")) != habitat_id:
+			continue
+		result.append(building)
+		appended[building_id] = true
+	var overflow_ids: Array[String] = []
+	for building_id in buildings.keys():
+		var id := String(building_id)
+		if appended.has(id):
+			continue
+		if String(buildings[id].get("site", "")) != habitat_id:
+			continue
+		overflow_ids.append(id)
+	overflow_ids.sort()
+	for building_id in overflow_ids:
+		result.append(get_building(building_id))
 	return result

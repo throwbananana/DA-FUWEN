@@ -7,7 +7,7 @@
       "name": "春芽边境",
       "start_node_id": 0,
       "boss_node_id": 12,
-      "revealed_nodes": [0, 1, 2, 3, 9, 11],
+      "revealed_nodes": [0, 1, 2, 3, 9, 11, 14],
       "nodes": [
         {
           "id": 0,
@@ -15,7 +15,7 @@
           "type": "camp",
           "description": "春季远征的整备起点，也是返程支线的收束点。",
           "position": [70, 300],
-          "edges": [1, 2, 13],
+          "edges": [1, 2, 13, 14],
           "travel_cost": 0,
           "habitat_id": "",
           "focus": "补给 / 规划",
@@ -53,7 +53,7 @@
           "type": "settlement",
           "description": "春季第一支点，负责把上半圈情报整理成可执行路线。",
           "position": [340, 300],
-          "edges": [1, 2, 4, 6],
+          "edges": [1, 2, 4, 6, 14],
           "travel_cost": 1,
           "habitat_id": "sky_post",
           "map_effect_id": "spring_scout_cache",
@@ -190,6 +190,18 @@
           "primary_content": "build_menu",
           "focus": "回流 / 建设",
           "reward_hint": "要省下一整圈时间，就得把这条回流线经营好"
+        },
+        {
+          "id": 14,
+          "name": "边境公告板",
+          "type": "bulletin",
+          "description": "巡路人会把本周野群出没和摊位折扣钉在这里，适合起手先看一眼。",
+          "position": [250, 300],
+          "edges": [0, 3],
+          "travel_cost": 1,
+          "habitat_id": "",
+          "focus": "传闻 / 折扣",
+          "reward_hint": "先看哪边会刷野群、哪边有折扣，再决定春季第一圈从哪边起手"
         }
       ]
     },
@@ -199,7 +211,7 @@
       "name": "盛雷走廊",
       "start_node_id": 0,
       "boss_node_id": 12,
-      "revealed_nodes": [0, 1, 2, 3],
+      "revealed_nodes": [0, 1, 2, 3, 14],
       "nodes": [
         {
           "id": 0,
@@ -207,7 +219,7 @@
           "type": "camp",
           "description": "盛雷季的整备起点，也是回流短路的汇合点。",
           "position": [70, 300],
-          "edges": [1, 2, 13],
+          "edges": [1, 2, 13, 14],
           "travel_cost": 0,
           "habitat_id": "",
           "focus": "补给 / 规划",
@@ -245,7 +257,7 @@
           "type": "habitat",
           "description": "夏季第一支点，负责把建设节奏转成中段爆发。",
           "position": [340, 300],
-          "edges": [1, 2, 4, 6],
+          "edges": [1, 2, 4, 6, 14],
           "travel_cost": 1,
           "habitat_id": "ancient_platform",
           "primary_content": "build_menu",
@@ -382,6 +394,18 @@
           "primary_content": "build_menu",
           "focus": "回流 / 建设",
           "reward_hint": "整条雷季后半圈能不能省步数，全看这条回流线"
+        },
+        {
+          "id": 14,
+          "name": "雷汐公告板",
+          "type": "bulletin",
+          "description": "赶路人会把雷季野群动向和摊位折扣贴在这里，方便出发前先校准路线。",
+          "position": [250, 300],
+          "edges": [0, 3],
+          "travel_cost": 1,
+          "habitat_id": "",
+          "focus": "动向 / 折扣",
+          "reward_hint": "先看哪边有雷季野群和特价维修货，再决定练雷场还是补给线"
         }
       ]
     },
@@ -391,7 +415,7 @@
       "name": "赤叶锻路",
       "start_node_id": 0,
       "boss_node_id": 12,
-      "revealed_nodes": [0, 1, 2, 3, 10],
+      "revealed_nodes": [0, 1, 2, 3, 10, 14],
       "nodes": [
         {
           "id": 0,
@@ -399,7 +423,7 @@
           "type": "camp",
           "description": "赤叶季的整备起点，负责在试炼和建设之间重新分配重心。",
           "position": [70, 300],
-          "edges": [1, 2, 13],
+          "edges": [1, 2, 13, 14],
           "travel_cost": 0,
           "habitat_id": "",
           "focus": "规划 / 构筑",
@@ -437,7 +461,7 @@
           "type": "shop",
           "description": "赤叶季第一支点，负责把建设与试炼的先后顺序排清。",
           "position": [340, 300],
-          "edges": [1, 2, 4, 6],
+          "edges": [1, 2, 4, 6, 14],
           "travel_cost": 1,
           "habitat_id": "copper_hammer_bazaar",
           "primary_content": "shop_menu",
@@ -574,6 +598,18 @@
           "primary_content": "build_menu",
           "focus": "回流 / 建设",
           "reward_hint": "把这里养起来，终盘就能多出一整段短路"
+        },
+        {
+          "id": 14,
+          "name": "锻路公告板",
+          "type": "bulletin",
+          "description": "这块木板上会更新试炼补给和野群消息，方便你先排好这一圈的先后手。",
+          "position": [250, 300],
+          "edges": [0, 3],
+          "travel_cost": 1,
+          "habitat_id": "",
+          "focus": "排期 / 折扣",
+          "reward_hint": "先看哪边更容易遇见野群、哪档试炼补给在降价，再决定这圈先 build 还是先试炼"
         }
       ]
     },
@@ -583,7 +619,7 @@
       "name": "霜镜回路",
       "start_node_id": 0,
       "boss_node_id": 12,
-      "revealed_nodes": [0, 1, 2, 3, 11],
+      "revealed_nodes": [0, 1, 2, 3, 11, 14],
       "nodes": [
         {
           "id": 0,
@@ -591,7 +627,7 @@
           "type": "camp",
           "description": "冬季整备起点，也是远端回流线重新折返的终点。",
           "position": [70, 300],
-          "edges": [1, 2, 13],
+          "edges": [1, 2, 13, 14],
           "travel_cost": 0,
           "habitat_id": "",
           "focus": "整备 / 终局",
@@ -629,7 +665,7 @@
           "type": "habitat",
           "description": "冬季第一支点，先负责判断哪条终局线的异常更值得提早处理。",
           "position": [340, 300],
-          "edges": [1, 2, 4, 6],
+          "edges": [1, 2, 4, 6, 14],
           "travel_cost": 1,
           "habitat_id": "crystal_creek",
           "primary_content": "observe",
@@ -766,6 +802,18 @@
           "primary_content": "npc_menu",
           "focus": "回流 / 访客",
           "reward_hint": "要省下最后几天，就得把这条回流线说通"
+        },
+        {
+          "id": 14,
+          "name": "霜线公告板",
+          "type": "bulletin",
+          "description": "终局路上的巡线员会把本周野群动向和特价补给钉在这里，免得白白走冤枉路。",
+          "position": [250, 300],
+          "edges": [0, 3],
+          "travel_cost": 1,
+          "habitat_id": "",
+          "focus": "线索 / 折扣",
+          "reward_hint": "先看哪边野群更活跃、哪档终局补给在降价，再决定这一圈先稳态还是冲终局"
         }
       ]
     }

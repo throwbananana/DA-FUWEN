@@ -7,6 +7,8 @@ signal observer_travel_finished(node_id: int)
 
 const TYPE_SHORT := {
 	"camp": "营",
+	"bulletin": "告",
+	"minigame": "游",
 	"empty": "空",
 	"environment": "境",
 	"event": "事",
@@ -18,6 +20,8 @@ const TYPE_SHORT := {
 
 const TYPE_COLORS := {
 	"camp": Color("7dd3fc"),
+	"bulletin": Color("f59e0b"),
+	"minigame": Color("fb923c"),
 	"empty": Color("94a3b8"),
 	"environment": Color("93c5fd"),
 	"event": Color("f9a8d4"),

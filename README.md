@@ -93,7 +93,7 @@ godot --headless --path . -s res://scripts/custom_asset_sync_smoke_test.gd
 ## 主要目录
 
 - [scenes/main.tscn](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\scenes\main.tscn)：主场景入口
-- [scripts/main.gd](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\scripts\main.gd)：主循环、UI 刷新、拜访与战斗面板调度
+- [scripts/main.gd](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\scripts\main.gd)：主循环、UI 刷新、偶遇与战斗面板调度
 - [scripts/autoload/data_repository.gd](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\scripts\autoload\data_repository.gd)：静态表加载、并表与索引查询
 - [scripts/autoload/game_state.gd](G:\Users\123\Documents\GitHub\dafuwen\DA-FUWEN\scripts\autoload\game_state.gd)：运行时状态、成长、解锁、库存和伙伴管理
 - `scripts/services/`：地点访问、建设、NPC、遭遇、羁绊、道馆等服务层

@@ -28,6 +28,8 @@ const WINDOWED_RESOLUTION_PRESETS := [
 const DEFAULT_WINDOWED_RESOLUTION_ID := "1280x720"
 const PLAYER_ACTOR_ID := "player_main"
 const PLAYER_ACTOR_NAME := "玩家"
+const NURSERY_PRIMARY_BUILDING_ID := "nursery_corner"
+const NURSERY_SUPPORT_BUILDING_ID := "warm_nest"
 
 var season_id := DEFAULT_SEASON_ID
 var weather_id := "clear"
@@ -50,6 +52,8 @@ var pending_node_ambushes: Dictionary = {}
 var active_board_threats: Array = []
 var npc_positions: Dictionary = {}
 var run_modifiers: Array = []
+var pending_minigame_bonus: Dictionary = {}
+var pending_minigame_bonus_notes: Array[String] = []
 var weekly_objective: Dictionary = {}
 var weekly_progress: Dictionary = {}
 var completed_seasons := 0
@@ -87,6 +91,12 @@ var current_available_habitats_cache: Array[String] = []
 var party_slots: Array[String] = []
 var reserve_slots: Array[String] = []
 var pet_capacity := 4
+var backpack_capacity: int:
+	get:
+		return pet_capacity
+	set(value):
+		pet_capacity = maxi(0, value)
+		_sync_roster_slots()
 var wallet_gold := 12
 var bank_gold := 0
 var shop_purchase_counts: Dictionary = {}
@@ -134,6 +144,8 @@ func reset_for_new_season() -> void:
 	active_board_threats.clear()
 	npc_positions.clear()
 	run_modifiers.clear()
+	pending_minigame_bonus.clear()
+	pending_minigame_bonus_notes.clear()
 	weekly_objective.clear()
 	weekly_progress.clear()
 	completed_seasons = 0
@@ -725,6 +737,8 @@ func build_runtime_snapshot() -> Dictionary:
 		"active_board_threats": active_board_threats.duplicate(true),
 		"npc_positions": npc_positions.duplicate(true),
 		"run_modifiers": run_modifiers.duplicate(true),
+		"pending_minigame_bonus": pending_minigame_bonus.duplicate(true),
+		"pending_minigame_bonus_notes": pending_minigame_bonus_notes.duplicate(),
 		"weekly_objective": weekly_objective.duplicate(true),
 		"weekly_progress": weekly_progress.duplicate(true),
 		"completed_seasons": completed_seasons,
@@ -789,6 +803,8 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	active_board_threats = _duplicate_array(snapshot.get("active_board_threats", []))
 	npc_positions = _duplicate_dictionary(snapshot.get("npc_positions", {}))
 	run_modifiers = _duplicate_array(snapshot.get("run_modifiers", []))
+	pending_minigame_bonus = _duplicate_dictionary(snapshot.get("pending_minigame_bonus", {}))
+	pending_minigame_bonus_notes = _coerce_string_array(snapshot.get("pending_minigame_bonus_notes", []))
 	weekly_objective = _duplicate_dictionary(snapshot.get("weekly_objective", {}))
 	weekly_progress = _duplicate_dictionary(snapshot.get("weekly_progress", {}))
 	completed_seasons = int(snapshot.get("completed_seasons", 0))
@@ -797,6 +813,7 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	board_loop_progress = _duplicate_dictionary(snapshot.get("board_loop_progress", {}))
 	inventory = _duplicate_dictionary(snapshot.get("inventory", {}))
 	habitats = _duplicate_dictionary(snapshot.get("habitats", {}))
+	_normalize_habitats_state()
 	pet_states = _duplicate_dictionary(snapshot.get("pet_states", {}))
 	npc_trust = _duplicate_dictionary(snapshot.get("npc_trust", {}))
 	npc_duel_records = _duplicate_dictionary(snapshot.get("npc_duel_records", {}))
@@ -970,6 +987,8 @@ func _merge_habitat_state(state: Dictionary, habitat_id: String, habitat: Dictio
 	merged["rank"] = _rank_from_state(merged)
 	if not merged.has("last_visit_day"):
 		merged["last_visit_day"] = -1
+	if _supports_nursery_projects(habitat):
+		merged["nursery_state"] = _normalize_nursery_state(merged.get("nursery_state", {}))
 	return merged
 
 func _build_default_habitat_state(habitat_id: String, habitat: Dictionary) -> Dictionary:
@@ -997,7 +1016,60 @@ func _build_default_habitat_state(habitat_id: String, habitat: Dictionary) -> Di
 			state["service_levels"] = levels
 		else:
 			state["building_levels"] = levels
+	if _supports_nursery_projects(habitat):
+		state["nursery_state"] = _default_nursery_state()
 	return state
+
+func _supports_nursery_projects(habitat: Dictionary) -> bool:
+	return Array(habitat.get("buildings", [])).has(NURSERY_PRIMARY_BUILDING_ID)
+
+func _default_nursery_state() -> Dictionary:
+	return {
+		"active_project": {},
+		"history": [],
+		"last_hatch_turn": -1,
+	}
+
+func _normalize_nursery_state(value: Variant) -> Dictionary:
+	var normalized := _default_nursery_state()
+	var raw := _duplicate_dictionary(value)
+	normalized["active_project"] = _normalize_nursery_project(raw.get("active_project", {}))
+	normalized["history"] = _coerce_string_array(raw.get("history", []))
+	normalized["last_hatch_turn"] = int(raw.get("last_hatch_turn", -1))
+	return normalized
+
+func _normalize_nursery_project(value: Variant) -> Dictionary:
+	var raw := _duplicate_dictionary(value)
+	if raw.is_empty():
+		return {}
+	var actions := _coerce_string_array(raw.get("preferred_actions", []))
+	if actions.is_empty():
+		actions = ["observe", "calm", "feed"]
+	var current_need := String(raw.get("current_need_action", actions[0]))
+	if current_need.is_empty() or not actions.has(current_need):
+		current_need = String(actions[0])
+	return {
+		"species_id": String(raw.get("species_id", "")),
+		"progress": maxi(0, int(raw.get("progress", 0))),
+		"required_progress": maxi(1, int(raw.get("required_progress", 5))),
+		"care_points": maxi(0, int(raw.get("care_points", 0))),
+		"preferred_actions": actions,
+		"current_need_action": current_need,
+		"started_turn": int(raw.get("started_turn", global_turn)),
+		"last_care_turn": int(raw.get("last_care_turn", -1)),
+		"ready_to_hatch": bool(raw.get("ready_to_hatch", false)),
+	}
+
+func _normalize_habitats_state() -> void:
+	var normalized := {}
+	for habitat_id in DataRepository.habitats.keys():
+		var habitat := DataRepository.get_habitat(habitat_id)
+		var state: Dictionary = _duplicate_dictionary(habitats.get(habitat_id, {}))
+		if state.is_empty():
+			normalized[habitat_id] = _build_default_habitat_state(habitat_id, habitat)
+			continue
+		normalized[habitat_id] = _merge_habitat_state(state, habitat_id, habitat)
+	habitats = normalized
 
 func _default_unlock_state(habitat_id: String, habitat: Dictionary) -> bool:
 	if habitat_id in ["mist_moss_cave", "crystal_creek", "sky_post", "ancient_platform", "copper_hammer_bazaar"]:
@@ -1037,12 +1109,12 @@ func _seed_companions() -> void:
 	add_companion("moss_deer_1", "苔角")
 	add_companion("spark_mouse_1", "火花")
 
-func add_companion(species_id: String, nickname: String = "") -> String:
+func add_companion(species_id: String, nickname: String = "", extra_state: Dictionary = {}) -> String:
 	var profile := DataRepository.get_species(species_id)
 	var uid := "pet_%03d" % _pet_serial
 	_pet_serial += 1
 	var display_name := nickname if not nickname.is_empty() else String(profile.get("name", species_id))
-	pet_states[uid] = {
+	var pet_state := {
 		"uid": uid,
 		"species_id": species_id,
 		"display_name": display_name,
@@ -1053,6 +1125,11 @@ func add_companion(species_id: String, nickname: String = "") -> String:
 		"temperament": String(profile.get("temperament", "")),
 		"resident_tags": profile.get("resident_tags", []).duplicate(),
 	}
+	for key in extra_state.keys():
+		if String(key) == "uid":
+			continue
+		pet_state[key] = extra_state[key]
+	pet_states[uid] = pet_state
 	register_species_seen(species_id)
 	add_journal_entry("新伙伴加入照料名册：%s。" % display_name)
 	_sync_roster_slots()
@@ -1189,6 +1266,258 @@ func set_building_runtime_state(habitat_id: String, building_id: String, runtime
 	runtime_states[building_id] = runtime_state.duplicate(true)
 	habitat_state["building_runtime_states"] = runtime_states
 	habitats[habitat_id] = habitat_state
+
+func get_nursery_state(habitat_id: String) -> Dictionary:
+	if not habitats.has(habitat_id):
+		return _default_nursery_state()
+	var habitat_state: Dictionary = habitats[habitat_id]
+	if not habitat_state.has("nursery_state"):
+		return _default_nursery_state()
+	return _normalize_nursery_state(habitat_state.get("nursery_state", {}))
+
+func get_nursery_project(habitat_id: String) -> Dictionary:
+	return Dictionary(get_nursery_state(habitat_id).get("active_project", {})).duplicate(true)
+
+func set_nursery_state(habitat_id: String, nursery_state: Dictionary) -> void:
+	if not habitats.has(habitat_id):
+		return
+	var habitat_state: Dictionary = habitats[habitat_id]
+	habitat_state["nursery_state"] = _normalize_nursery_state(nursery_state)
+	habitats[habitat_id] = habitat_state
+
+func set_nursery_project(habitat_id: String, project: Dictionary) -> void:
+	var nursery_state := get_nursery_state(habitat_id)
+	nursery_state["active_project"] = _normalize_nursery_project(project)
+	set_nursery_state(habitat_id, nursery_state)
+
+func get_nursery_access_report(habitat_id: String) -> Dictionary:
+	var habitat := DataRepository.get_habitat(habitat_id)
+	if habitat.is_empty():
+		return {"ok": false, "reason": "habitat_missing", "habitat_id": habitat_id}
+	if not _supports_nursery_projects(habitat):
+		return {"ok": false, "reason": "nursery_missing", "habitat_id": habitat_id}
+	var primary_level := get_building_level(habitat_id, NURSERY_PRIMARY_BUILDING_ID)
+	var support_level := get_building_level(habitat_id, NURSERY_SUPPORT_BUILDING_ID)
+	if primary_level <= 0 and support_level < 3:
+		return {
+			"ok": false,
+			"reason": "nursery_locked",
+			"habitat_id": habitat_id,
+			"primary_level": primary_level,
+			"support_level": support_level,
+		}
+	var resident := get_habitat_resident_actor(habitat_id)
+	if resident.is_empty():
+		return {
+			"ok": false,
+			"reason": "resident_required",
+			"habitat_id": habitat_id,
+			"primary_level": primary_level,
+			"support_level": support_level,
+		}
+	return {
+		"ok": true,
+		"habitat_id": habitat_id,
+		"primary_level": primary_level,
+		"support_level": support_level,
+		"resident": resident,
+	}
+
+func get_nursery_candidate_species(habitat_id: String) -> Array[String]:
+	var habitat := DataRepository.get_habitat(habitat_id)
+	if habitat.is_empty():
+		return []
+	var encounter_flags: Dictionary = _duplicate_dictionary(quest_memory.get("encounter_species", {}))
+	var observe_flags: Dictionary = _duplicate_dictionary(quest_memory.get("observed_species", {}))
+	var bond_flags: Dictionary = _duplicate_dictionary(quest_memory.get("bonded_species", {}))
+	var result: Array[String] = []
+	for raw_species_id in habitat.get("wild_pool", []):
+		var species_id := String(raw_species_id)
+		if species_id.is_empty():
+			continue
+		if not encounter_flags.has(species_id) and not observe_flags.has(species_id) and not bond_flags.has(species_id):
+			continue
+		result.append(species_id)
+	return result
+
+func start_nursery_project(habitat_id: String, species_id: String) -> Dictionary:
+	var access := get_nursery_access_report(habitat_id)
+	if not bool(access.get("ok", false)):
+		return access
+	var project := get_nursery_project(habitat_id)
+	if not project.is_empty():
+		return {"ok": false, "reason": "incubation_active", "habitat_id": habitat_id, "project": project}
+	if not get_nursery_candidate_species(habitat_id).has(species_id):
+		return {"ok": false, "reason": "species_not_recorded", "habitat_id": habitat_id, "species_id": species_id}
+	var species := DataRepository.get_species(species_id)
+	if species.is_empty():
+		return {"ok": false, "reason": "species_missing", "habitat_id": habitat_id, "species_id": species_id}
+	var actions := _coerce_string_array(species.get("care_actions", []))
+	if actions.is_empty():
+		actions = ["observe", "calm", "feed"]
+	var next_project := {
+		"species_id": species_id,
+		"progress": 0,
+		"required_progress": _nursery_required_progress_for_species(species_id),
+		"care_points": 0,
+		"preferred_actions": actions,
+		"current_need_action": String(actions[0]),
+		"started_turn": global_turn,
+		"last_care_turn": -1,
+		"ready_to_hatch": false,
+	}
+	set_nursery_project(habitat_id, next_project)
+	add_journal_entry("%s 的孵育记录已经在 %s 建档。" % [String(species.get("name", species_id)), String(DataRepository.get_habitat(habitat_id).get("name", habitat_id))])
+	return {
+		"ok": true,
+		"habitat_id": habitat_id,
+		"species_id": species_id,
+		"project": get_nursery_project(habitat_id),
+	}
+
+func care_nursery_project(habitat_id: String, action_id: String) -> Dictionary:
+	var access := get_nursery_access_report(habitat_id)
+	if not bool(access.get("ok", false)):
+		return access
+	var project := get_nursery_project(habitat_id)
+	if project.is_empty():
+		return {"ok": false, "reason": "no_incubation", "habitat_id": habitat_id}
+	if bool(project.get("ready_to_hatch", false)):
+		return {"ok": false, "reason": "incubation_ready", "habitat_id": habitat_id, "project": project}
+	var actions := _coerce_string_array(project.get("preferred_actions", []))
+	if not actions.has(action_id):
+		return {"ok": false, "reason": "invalid_care_action", "habitat_id": habitat_id, "action_id": action_id, "project": project}
+	if int(project.get("last_care_turn", -1)) == global_turn:
+		return {"ok": false, "reason": "care_already_done", "habitat_id": habitat_id, "project": project}
+	var progress_delta := 2 if String(project.get("current_need_action", "")) == action_id else 1
+	if get_building_level(habitat_id, NURSERY_PRIMARY_BUILDING_ID) >= 2 and String(project.get("current_need_action", "")) == action_id:
+		progress_delta += 1
+	project["progress"] = int(project.get("progress", 0)) + progress_delta
+	project["care_points"] = int(project.get("care_points", 0)) + progress_delta
+	project["last_care_turn"] = global_turn
+	project["current_need_action"] = _next_nursery_need_action(actions, action_id)
+	var hatched_ready := _finalize_nursery_progress(habitat_id, project)
+	if hatched_ready:
+		project = get_nursery_project(habitat_id)
+	var resident := get_habitat_resident_actor(habitat_id)
+	if not resident.is_empty() and not is_player_actor_id(String(resident.get("uid", ""))) and progress_delta >= 2:
+		add_pet_bond(String(resident.get("uid", "")), 1)
+	return {
+		"ok": true,
+		"habitat_id": habitat_id,
+		"action_id": action_id,
+		"progress_delta": progress_delta,
+		"project": get_nursery_project(habitat_id),
+		"ready_to_hatch": hatched_ready,
+	}
+
+func hatch_nursery_project(habitat_id: String) -> Dictionary:
+	var access := get_nursery_access_report(habitat_id)
+	if not bool(access.get("ok", false)):
+		return access
+	var nursery_state := get_nursery_state(habitat_id)
+	var project: Dictionary = nursery_state.get("active_project", {})
+	if project.is_empty():
+		return {"ok": false, "reason": "no_incubation", "habitat_id": habitat_id}
+	if not bool(project.get("ready_to_hatch", false)):
+		return {"ok": false, "reason": "incubation_not_ready", "habitat_id": habitat_id, "project": project}
+	var species_id := String(project.get("species_id", ""))
+	var species := DataRepository.get_species(species_id)
+	var starting_bond := 2 if int(project.get("care_points", 0)) >= int(project.get("required_progress", 1)) else 1
+	var pet_uid := add_companion(species_id, "", {
+		"bond_level": starting_bond,
+		"hatched_from_habitat_id": habitat_id,
+		"origin": "nursery",
+	})
+	nursery_state["active_project"] = {}
+	var history := _coerce_string_array(nursery_state.get("history", []))
+	history.append(species_id)
+	while history.size() > 6:
+		history.pop_front()
+	nursery_state["history"] = history
+	nursery_state["last_hatch_turn"] = global_turn
+	set_nursery_state(habitat_id, nursery_state)
+	var resident := get_habitat_resident_actor(habitat_id)
+	if not resident.is_empty() and not is_player_actor_id(String(resident.get("uid", ""))):
+		add_pet_bond(String(resident.get("uid", "")), 1)
+	add_journal_entry("%s 在 %s 完成了破壳。" % [String(species.get("name", species_id)), String(DataRepository.get_habitat(habitat_id).get("name", habitat_id))])
+	return {
+		"ok": true,
+		"habitat_id": habitat_id,
+		"species_id": species_id,
+		"pet_uid": pet_uid,
+		"pet": get_pet(pet_uid),
+		"starting_bond": starting_bond,
+	}
+
+func _nursery_required_progress_for_species(species_id: String) -> int:
+	var rarity := String(DataRepository.get_species(species_id).get("rarity", "common"))
+	match rarity:
+		"uncommon":
+			return 6
+		"rare":
+			return 8
+		"epic":
+			return 10
+		"legendary":
+			return 12
+		_:
+			return 5
+
+func _next_nursery_need_action(actions: Array[String], current_action: String) -> String:
+	if actions.is_empty():
+		return "observe"
+	var index := actions.find(current_action)
+	if index == -1:
+		return String(actions[0])
+	return String(actions[(index + 1) % actions.size()])
+
+func _tick_nursery_projects() -> Array[String]:
+	var lines: Array[String] = []
+	for habitat_id in habitats.keys():
+		var habitat_state: Dictionary = habitats[habitat_id]
+		if not habitat_state.has("nursery_state"):
+			continue
+		var nursery_state := _normalize_nursery_state(habitat_state.get("nursery_state", {}))
+		var project: Dictionary = nursery_state.get("active_project", {})
+		if project.is_empty() or bool(project.get("ready_to_hatch", false)):
+			continue
+		var progress_delta := _passive_nursery_progress(habitat_id)
+		if progress_delta <= 0:
+			continue
+		project["progress"] = int(project.get("progress", 0)) + progress_delta
+		var actions := _coerce_string_array(project.get("preferred_actions", []))
+		project["current_need_action"] = _next_nursery_need_action(actions, String(project.get("current_need_action", "")))
+		nursery_state["active_project"] = project
+		habitat_state["nursery_state"] = nursery_state
+		habitats[habitat_id] = habitat_state
+		if _finalize_nursery_progress(habitat_id, project):
+			var species_id := String(project.get("species_id", ""))
+			lines.append("%s 的 %s 已经能听见壳内回应，随时可以迎接破壳。" % [
+				String(DataRepository.get_habitat(habitat_id).get("name", habitat_id)),
+				String(DataRepository.get_species(species_id).get("name", species_id)),
+			])
+	return lines
+
+func _passive_nursery_progress(habitat_id: String) -> int:
+	var project := get_nursery_project(habitat_id)
+	if project.is_empty():
+		return 0
+	var delta := 1
+	if not get_habitat_resident_actor(habitat_id).is_empty():
+		delta += 1
+	if get_building_level(habitat_id, NURSERY_PRIMARY_BUILDING_ID) >= 2 or get_building_level(habitat_id, NURSERY_SUPPORT_BUILDING_ID) >= 3:
+		delta += 1
+	if season_id == "spring":
+		delta += 1
+	return delta
+
+func _finalize_nursery_progress(habitat_id: String, project: Dictionary) -> bool:
+	var normalized := _normalize_nursery_project(project)
+	var ready := int(normalized.get("progress", 0)) >= int(normalized.get("required_progress", 1))
+	normalized["ready_to_hatch"] = ready
+	set_nursery_project(habitat_id, normalized)
+	return ready
 
 func consume_next_observation_source(habitat_id: String) -> String:
 	if not habitats.has(habitat_id):
@@ -1791,10 +2120,14 @@ func advance_day() -> Dictionary:
 	global_turn += 1
 	weekly_turn += 1
 	_tick_building_runtime_states()
+	var day_lines: Array = Array(trait_report.get("lines", [])).duplicate(true)
+	day_lines.append_array(_tick_nursery_projects())
+	trait_report["lines"] = day_lines
 	if weekly_turn > 5:
 		weekly_turn = 1
 		week_index += 1
 		weekly_reroll_count = 0
+		clear_pending_minigame_bonus()
 	if global_turn % 10 == 0:
 		anchor_points += 1
 	return trait_report
@@ -1821,6 +2154,7 @@ func advance_to_next_season() -> bool:
 	pending_node_ambushes.clear()
 	active_board_threats.clear()
 	npc_positions.clear()
+	clear_pending_minigame_bonus()
 	_reset_ai_players_for_new_season()
 	_sync_current_season_rule()
 	_sync_roster_slots()
@@ -1985,6 +2319,41 @@ func _apply_trait_daily_economy() -> Dictionary:
 
 func set_run_modifiers(modifiers: Array) -> void:
 	run_modifiers = modifiers.duplicate(true)
+
+func peek_pending_minigame_bonus() -> Dictionary:
+	return pending_minigame_bonus.duplicate(true)
+
+func add_pending_minigame_bonus(delta: Dictionary, note: String = "") -> Dictionary:
+	var caps := {
+		"ally_attack_bonus": 2,
+		"ally_speed_bonus": 2,
+		"ally_hp_bonus": 8,
+	}
+	for stat_key in caps.keys():
+		var current_value := int(pending_minigame_bonus.get(stat_key, 0))
+		var next_value := current_value + int(delta.get(stat_key, 0))
+		pending_minigame_bonus[stat_key] = mini(int(caps.get(stat_key, 0)), next_value)
+	if not note.is_empty():
+		if not pending_minigame_bonus_notes.has(note):
+			pending_minigame_bonus_notes.append(note)
+		if pending_minigame_bonus_notes.size() > 4:
+			pending_minigame_bonus_notes = pending_minigame_bonus_notes.slice(pending_minigame_bonus_notes.size() - 4, pending_minigame_bonus_notes.size())
+	return {
+		"bonus": pending_minigame_bonus.duplicate(true),
+		"notes": pending_minigame_bonus_notes.duplicate(),
+	}
+
+func consume_pending_minigame_bonus() -> Dictionary:
+	var result := {
+		"bonus": pending_minigame_bonus.duplicate(true),
+		"notes": pending_minigame_bonus_notes.duplicate(),
+	}
+	clear_pending_minigame_bonus()
+	return result
+
+func clear_pending_minigame_bonus() -> void:
+	pending_minigame_bonus.clear()
+	pending_minigame_bonus_notes.clear()
 
 func set_board_region(region_id: String, start_node_id: int = 0) -> void:
 	board_region_id = region_id
@@ -2201,7 +2570,15 @@ func get_settled_habitat_count() -> int:
 	return total
 
 func get_care_progress() -> int:
-	return get_settled_habitat_count() * 2 + bonded_species.size() * 2 + completed_quests.size() + get_habitat_rank_total() + badge_count
+	var nursery_score := 0
+	for habitat_state in habitats.values():
+		var nursery_state: Dictionary = _duplicate_dictionary(Dictionary(habitat_state).get("nursery_state", {}))
+		if nursery_state.is_empty():
+			continue
+		if not Dictionary(nursery_state.get("active_project", {})).is_empty():
+			nursery_score += 2
+		nursery_score += _coerce_string_array(nursery_state.get("history", [])).size()
+	return get_settled_habitat_count() * 2 + bonded_species.size() * 2 + completed_quests.size() + get_habitat_rank_total() + badge_count + nursery_score
 
 func refresh_season_unlocks() -> Array[String]:
 	var unlocked_now: Array[String] = []

@@ -41,7 +41,7 @@ func _render_arrival(payload: Dictionary) -> void:
 	_add_action("查看建造", controller.open_build_menu)
 	_add_action("与 NPC 交谈", controller.open_npc_menu)
 	_add_action("观察野外", controller.start_observation)
-	_add_action("结束本次拜访", controller.finish_visit)
+	_add_action("结束本次偶遇", controller.finish_visit)
 
 func _render_build_select(payload: Dictionary) -> void:
 	title_label.text = "选择要推进的建设"

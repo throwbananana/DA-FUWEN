@@ -30,6 +30,9 @@ const CutsceneService = preload("res://scripts/services/cutscene_service.gd")
 const CutscenePanel = preload("res://scripts/cutscene_panel.gd")
 const FishingService = preload("res://scripts/services/fishing_service.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
+const NurseryService = preload("res://scripts/services/nursery_service.gd")
+const BulletinService = preload("res://scripts/services/bulletin_service.gd")
+const MinigameService = preload("res://scripts/services/minigame_service.gd")
 
 const GAME_TITLE := "雾野市"
 const INVENTORY_RESOURCE_TYPES: Array[String] = ["material", "rare_material"]
@@ -180,6 +183,9 @@ var ai_player_service := AIPlayerService.new()
 var dialogue_service := DialogueService.new()
 var fishing_service := FishingService.new()
 var localization_service := LocalizationService.new()
+var nursery_service := NurseryService.new()
+var bulletin_service := BulletinService.new()
+var minigame_service := MinigameService.new()
 var story_service := StoryService.new()
 var story_director = StoryDirector.new()
 var cutscene_service := CutsceneService.new()
@@ -220,7 +226,7 @@ var _active_synergy_snapshot: Array[String] = []
 var _synergy_fx_ready := false
 var _synergy_banner: PanelContainer
 var _synergy_banner_label: RichTextLabel
-var _synergy_unit_glow_host: CenterContainer
+var _synergy_unit_glow_host: MarginContainer
 var _synergy_unit_glow_row: HBoxContainer
 var _synergy_banner_tween: Tween
 var _synergy_unit_glow_tween: Tween
@@ -649,9 +655,9 @@ func _apply_responsive_layout() -> void:
 		_synergy_banner.offset_top = 18.0 if tight_height else 28.0
 		_synergy_banner.offset_bottom = _synergy_banner.offset_top + banner_height
 	if is_instance_valid(_synergy_unit_glow_host):
-		var glow_half_width := 240.0 if compact_width else 280.0
-		_synergy_unit_glow_host.offset_left = -glow_half_width
-		_synergy_unit_glow_host.offset_right = glow_half_width
+		var glow_width := minf(420.0 if compact_width else 520.0, maxf(window_size.x - outer_margin * 6.0, 280.0))
+		_synergy_unit_glow_host.offset_left = -glow_width * 0.5
+		_synergy_unit_glow_host.offset_right = glow_width * 0.5
 	if is_instance_valid(_stage_transition_panel):
 		var stage_panel_size := Vector2(520, 180) if tight_height else (Vector2(620, 210) if compact_width or short_height else Vector2(720, 240))
 		_stage_transition_panel.custom_minimum_size = _clamp_panel_size(stage_panel_size, window_size, outer_margin * 6)
@@ -682,6 +688,10 @@ func _branch_node_intent(node: Dictionary) -> String:
 	match String(node.get("type", "")):
 		"camp":
 			return "回营整备"
+		"bulletin":
+			return "先看公告"
+		"minigame":
+			return "带队热身"
 		"habitat":
 			return "稳着推进"
 		"settlement", "shop":
@@ -762,7 +772,7 @@ func _ensure_synergy_banner() -> void:
 	_synergy_banner_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	margin.add_child(_synergy_banner_label)
 	overlay.add_child(_synergy_banner)
-	_synergy_unit_glow_host = CenterContainer.new()
+	_synergy_unit_glow_host = MarginContainer.new()
 	_synergy_unit_glow_host.name = "SynergyUnitGlowHost"
 	_synergy_unit_glow_host.visible = false
 	_synergy_unit_glow_host.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -771,13 +781,16 @@ func _ensure_synergy_banner() -> void:
 	_synergy_unit_glow_host.anchor_top = 0.0
 	_synergy_unit_glow_host.anchor_right = 0.5
 	_synergy_unit_glow_host.anchor_bottom = 0.0
-	_synergy_unit_glow_host.offset_left = -280.0
+	_synergy_unit_glow_host.offset_left = -260.0
 	_synergy_unit_glow_host.offset_top = 154.0
-	_synergy_unit_glow_host.offset_right = 280.0
+	_synergy_unit_glow_host.offset_right = 260.0
 	_synergy_unit_glow_host.offset_bottom = 246.0
+	_synergy_unit_glow_host.add_theme_constant_override("margin_left", 8)
+	_synergy_unit_glow_host.add_theme_constant_override("margin_right", 8)
 	overlay.add_child(_synergy_unit_glow_host)
 	_synergy_unit_glow_row = HBoxContainer.new()
-	_synergy_unit_glow_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	_synergy_unit_glow_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_synergy_unit_glow_row.alignment = BoxContainer.ALIGNMENT_BEGIN
 	_synergy_unit_glow_row.add_theme_constant_override("separation", 16)
 	_synergy_unit_glow_host.add_child(_synergy_unit_glow_row)
 
@@ -1932,6 +1945,14 @@ func _finalize_roll_arrival() -> void:
 		_resolve_environment_node(node)
 		_update_ui()
 		return
+	if type_id == "bulletin":
+		_show_bulletin_board(node)
+		_update_ui()
+		return
+	if type_id == "minigame":
+		_show_minigame_stop(node)
+		_update_ui()
+		return
 	if not current_visit_habitat_id.is_empty() and not GameState.is_habitat_unlocked(current_visit_habitat_id) and type_id != "event":
 		_show_locked_board_stop(node)
 		_update_ui()
@@ -2182,6 +2203,7 @@ func _on_base_pressed(opened_from_travel: bool = false) -> void:
 		"completed_quests": GameState.completed_quests.duplicate(),
 		"battle_slots": _battle_slot_names(),
 		"reserve_summary": "%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity],
+		"backpack_summary": "%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity],
 		"run_modifiers": run_modifier_service.format_lines(GameState.run_modifiers),
 		"weekly_objective_text": weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress),
 		"meta_points": GameState.exploration_points_total,
@@ -2189,6 +2211,7 @@ func _on_base_pressed(opened_from_travel: bool = false) -> void:
 		"nearby_synergy_lines": synergy_service.format_nearby_lines(synergy_report, 3),
 		"building_lines": facility_bonus.get("lines", []),
 		"battle_bonus_lines": synergy_service.describe_battle_bonus(battle_bonus),
+		"nursery_lines": nursery_service.build_overview_lines(),
 	})
 	if not _should_skip_runtime_tutorials() and not GameState.has_completed_tutorial("management_intro"):
 		_show_tutorial_popup("management_intro")
@@ -2244,6 +2267,53 @@ func _try_open_board_map_effect(node: Dictionary) -> bool:
 	decision_panel.open_panel(String(report.get("title", "地图效果")), "\n".join(body_lines), [], "继续前进")
 	return true
 
+func _show_bulletin_board(node: Dictionary) -> void:
+	var report: Dictionary = bulletin_service.build_board_bulletin(node)
+	_push_log("在 %s 看了一眼公告板，把本周的野群和折扣消息记下了。" % String(report.get("title", "公告板")))
+	pending_context = {"kind": "bulletin_board", "on_close": "finish_transit_stop"}
+	decision_panel.open_panel(
+		String(report.get("title", "公告板")),
+		String(report.get("body", "")),
+		[],
+		"继续前进"
+	)
+
+func _show_minigame_stop(node: Dictionary) -> void:
+	var payload: Dictionary = minigame_service.build_board_minigame(node)
+	_push_log("路过 %s，旁边正好摆着一处能带伙伴热身的小游戏摊位。" % String(payload.get("title", "小游戏地块")))
+	pending_context = {
+		"kind": "minigame_menu",
+		"node_id": int(node.get("id", -1)),
+		"on_close": "finish_transit_stop",
+	}
+	decision_panel.open_panel(
+		String(payload.get("title", "小游戏地块")),
+		String(payload.get("body", "")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"继续前进"
+	)
+
+func _show_minigame_result(result: Dictionary) -> void:
+	var body_lines: Array[String] = [
+		String(result.get("text", "伙伴们稍微活动开了。")),
+		"",
+		"[b]下次战斗前[/b] %s" % String(result.get("reward_text", "会带一点小幅属性加成。")),
+	]
+	var combined_text := String(result.get("combined_text", ""))
+	if not combined_text.is_empty():
+		body_lines.append("[b]当前累计[/b] %s" % combined_text)
+	_push_log("%s：下次战斗前 %s。" % [
+		String(result.get("title", "小游戏地块")),
+		String(result.get("reward_text", "状态稍微被提起来了")),
+	])
+	pending_context = {"kind": "minigame_result", "on_close": "finish_transit_stop"}
+	decision_panel.open_panel(
+		"小游戏收尾",
+		"\n".join(body_lines),
+		[],
+		"继续前进"
+	)
+
 func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
 	match step_id:
 		"arrival":
@@ -2289,6 +2359,7 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 	if not npc_presence.get("window_lines", []).is_empty():
 		lines.append("[b]来访窗口[/b] %s" % " / ".join(npc_presence.get("window_lines", []).slice(0, 2)))
 	lines.append("[b]建设进度[/b] %s" % _format_building_levels(current_visit_habitat_id, buildings))
+	lines.append_array(nursery_service.build_arrival_lines(current_visit_habitat_id))
 	if not primary_action.is_empty():
 		lines.append("[b]节点主玩法[/b] %s" % _primary_content_label(primary_action))
 	var effect_title := board_map_effect_service.preview_title(node)
@@ -2317,6 +2388,12 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 			"id": "assign_resident",
 			"label": "安排看守",
 			"summary": "把这里交给更合适的人或伙伴看着。",
+		})
+	if nursery_service.supports_nursery(current_visit_habitat_id):
+		choices.append({
+			"id": "nursery_menu",
+			"label": "照料孵育",
+			"summary": "查看这里的孵育位，安排孵化或继续照看幼体。",
 		})
 	pending_context = {"kind": "visit_arrival", "on_close": "finish_visit"}
 	decision_panel.open_panel(String(habitat.get("name", "地点")), "\n".join(lines), choices, "继续前进")
@@ -2394,23 +2471,24 @@ func _show_build_menu(payload: Dictionary) -> void:
 	var choices := []
 	for building in payload.get("buildings", []):
 		var building_id := String(building.get("id", ""))
-		var current_level := GameState.get_building_level(current_visit_habitat_id, building_id)
 		var check := habitat_service.can_build(current_visit_habitat_id, building_id)
-		var summary := "当前 Lv.%d" % current_level
-		var disabled := false
-		if bool(check.get("ok", false)):
-			summary += " ｜ 下一步：%s" % _format_item_cost(check.get("cost", {}))
-		else:
-			disabled = true
-			summary += " ｜ %s" % _build_fail_reason(String(check.get("reason", "unknown")))
 		choices.append({
 			"id": building_id,
 			"label": String(building.get("name", "未命名建筑")),
-			"summary": summary,
-			"disabled": disabled,
+			"summary": _build_choice_summary(check),
+			"tooltip": _build_choice_tooltip(check),
+			"disabled": not bool(check.get("ok", false)),
 		})
 	pending_context = {"kind": "build_select", "on_close": "arrival"}
-	decision_panel.open_panel("推进建设", "只有抵达地点后才允许施工。", choices, "返回地点")
+	decision_panel.open_panel(
+		"推进建设",
+		"只有抵达地点后才允许施工。\n[b]当前据点等级[/b] %d ｜ [b]当前构筑等级[/b] %d" % [
+			int(GameState.habitats.get(current_visit_habitat_id, {}).get("rank", 0)),
+			GameState.get_progression_rank(),
+		],
+		choices,
+		"返回地点"
+	)
 
 func _show_build_result(payload: Dictionary) -> void:
 	if bool(payload.get("ok", false)):
@@ -2419,6 +2497,29 @@ func _show_build_result(payload: Dictionary) -> void:
 		var effect_lines: Array[String] = []
 		for entry in effects:
 			effect_lines.append(String(entry))
+		var body_lines: Array[String] = ["[b]%s[/b] 升到 Lv.%d" % [building_name, int(payload.get("level", 0))]]
+		if not effect_lines.is_empty():
+			body_lines.append("[b]本阶效果[/b] %s" % "\n".join(effect_lines))
+		var interactions: Array = payload.get("interactions", [])
+		if not interactions.is_empty():
+			var interaction_labels: Array[String] = []
+			for interaction in interactions:
+				interaction_labels.append(String(interaction.get("label", interaction.get("id", "新互动"))))
+			body_lines.append("[b]新增互动[/b] %s" % " / ".join(interaction_labels))
+		var habitat_rank_before := int(payload.get("habitat_rank_before", 0))
+		var habitat_rank_after := int(payload.get("habitat_rank_after", habitat_rank_before))
+		if habitat_rank_after != habitat_rank_before:
+			body_lines.append("[b]据点等级[/b] %d → %d" % [habitat_rank_before, habitat_rank_after])
+		var progression_rank_before := int(payload.get("progression_rank_before", GameState.get_progression_rank()))
+		var progression_rank_after := int(payload.get("progression_rank_after", progression_rank_before))
+		if progression_rank_after != progression_rank_before:
+			body_lines.append("[b]构筑等级[/b] %d → %d" % [progression_rank_before, progression_rank_after])
+			var capacity_before := int(payload.get("capacity_before", 0))
+			var capacity_after := int(payload.get("capacity_after", capacity_before))
+			if capacity_after != capacity_before:
+				body_lines.append("[b]宠物栏容量[/b] %d → %d" % [capacity_before, capacity_after])
+			if not String(payload.get("progression_summary_after", "")).is_empty():
+				body_lines.append("[b]本阶焦点[/b] %s" % String(payload.get("progression_summary_after", "")))
 		GameState.add_weekly_progress("build_count", 1)
 		_push_log("%s 的 %s 升到了 Lv.%d。" % [_habitat_name(current_visit_habitat_id), building_name, int(payload.get("level", 0))])
 		_check_active_quests()
@@ -2427,10 +2528,10 @@ func _show_build_result(payload: Dictionary) -> void:
 			transition_text += "\n%s" % " / ".join(effect_lines.slice(0, 2))
 		_play_stage_transition("建设完成", transition_text, Color(0.98, 0.74, 0.34, 1.0))
 		pending_context = {"kind": "build_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("建设完成", "[b]%s[/b] 升到 Lv.%d\n%s" % [building_name, int(payload.get("level", 0)), "\n".join(effect_lines)], [], "结束拜访")
+		decision_panel.open_panel("建设完成", "\n".join(body_lines), [], "结束偶遇")
 		return
 	pending_context = {"kind": "build_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("建设受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "结束拜访")
+	decision_panel.open_panel("建设受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "结束偶遇")
 
 func _show_shop_menu(payload: Dictionary) -> void:
 	if not bool(payload.get("ok", false)):
@@ -2445,15 +2546,17 @@ func _show_shop_menu(payload: Dictionary) -> void:
 	var active_rotations: Array = payload.get("active_rotations", [])
 	if not active_rotations.is_empty():
 		lines.append("[b]当期轮换[/b] %s" % " / ".join(active_rotations))
+	if int(payload.get("discounted_offer_count", 0)) > 0:
+		lines.append("[b]本周折扣[/b] %d 档货正在降价" % int(payload.get("discounted_offer_count", 0)))
 	var choices := []
 	for offer in payload.get("offers", []):
 		var offer_id := String(offer.get("id", ""))
 		var remaining := int(offer.get("remaining_stock", 0))
 		var disabled := remaining <= 0 or int(payload.get("wallet_gold", 0)) < int(offer.get("price", 0))
-		var summary := "购入 %d × %s ｜ %d 金 ｜ 剩余 %d" % [
+		var summary := "购入 %d × %s ｜ %s ｜ 剩余 %d" % [
 			int(offer.get("quantity", 1)),
 			String(offer.get("item_name", offer.get("label", offer_id))),
-			int(offer.get("price", 0)),
+			_shop_offer_price_text(Dictionary(offer).duplicate(true)),
 			remaining,
 		]
 		var tags: Array = offer.get("tags", [])
@@ -2500,14 +2603,18 @@ func _show_shop_result(payload: Dictionary) -> void:
 	var offer: Dictionary = payload.get("offer", {})
 	var item_name := String(offer.get("item_name", offer.get("label", "货物")))
 	var quantity := int(offer.get("quantity", 1))
-	var price := int(offer.get("price", 0))
 	var lines := [
 		"[b]购入[/b] %d × %s" % [quantity, item_name],
-		"[b]花费[/b] %d 金" % price,
+		"[b]花费[/b] %s" % _shop_offer_price_text(offer),
 		"[b]剩余资金[/b] %d 金" % int(payload.get("wallet_gold", 0)),
 		"[b]本周剩余库存[/b] %d" % int(offer.get("remaining_stock", 0)),
 	]
-	_push_log("在 %s 买下了 %d × %s，花费 %d 金。" % [String(payload.get("shop_name", "商店")), quantity, item_name, price])
+	_push_log("在 %s 买下了 %d × %s，花费 %d 金。" % [
+		String(payload.get("shop_name", "商店")),
+		quantity,
+		item_name,
+		int(offer.get("price", 0)),
+	])
 	pending_context = {"kind": "shop_result", "on_close": "shop_menu"}
 	decision_panel.open_panel("交易完成", "\n".join(lines), [], "继续逛摊")
 
@@ -2562,7 +2669,7 @@ func _show_npc_menu(payload: Dictionary) -> void:
 		choices.append({
 			"id": "duel:%s" % npc_id if intro_pending else "talk:%s" % npc_id,
 			"label": "%s（先决斗）" % String(npc.get("name", "未命名 NPC")) if intro_pending else String(npc.get("name", "未命名 NPC")),
-			"summary": "第一次见面必须先决斗；胜利后基础信赖 2，失败后基础信赖 0。" if intro_pending else "正式拜访并推进关系。当前信赖 %d ｜ %s" % [npc_service.get_npc_trust(npc_id), "首战胜利" if bool(duel_status.get("won", false)) else "首战失利"],
+			"summary": "第一次见面必须先决斗；胜利后基础信赖 2，失败后基础信赖 0。" if intro_pending else "正式偶遇并推进关系。当前信赖 %d ｜ %s" % [npc_service.get_npc_trust(npc_id), "首战胜利" if bool(duel_status.get("won", false)) else "首战失利"],
 		})
 	for quest in payload.get("quests", []):
 		var quest_id := String(quest.get("id", ""))
@@ -2588,9 +2695,15 @@ func _show_dojo_menu(payload: Dictionary) -> void:
 		return
 	var lines: Array[String] = []
 	lines.append("[b]什么时候来更轻松[/b] %d 级左右" % int(dojo.get("recommended_rank", 1)))
+	lines.append("[b]当前构筑等级[/b] %d ｜ [b]总据点等级[/b] %d" % [
+		int(payload.get("progression_rank", GameState.get_progression_rank())),
+		int(payload.get("habitat_rank_total", GameState.get_habitat_rank_total())),
+	])
 	lines.append("[b]门票[/b] %s" % _format_item_cost(payload.get("entry_cost", {})))
 	lines.append("[b]当前双打位[/b] %s" % (" / ".join(payload.get("battle_slots", [])) if not payload.get("battle_slots", []).is_empty() else "尚未就绪"))
-	lines.append("[b]宠物栏容量[/b] %s" % String(payload.get("reserve_summary", "0 / 0")))
+	lines.append("[b]宠物栏容量[/b] %s" % String(payload.get("backpack_summary", payload.get("reserve_summary", "0 / 0"))))
+	if not bool(payload.get("battle_slots_ready", true)):
+		lines.append("[b]当前限制[/b] 还没站稳两位同行，未满足的阶段会先锁住。")
 	for line in payload.get("synergy_lines", []):
 		lines.append("[b]已激活羁绊[/b] %s" % line)
 		break
@@ -2606,7 +2719,7 @@ func _show_dojo_menu(payload: Dictionary) -> void:
 func _show_dojo_result(payload: Dictionary) -> void:
 	if not bool(payload.get("ok", false)):
 		pending_context = {"kind": "dojo_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("试炼受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "结束拜访")
+		decision_panel.open_panel("试炼受阻", _build_fail_reason(String(payload.get("reason", "unknown"))), [], "结束偶遇")
 		return
 	var dojo: Dictionary = payload.get("dojo", {})
 	var tier := String(payload.get("tier", "tier_1"))
@@ -2641,7 +2754,7 @@ func _show_dojo_result(payload: Dictionary) -> void:
 			lines.append("[b]安慰奖励[/b] %s" % reward_text)
 		_push_log("%s 暂时没能通过 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
 	pending_context = {"kind": "dojo_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("试炼结果", "\n".join(lines), [], "结束拜访")
+	decision_panel.open_panel("试炼结果", "\n".join(lines), [], "结束偶遇")
 
 func _start_dojo_battle(payload: Dictionary) -> void:
 	var battle_config: Dictionary = payload.get("battle_config", {})
@@ -2699,7 +2812,7 @@ func _show_fishing_menu() -> void:
 func _show_fishing_result(payload: Dictionary) -> void:
 	if not bool(payload.get("ok", false)):
 		pending_context = {"kind": "fishing_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("垂钓结果", String(payload.get("body", "今天没有钓到什么。")), [], "结束拜访")
+		decision_panel.open_panel("垂钓结果", String(payload.get("body", "今天没有钓到什么。")), [], "结束偶遇")
 		return
 	_apply_fishing_side_effects(payload)
 	if not String(payload.get("log_line", "")).is_empty():
@@ -2711,7 +2824,27 @@ func _show_fishing_result(payload: Dictionary) -> void:
 		body_lines.append("[b]本季榜单[/b]")
 		body_lines.append("\n".join(leaderboard_lines.slice(0, 3)))
 	pending_context = {"kind": "fishing_result", "on_close": "finish_visit"}
-	decision_panel.open_panel(String(payload.get("title", "垂钓结果")), "\n".join(body_lines), [], "结束拜访")
+	decision_panel.open_panel(String(payload.get("title", "垂钓结果")), "\n".join(body_lines), [], "结束偶遇")
+
+func _show_nursery_menu() -> void:
+	var payload := nursery_service.get_menu(current_visit_habitat_id)
+	pending_context = {"kind": "nursery_menu", "on_close": "arrival"}
+	decision_panel.open_panel(String(payload.get("title", "照料孵育")), String(payload.get("body", "")), payload.get("choices", []), "返回地点")
+
+func _show_nursery_species_picker() -> void:
+	var payload := nursery_service.get_candidate_picker(current_visit_habitat_id)
+	pending_context = {"kind": "nursery_species_select", "on_close": "nursery_menu"}
+	decision_panel.open_panel(String(payload.get("title", "选择孵育样本")), String(payload.get("body", "")), payload.get("choices", []), "返回孵育位")
+
+func _show_nursery_care_picker() -> void:
+	var payload := nursery_service.get_care_picker(current_visit_habitat_id)
+	pending_context = {"kind": "nursery_care_select", "on_close": "nursery_menu"}
+	decision_panel.open_panel(String(payload.get("title", "今天怎么照看")), String(payload.get("body", "")), payload.get("choices", []), "返回孵育位")
+
+func _show_nursery_result(result: Dictionary) -> void:
+	var title := "孵育结果" if bool(result.get("ok", false)) else "还没办成"
+	pending_context = {"kind": "nursery_result", "on_close": "nursery_menu"}
+	decision_panel.open_panel(title, nursery_service.format_project_result(result), [], "返回孵育位")
 
 func _apply_fishing_side_effects(payload: Dictionary) -> void:
 	var catch_species_id := String(payload.get("catch_species_id", ""))
@@ -2774,6 +2907,8 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 			match choice_id:
 				"assign_resident":
 					_open_resident_picker()
+				"nursery_menu":
+					_show_nursery_menu()
 				"build_menu":
 					visit_flow.open_build_menu()
 				"shop_menu":
@@ -2788,6 +2923,10 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 					_show_fishing_menu()
 				"mail_menu":
 					_show_mail_menu()
+		"minigame_menu":
+			var node: Dictionary = board_lookup.get(int(context.get("node_id", -1)), {})
+			if not node.is_empty():
+				_show_minigame_result(minigame_service.resolve_board_minigame(node, choice_id))
 		"resident_select":
 			_assign_resident(choice_id)
 		"build_select":
@@ -2808,6 +2947,18 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 			visit_flow.choose_dojo_tier(choice_id)
 		"fishing_menu":
 			_show_fishing_result(fishing_service.resolve_fishing_choice(current_visit_habitat_id, choice_id))
+		"nursery_menu":
+			match choice_id:
+				"start_incubation":
+					_show_nursery_species_picker()
+				"care_incubation":
+					_show_nursery_care_picker()
+				"hatch_incubation":
+					_show_nursery_result(GameState.hatch_nursery_project(current_visit_habitat_id))
+		"nursery_species_select":
+			_show_nursery_result(GameState.start_nursery_project(current_visit_habitat_id, choice_id))
+		"nursery_care_select":
+			_show_nursery_result(GameState.care_nursery_project(current_visit_habitat_id, choice_id))
 		"team_manage":
 			match choice_id:
 				"battle_0":
@@ -2881,6 +3032,9 @@ func _on_decision_closed() -> void:
 		"arrival":
 			if not current_visit_habitat_id.is_empty():
 				visit_flow.start_visit(current_visit_habitat_id)
+		"nursery_menu":
+			if not current_visit_habitat_id.is_empty():
+				_show_nursery_menu()
 		"shop_menu":
 			if not current_visit_habitat_id.is_empty():
 				visit_flow.open_shop_menu()
@@ -3099,18 +3253,27 @@ func _build_environment_battle_config(node: Dictionary) -> Dictionary:
 	var enemy_level := clampi(GameState.get_progression_rank() + 1, 1, 6)
 	var first_species_id := String(first_encounter.get("species_id", ""))
 	var second_species_id := String(second_encounter.get("species_id", first_species_id))
+	var pending_bonus: Dictionary = GameState.peek_pending_minigame_bonus()
+	var pending_bonus_text := minigame_service.pending_bonus_summary()
+	var subtitle_lines: Array[String] = [
+		"环境：%s" % String(node.get("focus", "行进 / 缓冲")),
+		"情绪：%s" % String(first_encounter.get("mood_id", "wild")),
+	]
+	if not pending_bonus_text.is_empty():
+		subtitle_lines.append(pending_bonus_text)
 	return {
 		"title": "%s · 野外遭遇" % String(node.get("name", "沿途环境")),
-		"subtitle": "环境：%s\n情绪：%s" % [String(node.get("focus", "行进 / 缓冲")), String(first_encounter.get("mood_id", "wild"))],
+		"subtitle": "\n".join(subtitle_lines),
 		"kind": "wild",
 		"allow_capture": true,
 		"ally_first_round_attack_bonus": false,
-		"ally_attack_bonus": 0,
-		"ally_speed_bonus": 0,
-		"ally_hp_bonus": 0,
+		"ally_attack_bonus": int(pending_bonus.get("ally_attack_bonus", 0)),
+		"ally_speed_bonus": int(pending_bonus.get("ally_speed_bonus", 0)),
+		"ally_hp_bonus": int(pending_bonus.get("ally_hp_bonus", 0)),
 		"ally_heal_bonus": 0,
 		"ally_guard_bonus": 0.0,
 		"enemy_attack_penalty": 0,
+		"consume_minigame_bonus": minigame_service.has_pending_bonus(),
 		"round_limit": 6,
 		"allies": _build_player_battle_team(),
 		"enemies": [
@@ -3177,12 +3340,12 @@ func _show_locked_board_stop(node: Dictionary) -> void:
 	var habitat_id := String(node.get("habitat_id", ""))
 	var body_lines: Array[String] = [
 		"[b]%s[/b]" % String(node.get("name", "未开放据点")),
-		String(node.get("description", "这里暂时还不能展开正式拜访。")),
+		String(node.get("description", "这里暂时还不能展开正式偶遇。")),
 		"",
 		"%s" % _unlock_marker_text(habitat_id),
 		"这次你只能路过这里，等条件满足后再回来深入处理。",
 	]
-	_push_log("路过 %s，但这里还没开放正式拜访流程。" % String(node.get("name", "未开放据点")))
+	_push_log("路过 %s，但这里还没开放正式偶遇流程。" % String(node.get("name", "未开放据点")))
 	pending_context = {"kind": "locked_stop", "on_close": "finish_transit_stop"}
 	decision_panel.open_panel("暂时只能路过", "\n".join(body_lines), [], "继续前进")
 
@@ -3539,7 +3702,7 @@ func _assign_resident(pet_uid: String) -> void:
 	else:
 		body = _build_fail_reason(String(result.get("reason", "unknown")))
 	pending_context = {"kind": "resident_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("看守安排", body, [], "结束拜访")
+	decision_panel.open_panel("看守安排", body, [], "结束偶遇")
 
 func _start_npc_intro_duel(npc_id: String) -> void:
 	var result := npc_service.prepare_intro_duel(npc_id, current_visit_habitat_id)
@@ -3548,24 +3711,24 @@ func _start_npc_intro_duel(npc_id: String) -> void:
 		var body := "这场初见决斗暂时无法开始。"
 		match reason:
 			"battle_slots_missing":
-				body = "先去总览配好 2 个双打位，第一次拜访才允许决斗。"
+				body = "先去总览配好 2 个双打位，第一次偶遇才允许决斗。"
 			"already_resolved":
-				body = "这场初见决斗已经打过了，现在可以正式拜访。"
+				body = "这场初见决斗已经打过了，现在可以正式偶遇。"
 			"enemy_pool_missing":
 				body = "暂时找不到可用的切磋对手。"
 			"npc_missing":
-				body = "这个拜访对象暂时不在记录里。"
+				body = "这个偶遇对象暂时不在记录里。"
 			_:
 				body = "这场初见决斗还没准备好。"
 		pending_context = {"kind": "npc_duel_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("初见决斗", body, [], "结束拜访")
+		decision_panel.open_panel("初见决斗", body, [], "结束偶遇")
 		return
 
 	pending_npc_duel_id = npc_id
 	_start_battle_with_tutorial(
 		result.get("battle_config", {}),
 		"npc_intro_duel",
-		"第一次拜访 %s，先以切磋定彼此态度。" % String(result.get("npc", {}).get("name", "某人"))
+		"第一次偶遇 %s，先以切磋定彼此态度。" % String(result.get("npc", {}).get("name", "某人"))
 	)
 
 func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
@@ -3581,7 +3744,7 @@ func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
 		body_lines.append("基础信赖提高到 %d。" % int(result.get("base_trust", 0)))
 		_push_log("你赢下了与 %s 的初见切磋，对方明显更愿意配合。" % npc_name)
 	else:
-		body_lines.append("[b]%s[/b] 记住了这场败局，但仍允许你之后再来拜访。" % npc_name)
+		body_lines.append("[b]%s[/b] 记住了这场败局，但仍允许你之后再来偶遇。" % npc_name)
 		body_lines.append("基础信赖落在 %d。" % int(result.get("base_trust", 0)))
 		_push_log("第一次切磋没能赢过 %s，后续关系需要慢慢补。" % npc_name)
 	body_lines.append("当前信赖：%d" % int(result.get("trust", 0)))
@@ -3593,12 +3756,12 @@ func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
 		body_lines.append("[b]已达成的信赖反馈[/b]")
 		body_lines.append("\n".join(unlocked_lines))
 	pending_context = {"kind": "npc_duel_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("初见决斗", "\n".join(body_lines), [], "结束拜访")
+	decision_panel.open_panel("初见决斗", "\n".join(body_lines), [], "结束偶遇")
 
 func _handle_talk_to_npc(npc_id: String) -> void:
 	if npc_service.needs_intro_duel(npc_id):
 		pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("还不能正式拜访", "第一次见面要先决斗，定下彼此态度之后才能拜访。", [], "结束拜访")
+		decision_panel.open_panel("还不能正式偶遇", "第一次见面要先决斗，定下彼此态度之后才能偶遇。", [], "结束偶遇")
 		return
 
 	GameState.note_talk(npc_id)
@@ -3654,7 +3817,7 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 	_push_log("和 %s 聊了聊，这次谈到了%s。" % [String(npc.get("name", "某人")), _talk_topic_label(topic)])
 	_check_active_quests()
 	pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("交谈结果", "\n".join(body_lines), [], "结束拜访")
+	decision_panel.open_panel("交谈结果", "\n".join(body_lines), [], "结束偶遇")
 
 func _should_skip_cutscene_runtime() -> bool:
 	return DisplayServer.get_name() == "headless" or not is_instance_valid(cutscene_panel)
@@ -3833,12 +3996,12 @@ func _try_accept_quest(quest_id: String) -> void:
 	if npc_service.needs_intro_duel(giver_id):
 		var giver := DataRepository.get_npc(giver_id)
 		pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("还不能正式接委托", "第一次见面要先和 %s 完成决斗，之后才能受理委托。" % String(giver.get("name", "委托人")), [], "结束拜访")
+		decision_panel.open_panel("还不能正式接委托", "第一次见面要先和 %s 完成决斗，之后才能受理委托。" % String(giver.get("name", "委托人")), [], "结束偶遇")
 		return
 	var cost := _accept_cost_for_quest(quest)
 	if not cost.is_empty() and not GameState.can_pay(cost):
 		pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("暂时接不下", "还缺少交付物资：%s" % _format_item_cost(cost), [], "结束拜访")
+		decision_panel.open_panel("暂时接不下", "还缺少交付物资：%s" % _format_item_cost(cost), [], "结束偶遇")
 		return
 	if not cost.is_empty():
 		GameState.pay_cost(cost)
@@ -3848,7 +4011,7 @@ func _try_accept_quest(quest_id: String) -> void:
 	_push_log("接下委托：%s。" % String(quest.get("title", "")))
 	_check_active_quests()
 	pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("委托记录", "已记下这件事：%s" % String(quest.get("title", "")), [], "结束拜访")
+	decision_panel.open_panel("委托记录", "已记下这件事：%s" % String(quest.get("title", "")), [], "结束偶遇")
 
 func _accept_cost_for_quest(quest: Dictionary) -> Dictionary:
 	var cost := {}
@@ -3863,7 +4026,7 @@ func _handle_mail_selection(destination: String) -> void:
 	_push_log("寄出了送往 %s 的留信。" % _habitat_name(destination))
 	_check_active_quests()
 	pending_context = {"kind": "mail_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("寄送完成", "今天处理了一封送往 %s 的消息。" % _habitat_name(destination), [], "结束拜访")
+	decision_panel.open_panel("寄送完成", "今天处理了一封送往 %s 的消息。" % _habitat_name(destination), [], "结束偶遇")
 
 func _handle_encounter_result_effects(payload: Dictionary) -> String:
 	var outcome := String(payload.get("outcome", "unknown"))
@@ -4209,6 +4372,7 @@ func _build_habitat_summaries() -> Array:
 			"quest_text": _quest_text_for_habitat(habitat_id),
 			"status_text": _unlock_marker_text(habitat_id),
 			"dojo_text": _dojo_status_text(String(habitat.get("dojo_id", ""))),
+			"nursery_text": nursery_service.build_habitat_status_text(habitat_id),
 		})
 	return result
 
@@ -4604,6 +4768,9 @@ func _location_status_lines() -> Array[String]:
 		var dojo_id := String(habitat.get("dojo_id", ""))
 		if not dojo_id.is_empty():
 			summary = _dojo_status_text(dojo_id)
+		var nursery_text := nursery_service.build_habitat_status_text(habitat_id)
+		if not nursery_text.is_empty():
+			summary += " ｜ %s" % nursery_text
 		lines.append("%s：%s" % [String(habitat.get("name", habitat_id)), summary])
 	return lines
 
@@ -4658,6 +4825,72 @@ func _format_item_cost(cost: Dictionary) -> String:
 		parts.append("%s x%d" % [_item_name(item_id), int(cost[item_id])])
 	return " / ".join(parts)
 
+func _build_choice_summary(check: Dictionary) -> String:
+	var current_level := int(check.get("current_level", 0))
+	var max_level := int(check.get("max_level", current_level))
+	var parts: Array[String] = ["Lv.%d/%d" % [current_level, max_level]]
+	if bool(check.get("ok", false)):
+		var cost_text := _format_item_cost(check.get("cost", {}))
+		if not cost_text.is_empty():
+			parts.append("消耗 %s" % cost_text)
+		var progression_rank_before := int(check.get("progression_rank_before", GameState.get_progression_rank()))
+		var progression_rank_after := int(check.get("progression_rank_after", progression_rank_before))
+		if progression_rank_after > progression_rank_before:
+			parts.append("构筑 Lv%d→%d" % [progression_rank_before, progression_rank_after])
+		var effects: Array = check.get("effects", [])
+		if not effects.is_empty():
+			parts.append("下一阶 %s" % String(effects[0]))
+	else:
+		var reason := String(check.get("reason", "unknown"))
+		if reason == "insufficient_items":
+			var missing_text := _format_item_cost(check.get("missing_cost", {}))
+			if not missing_text.is_empty():
+				parts.append("还差 %s" % missing_text)
+			else:
+				parts.append(_build_fail_reason(reason))
+		else:
+			parts.append(_build_fail_reason(reason))
+	return " ｜ ".join(parts)
+
+func _build_choice_tooltip(check: Dictionary) -> String:
+	var lines: Array[String] = []
+	var current_effects: Array = check.get("current_effects", [])
+	if current_effects.is_empty():
+		lines.append("当前效果：尚未建成。")
+	else:
+		lines.append("当前效果：%s" % " / ".join(_stringify_array(current_effects)))
+	if bool(check.get("ok", false)):
+		lines.append("下一阶效果：%s" % " / ".join(_stringify_array(check.get("effects", []))))
+		var interactions: Array = check.get("interactions", [])
+		if not interactions.is_empty():
+			var labels: Array[String] = []
+			for interaction in interactions:
+				labels.append(String(interaction.get("label", interaction.get("id", "新互动"))))
+			lines.append("新增互动：%s" % " / ".join(labels))
+		lines.append("据点等级：%d → %d" % [
+			int(check.get("habitat_rank_before", 0)),
+			int(check.get("habitat_rank_after", 0)),
+		])
+		var progression_rank_before := int(check.get("progression_rank_before", GameState.get_progression_rank()))
+		var progression_rank_after := int(check.get("progression_rank_after", progression_rank_before))
+		if progression_rank_after != progression_rank_before:
+			lines.append("构筑等级：%d → %d" % [progression_rank_before, progression_rank_after])
+			lines.append("宠物栏容量：%d → %d" % [
+				int(check.get("capacity_before", 0)),
+				int(check.get("capacity_after", 0)),
+			])
+			if not String(check.get("progression_summary_after", "")).is_empty():
+				lines.append("本阶焦点：%s" % String(check.get("progression_summary_after", "")))
+	else:
+		lines.append("当前状态：%s" % _build_fail_reason(String(check.get("reason", "unknown"))))
+	return "\n".join(lines)
+
+func _stringify_array(values: Array) -> Array[String]:
+	var lines: Array[String] = []
+	for value in values:
+		lines.append(String(value))
+	return lines
+
 func _format_shop_service_summary(service: Dictionary) -> String:
 	var parts: Array[String] = []
 	var description := String(service.get("description", ""))
@@ -4686,6 +4919,16 @@ func _format_shop_service_summary(service: Dictionary) -> String:
 	if not disabled_reason.is_empty():
 		parts.append(_shop_service_disabled_text(disabled_reason))
 	return " ｜ ".join(parts)
+
+func _shop_offer_price_text(offer: Dictionary) -> String:
+	var price := int(offer.get("price", 0))
+	if not bool(offer.get("is_discounted", false)):
+		return "%d 金" % price
+	return "%d 金（原价 %d 金，-%d%%）" % [
+		price,
+		int(offer.get("base_price", price)),
+		int(offer.get("discount_percent", 0)),
+	]
 
 func _shop_service_disabled_text(reason: String) -> String:
 	match reason:
@@ -4741,6 +4984,11 @@ func _action_name(action_id: String) -> String:
 		"retreat": return "后退"
 		"hum": return "轻声哼唱"
 		"shelter": return "提供遮蔽"
+		"brush": return "梳理茸毛"
+		"soak": return "浅水浸润"
+		"pat": return "轻拍安定"
+		"play": return "陪它活动"
+		"track": return "顺着痕迹观察"
 		_: return action_id
 
 func _encounter_outcome_text(outcome: String) -> String:
@@ -4766,6 +5014,16 @@ func _build_fail_reason(reason: String) -> String:
 		"battle_config_missing": return "这里今天还闹不起来，先去别处看看。"
 		"dojo_missing": return "这里暂时还没准备好让你试手。"
 		"tier_missing": return "这一步今天还轮不到。"
+		"nursery_locked": return "幼护角还没收拾好，先把这里安顿成能孵育的样子。"
+		"nursery_missing": return "这里眼下还没有能展开孵育的设施。"
+		"incubation_active": return "这里已经有一个在孵的项目了。"
+		"species_not_recorded": return "先把目标个体记录下来，再来建立孵育项目。"
+		"species_missing": return "这条样本记录今天没法继续用了。"
+		"no_incubation": return "这里现在还没有正在孵育的项目。"
+		"care_already_done": return "这回合已经照看过一次了，先让它静一静。"
+		"invalid_care_action": return "这一步不太对路，换个更合适的照料方式。"
+		"incubation_not_ready": return "还没到能破壳的时候，再照看几轮。"
+		"incubation_ready": return "它已经准备破壳，不用再重复照料。"
 		_: return "这一步今天还做不了。"
 
 func _format_inventory_highlights() -> String:
@@ -4822,6 +5080,12 @@ func _build_backpack_section_lines() -> Array[String]:
 		lines.append("[b]钓手声望[/b] %d" % GameState.get_fishing_reputation())
 		for festival_id in GameState.get_all_festival_scores().keys():
 			lines.append("- %s：%d 分" % [festival_id, GameState.get_festival_score(String(festival_id))])
+	var nursery_lines := nursery_service.build_overview_lines()
+	if not nursery_lines.is_empty():
+		lines.append("")
+		lines.append("[b]孵育记录[/b]")
+		for line in nursery_lines:
+			lines.append("- %s" % line)
 	lines.append("")
 	lines.append("[b]生物图鉴[/b] %d / %d" % [_count_unlocked_codex_entries(), DataRepository.codex_entries.size()])
 	lines.append("图鉴入口已经收进背包 / 小本；想看同行和编成，就去宠物栏那一页。切到 [b]生物图鉴[/b] 就能翻。")
@@ -4992,6 +5256,8 @@ func _time_name(time_id: String) -> String:
 func _type_name(type_id: String) -> String:
 	match type_id:
 		"camp": return "营地"
+		"bulletin": return "公告板"
+		"minigame": return "小游戏格"
 		"empty": return "环境格"
 		"environment": return "环境格"
 		"event": return "事件格"

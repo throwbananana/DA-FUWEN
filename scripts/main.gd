@@ -36,6 +36,7 @@ const MinigameService = preload("res://scripts/services/minigame_service.gd")
 const InfirmaryService = preload("res://scripts/services/infirmary_service.gd")
 const AnnualCompetitionService = preload("res://scripts/services/annual_competition_service.gd")
 const BattleRosterServiceScript = preload("res://scripts/services/battle_roster_service.gd")
+const JrpgTheme = preload("res://scripts/jrpg_theme.gd")
 
 const GAME_TITLE := "雾野市"
 const INVENTORY_RESOURCE_TYPES: Array[String] = ["material", "rare_material"]
@@ -277,6 +278,7 @@ func _ready() -> void:
 	)
 	_ensure_save_slot_panel()
 	_connect_signals()
+	theme = JrpgTheme.build()
 	_apply_basic_styles()
 	_prepare_overlay_panels()
 	_configure_safe_ui_bounds()
@@ -386,61 +388,21 @@ func _setup_asset_import_dialog() -> void:
 
 func _apply_basic_styles() -> void:
 	battle_panel.hide()
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color("101826")
-	panel_style.border_width_left = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_bottom = 2
-	panel_style.border_color = Color("334155")
-	panel_style.corner_radius_top_left = 12
-	panel_style.corner_radius_top_right = 12
-	panel_style.corner_radius_bottom_left = 12
-	panel_style.corner_radius_bottom_right = 12
-	var overlay_panels := [battle_panel, dice_roll_panel, decision_panel, base_panel, system_panel, main_menu_panel]
-	if is_instance_valid(save_slot_panel):
-		overlay_panels.append(save_slot_panel)
-	if is_instance_valid(cutscene_panel):
-		overlay_panels.append(cutscene_panel)
-	for panel in overlay_panels:
-		panel.add_theme_stylebox_override("panel", panel_style)
-	var surface_style := StyleBoxFlat.new()
-	surface_style.bg_color = Color(0.07, 0.11, 0.17, 0.96)
-	surface_style.border_color = Color(0.23, 0.31, 0.43, 0.95)
-	surface_style.border_width_left = 2
-	surface_style.border_width_top = 2
-	surface_style.border_width_right = 2
-	surface_style.border_width_bottom = 2
-	surface_style.corner_radius_top_left = 18
-	surface_style.corner_radius_top_right = 18
-	surface_style.corner_radius_bottom_left = 18
-	surface_style.corner_radius_bottom_right = 18
-	for panel in [board_panel, board_top_strip, board_stage_panel, node_detail_card, status_panel, dice_panel, roster_panel, log_panel]:
-		panel.add_theme_stylebox_override("panel", surface_style.duplicate())
-	var subcard_style := StyleBoxFlat.new()
-	subcard_style.bg_color = Color(0.10, 0.15, 0.23, 0.96)
-	subcard_style.border_color = Color(0.31, 0.42, 0.58, 0.92)
-	subcard_style.border_width_left = 1
-	subcard_style.border_width_top = 1
-	subcard_style.border_width_right = 1
-	subcard_style.border_width_bottom = 1
-	subcard_style.corner_radius_top_left = 14
-	subcard_style.corner_radius_top_right = 14
-	subcard_style.corner_radius_bottom_left = 14
-	subcard_style.corner_radius_bottom_right = 14
-	for panel in [player_card, rival_card, control_card]:
-		panel.add_theme_stylebox_override("panel", subcard_style.duplicate())
+
 	var chip_style := StyleBoxFlat.new()
-	chip_style.bg_color = Color(0.12, 0.18, 0.28, 0.94)
-	chip_style.border_color = Color(0.34, 0.52, 0.74, 0.92)
-	chip_style.border_width_left = 1
-	chip_style.border_width_top = 1
-	chip_style.border_width_right = 1
-	chip_style.border_width_bottom = 1
-	chip_style.corner_radius_top_left = 999
-	chip_style.corner_radius_top_right = 999
-	chip_style.corner_radius_bottom_left = 999
-	chip_style.corner_radius_bottom_right = 999
+	chip_style.bg_color = Color("1A2C52")
+	chip_style.border_color = Color("D9BC79")
+	chip_style.set_border_width_all(2)
+	chip_style.set_corner_radius_all(999)
+	chip_style.content_margin_left = 12
+	chip_style.content_margin_top = 6
+	chip_style.content_margin_right = 12
+	chip_style.content_margin_bottom = 6
+	chip_style.shadow_color = Color(0, 0, 0, 0.10)
+	chip_style.shadow_size = 3
+	chip_style.shadow_offset = Vector2(0, 2)
+	chip_style.anti_aliasing = true
+
 	for path in [
 		"RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/RoundChip",
 		"RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/WeatherChip",
@@ -449,11 +411,27 @@ func _apply_basic_styles() -> void:
 		var chip := get_node_or_null(path)
 		if chip is PanelContainer:
 			chip.add_theme_stylebox_override("panel", chip_style.duplicate())
-	title_label.modulate = Color(0.98, 0.98, 1.0, 1.0)
-	meta_label.modulate = Color(0.72, 0.82, 0.92, 0.96)
-	round_label.modulate = Color(0.86, 0.92, 1.0, 1.0)
-	weather_label.modulate = Color(0.86, 0.92, 1.0, 1.0)
-	objective_label.modulate = Color(0.95, 0.93, 0.82, 1.0)
+
+	var stage_highlight := StyleBoxFlat.new()
+	stage_highlight.bg_color = Color("203763")
+	stage_highlight.border_color = Color("F0CF84")
+	stage_highlight.set_border_width_all(3)
+	stage_highlight.set_corner_radius_all(20)
+	stage_highlight.content_margin_left = 18
+	stage_highlight.content_margin_top = 14
+	stage_highlight.content_margin_right = 18
+	stage_highlight.content_margin_bottom = 14
+	stage_highlight.shadow_color = Color(0, 0, 0, 0.18)
+	stage_highlight.shadow_size = 6
+	stage_highlight.shadow_offset = Vector2(0, 3)
+	stage_highlight.anti_aliasing = true
+	board_stage_panel.add_theme_stylebox_override("panel", stage_highlight)
+
+	title_label.modulate = Color("FFF6DE")
+	meta_label.modulate = Color("D7DDF1")
+	round_label.modulate = Color("F4E7C2")
+	weather_label.modulate = Color("D7E5FF")
+	objective_label.modulate = Color("FFE8A8")
 
 func _prepare_overlay_panels() -> void:
 	var centered_panels := [

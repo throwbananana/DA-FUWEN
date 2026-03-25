@@ -309,6 +309,20 @@ func get_npc(npc_id: String) -> Dictionary:
 func get_building(building_id: String) -> Dictionary:
 	return buildings.get(building_id, {})
 
+func building_matches_habitat(building: Dictionary, habitat_id: String) -> bool:
+	if building.is_empty() or habitat_id.is_empty():
+		return false
+	var direct_site := String(building.get("site", ""))
+	if not direct_site.is_empty():
+		return direct_site == habitat_id
+	for raw_habitat_id in Array(building.get("sites", [])).duplicate(true):
+		if String(raw_habitat_id) == habitat_id:
+			return true
+	var site_type := String(building.get("site_type", ""))
+	if site_type.is_empty():
+		return false
+	return String(get_habitat(habitat_id).get("type", "")) == site_type
+
 func get_quest(quest_id: String) -> Dictionary:
 	return quests.get(quest_id, {})
 
@@ -598,7 +612,7 @@ func get_buildings_for_habitat(habitat_id: String) -> Array:
 		var building := get_building(building_id)
 		if building.is_empty():
 			continue
-		if String(building.get("site", "")) != habitat_id:
+		if not building_matches_habitat(building, habitat_id):
 			continue
 		result.append(building)
 		appended[building_id] = true
@@ -607,7 +621,7 @@ func get_buildings_for_habitat(habitat_id: String) -> Array:
 		var id := String(building_id)
 		if appended.has(id):
 			continue
-		if String(buildings[id].get("site", "")) != habitat_id:
+		if not building_matches_habitat(Dictionary(buildings[id]).duplicate(true), habitat_id):
 			continue
 		overflow_ids.append(id)
 	overflow_ids.sort()

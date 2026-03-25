@@ -48,6 +48,13 @@ const CODEX_RARITY_LABELS := {
 	"epic": "史诗",
 	"legendary": "传说",
 }
+const CODEX_RARITY_COLORS := {
+	"common": "#7dd3fc",
+	"uncommon": "#86efac",
+	"rare": "#facc15",
+	"epic": "#f9a8d4",
+	"legendary": "#fb7185",
+}
 
 const WEATHER_ORDER := ["clear", "fog", "rain", "storm"]
 const WEATHER_NAMES := {
@@ -380,14 +387,86 @@ func _setup_asset_import_dialog() -> void:
 	_asset_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	_asset_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILES
 	_asset_file_dialog.use_native_dialog = not OS.has_feature("web")
-	_asset_file_dialog.title = "导入自定义素材"
-	_asset_file_dialog.filters = PackedStringArray(["*.png,*.jpg,*.jpeg,*.webp;Image Files"])
+	_asset_file_dialog.title = "导入自定义素材文件"
+	_asset_file_dialog.filters = CustomAssetRepository.get_import_dialog_filters()
 	_asset_file_dialog.files_selected.connect(_on_asset_files_selected)
 	_asset_file_dialog.canceled.connect(_on_asset_import_canceled)
 	add_child(_asset_file_dialog)
 
 func _apply_basic_styles() -> void:
 	battle_panel.hide()
+
+	var overlay_panel_style := StyleBoxFlat.new()
+	overlay_panel_style.bg_color = Color("0A1328")
+	overlay_panel_style.border_color = Color("E3C985")
+	overlay_panel_style.set_border_width_all(3)
+	overlay_panel_style.set_corner_radius_all(22)
+	overlay_panel_style.content_margin_left = 22
+	overlay_panel_style.content_margin_top = 18
+	overlay_panel_style.content_margin_right = 22
+	overlay_panel_style.content_margin_bottom = 18
+	overlay_panel_style.shadow_color = Color(0, 0, 0, 0.24)
+	overlay_panel_style.shadow_size = 10
+	overlay_panel_style.shadow_offset = Vector2(0, 5)
+	overlay_panel_style.anti_aliasing = true
+
+	var overlay_panels := [dice_roll_panel, decision_panel, base_panel, system_panel, main_menu_panel]
+	if is_instance_valid(save_slot_panel):
+		overlay_panels.append(save_slot_panel)
+	if is_instance_valid(cutscene_panel):
+		overlay_panels.append(cutscene_panel)
+	for panel in overlay_panels:
+		if panel is PanelContainer:
+			panel.add_theme_stylebox_override("panel", overlay_panel_style.duplicate())
+
+	var ribbon_style := StyleBoxFlat.new()
+	ribbon_style.bg_color = Color("18315C")
+	ribbon_style.border_color = Color("F0CF84")
+	ribbon_style.set_border_width_all(2)
+	ribbon_style.corner_radius_top_left = 18
+	ribbon_style.corner_radius_top_right = 18
+	ribbon_style.corner_radius_bottom_left = 12
+	ribbon_style.corner_radius_bottom_right = 12
+	ribbon_style.content_margin_left = 18
+	ribbon_style.content_margin_top = 10
+	ribbon_style.content_margin_right = 18
+	ribbon_style.content_margin_bottom = 10
+	ribbon_style.shadow_color = Color(0, 0, 0, 0.14)
+	ribbon_style.shadow_size = 4
+	ribbon_style.shadow_offset = Vector2(0, 2)
+	ribbon_style.anti_aliasing = true
+	board_top_strip.add_theme_stylebox_override("panel", ribbon_style)
+
+	var log_style := StyleBoxFlat.new()
+	log_style.bg_color = Color("0A152B")
+	log_style.border_color = Color("8E7A53")
+	log_style.set_border_width_all(2)
+	log_style.set_corner_radius_all(18)
+	log_style.content_margin_left = 16
+	log_style.content_margin_top = 14
+	log_style.content_margin_right = 16
+	log_style.content_margin_bottom = 14
+	log_style.shadow_color = Color(0, 0, 0, 0.12)
+	log_style.shadow_size = 3
+	log_style.shadow_offset = Vector2(0, 2)
+	log_style.anti_aliasing = true
+	log_panel.add_theme_stylebox_override("panel", log_style)
+
+	var unit_card_style := StyleBoxFlat.new()
+	unit_card_style.bg_color = Color("132241")
+	unit_card_style.border_color = Color("A88B57")
+	unit_card_style.set_border_width_all(2)
+	unit_card_style.set_corner_radius_all(16)
+	unit_card_style.content_margin_left = 14
+	unit_card_style.content_margin_top = 12
+	unit_card_style.content_margin_right = 14
+	unit_card_style.content_margin_bottom = 12
+	unit_card_style.shadow_color = Color(0, 0, 0, 0.10)
+	unit_card_style.shadow_size = 3
+	unit_card_style.shadow_offset = Vector2(0, 2)
+	unit_card_style.anti_aliasing = true
+	for panel in [player_card, rival_card, control_card]:
+		panel.add_theme_stylebox_override("panel", unit_card_style.duplicate())
 
 	var chip_style := StyleBoxFlat.new()
 	chip_style.bg_color = Color("1A2C52")
@@ -427,8 +506,8 @@ func _apply_basic_styles() -> void:
 	stage_highlight.anti_aliasing = true
 	board_stage_panel.add_theme_stylebox_override("panel", stage_highlight)
 
-	title_label.modulate = Color("FFF6DE")
-	meta_label.modulate = Color("D7DDF1")
+	title_label.modulate = Color("FFF7D8")
+	meta_label.modulate = Color("C8D5F0")
 	round_label.modulate = Color("F4E7C2")
 	weather_label.modulate = Color("D7E5FF")
 	objective_label.modulate = Color("FFE8A8")
@@ -930,7 +1009,7 @@ func _build_settings_summary() -> String:
 		localization_service.text("settings.summary.motion", {"value": motion_mode}),
 		localization_service.text("settings.summary.tutorials", {"value": tutorial_mode}),
 		localization_service.text("settings.summary.language", {"value": language_name}),
-		"自定义素材：%d 张" % CustomAssetRepository.get_image_count(),
+		"自定义素材：%d 项 ｜ 图片 %d 张" % [CustomAssetRepository.get_asset_count(), CustomAssetRepository.get_image_count()],
 		"主菜单背景：%s" % custom_bg_label,
 	])
 
@@ -1053,7 +1132,7 @@ func _open_settings_menu() -> void:
 		{
 			"id": "open_custom_asset_import",
 			"label": "导入自定义素材",
-			"summary": "从本地导入 PNG / JPG / WebP 到 user://custom_assets/images",
+			"summary": "从本地导入图片 / 音频 / 字体 / 视频 / 文件到 user://custom_assets",
 		},
 		{
 			"id": "select_main_menu_bg",
@@ -1131,13 +1210,22 @@ func _on_asset_import_canceled() -> void:
 	if main_menu_panel.visible:
 		_open_settings_menu()
 
+func _custom_asset_kind_label(kind: String) -> String:
+	return CustomAssetRepository.get_asset_kind_label(kind)
+
 func _on_asset_files_selected(paths: PackedStringArray) -> void:
-	var results := CustomAssetRepository.import_images(paths)
+	var results := CustomAssetRepository.import_assets(paths)
 	var success_rows: Array = []
+	var image_rows: Array = []
 	var fail_lines: Array[String] = []
+	var kind_counts := {}
 	for row in results:
 		if bool(row.get("ok", false)):
 			success_rows.append(row)
+			var kind := String(row.get("kind", "file"))
+			kind_counts[kind] = int(kind_counts.get(kind, 0)) + 1
+			if kind == "image":
+				image_rows.append(row)
 		else:
 			fail_lines.append("- %s：%s" % [
 				String(row.get("path", "")),
@@ -1146,18 +1234,33 @@ func _on_asset_files_selected(paths: PackedStringArray) -> void:
 	_refresh_main_menu()
 	if success_rows.is_empty():
 		pending_context = {"kind": "custom_asset_result", "on_close": "reopen_settings"}
-		var fail_body := "没有成功导入任何图片。"
+		var fail_body := "没有成功导入任何素材。"
 		if not fail_lines.is_empty():
 			fail_body += "\n\n%s" % "\n".join(fail_lines)
 		decision_panel.open_panel("素材导入失败", fail_body, [], "返回设置")
 		return
-	var body_lines: Array[String] = ["成功导入 %d 张图片。" % success_rows.size()]
+	var body_lines: Array[String] = ["成功导入 %d 个素材。" % success_rows.size()]
+	var ordered_kinds := ["image", "audio", "font", "video", "file"]
+	var imported_kind_lines: Array[String] = []
+	for kind in ordered_kinds:
+		var count := int(kind_counts.get(kind, 0))
+		if count <= 0:
+			continue
+		imported_kind_lines.append("%s %d" % [_custom_asset_kind_label(kind), count])
+	if not imported_kind_lines.is_empty():
+		body_lines.append("类型分布：%s" % " / ".join(imported_kind_lines))
 	if not fail_lines.is_empty():
 		body_lines.append("")
 		body_lines.append("失败项目：")
 		for line in fail_lines:
 			body_lines.append(line)
-	var choices := _build_custom_background_choices(success_rows)
+	if image_rows.is_empty():
+		pending_context = {"kind": "custom_asset_result", "on_close": "reopen_settings"}
+		decision_panel.open_panel("素材导入完成", "\n".join(body_lines), [], "返回设置")
+		return
+	body_lines.append("")
+	body_lines.append("你也可以顺手把这次导入的图片绑定成主菜单背景。")
+	var choices := _build_custom_background_choices(image_rows)
 	pending_context = {"kind": "custom_asset_bind_menu", "on_close": "reopen_settings"}
 	decision_panel.open_panel("素材导入完成", "\n".join(body_lines), choices, "返回设置")
 
@@ -2399,6 +2502,9 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 	if not npc_presence.get("window_lines", []).is_empty():
 		lines.append("[b]来访窗口[/b] %s" % " / ".join(npc_presence.get("window_lines", []).slice(0, 2)))
 	lines.append("[b]建设进度[/b] %s" % _format_building_levels(current_visit_habitat_id, buildings))
+	var apartment_line := _apartment_visit_line(current_visit_habitat_id)
+	if not apartment_line.is_empty():
+		lines.append("[b]公寓近况[/b] %s" % apartment_line)
 	lines.append_array(nursery_service.build_arrival_lines(current_visit_habitat_id))
 	if not primary_action.is_empty():
 		lines.append("[b]节点主玩法[/b] %s" % _primary_content_label(primary_action))
@@ -2649,6 +2755,13 @@ func _show_shop_result(payload: Dictionary) -> void:
 		"[b]剩余资金[/b] %d 金" % int(payload.get("wallet_gold", 0)),
 		"[b]本周剩余库存[/b] %d" % int(offer.get("remaining_stock", 0)),
 	]
+	var codex_unlocks: Array = Array(payload.get("codex_unlocks", [])).duplicate(true)
+	if not codex_unlocks.is_empty():
+		var unlocked_titles: Array[String] = []
+		for raw_entry in codex_unlocks:
+			var entry: Dictionary = Dictionary(raw_entry).duplicate(true)
+			unlocked_titles.append(String(entry.get("title", entry.get("id", "新条目"))))
+		lines.append("[b]图鉴补完[/b] %s" % " / ".join(unlocked_titles))
 	_push_log("在 %s 买下了 %d × %s，花费 %d 金。" % [
 		String(payload.get("shop_name", "商店")),
 		quantity,
@@ -3363,6 +3476,7 @@ func _resolve_environment_battle(result: Dictionary) -> void:
 	var node_name := String(payload.get("node_name", "沿途环境"))
 	var body_lines: Array[String] = []
 	var escaped := bool(result.get("escaped", false))
+	var codex_reveals := _reveal_codex_for_battle_payload(payload)
 	if bool(result.get("player_won", false)):
 		body_lines.append("[b]%s[/b] 已经被稳定下来。" % node_name)
 		var captured_species := String(result.get("captured_species", ""))
@@ -3391,8 +3505,30 @@ func _resolve_environment_battle(result: Dictionary) -> void:
 		var infirmary_report: Dictionary = _apply_forced_infirmary_transfer(defeated_node if not defeated_node.is_empty() else {"ring_index": 0})
 		body_lines.append("")
 		body_lines.append(String(infirmary_report.get("body", "")))
+	if not codex_reveals.is_empty():
+		var unlocked_titles: Array[String] = []
+		for entry in codex_reveals:
+			unlocked_titles.append(String(Dictionary(entry).get("title", Dictionary(entry).get("id", "新条目"))))
+		body_lines.append("")
+		body_lines.append("[b]图鉴识别[/b] %s" % " / ".join(unlocked_titles))
 	pending_context = {"kind": "environment_battle_result", "on_close": "finish_transit_stop"}
 	decision_panel.open_panel("环境遭遇结果", "\n".join(body_lines), [], "继续前进")
+
+func _reveal_codex_for_battle_payload(payload: Dictionary) -> Array[Dictionary]:
+	var unlocked: Array[Dictionary] = []
+	var seen_species := {}
+	var battle_config: Dictionary = payload.get("battle_config", {})
+	for enemy_value in battle_config.get("enemies", []):
+		if not (enemy_value is MonsterInstance):
+			continue
+		var unit: MonsterInstance = enemy_value
+		var species_id := String(unit.species_id)
+		if species_id.is_empty() or seen_species.has(species_id):
+			continue
+		seen_species[species_id] = true
+		for entry in GameState.reveal_codex_for_species(species_id):
+			unlocked.append(Dictionary(entry).duplicate(true))
+	return unlocked
 
 func _environment_travel_reward(node: Dictionary) -> Dictionary:
 	var habitat_id := String(node.get("source_habitat_id", ""))
@@ -4918,8 +5054,34 @@ func _format_building_levels(habitat_id: String, buildings: Array) -> String:
 	var parts: Array[String] = []
 	for building in buildings:
 		var building_id := String(building.get("id", ""))
-		parts.append("%s Lv.%d" % [String(building.get("name", building_id)), GameState.get_building_level(habitat_id, building_id)])
+		var part := "%s Lv.%d" % [String(building.get("name", building_id)), GameState.get_building_level(habitat_id, building_id)]
+		var status_parts: Array[String] = []
+		var apartment_status := GameState.get_apartment_status(habitat_id, building_id)
+		if not apartment_status.is_empty():
+			status_parts.append("住客 %d/%d" % [
+				int(apartment_status.get("tenant_count", 0)),
+				int(apartment_status.get("tenant_capacity", 0)),
+			])
+		if GameState.is_building_damaged(habitat_id, building_id):
+			status_parts.append("受损")
+		if not status_parts.is_empty():
+			part += "（%s）" % "，".join(status_parts)
+		parts.append(part)
 	return " / ".join(parts)
+
+func _apartment_visit_line(habitat_id: String) -> String:
+	var apartment_status := GameState.get_apartment_status(habitat_id)
+	if apartment_status.is_empty():
+		return ""
+	var parts: Array[String] = []
+	var tenant_names: Array = Array(apartment_status.get("tenant_names", [])).duplicate(true)
+	if tenant_names.is_empty():
+		parts.append("暂时空着")
+	else:
+		parts.append("住客：%s" % " / ".join(tenant_names))
+	if int(apartment_status.get("damage_days", 0)) > 0:
+		parts.append("房屋受损")
+	return " ｜ ".join(parts)
 
 func _format_item_cost(cost: Dictionary) -> String:
 	if cost.is_empty():
@@ -5129,6 +5291,7 @@ func _build_fail_reason(reason: String) -> String:
 		"species_missing": return "这条样本记录今天没法继续用了。"
 		"no_incubation": return "这里现在还没有正在孵育的项目。"
 		"care_already_done": return "这回合已经照看过一次了，先让它静一静。"
+		"building_damaged": return "这栋楼刚被人折腾坏，先缓两天再用会更稳。"
 		"invalid_care_action": return "这一步不太对路，换个更合适的照料方式。"
 		"incubation_not_ready": return "还没到能破壳的时候，再照看几轮。"
 		"incubation_ready": return "它已经准备破壳，不用再重复照料。"
@@ -5195,7 +5358,12 @@ func _build_backpack_section_lines() -> Array[String]:
 		for line in nursery_lines:
 			lines.append("- %s" % line)
 	lines.append("")
-	lines.append("[b]生物图鉴[/b] %d / %d" % [_count_unlocked_codex_entries(), DataRepository.codex_entries.size()])
+	lines.append("[b]生物图鉴[/b] 已识别 %d / %d ｜ 已补完 %d / %d" % [
+		_count_unlocked_codex_entries(),
+		DataRepository.codex_entries.size(),
+		_count_fully_unlocked_codex_entries(),
+		DataRepository.codex_entries.size(),
+	])
 	lines.append("图鉴入口已经收进背包 / 小本；想看同行和编成，就去宠物栏那一页。切到 [b]生物图鉴[/b] 就能翻。")
 	lines.append("")
 	lines.append("平时缺什么、手上还剩多少，都来这一页翻一眼就行。")
@@ -5205,45 +5373,36 @@ func _count_unlocked_codex_entries() -> int:
 	var count := 0
 	for raw_entry in DataRepository.codex_entries.values():
 		var entry: Dictionary = Dictionary(raw_entry).duplicate(true)
-		if _is_codex_entry_unlocked(entry):
+		if GameState.is_codex_entry_unlocked(entry):
+			count += 1
+	return count
+
+func _count_fully_unlocked_codex_entries() -> int:
+	var count := 0
+	for raw_entry in DataRepository.codex_entries.values():
+		var entry: Dictionary = Dictionary(raw_entry).duplicate(true)
+		if GameState.is_codex_entry_fully_unlocked(entry):
 			count += 1
 	return count
 
 func _is_codex_entry_unlocked(entry: Dictionary) -> bool:
-	return _is_codex_unlock_rule_met(Dictionary(entry.get("unlock_rule", {})).duplicate(true))
+	return GameState.is_codex_entry_unlocked(entry)
 
 func _is_codex_unlock_rule_met(rule: Dictionary) -> bool:
-	match String(rule.get("type", "")):
-		"observe_species":
-			return _step_is_complete({
-				"type": "observe",
-				"species_id": String(rule.get("species_id", "")),
-			})
-		"encounter_species":
-			return _step_is_complete({
-				"type": "encounter",
-				"species_id": String(rule.get("species_id", "")),
-			})
-		"bond_species":
-			return _step_is_complete({
-				"type": "bond",
-				"species_id": String(rule.get("species_id", "")),
-			})
-		"calm_species":
-			return _step_is_complete({
-				"type": "calm",
-				"species_id": String(rule.get("species_id", "")),
-			})
-		"observe_marker":
-			return _step_is_complete({
-				"type": "observe",
-				"marker": String(rule.get("marker", "")),
-			})
-		_:
-			return false
+	return GameState.is_codex_unlock_rule_met(rule)
 
 func _codex_rarity_label(rarity: String) -> String:
 	return String(CODEX_RARITY_LABELS.get(rarity, rarity))
+
+func _codex_rarity_color(rarity: String) -> String:
+	return String(CODEX_RARITY_COLORS.get(rarity, "#d4d4d8"))
+
+func _codex_entry_icon(entry: Dictionary, reveal_level: int) -> String:
+	if reveal_level <= GameState.CODEX_REVEAL_LOCKED:
+		return "[color=#111111]●[/color]"
+	if reveal_level == GameState.CODEX_REVEAL_BASIC:
+		return "[color=#6b7280]●[/color]"
+	return "[color=%s]●[/color]" % _codex_rarity_color(String(entry.get("rarity", "common")))
 
 func _species_display_name(species_id: String) -> String:
 	var species: Dictionary = DataRepository.get_species(species_id)
@@ -5286,9 +5445,10 @@ func _build_codex_section_lines() -> Array[String]:
 	var lines: Array[String] = []
 	var total := DataRepository.codex_entries.size()
 	var unlocked := _count_unlocked_codex_entries()
+	var completed := _count_fully_unlocked_codex_entries()
 
-	lines.append("[b]图鉴进度[/b] %d / %d" % [unlocked, total])
-	lines.append("遭遇、观察、结缘或安抚生物后，会把对应观察档案收进这里。")
+	lines.append("[b]图鉴进度[/b] 识别 %d / %d ｜ 补完 %d / %d" % [unlocked, total, completed, total])
+	lines.append("战斗记录、观察和生态事件会先识别条目；图鉴手册会补完详细资料。")
 
 	if total <= 0:
 		lines.append("")
@@ -5300,26 +5460,31 @@ func _build_codex_section_lines() -> Array[String]:
 		entries.append(Dictionary(raw_entry).duplicate(true))
 
 	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var unlocked_a := _is_codex_entry_unlocked(a)
-		var unlocked_b := _is_codex_entry_unlocked(b)
-		if unlocked_a != unlocked_b:
-			return unlocked_a and not unlocked_b
+		var reveal_a := GameState.get_codex_entry_reveal_level(a)
+		var reveal_b := GameState.get_codex_entry_reveal_level(b)
+		if reveal_a != reveal_b:
+			return reveal_a > reveal_b
 		return String(a.get("title", a.get("id", ""))) < String(b.get("title", b.get("id", "")))
 	)
 
 	for index in range(entries.size()):
 		var entry := entries[index]
 		var rarity_label := _codex_rarity_label(String(entry.get("rarity", "common")))
+		var reveal_level := GameState.get_codex_entry_reveal_level(entry)
+		var is_unlocked := reveal_level >= GameState.CODEX_REVEAL_BASIC
+		var fully_unlocked := reveal_level >= GameState.CODEX_REVEAL_FULL
+		var icon := _codex_entry_icon(entry, reveal_level)
 		lines.append("")
 
-		if not _is_codex_entry_unlocked(entry):
-			lines.append("[b]%02d. 未知条目[/b] ｜ %s" % [index + 1, rarity_label])
-			lines.append("解锁条件：%s" % _codex_unlock_hint(Dictionary(entry.get("unlock_rule", {}))))
+		if not is_unlocked:
+			lines.append("%s [b]%02d. ???[/b] ｜ ???" % [icon, index + 1])
+			lines.append("资料未录入。可通过战斗、观察或图鉴手册补全。")
 			continue
 
 		var species_id := String(entry.get("species_id", ""))
 		var species_name := _species_display_name(species_id)
-		lines.append("[b]%02d. %s[/b] ｜ %s ｜ %s" % [
+		lines.append("%s [b]%02d. %s[/b] ｜ %s ｜ %s" % [
+			icon,
 			index + 1,
 			String(entry.get("title", "未命名条目")),
 			species_name,
@@ -5329,6 +5494,10 @@ func _build_codex_section_lines() -> Array[String]:
 		var portrait_hint := String(entry.get("portrait_hint", "")).strip_edges()
 		if not portrait_hint.is_empty():
 			lines.append("外观：%s" % portrait_hint)
+
+		if not fully_unlocked:
+			lines.append("详细资料未补完。可用图鉴手册补全。")
+			continue
 
 		_append_codex_note_lines(lines, "栖地", Array(entry.get("habitat_notes", [])))
 		_append_codex_note_lines(lines, "行为", Array(entry.get("behavior_notes", [])))

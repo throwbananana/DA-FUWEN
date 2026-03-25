@@ -442,6 +442,21 @@
       "use_mode": "active"
     },
     {
+      "id": "field_guide_book",
+      "name": "图鉴手册",
+      "type": "tool",
+      "stack_limit": 99,
+      "sell_price": 12,
+      "tags": [
+        "tool",
+        "codex",
+        "guide"
+      ],
+      "target_rule": "none",
+      "effect_id": "unlock_codex_entry",
+      "use_mode": "passive"
+    },
+    {
       "id": "ice_glass",
       "name": "薄冰片",
       "type": "rare_material",

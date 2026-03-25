@@ -31,6 +31,9 @@ const PLAYER_ACTOR_NAME := "玩家"
 const NURSERY_PRIMARY_BUILDING_ID := "nursery_corner"
 const NURSERY_SUPPORT_BUILDING_ID := "warm_nest"
 const MAX_PET_SKILL_SLOTS := 4
+const CODEX_REVEAL_LOCKED := 0
+const CODEX_REVEAL_BASIC := 1
+const CODEX_REVEAL_FULL := 2
 const TRAVERSAL_SKILL_NAMES := {
 	"sky_glide": "腾空翼",
 	"bog_stride": "涉泽步",
@@ -92,6 +95,8 @@ var npc_duel_records: Dictionary = {}
 var active_quests: Array[String] = []
 var completed_quests: Array[String] = []
 var discovered_species: Array[String] = []
+var revealed_codex_entries: Array[String] = []
+var manual_codex_unlocks: Array[String] = []
 var bonded_species: Array[String] = []
 var observed_species: Array[String] = []
 var journal_entries: Array[String] = []
@@ -179,6 +184,8 @@ func reset_for_new_season() -> void:
 	active_quests.clear()
 	completed_quests.clear()
 	discovered_species.clear()
+	revealed_codex_entries.clear()
+	manual_codex_unlocks.clear()
 	bonded_species.clear()
 	observed_species.clear()
 	journal_entries.clear()
@@ -468,7 +475,12 @@ func _load_save_index() -> Dictionary:
 	if not FileAccess.file_exists(SAVE_INDEX_PATH):
 		return {}
 	var raw := FileAccess.get_file_as_string(SAVE_INDEX_PATH)
-	var parsed = JSON.parse_string(raw)
+	if raw.strip_edges().is_empty():
+		return {}
+	var parser := JSON.new()
+	if parser.parse(raw) != OK:
+		return {}
+	var parsed = parser.data
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return {}
 	var normalized := {
@@ -776,6 +788,8 @@ func build_runtime_snapshot() -> Dictionary:
 		"active_quests": active_quests.duplicate(),
 		"completed_quests": completed_quests.duplicate(),
 		"discovered_species": discovered_species.duplicate(),
+		"revealed_codex_entries": revealed_codex_entries.duplicate(),
+		"manual_codex_unlocks": manual_codex_unlocks.duplicate(),
 		"bonded_species": bonded_species.duplicate(),
 		"observed_species": observed_species.duplicate(),
 		"journal_entries": journal_entries.duplicate(),
@@ -848,6 +862,8 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	active_quests = _coerce_string_array(snapshot.get("active_quests", []))
 	completed_quests = _coerce_string_array(snapshot.get("completed_quests", []))
 	discovered_species = _coerce_string_array(snapshot.get("discovered_species", []))
+	revealed_codex_entries = _coerce_string_array(snapshot.get("revealed_codex_entries", []))
+	manual_codex_unlocks = _coerce_string_array(snapshot.get("manual_codex_unlocks", []))
 	bonded_species = _coerce_string_array(snapshot.get("bonded_species", []))
 	observed_species = _coerce_string_array(snapshot.get("observed_species", []))
 	journal_entries = _coerce_string_array(snapshot.get("journal_entries", []))
@@ -1001,15 +1017,14 @@ func _merge_habitat_state(state: Dictionary, habitat_id: String, habitat: Dictio
 			merged["resident_actor_id"] = ""
 	var level_key := "service_levels" if _uses_service_levels(habitat) else "building_levels"
 	var building_ids: Array = habitat.get("buildings", [])
-	var runtime_states: Dictionary = merged.get("building_runtime_states", {})
+	var runtime_states: Dictionary = _duplicate_dictionary(merged.get("building_runtime_states", {}))
 	if not building_ids.is_empty():
 		var levels: Dictionary = merged.get(level_key, {})
 		for building_id in building_ids:
 			var id := String(building_id)
 			if not levels.has(id):
 				levels[id] = 0
-			if not runtime_states.has(id):
-				runtime_states[id] = _default_building_runtime_state()
+			runtime_states[id] = _normalize_building_runtime_state(Dictionary(runtime_states.get(id, {})).duplicate(true))
 		merged[level_key] = levels
 	merged["building_runtime_states"] = runtime_states
 	var stored_unlock := bool(merged.get("is_unlocked", _default_unlock_state(habitat_id, habitat)))
@@ -1040,7 +1055,7 @@ func _build_default_habitat_state(habitat_id: String, habitat: Dictionary) -> Di
 		for building_id in building_ids:
 			var id := String(building_id)
 			levels[id] = 0
-			runtime_states[id] = _default_building_runtime_state()
+			runtime_states[id] = _normalize_building_runtime_state({})
 		state["building_runtime_states"] = runtime_states
 		if _uses_service_levels(habitat):
 			state["service_levels"] = levels
@@ -1132,7 +1147,28 @@ func _default_building_runtime_state() -> Dictionary:
 		"weekly_flags": {},
 		"last_used_turn": -1,
 		"last_action_id": "",
+		"tenant_npc_ids": [],
+		"damage_days": 0,
+		"last_income_turn": -1,
+		"last_incident_turn": -1,
+		"last_move_in_turn": -1,
 	}
+
+func _normalize_building_runtime_state(raw_state: Dictionary) -> Dictionary:
+	var defaults := _default_building_runtime_state()
+	var normalized: Dictionary = defaults.duplicate(true)
+	for key in raw_state.keys():
+		normalized[String(key)] = raw_state[key]
+	normalized["cooldowns"] = _duplicate_dictionary(normalized.get("cooldowns", {}))
+	normalized["stored_output"] = _duplicate_dictionary(normalized.get("stored_output", {}))
+	normalized["visit_flags"] = _duplicate_dictionary(normalized.get("visit_flags", {}))
+	normalized["weekly_flags"] = _duplicate_dictionary(normalized.get("weekly_flags", {}))
+	normalized["tenant_npc_ids"] = _coerce_string_array(normalized.get("tenant_npc_ids", []))
+	normalized["damage_days"] = maxi(0, int(normalized.get("damage_days", 0)))
+	normalized["last_income_turn"] = int(normalized.get("last_income_turn", -1))
+	normalized["last_incident_turn"] = int(normalized.get("last_incident_turn", -1))
+	normalized["last_move_in_turn"] = int(normalized.get("last_move_in_turn", -1))
+	return normalized
 
 func _seed_companions() -> void:
 	add_companion("steam_otter_1", "汐牙")
@@ -1491,27 +1527,57 @@ func get_building_runtime_state(habitat_id: String, building_id: String) -> Dict
 		return {}
 	var habitat_state: Dictionary = habitats[habitat_id]
 	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
-	return Dictionary(runtime_states.get(building_id, _default_building_runtime_state())).duplicate(true)
+	return _normalize_building_runtime_state(Dictionary(runtime_states.get(building_id, {})).duplicate(true))
 
 func ensure_building_runtime_state(habitat_id: String, building_id: String) -> Dictionary:
 	if not habitats.has(habitat_id):
 		return {}
 	var habitat_state: Dictionary = habitats[habitat_id]
 	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
-	if not runtime_states.has(building_id):
-		runtime_states[building_id] = _default_building_runtime_state()
+	var runtime_state := _normalize_building_runtime_state(Dictionary(runtime_states.get(building_id, {})).duplicate(true))
+	if not runtime_states.has(building_id) or Dictionary(runtime_states.get(building_id, {})).duplicate(true) != runtime_state:
+		runtime_states[building_id] = runtime_state
 		habitat_state["building_runtime_states"] = runtime_states
 		habitats[habitat_id] = habitat_state
-	return Dictionary(runtime_states[building_id]).duplicate(true)
+	return runtime_state.duplicate(true)
 
 func set_building_runtime_state(habitat_id: String, building_id: String, runtime_state: Dictionary) -> void:
 	if not habitats.has(habitat_id):
 		return
 	var habitat_state: Dictionary = habitats[habitat_id]
 	var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
-	runtime_states[building_id] = runtime_state.duplicate(true)
+	runtime_states[building_id] = _normalize_building_runtime_state(runtime_state)
 	habitat_state["building_runtime_states"] = runtime_states
 	habitats[habitat_id] = habitat_state
+
+func is_building_damaged(habitat_id: String, building_id: String) -> bool:
+	return int(get_building_runtime_state(habitat_id, building_id).get("damage_days", 0)) > 0
+
+func get_apartment_status(habitat_id: String, building_id: String = "settlement_apartment") -> Dictionary:
+	var level := get_building_level(habitat_id, building_id)
+	var building := DataRepository.get_building(building_id)
+	if level <= 0 or not _is_apartment_building(building):
+		return {}
+	var runtime_state := get_building_runtime_state(habitat_id, building_id)
+	var apartment_config := _get_apartment_config(building_id, level)
+	var tenant_names: Array[String] = []
+	for npc_id in _coerce_string_array(runtime_state.get("tenant_npc_ids", [])):
+		var npc := DataRepository.get_npc(npc_id)
+		if npc.is_empty():
+			continue
+		tenant_names.append(String(npc.get("name", npc_id)))
+	return {
+		"building_id": building_id,
+		"level": level,
+		"tenant_ids": _coerce_string_array(runtime_state.get("tenant_npc_ids", [])),
+		"tenant_names": tenant_names,
+		"tenant_count": tenant_names.size(),
+		"tenant_capacity": maxi(0, int(apartment_config.get("tenant_capacity", 0))),
+		"damage_days": maxi(0, int(runtime_state.get("damage_days", 0))),
+		"rent_interval_days": maxi(1, int(apartment_config.get("rent_interval_days", 1))),
+		"last_income_turn": int(runtime_state.get("last_income_turn", -1)),
+		"last_incident_turn": int(runtime_state.get("last_incident_turn", -1)),
+	}
 
 func get_nursery_state(habitat_id: String) -> Dictionary:
 	if not habitats.has(habitat_id):
@@ -1784,7 +1850,8 @@ func consume_next_observation_source(habitat_id: String) -> String:
 		return source
 	return "observe"
 
-func _tick_building_runtime_states() -> void:
+func _tick_building_runtime_states() -> Array[String]:
+	var lines: Array[String] = []
 	for habitat_id in habitats.keys():
 		var habitat_state: Dictionary = habitats[habitat_id]
 		var runtime_states: Dictionary = habitat_state.get("building_runtime_states", {})
@@ -1792,7 +1859,7 @@ func _tick_building_runtime_states() -> void:
 			continue
 		var dirty := false
 		for building_id in runtime_states.keys():
-			var runtime_state: Dictionary = Dictionary(runtime_states[building_id]).duplicate(true)
+			var runtime_state := _normalize_building_runtime_state(Dictionary(runtime_states[building_id]).duplicate(true))
 			var cooldowns: Dictionary = Dictionary(runtime_state.get("cooldowns", {})).duplicate(true)
 			var updated_cooldowns := {}
 			for action_id in cooldowns.keys():
@@ -1800,12 +1867,296 @@ func _tick_building_runtime_states() -> void:
 				if remaining > 0:
 					updated_cooldowns[action_id] = remaining
 			runtime_state["cooldowns"] = updated_cooldowns
+			var damage_days := maxi(0, int(runtime_state.get("damage_days", 0)))
+			if damage_days > 0:
+				damage_days -= 1
+				runtime_state["damage_days"] = damage_days
+				if damage_days <= 0:
+					lines.append("%s 的 %s 已经修整妥当，可以照常使用了。" % [
+						_habitat_name(String(habitat_id)),
+						String(DataRepository.get_building(String(building_id)).get("name", String(building_id))),
+					])
 			runtime_state["visit_flags"] = {}
 			runtime_states[building_id] = runtime_state
 			dirty = true
 		if dirty:
 			habitat_state["building_runtime_states"] = runtime_states
 			habitats[habitat_id] = habitat_state
+	return lines
+
+func _process_apartment_daily_updates() -> Array[String]:
+	var lines: Array[String] = []
+	var apartment_id := "settlement_apartment"
+	var building := DataRepository.get_building(apartment_id)
+	if not _is_apartment_building(building):
+		return lines
+	var reserved_tenants := {}
+	for raw_habitat_id in habitats.keys():
+		var habitat_id := String(raw_habitat_id)
+		if get_building_level(habitat_id, apartment_id) <= 0:
+			continue
+		var preview_state := get_building_runtime_state(habitat_id, apartment_id)
+		for npc_id in _coerce_string_array(preview_state.get("tenant_npc_ids", [])):
+			if npc_id.is_empty() or DataRepository.get_npc(npc_id).is_empty():
+				continue
+			if not reserved_tenants.has(npc_id):
+				reserved_tenants[npc_id] = habitat_id
+	var claimed_tenants := {}
+	for raw_habitat_id in habitats.keys():
+		var habitat_id := String(raw_habitat_id)
+		var level := get_building_level(habitat_id, apartment_id)
+		if level <= 0:
+			continue
+		var runtime_state := ensure_building_runtime_state(habitat_id, apartment_id)
+		var apartment_config := _get_apartment_config(apartment_id, level)
+		var tenant_capacity := maxi(0, int(apartment_config.get("tenant_capacity", 0)))
+		var tenant_ids: Array[String] = []
+		for npc_id in _coerce_string_array(runtime_state.get("tenant_npc_ids", [])):
+			if npc_id.is_empty() or tenant_ids.has(npc_id) or claimed_tenants.has(npc_id):
+				continue
+			if DataRepository.get_npc(npc_id).is_empty():
+				continue
+			tenant_ids.append(npc_id)
+			claimed_tenants[npc_id] = habitat_id
+			if tenant_ids.size() >= tenant_capacity:
+				break
+		runtime_state["tenant_npc_ids"] = tenant_ids.duplicate()
+
+		var damage_days := maxi(0, int(runtime_state.get("damage_days", 0)))
+		var rent_interval := maxi(1, int(apartment_config.get("rent_interval_days", 1)))
+		if not tenant_ids.is_empty() and global_turn - int(runtime_state.get("last_income_turn", -1)) >= rent_interval:
+			var rent_total := 0
+			var rent_names: Array[String] = []
+			var gifts := {}
+			for npc_id in tenant_ids:
+				rent_total += _apartment_rent_for_npc(npc_id, habitat_id, apartment_id, level, damage_days)
+				rent_names.append(String(DataRepository.get_npc(npc_id).get("name", npc_id)))
+				_merge_item_totals(gifts, _apartment_gift_items_for_npc(npc_id, habitat_id, apartment_id, level))
+			if rent_total > 0:
+				add_wallet_gold(rent_total)
+				lines.append("%s 的旅居公寓结租 %d 金：%s。" % [_habitat_name(habitat_id), rent_total, " / ".join(rent_names)])
+			if not gifts.is_empty():
+				grant_items(gifts)
+				lines.append("%s 的住客顺手留下了 %s。" % [_habitat_name(habitat_id), _format_item_bundle(gifts)])
+			runtime_state["last_income_turn"] = global_turn
+
+		damage_days = maxi(0, int(runtime_state.get("damage_days", 0)))
+		var repair_interval := maxi(1, int(apartment_config.get("repair_interval_days", 3)))
+		if damage_days > 0 and global_turn % repair_interval == 0:
+			var repair_rows: Array = []
+			for npc_id in tenant_ids:
+				var profile := _apartment_profile_for_npc(npc_id)
+				var care := int(profile.get("care", 0))
+				var trust := int(npc_trust.get(npc_id, 0))
+				if care < 2 or trust < 4:
+					continue
+				repair_rows.append({
+					"id": npc_id,
+					"npc": DataRepository.get_npc(npc_id),
+					"weight": care + trust,
+				})
+			var repair_choice := _pick_weighted_row(repair_rows, "%s|repair|%d" % [habitat_id, global_turn])
+			if not repair_choice.is_empty():
+				runtime_state["damage_days"] = maxi(0, damage_days - 1)
+				lines.append("%s 的住客 %s 顺手把公寓收拾了一遍。" % [
+					_habitat_name(habitat_id),
+					String(Dictionary(repair_choice.get("npc", {})).get("name", repair_choice.get("id", "住客"))),
+				])
+
+		tenant_ids = _coerce_string_array(runtime_state.get("tenant_npc_ids", []))
+		var move_in_interval := maxi(1, int(apartment_config.get("move_in_interval_days", 2)))
+		if tenant_ids.size() < tenant_capacity and global_turn - int(runtime_state.get("last_move_in_turn", -1)) >= move_in_interval:
+			var blocked_tenants: Dictionary = reserved_tenants.duplicate(true)
+			var move_in_rows := _apartment_candidate_rows(habitat_id, blocked_tenants)
+			var move_in_choice := _pick_weighted_row(move_in_rows, "%s|move_in|%d" % [habitat_id, global_turn])
+			if not move_in_choice.is_empty():
+				var tenant_id := String(move_in_choice.get("id", ""))
+				if not tenant_id.is_empty() and not tenant_ids.has(tenant_id):
+					tenant_ids.append(tenant_id)
+					claimed_tenants[tenant_id] = habitat_id
+					reserved_tenants[tenant_id] = habitat_id
+					runtime_state["tenant_npc_ids"] = tenant_ids.duplicate()
+					runtime_state["last_move_in_turn"] = global_turn
+					var npc_name := String(Dictionary(move_in_choice.get("npc", {})).get("name", tenant_id))
+					lines.append("%s 的旅居公寓迎来了新住客：%s。" % [_habitat_name(habitat_id), npc_name])
+					add_journal_entry("%s 搬进了 %s 的旅居公寓。" % [npc_name, _habitat_name(habitat_id)])
+
+		var incident_gap := maxi(4, 6 - level)
+		if global_turn - int(runtime_state.get("last_incident_turn", -999)) >= incident_gap:
+			var grudge_rows := _apartment_grudge_rows(habitat_id)
+			var grudge_choice := _pick_weighted_row(grudge_rows, "%s|grudge|%d" % [habitat_id, global_turn])
+			if not grudge_choice.is_empty():
+				var damage_target := _pick_damage_target_building(habitat_id, apartment_id, "%s|damage_target|%d" % [habitat_id, global_turn])
+				if not damage_target.is_empty():
+					var culprit_name := String(Dictionary(grudge_choice.get("npc", {})).get("name", grudge_choice.get("id", "某人")))
+					var culprit_profile := Dictionary(grudge_choice.get("profile", {})).duplicate(true)
+					var target_id := String(damage_target.get("id", ""))
+					var target_name := String(Dictionary(damage_target.get("building", {})).get("name", target_id))
+					var applied_damage := 1 + int(culprit_profile.get("mischief", 1))
+					_apply_building_damage(habitat_id, target_id, applied_damage)
+					if target_id == apartment_id:
+						runtime_state["damage_days"] = maxi(int(runtime_state.get("damage_days", 0)), applied_damage)
+					runtime_state["last_incident_turn"] = global_turn
+					lines.append("%s 对你心存芥蒂，夜里把 %s 的 %s 折腾坏了。" % [culprit_name, _habitat_name(habitat_id), target_name])
+					add_journal_entry("%s 在 %s 留下了人为破坏痕迹，%s 暂时受损。" % [culprit_name, _habitat_name(habitat_id), target_name])
+
+		set_building_runtime_state(habitat_id, apartment_id, runtime_state)
+	return lines
+
+func _apartment_candidate_rows(habitat_id: String, claimed_tenants: Dictionary) -> Array:
+	var result: Array = []
+	for raw_npc in DataRepository.get_habitat_npcs(habitat_id):
+		var npc: Dictionary = Dictionary(raw_npc).duplicate(true)
+		var npc_id := String(npc.get("id", ""))
+		if npc_id.is_empty() or claimed_tenants.has(npc_id):
+			continue
+		var profile := _apartment_profile_for_npc(npc_id)
+		if profile.is_empty() or not has_completed_npc_intro_duel(npc_id):
+			continue
+		var trust := int(npc_trust.get(npc_id, 0))
+		if trust < int(profile.get("move_in_trust", 3)):
+			continue
+		if not _npc_prefers_settlement(npc, profile, habitat_id):
+			continue
+		result.append({
+			"id": npc_id,
+			"npc": npc,
+			"profile": profile,
+			"weight": maxi(1, trust * 2 + int(profile.get("rent", 1)) + int(profile.get("care", 0)) + (2 if String(npc.get("home", "")) == habitat_id else 0)),
+		})
+	return result
+
+func _apartment_grudge_rows(habitat_id: String) -> Array:
+	var result: Array = []
+	for raw_npc in DataRepository.get_habitat_npcs(habitat_id):
+		var npc: Dictionary = Dictionary(raw_npc).duplicate(true)
+		var npc_id := String(npc.get("id", ""))
+		if npc_id.is_empty():
+			continue
+		var profile := _apartment_profile_for_npc(npc_id)
+		var mischief := int(profile.get("mischief", 0))
+		if profile.is_empty() or mischief <= 0 or not has_completed_npc_intro_duel(npc_id):
+			continue
+		var trust := int(npc_trust.get(npc_id, 0))
+		if trust > 1:
+			continue
+		result.append({
+			"id": npc_id,
+			"npc": npc,
+			"profile": profile,
+			"weight": maxi(1, mischief * 2 + maxi(0, 2 - trust)),
+		})
+	return result
+
+func _pick_damage_target_building(habitat_id: String, apartment_id: String, token: String) -> Dictionary:
+	var rows: Array = []
+	for raw_building in DataRepository.get_buildings_for_habitat(habitat_id):
+		var building: Dictionary = Dictionary(raw_building).duplicate(true)
+		var building_id := String(building.get("id", ""))
+		if building_id.is_empty() or get_building_level(habitat_id, building_id) <= 0:
+			continue
+		rows.append({
+			"id": building_id,
+			"building": building,
+			"weight": maxi(1, int(get_building_level(habitat_id, building_id)) + (2 if building_id != apartment_id else 1)),
+		})
+	return _pick_weighted_row(rows, token)
+
+func _apply_building_damage(habitat_id: String, building_id: String, damage_days: int) -> void:
+	if damage_days <= 0:
+		return
+	var runtime_state := ensure_building_runtime_state(habitat_id, building_id)
+	runtime_state["damage_days"] = maxi(int(runtime_state.get("damage_days", 0)), damage_days)
+	set_building_runtime_state(habitat_id, building_id, runtime_state)
+
+func _apartment_rent_for_npc(npc_id: String, habitat_id: String, building_id: String, building_level: int, damage_days: int) -> int:
+	var npc := DataRepository.get_npc(npc_id)
+	var profile := _apartment_profile_for_npc(npc_id)
+	if npc.is_empty() or profile.is_empty():
+		return 0
+	var apartment_config := _get_apartment_config(building_id, building_level)
+	var rent := maxi(1, int(profile.get("rent", 1)))
+	rent += maxi(0, int(floor(float(int(npc_trust.get(npc_id, 0))) / 2.0)))
+	rent += maxi(0, int(apartment_config.get("rent_bonus", 0)))
+	if String(npc.get("home", "")) == habitat_id:
+		rent += 1
+	if String(npc.get("role", "")) == "traveler":
+		rent += 1
+	if damage_days > 0:
+		rent = maxi(1, rent - mini(damage_days, rent - 1))
+	return rent
+
+func _apartment_gift_items_for_npc(npc_id: String, habitat_id: String, building_id: String, building_level: int) -> Dictionary:
+	var profile := _apartment_profile_for_npc(npc_id)
+	if profile.is_empty():
+		return {}
+	if int(npc_trust.get(npc_id, 0)) < int(_get_apartment_config(building_id, building_level).get("gift_threshold", 5)):
+		return {}
+	var token := "%s|gift|%s|%s|%d" % [habitat_id, building_id, npc_id, global_turn]
+	if int(abs(hash(token))) % 3 != 0:
+		return {}
+	return _duplicate_dictionary(profile.get("gift_items", {}))
+
+func _apartment_profile_for_npc(npc_id: String) -> Dictionary:
+	return _duplicate_dictionary(DataRepository.get_npc(npc_id).get("apartment", {}))
+
+func _npc_prefers_settlement(npc: Dictionary, profile: Dictionary, habitat_id: String) -> bool:
+	for raw_habitat_id in Array(profile.get("preferred_settlements", [])).duplicate(true):
+		if String(raw_habitat_id) == habitat_id:
+			return true
+	if String(npc.get("home", "")) == habitat_id:
+		return true
+	for raw_habitat_id in Array(npc.get("route", [])).duplicate(true):
+		if String(raw_habitat_id) == habitat_id:
+			return true
+	return Array(profile.get("preferred_settlements", [])).is_empty()
+
+func _pick_weighted_row(rows: Array, token: String) -> Dictionary:
+	if rows.is_empty():
+		return {}
+	var total := 0
+	var buckets: Array = []
+	for raw_row in rows:
+		var row: Dictionary = Dictionary(raw_row).duplicate(true)
+		var weight := maxi(1, int(row.get("weight", 1)))
+		total += weight
+		buckets.append({"threshold": total, "row": row})
+	var roll := (int(abs(hash(token))) % maxi(1, total)) + 1
+	for bucket in buckets:
+		if roll <= int(bucket.get("threshold", 0)):
+			return Dictionary(bucket.get("row", {})).duplicate(true)
+	return Dictionary(rows[0]).duplicate(true)
+
+func _merge_item_totals(target: Dictionary, addition: Dictionary) -> void:
+	for item_id in addition.keys():
+		target[String(item_id)] = int(target.get(String(item_id), 0)) + int(addition[item_id])
+
+func _format_item_bundle(bundle: Dictionary) -> String:
+	var keys: Array[String] = []
+	for item_id in bundle.keys():
+		keys.append(String(item_id))
+	keys.sort()
+	var parts: Array[String] = []
+	for item_id in keys:
+		parts.append("%s ×%d" % [String(DataRepository.get_item(item_id).get("name", item_id)), int(bundle[item_id])])
+	return " / ".join(parts)
+
+func _get_building_level_row(building_id: String, level: int) -> Dictionary:
+	if level <= 0:
+		return {}
+	var levels: Array = Array(DataRepository.get_building(building_id).get("levels", [])).duplicate(true)
+	if level - 1 < 0 or level - 1 >= levels.size():
+		return {}
+	return Dictionary(levels[level - 1]).duplicate(true)
+
+func _get_apartment_config(building_id: String, level: int) -> Dictionary:
+	return _duplicate_dictionary(_get_building_level_row(building_id, level).get("apartment", {}))
+
+func _is_apartment_building(building: Dictionary) -> bool:
+	return bool(building.get("apartment_enabled", false))
+
+func _habitat_name(habitat_id: String) -> String:
+	return String(DataRepository.get_habitat(habitat_id).get("name", habitat_id))
 
 func note_encounter(species_id: String) -> void:
 	var encounters: Dictionary = quest_memory["encounter_species"]
@@ -2350,6 +2701,141 @@ func register_species_seen(species_id: String) -> void:
 	if not discovered_species.has(species_id):
 		discovered_species.append(species_id)
 
+func is_codex_unlock_rule_met(rule: Dictionary) -> bool:
+	match String(rule.get("type", "")):
+		"observe_species":
+			return bool(quest_memory["observed_species"].get(String(rule.get("species_id", "")), false))
+		"encounter_species":
+			return bool(quest_memory["encounter_species"].get(String(rule.get("species_id", "")), false))
+		"bond_species":
+			return bool(quest_memory["bonded_species"].get(String(rule.get("species_id", "")), false))
+		"calm_species":
+			return bool(quest_memory["calmed_species"].get(String(rule.get("species_id", "")), false))
+		"observe_marker":
+			return bool(quest_memory["observed_markers"].get(String(rule.get("marker", "")), false))
+		_:
+			return false
+
+func get_codex_entry_reveal_level(entry: Dictionary) -> int:
+	var entry_id := String(entry.get("id", ""))
+	if entry_id.is_empty():
+		return CODEX_REVEAL_LOCKED
+	if manual_codex_unlocks.has(entry_id):
+		return CODEX_REVEAL_FULL
+	if revealed_codex_entries.has(entry_id):
+		return CODEX_REVEAL_BASIC
+	if is_codex_unlock_rule_met(Dictionary(entry.get("unlock_rule", {})).duplicate(true)):
+		return CODEX_REVEAL_BASIC
+	return CODEX_REVEAL_LOCKED
+
+func is_codex_entry_unlocked(entry: Dictionary) -> bool:
+	return get_codex_entry_reveal_level(entry) >= CODEX_REVEAL_BASIC
+
+func is_codex_entry_fully_unlocked(entry: Dictionary) -> bool:
+	return get_codex_entry_reveal_level(entry) >= CODEX_REVEAL_FULL
+
+func is_codex_entry_id_unlocked(entry_id: String) -> bool:
+	var entry := DataRepository.get_codex_entry(entry_id)
+	if entry.is_empty():
+		return false
+	return is_codex_entry_unlocked(entry)
+
+func is_codex_entry_id_fully_unlocked(entry_id: String) -> bool:
+	var entry := DataRepository.get_codex_entry(entry_id)
+	if entry.is_empty():
+		return false
+	return is_codex_entry_fully_unlocked(entry)
+
+func is_species_codex_unlocked(species_id: String) -> bool:
+	if species_id.is_empty():
+		return true
+	var found_entry := false
+	for raw_entry in DataRepository.codex_entries.values():
+		var entry: Dictionary = Dictionary(raw_entry).duplicate(true)
+		if String(entry.get("species_id", "")) != species_id:
+			continue
+		found_entry = true
+		if is_codex_entry_unlocked(entry):
+			return true
+	return not found_entry
+
+func reveal_codex_entry(entry_id: String) -> bool:
+	if entry_id.is_empty():
+		return false
+	var entry := DataRepository.get_codex_entry(entry_id)
+	if entry.is_empty() or is_codex_entry_unlocked(entry):
+		return false
+	revealed_codex_entries.append(entry_id)
+	revealed_codex_entries.sort()
+	return true
+
+func reveal_codex_for_species(species_id: String) -> Array[Dictionary]:
+	var revealed: Array[Dictionary] = []
+	if species_id.is_empty():
+		return revealed
+	for raw_entry in DataRepository.codex_entries.values():
+		var entry: Dictionary = Dictionary(raw_entry).duplicate(true)
+		if String(entry.get("species_id", "")) != species_id:
+			continue
+		var entry_id := String(entry.get("id", ""))
+		if entry_id.is_empty() or not reveal_codex_entry(entry_id):
+			continue
+		revealed.append(entry)
+	return revealed
+
+func unlock_codex_entry(entry_id: String) -> bool:
+	if entry_id.is_empty():
+		return false
+	var entry := DataRepository.get_codex_entry(entry_id)
+	if entry.is_empty() or is_codex_entry_fully_unlocked(entry):
+		return false
+	if not revealed_codex_entries.has(entry_id):
+		revealed_codex_entries.append(entry_id)
+		revealed_codex_entries.sort()
+	manual_codex_unlocks.append(entry_id)
+	manual_codex_unlocks.sort()
+	return true
+
+func unlock_codex_for_species(species_id: String) -> Array[Dictionary]:
+	var unlocked: Array[Dictionary] = []
+	if species_id.is_empty():
+		return unlocked
+	for raw_entry in DataRepository.codex_entries.values():
+		var entry: Dictionary = Dictionary(raw_entry).duplicate(true)
+		if String(entry.get("species_id", "")) != species_id:
+			continue
+		var entry_id := String(entry.get("id", ""))
+		if entry_id.is_empty() or not unlock_codex_entry(entry_id):
+			continue
+		unlocked.append(entry)
+	return unlocked
+
+func unlock_next_locked_codex_entries(count: int) -> Array[Dictionary]:
+	var remaining := maxi(0, count)
+	var locked_entries: Array[Dictionary] = []
+	for raw_entry in DataRepository.codex_entries.values():
+		var entry: Dictionary = Dictionary(raw_entry).duplicate(true)
+		if is_codex_entry_fully_unlocked(entry):
+			continue
+		locked_entries.append(entry)
+	locked_entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var reveal_a := get_codex_entry_reveal_level(a)
+		var reveal_b := get_codex_entry_reveal_level(b)
+		if reveal_a != reveal_b:
+			return reveal_a > reveal_b
+		return String(a.get("title", a.get("id", ""))) < String(b.get("title", b.get("id", "")))
+	)
+	var unlocked: Array[Dictionary] = []
+	for entry in locked_entries:
+		if remaining <= 0:
+			break
+		var entry_id := String(entry.get("id", ""))
+		if entry_id.is_empty() or not unlock_codex_entry(entry_id):
+			continue
+		unlocked.append(entry)
+		remaining -= 1
+	return unlocked
+
 func add_journal_entry(entry: String) -> void:
 	journal_entries.append(entry)
 	while journal_entries.size() > 24:
@@ -2365,8 +2851,11 @@ func advance_day() -> Dictionary:
 	season_turn = day_index
 	global_turn += 1
 	weekly_turn += 1
-	_tick_building_runtime_states()
+	var building_lines := _tick_building_runtime_states()
+	var apartment_lines := _process_apartment_daily_updates()
 	var day_lines: Array = Array(trait_report.get("lines", [])).duplicate(true)
+	day_lines.append_array(building_lines)
+	day_lines.append_array(apartment_lines)
 	day_lines.append_array(_tick_nursery_projects())
 	trait_report["lines"] = day_lines
 	if weekly_turn > 5:

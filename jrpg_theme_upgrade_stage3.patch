@@ -1,0 +1,307 @@
+diff --git a/scripts/jrpg_theme.gd b/scripts/jrpg_theme.gd
+index 072fb5d..72d8524 100644
+--- a/scripts/jrpg_theme.gd
++++ b/scripts/jrpg_theme.gd
+@@ -167,6 +167,145 @@ static func build() -> Theme:
+ 	var tab_focus := _focus_ring(Color("FFE49A"), 3, 16)
+ 	var tab_container_panel := panel.duplicate()
+ 
++	var line_edit_normal := _box(
++		Color("111E39"),
++		Color("8E7A53"),
++		2,
++		14,
++		Color(0, 0, 0, 0.08),
++		0,
++		Vector2.ZERO,
++		14, 10, 14, 10
++	)
++
++	var line_edit_read_only := _box(
++		Color("17233C"),
++		Color("5E6472"),
++		2,
++		14,
++		Color(0, 0, 0, 0.04),
++		0,
++		Vector2.ZERO,
++		14, 10, 14, 10
++	)
++
++	var line_edit_focus := _focus_ring(Color("FFE49A"), 3, 16)
++
++	var text_edit_normal := _box(
++		Color("0E1931"),
++		Color("8E7A53"),
++		2,
++		16,
++		Color(0, 0, 0, 0.10),
++		0,
++		Vector2.ZERO,
++		14, 12, 14, 12
++	)
++
++	var text_edit_read_only := _box(
++		Color("15223B"),
++		Color("5E6472"),
++		2,
++		16,
++		Color(0, 0, 0, 0.05),
++		0,
++		Vector2.ZERO,
++		14, 12, 14, 12
++	)
++
++	var text_edit_focus := _focus_ring(Color("FFE49A"), 3, 18)
++
++	var rich_text_normal := _box(
++		Color("0C1730"),
++		Color("7E6B45"),
++		2,
++		16,
++		Color(0, 0, 0, 0.06),
++		0,
++		Vector2.ZERO,
++		14, 12, 14, 12
++	)
++
++	var rich_text_focus := _focus_ring(Color("FFE49A"), 3, 18)
++	var rich_text_rule := _line_box(Color("C9A96B"), 2, 4, 6)
++
++	var progress_background := _box(
++		Color("0B1630"),
++		Color("8E7A53"),
++		2,
++		999,
++		Color(0, 0, 0, 0.04),
++		0,
++		Vector2.ZERO,
++		6, 6, 6, 6
++	)
++
++	var progress_fill := _box(
++		Color("3E6EB0"),
++		Color("F3D997"),
++		2,
++		999,
++		Color(0, 0, 0, 0.04),
++		0,
++		Vector2.ZERO,
++		6, 6, 6, 6
++	)
++
++	var scroll_track := _box(
++		Color("0B1630"),
++		Color("7E6B45"),
++		1,
++		999,
++		Color(0, 0, 0, 0.02),
++		0,
++		Vector2.ZERO,
++		2, 2, 2, 2
++	)
++
++	var scroll_track_focus := _box(
++		Color("102046"),
++		Color("F0D08A"),
++		1,
++		999,
++		Color(0, 0, 0, 0.02),
++		0,
++		Vector2.ZERO,
++		2, 2, 2, 2
++	)
++
++	var scroll_grabber := _box(
++		Color("22406E"),
++		Color("D6B46A"),
++		2,
++		999,
++		Color(0, 0, 0, 0.04),
++		0,
++		Vector2.ZERO,
++		4, 4, 4, 4
++	)
++
++	var scroll_grabber_hover := _box(
++		Color("2C538E"),
++		Color("F0D08A"),
++		2,
++		999,
++		Color(0, 0, 0, 0.04),
++		0,
++		Vector2.ZERO,
++		4, 4, 4, 4
++	)
++
++	var scroll_grabber_pressed := _box(
++		Color("173055"),
++		Color("F3D997"),
++		2,
++		999,
++		Color(0, 0, 0, 0.04),
++		0,
++		Vector2.ZERO,
++		4, 4, 4, 4
++	)
++
+ 	theme.set_stylebox("panel", "PanelContainer", panel)
+ 	theme.set_stylebox("panel", "PopupPanel", popup_panel)
+ 
+@@ -248,6 +387,62 @@ static func build() -> Theme:
+ 	theme.set_stylebox("button_highlight", "TabBar", button_hover.duplicate())
+ 	theme.set_stylebox("button_pressed", "TabBar", button_pressed.duplicate())
+ 
++	theme.set_stylebox("normal", "LineEdit", line_edit_normal)
++	theme.set_stylebox("read_only", "LineEdit", line_edit_read_only)
++	theme.set_stylebox("focus", "LineEdit", line_edit_focus)
++	theme.set_color("font_color", "LineEdit", Color("F7F1DE"))
++	theme.set_color("font_outline_color", "LineEdit", Color("0D1730"))
++	theme.set_color("font_placeholder_color", "LineEdit", Color("A9B5CE"))
++	theme.set_color("font_selected_color", "LineEdit", Color("FFF8E6"))
++	theme.set_color("font_uneditable_color", "LineEdit", Color("A7A7A7"))
++	theme.set_color("selection_color", "LineEdit", Color("355A93"))
++	theme.set_color("caret_color", "LineEdit", Color("FFE49A"))
++	theme.set_constant("outline_size", "LineEdit", 1)
++	theme.set_constant("minimum_character_width", "LineEdit", 8)
++
++	theme.set_stylebox("normal", "TextEdit", text_edit_normal)
++	theme.set_stylebox("read_only", "TextEdit", text_edit_read_only)
++	theme.set_stylebox("focus", "TextEdit", text_edit_focus)
++	theme.set_color("background_color", "TextEdit", Color("0E1931"))
++	theme.set_color("font_color", "TextEdit", Color("F7F1DE"))
++	theme.set_color("font_outline_color", "TextEdit", Color("0D1730"))
++	theme.set_color("font_placeholder_color", "TextEdit", Color("A9B5CE"))
++	theme.set_color("font_readonly_color", "TextEdit", Color("A7A7A7"))
++	theme.set_color("font_selected_color", "TextEdit", Color("FFF8E6"))
++	theme.set_color("selection_color", "TextEdit", Color("355A93"))
++	theme.set_color("current_line_color", "TextEdit", Color(0.17, 0.27, 0.47, 0.55))
++	theme.set_color("caret_color", "TextEdit", Color("FFE49A"))
++	theme.set_constant("outline_size", "TextEdit", 1)
++	theme.set_constant("line_spacing", "TextEdit", 6)
++
++	theme.set_stylebox("normal", "RichTextLabel", rich_text_normal)
++	theme.set_stylebox("focus", "RichTextLabel", rich_text_focus)
++	theme.set_stylebox("horizontal_rule", "RichTextLabel", rich_text_rule)
++	theme.set_color("default_color", "RichTextLabel", Color("F3EBD7"))
++	theme.set_color("font_outline_color", "RichTextLabel", Color("0D1730"))
++	theme.set_color("font_shadow_color", "RichTextLabel", Color(0, 0, 0, 0.18))
++	theme.set_color("font_selected_color", "RichTextLabel", Color("FFF8E6"))
++	theme.set_color("selection_color", "RichTextLabel", Color("355A93"))
++	theme.set_color("table_border", "RichTextLabel", Color("8E7A53"))
++	theme.set_color("table_even_row_bg", "RichTextLabel", Color(0.10, 0.16, 0.29, 0.45))
++	theme.set_color("table_odd_row_bg", "RichTextLabel", Color(0.14, 0.22, 0.38, 0.35))
++	theme.set_constant("outline_size", "RichTextLabel", 1)
++	theme.set_constant("line_separation", "RichTextLabel", 2)
++	theme.set_constant("paragraph_separation", "RichTextLabel", 6)
++
++	theme.set_stylebox("background", "ProgressBar", progress_background)
++	theme.set_stylebox("fill", "ProgressBar", progress_fill)
++	theme.set_color("font_color", "ProgressBar", Color("FFF8E6"))
++	theme.set_color("font_outline_color", "ProgressBar", Color("0D1730"))
++	theme.set_constant("outline_size", "ProgressBar", 1)
++
++	for theme_type in ["ScrollBar", "HScrollBar", "VScrollBar"]:
++		theme.set_stylebox("grabber", theme_type, scroll_grabber.duplicate())
++		theme.set_stylebox("grabber_highlight", theme_type, scroll_grabber_hover.duplicate())
++		theme.set_stylebox("grabber_pressed", theme_type, scroll_grabber_pressed.duplicate())
++		theme.set_stylebox("scroll", theme_type, scroll_track.duplicate())
++		theme.set_stylebox("scroll_focus", theme_type, scroll_track_focus.duplicate())
++
+ 	theme.set_color("font_color", "Label", Color("F3EBD7"))
+ 
+ 	return theme
+diff --git a/scripts/main.gd b/scripts/main.gd
+index 2f222d4..f472ec0 100644
+--- a/scripts/main.gd
++++ b/scripts/main.gd
+@@ -389,6 +389,78 @@ func _setup_asset_import_dialog() -> void:
+ func _apply_basic_styles() -> void:
+ 	battle_panel.hide()
+ 
++	var overlay_panel_style := StyleBoxFlat.new()
++	overlay_panel_style.bg_color = Color("0A1328")
++	overlay_panel_style.border_color = Color("E3C985")
++	overlay_panel_style.set_border_width_all(3)
++	overlay_panel_style.set_corner_radius_all(22)
++	overlay_panel_style.content_margin_left = 22
++	overlay_panel_style.content_margin_top = 18
++	overlay_panel_style.content_margin_right = 22
++	overlay_panel_style.content_margin_bottom = 18
++	overlay_panel_style.shadow_color = Color(0, 0, 0, 0.24)
++	overlay_panel_style.shadow_size = 10
++	overlay_panel_style.shadow_offset = Vector2(0, 5)
++	overlay_panel_style.anti_aliasing = true
++
++	var overlay_panels := [dice_roll_panel, decision_panel, base_panel, system_panel, main_menu_panel]
++	if is_instance_valid(save_slot_panel):
++		overlay_panels.append(save_slot_panel)
++	if is_instance_valid(cutscene_panel):
++		overlay_panels.append(cutscene_panel)
++	for panel in overlay_panels:
++		if panel is PanelContainer:
++			panel.add_theme_stylebox_override("panel", overlay_panel_style.duplicate())
++
++	var ribbon_style := StyleBoxFlat.new()
++	ribbon_style.bg_color = Color("18315C")
++	ribbon_style.border_color = Color("F0CF84")
++	ribbon_style.set_border_width_all(2)
++	ribbon_style.corner_radius_top_left = 18
++	ribbon_style.corner_radius_top_right = 18
++	ribbon_style.corner_radius_bottom_left = 12
++	ribbon_style.corner_radius_bottom_right = 12
++	ribbon_style.content_margin_left = 18
++	ribbon_style.content_margin_top = 10
++	ribbon_style.content_margin_right = 18
++	ribbon_style.content_margin_bottom = 10
++	ribbon_style.shadow_color = Color(0, 0, 0, 0.14)
++	ribbon_style.shadow_size = 4
++	ribbon_style.shadow_offset = Vector2(0, 2)
++	ribbon_style.anti_aliasing = true
++	board_top_strip.add_theme_stylebox_override("panel", ribbon_style)
++
++	var log_style := StyleBoxFlat.new()
++	log_style.bg_color = Color("0A152B")
++	log_style.border_color = Color("8E7A53")
++	log_style.set_border_width_all(2)
++	log_style.set_corner_radius_all(18)
++	log_style.content_margin_left = 16
++	log_style.content_margin_top = 14
++	log_style.content_margin_right = 16
++	log_style.content_margin_bottom = 14
++	log_style.shadow_color = Color(0, 0, 0, 0.12)
++	log_style.shadow_size = 3
++	log_style.shadow_offset = Vector2(0, 2)
++	log_style.anti_aliasing = true
++	log_panel.add_theme_stylebox_override("panel", log_style)
++
++	var unit_card_style := StyleBoxFlat.new()
++	unit_card_style.bg_color = Color("132241")
++	unit_card_style.border_color = Color("A88B57")
++	unit_card_style.set_border_width_all(2)
++	unit_card_style.set_corner_radius_all(16)
++	unit_card_style.content_margin_left = 14
++	unit_card_style.content_margin_top = 12
++	unit_card_style.content_margin_right = 14
++	unit_card_style.content_margin_bottom = 12
++	unit_card_style.shadow_color = Color(0, 0, 0, 0.10)
++	unit_card_style.shadow_size = 3
++	unit_card_style.shadow_offset = Vector2(0, 2)
++	unit_card_style.anti_aliasing = true
++	for panel in [player_card, rival_card, control_card]:
++		panel.add_theme_stylebox_override("panel", unit_card_style.duplicate())
++
+ 	var chip_style := StyleBoxFlat.new()
+ 	chip_style.bg_color = Color("1A2C52")
+ 	chip_style.border_color = Color("D9BC79")
+@@ -427,8 +499,8 @@ func _apply_basic_styles() -> void:
+ 	stage_highlight.anti_aliasing = true
+ 	board_stage_panel.add_theme_stylebox_override("panel", stage_highlight)
+ 
+-	title_label.modulate = Color("FFF6DE")
+-	meta_label.modulate = Color("D7DDF1")
++	title_label.modulate = Color("FFF7D8")
++	meta_label.modulate = Color("C8D5F0")
+ 	round_label.modulate = Color("F4E7C2")
+ 	weather_label.modulate = Color("D7E5FF")
+ 	objective_label.modulate = Color("FFE8A8")

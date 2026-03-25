@@ -14,6 +14,8 @@ var max_hp := 1
 var current_hp := 1
 var attack := 1
 var speed := 1
+var defense := 1
+var stamina := 1
 var star_level := 1
 var skills: Array = []
 var roles := {}
@@ -22,6 +24,7 @@ var elements: Array = []
 var biome_tags: Array = []
 var job_tags: Array = []
 var building_tags: Array = []
+var element_resistances := {}
 
 func _init(species: String = "", monster_level: int = 1, monster_star: int = 1) -> void:
 	if species == "":
@@ -36,12 +39,15 @@ func _init(species: String = "", monster_level: int = 1, monster_star: int = 1) 
 	current_hp = max_hp
 	attack = int(template.get("attack", 4)) + (monster_level - 1) + (star_level - 1) * 2
 	speed = int(template.get("speed", 4)) + (star_level - 1)
+	defense = int(template.get("defense", 4)) + int(floor(float(monster_level - 1) / 2.0)) + (star_level - 1)
+	stamina = int(template.get("stamina", 4)) + int(floor(float(monster_level - 1) / 2.0)) + (star_level - 1)
 	skills = template.get("skills", []).duplicate()
 	roles = template.get("roles", {}).duplicate(true)
 	elements = template.get("elements", [type]).duplicate()
 	biome_tags = template.get("biome_tags", []).duplicate()
 	job_tags = template.get("job_tags", []).duplicate()
 	building_tags = template.get("building_tags", []).duplicate()
+	element_resistances = template.get("element_resistances", {}).duplicate(true)
 	uid = "m_%s" % str(_serial)
 	_serial += 1
 
@@ -60,10 +66,14 @@ func get_role_bonus(role_id: String) -> int:
 func get_summary() -> String:
 	return "%s ★%d [%s] %d/%d" % [display_name, star_level, GameData.get_type_name(type), current_hp, max_hp]
 
+func get_resistance_multiplier(type_id: String) -> float:
+	return float(element_resistances.get(type_id, 1.0))
+
 func duplicate_for_battle() -> MonsterInstance:
 	var dupe = get_script().new(species_id, level, star_level)
 	dupe.current_hp = current_hp
 	dupe.assignment = assignment
+	dupe.element_resistances = element_resistances.duplicate(true)
 	return dupe
 
 func restore_after_round(rest_bonus: int = 0) -> void:

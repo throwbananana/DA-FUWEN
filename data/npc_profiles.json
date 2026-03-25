@@ -59,6 +59,18 @@
         "trade",
         "stone"
       ],
+      "apartment": {
+        "move_in_trust": 4,
+        "rent": 4,
+        "care": 1,
+        "mischief": 0,
+        "preferred_settlements": [
+          "copper_hammer_bazaar"
+        ],
+        "gift_items": {
+          "stone_chip": 1
+        }
+      },
       "trust_rewards": {
         "2": "材料折扣",
         "4": "特殊装饰"
@@ -73,6 +85,18 @@
         "rest",
         "logistics"
       ],
+      "apartment": {
+        "move_in_trust": 4,
+        "rent": 4,
+        "care": 3,
+        "mischief": 0,
+        "preferred_settlements": [
+          "sky_post"
+        ],
+        "gift_items": {
+          "tea_leaf": 1
+        }
+      },
       "trust_rewards": {
         "1": "开放便民咖啡站",
         "3": "邮件功能升级",
@@ -88,6 +112,18 @@
         "boarding",
         "care"
       ],
+      "apartment": {
+        "move_in_trust": 3,
+        "rent": 3,
+        "care": 2,
+        "mischief": 0,
+        "preferred_settlements": [
+          "sky_post"
+        ],
+        "gift_items": {
+          "cloth": 1
+        }
+      },
       "trust_rewards": {
         "2": "短期托管",
         "4": "托管期间心情不降"
@@ -107,6 +143,20 @@
         "trade",
         "rumor"
       ],
+      "apartment": {
+        "move_in_trust": 4,
+        "rent": 5,
+        "care": 1,
+        "mischief": 1,
+        "preferred_settlements": [
+          "sky_post",
+          "copper_hammer_bazaar",
+          "echo_broken_bridge"
+        ],
+        "gift_items": {
+          "paper": 1
+        }
+      },
       "trust_rewards": {
         "2": "稀有饵食",
         "4": "异常区情报"
@@ -151,6 +201,18 @@
         "craft",
         "repair"
       ],
+      "apartment": {
+        "move_in_trust": 3,
+        "rent": 4,
+        "care": 3,
+        "mischief": 0,
+        "preferred_settlements": [
+          "copper_hammer_bazaar"
+        ],
+        "gift_items": {
+          "parts": 1
+        }
+      },
       "trust_rewards": {
         "1": "开放快修前台",
         "3": "装饰槽+1"
@@ -165,6 +227,18 @@
         "forge",
         "decor"
       ],
+      "apartment": {
+        "move_in_trust": 4,
+        "rent": 5,
+        "care": 2,
+        "mischief": 0,
+        "preferred_settlements": [
+          "copper_hammer_bazaar"
+        ],
+        "gift_items": {
+          "metal": 1
+        }
+      },
       "trust_rewards": {
         "2": "金属饰件",
         "4": "专属铭牌"
@@ -183,6 +257,19 @@
         "trade",
         "parts"
       ],
+      "apartment": {
+        "move_in_trust": 2,
+        "rent": 4,
+        "care": 1,
+        "mischief": 2,
+        "preferred_settlements": [
+          "copper_hammer_bazaar",
+          "sky_post"
+        ],
+        "gift_items": {
+          "parts": 1
+        }
+      },
       "trust_rewards": {
         "2": "部件稀有度提升"
       }
@@ -277,6 +364,18 @@
         "rumor",
         "routing"
       ],
+      "apartment": {
+        "move_in_trust": 3,
+        "rent": 3,
+        "care": 2,
+        "mischief": 1,
+        "preferred_settlements": [
+          "echo_broken_bridge"
+        ],
+        "gift_items": {
+          "paper": 1
+        }
+      },
       "trust_rewards": {
         "1": "揭示桥头安全线",
         "3": "获得下一次来访预告",

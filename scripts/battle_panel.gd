@@ -302,10 +302,10 @@ func _render_combat_action_buttons(actor: MonsterInstance) -> void:
 func _render_status_action_buttons(actor: MonsterInstance) -> void:
 	var lines: Array[String] = []
 	lines.append("当前行动：%s" % actor.display_name)
-	lines.append("我方焦点：%s" % _unit_focus_summary(_get_unit_by_uid(selected_ally_uid)))
-	lines.append("敌方焦点：%s" % _unit_focus_summary(_get_unit_by_uid(selected_enemy_uid)))
 	lines.append("待命位：%d 只 ｜ 战斗道具：%d 种" % [ally_reserve.size(), _battle_item_rows().size()])
 	_add_action_info_label("\n".join(lines))
+	_add_action_info_label(_status_view_block(_get_unit_by_uid(selected_ally_uid), true))
+	_add_action_info_label(_status_view_block(_get_unit_by_uid(selected_enemy_uid), false))
 	_add_action_button("返回四段菜单", _set_player_menu_mode.bind(actor.uid, "root"), false, true)
 
 func _render_bag_action_buttons(actor: MonsterInstance) -> void:
@@ -647,7 +647,7 @@ func _score_enemy_skill(actor: MonsterInstance, skill_id: String) -> float:
 	for foe in _get_opponents(actor):
 		if not foe.is_alive():
 			continue
-		best_multiplier = max(best_multiplier, GameData.type_multiplier(String(skill.get("type", actor.type)), foe.type))
+		best_multiplier = max(best_multiplier, _total_type_multiplier(String(skill.get("type", actor.type)), foe))
 		if effect in ["slow", "weaken", "vulnerable"] and not temp_state[foe.uid]["statuses"].has(effect):
 			score += 1.5
 	score += (best_multiplier - 1.0) * 10.0
@@ -824,8 +824,8 @@ func _calculate_damage(actor: MonsterInstance, target: MonsterInstance, skill: D
 	var power := int(skill.get("power", 0))
 	if String(skill.get("effect", "")) == "damage_all":
 		power += int(skill.get("effect_value", 0))
-	var raw_damage := attack_value + power
-	var multiplier := GameData.type_multiplier(String(skill.get("type", actor.type)), target.type)
+	var raw_damage := maxi(1, attack_value + power - int(round((target.defense * 0.55) + (target.stamina * 0.35))))
+	var multiplier := _total_type_multiplier(String(skill.get("type", actor.type)), target)
 	var vulnerable: Dictionary = temp_state[target.uid]["statuses"].get("vulnerable", {})
 	if not vulnerable.is_empty():
 		multiplier += 0.25
@@ -841,7 +841,7 @@ func _apply_damage(actor: MonsterInstance, target: MonsterInstance, damage: int,
 	target.take_damage(damage)
 	recent_actor_uid = actor.uid
 	recent_target_uid = target.uid
-	var multiplier := GameData.type_multiplier(skill_type, target.type)
+	var multiplier := _total_type_multiplier(skill_type, target)
 	var suffix := ""
 	if multiplier > 1.0:
 		suffix = _tr("battle.suffix.super")
@@ -1090,7 +1090,7 @@ func _make_unit_button(unit: MonsterInstance, is_ally: bool) -> Button:
 	var name_label := Label.new()
 	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_label.text = "%s  %s" % [unit.display_name, _type_name(unit.type)]
+	name_label.text = "%s  %s" % [_unit_display_name(unit, is_ally), _unit_type_text(unit, is_ally)]
 	name_label.add_theme_font_size_override("font_size", 16)
 	name_label.modulate = card_state["text_color"]
 	top_row.add_child(name_label)
@@ -1114,11 +1114,7 @@ func _make_unit_button(unit: MonsterInstance, is_ally: bool) -> Button:
 	stat_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	stat_row.add_theme_constant_override("separation", 12)
 	root.add_child(stat_row)
-	for stat_text in [
-		"%s %d/%d" % [_tr("battle.stat.hp"), unit.current_hp, unit.max_hp],
-		"%s %d" % [_tr("battle.stat.attack"), unit.attack],
-		"%s %d" % [_tr("battle.stat.speed"), _get_effective_speed(unit)],
-	]:
+	for stat_text in ["%s %d/%d" % [_tr("battle.stat.hp"), unit.current_hp, unit.max_hp]]:
 		var stat_label := Label.new()
 		stat_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		stat_label.text = stat_text
@@ -1150,6 +1146,88 @@ func _status_text(uid: String) -> String:
 	if parts.is_empty():
 		return ""
 	return " · ".join(parts)
+
+func _status_view_block(unit: MonsterInstance, is_ally: bool) -> String:
+	var title := "%s" % ("我方焦点" if is_ally else "敌方焦点")
+	if unit == null:
+		return "%s\n还没看定。" % title
+	var lines: Array[String] = [title]
+	if not _can_reveal_unit_profile(unit, is_ally):
+		lines.append("名称：？？？")
+		lines.append("属性：？？？")
+		lines.append("详细资料未录入图鉴。")
+		lines.append("可通过战斗记录或图鉴手册补全。")
+		return "\n".join(lines)
+	lines.append("名称：%s" % unit.display_name)
+	lines.append("属性：%s" % _format_type_list(unit.elements))
+	lines.append("生命 %d/%d ｜ 攻击 %d ｜ 速度 %d" % [unit.current_hp, unit.max_hp, unit.attack, _get_effective_speed(unit)])
+	lines.append("耐力 %d ｜ 防御 %d" % [unit.stamina, unit.defense])
+	lines.append("抗性：%s" % _unit_resistance_summary(unit))
+	var status_text := _status_text(unit.uid)
+	if not status_text.is_empty():
+		lines.append("状态：%s" % status_text)
+	return "\n".join(lines)
+
+func _can_reveal_unit_profile(unit: MonsterInstance, is_ally: bool) -> bool:
+	if unit == null:
+		return false
+	if is_ally:
+		return true
+	return GameState.is_species_codex_unlocked(unit.species_id)
+
+func _unit_display_name(unit: MonsterInstance, is_ally: bool) -> String:
+	if _can_reveal_unit_profile(unit, is_ally):
+		return unit.display_name
+	return "？？？"
+
+func _unit_type_text(unit: MonsterInstance, is_ally: bool) -> String:
+	if not _can_reveal_unit_profile(unit, is_ally):
+		return "？？？"
+	return _format_type_list(unit.elements)
+
+func _format_type_list(type_ids: Array) -> String:
+	var parts: Array[String] = []
+	for raw_type in type_ids:
+		var type_id := String(raw_type)
+		if type_id.is_empty():
+			continue
+		parts.append(_type_name(type_id))
+	if parts.is_empty():
+		return _type_name("mist")
+	return " / ".join(parts)
+
+func _unit_resistance_summary(unit: MonsterInstance) -> String:
+	var entries: Array[Dictionary] = []
+	for key in unit.element_resistances.keys():
+		var type_id := String(key)
+		var multiplier := float(unit.element_resistances[key])
+		if absf(multiplier - 1.0) < 0.04:
+			continue
+		entries.append({
+			"type_id": type_id,
+			"delta": absf(multiplier - 1.0),
+			"multiplier": multiplier,
+		})
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var delta_a := float(a.get("delta", 0.0))
+		var delta_b := float(b.get("delta", 0.0))
+		if is_equal_approx(delta_a, delta_b):
+			return String(a.get("type_id", "")) < String(b.get("type_id", ""))
+		return delta_a > delta_b
+	)
+	var parts: Array[String] = []
+	for entry in entries.slice(0, 3):
+		var type_id := String(entry.get("type_id", ""))
+		var multiplier := float(entry.get("multiplier", 1.0))
+		var change_percent := int(round(absf(1.0 - multiplier) * 100.0))
+		parts.append("%s%s %d%%" % [
+			_type_name(type_id),
+			"抗" if multiplier < 1.0 else "弱",
+			change_percent,
+		])
+	if parts.is_empty():
+		return "暂无明显偏向"
+	return " / ".join(parts)
 
 func _on_enemy_selected(uid: String) -> void:
 	var actor := _get_unit_by_uid(active_actor_uid)
@@ -1664,6 +1742,9 @@ func _get_effective_speed(unit: MonsterInstance) -> int:
 		speed += 3
 	return speed
 
+func _total_type_multiplier(skill_type: String, target: MonsterInstance) -> float:
+	return GameData.type_multiplier(skill_type, target.type) * target.get_resistance_multiplier(skill_type)
+
 func _apply_prebattle_modifiers() -> void:
 	for ally in allies:
 		ally.max_hp += int(battle_config.get("ally_hp_bonus", 0))
@@ -1881,8 +1962,8 @@ func _estimate_damage_range(actor: MonsterInstance, target: MonsterInstance, ski
 	var power := int(skill.get("power", 0))
 	if String(skill.get("effect", "")) == "damage_all":
 		power += int(skill.get("effect_value", 0))
-	var raw_damage := attack_value + power
-	var multiplier := GameData.type_multiplier(String(skill.get("type", actor.type)), target.type)
+	var raw_damage := maxi(1, attack_value + power - int(round((target.defense * 0.55) + (target.stamina * 0.35))))
+	var multiplier := _total_type_multiplier(String(skill.get("type", actor.type)), target)
 	var vulnerable: Dictionary = temp_state[target.uid]["statuses"].get("vulnerable", {})
 	if not vulnerable.is_empty():
 		multiplier += 0.25

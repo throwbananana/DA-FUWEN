@@ -51,7 +51,12 @@ func buy_offer(habitat_id: String, offer_id: String) -> Dictionary:
 		return {"ok": false, "reason": "insufficient_gold", "habitat_id": habitat_id, "offer": offer}
 	var item_id := String(offer.get("item_id", ""))
 	var quantity := maxi(1, int(offer.get("quantity", 1)))
-	GameState.grant_items({item_id: quantity})
+	var item := DataRepository.get_item(item_id)
+	var codex_unlocks: Array = []
+	if String(item.get("effect_id", "")) == "unlock_codex_entry":
+		codex_unlocks = GameState.unlock_next_locked_codex_entries(quantity)
+	else:
+		GameState.grant_items({item_id: quantity})
 	GameState.record_shop_purchase(String(shop.get("id", habitat_id)), offer_id)
 	var updated_remaining := maxi(0, remaining - 1)
 	var result_offer := Dictionary(offer).duplicate(true)
@@ -64,6 +69,7 @@ func buy_offer(habitat_id: String, offer_id: String) -> Dictionary:
 		"shop_name": String(shop.get("name", DataRepository.get_habitat(habitat_id).get("name", "商店"))),
 		"wallet_gold": GameState.wallet_gold,
 		"offer": result_offer,
+		"codex_unlocks": codex_unlocks.duplicate(true),
 	}
 
 func use_npc_service(habitat_id: String, service_id: String) -> Dictionary:

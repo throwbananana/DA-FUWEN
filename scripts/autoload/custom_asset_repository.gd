@@ -1,15 +1,29 @@
 extends Node
 
 const ROOT_DIR := "user://custom_assets"
-const IMAGE_DIR := ROOT_DIR + "/images"
 const MANIFEST_PATH := ROOT_DIR + "/manifest.json"
 const EXTERNAL_LIBRARY_DIR := "res://external_assets"
-const EXTERNAL_IMAGE_DIR_NAME := "images"
 const EXTERNAL_MANIFEST_NAME := "manifest.json"
 const EXTERNAL_SOURCE_PREFIX := "ext_"
 const SOURCE_USER_IMPORT := "user_import"
 const SOURCE_EXTERNAL_LIBRARY := "external_library"
-const SUPPORTED_IMAGE_EXTENSIONS := ["png", "jpg", "jpeg", "webp", "bmp"]
+const ASSET_KIND_DIR_NAMES := {
+	"image": "images",
+	"audio": "audio",
+	"font": "fonts",
+	"video": "video",
+	"file": "files",
+}
+const SUPPORTED_ASSET_EXTENSIONS := {
+	"image": ["png", "jpg", "jpeg", "webp", "bmp"],
+	"audio": ["ogg", "wav", "mp3", "flac"],
+	"font": ["ttf", "otf", "woff", "woff2"],
+	"video": ["ogv", "webm", "mp4", "mov"],
+	"file": ["json", "txt", "cfg", "csv", "tsv", "md", "bin"],
+}
+const SLOT_KIND_REQUIREMENTS := {
+	"main_menu_bg": "image",
+}
 
 var manifest: Dictionary = _default_manifest()
 
@@ -18,114 +32,104 @@ func _ready() -> void:
 	_load_manifest()
 	sync_external_library()
 
-func import_images(paths: PackedStringArray) -> Array[Dictionary]:
+func import_assets(paths: PackedStringArray) -> Array[Dictionary]:
 	_ensure_dirs()
 	var results: Array[Dictionary] = []
-	var images: Dictionary = manifest.get("images", {})
+	var assets: Dictionary = Dictionary(manifest.get("assets", {})).duplicate(true)
 	for src_path in paths:
-		var image := Image.load_from_file(src_path)
-		if image.is_empty():
+		var kind := _kind_for_extension(String(src_path).get_extension())
+		if kind.is_empty():
 			results.append({
 				"ok": false,
 				"path": src_path,
-				"message": "图片读取失败",
+				"message": "素材格式暂不支持",
 			})
 			continue
 		var safe_name := _sanitize_label(src_path)
 		var asset_id := _make_asset_id(safe_name)
-		var dest_path := IMAGE_DIR.path_join("%s.png" % asset_id)
-		var save_err := image.save_png(dest_path)
-		if save_err != OK:
-			results.append({
-				"ok": false,
-				"path": src_path,
-				"message": "保存到 user:// 失败",
-			})
+		var import_result := _import_asset_file(
+			src_path,
+			asset_id,
+			safe_name,
+			kind,
+			SOURCE_USER_IMPORT,
+			String(src_path).get_file()
+		)
+		if not bool(import_result.get("ok", false)):
+			results.append(Dictionary(import_result).duplicate(true))
 			continue
-		images[asset_id] = {
-			"id": asset_id,
-			"label": safe_name,
-			"path": dest_path,
-			"width": image.get_width(),
-			"height": image.get_height(),
-			"imported_at": Time.get_unix_time_from_system(),
-			"source": SOURCE_USER_IMPORT,
-		}
+		var asset_entry: Dictionary = Dictionary(import_result.get("asset", {})).duplicate(true)
+		assets[asset_id] = asset_entry
 		results.append({
 			"ok": true,
 			"id": asset_id,
-			"path": dest_path,
-			"label": safe_name,
-			"width": image.get_width(),
-			"height": image.get_height(),
+			"path": String(asset_entry.get("path", "")),
+			"label": String(asset_entry.get("label", asset_id)),
+			"kind": kind,
+			"width": int(asset_entry.get("width", 0)),
+			"height": int(asset_entry.get("height", 0)),
+			"file_size": int(asset_entry.get("file_size", 0)),
 		})
-	manifest["images"] = images
+	manifest["assets"] = assets
 	_save_manifest()
 	return results
+
+func import_images(paths: PackedStringArray) -> Array[Dictionary]:
+	return import_assets(paths)
 
 func sync_external_library() -> Dictionary:
 	_ensure_dirs()
 	var scan := _scan_external_library()
-	var images: Dictionary = manifest.get("images", {})
+	var assets: Dictionary = Dictionary(manifest.get("assets", {})).duplicate(true)
 	var synced_ids := {}
 	var imported := 0
 	var updated := 0
 	var removed := 0
 	var skipped := 0
-	for row in scan.get("images", []):
-		var image_info := Dictionary(row)
-		var asset_id := String(image_info.get("id", ""))
-		var source_path := String(image_info.get("source_path", ""))
-		if asset_id.is_empty() or source_path.is_empty():
+	for row_value in scan.get("assets", []):
+		var asset_info: Dictionary = Dictionary(row_value).duplicate(true)
+		var asset_id := String(asset_info.get("id", ""))
+		var label := String(asset_info.get("label", asset_id))
+		var kind := String(asset_info.get("kind", ""))
+		var source_path := String(asset_info.get("source_path", ""))
+		var source_file := String(asset_info.get("filename", ""))
+		if asset_id.is_empty() or kind.is_empty() or source_path.is_empty():
 			skipped += 1
 			continue
-		var image := Image.load_from_file(source_path)
-		if image.is_empty():
+		var import_result := _import_asset_file(
+			source_path,
+			asset_id,
+			label,
+			kind,
+			SOURCE_EXTERNAL_LIBRARY,
+			source_file
+		)
+		if not bool(import_result.get("ok", false)):
 			skipped += 1
 			continue
-		var dest_path := IMAGE_DIR.path_join("%s.png" % asset_id)
-		var save_err := image.save_png(dest_path)
-		if save_err != OK:
-			skipped += 1
-			continue
-		var existed := images.has(asset_id)
-		images[asset_id] = {
-			"id": asset_id,
-			"label": String(image_info.get("label", asset_id)),
-			"path": dest_path,
-			"width": image.get_width(),
-			"height": image.get_height(),
-			"imported_at": Time.get_unix_time_from_system(),
-			"source": SOURCE_EXTERNAL_LIBRARY,
-			"source_path": source_path,
-			"source_file": String(image_info.get("filename", "")),
-		}
+		var existed := assets.has(asset_id)
+		assets[asset_id] = Dictionary(import_result.get("asset", {})).duplicate(true)
 		synced_ids[asset_id] = true
 		if existed:
 			updated += 1
 		else:
 			imported += 1
 	var stale_ids: Array[String] = []
-	for key in images.keys():
+	for key in assets.keys():
 		var asset_id := String(key)
-		var image_info := Dictionary(images.get(asset_id, {}))
-		if String(image_info.get("source", SOURCE_USER_IMPORT)) != SOURCE_EXTERNAL_LIBRARY:
+		var asset_info: Dictionary = Dictionary(assets.get(asset_id, {})).duplicate(true)
+		if String(asset_info.get("source", SOURCE_USER_IMPORT)) != SOURCE_EXTERNAL_LIBRARY:
 			continue
 		if synced_ids.has(asset_id):
 			continue
 		stale_ids.append(asset_id)
 	for asset_id in stale_ids:
-		var image_info := Dictionary(images.get(asset_id, {}))
-		var cached_path := String(image_info.get("path", ""))
-		if not cached_path.is_empty():
-			var absolute_path := ProjectSettings.globalize_path(cached_path)
-			if FileAccess.file_exists(absolute_path):
-				DirAccess.remove_absolute(absolute_path)
-		images.erase(asset_id)
+		_remove_cached_asset(Dictionary(assets.get(asset_id, {})).duplicate(true))
+		assets.erase(asset_id)
 		_clear_bindings_for_asset(asset_id)
 		removed += 1
-	manifest["images"] = images
-	_apply_external_bindings(Dictionary(scan.get("bindings", {})), images)
+	manifest["assets"] = assets
+	_apply_external_bindings(Dictionary(scan.get("bindings", {})).duplicate(true), assets)
 	_save_manifest()
 	return {
 		"imported": imported,
@@ -135,8 +139,13 @@ func sync_external_library() -> Dictionary:
 		"total": int(synced_ids.size()),
 	}
 
-func list_images() -> Array:
-	var rows: Array = manifest.get("images", {}).values()
+func list_assets(kind: String = "") -> Array:
+	var rows: Array = []
+	for value in Dictionary(manifest.get("assets", {})).values():
+		var row: Dictionary = Dictionary(value).duplicate(true)
+		if not kind.is_empty() and String(row.get("kind", "")) != kind:
+			continue
+		rows.append(row)
 	rows.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		var a_time := int(a.get("imported_at", 0))
 		var b_time := int(b.get("imported_at", 0))
@@ -146,25 +155,98 @@ func list_images() -> Array:
 	)
 	return rows
 
+func list_images() -> Array:
+	return list_assets("image")
+
+func get_asset(asset_id: String) -> Dictionary:
+	return Dictionary(manifest.get("assets", {}).get(asset_id, {})).duplicate(true)
+
 func get_image(asset_id: String) -> Dictionary:
-	return Dictionary(manifest.get("images", {}).get(asset_id, {})).duplicate(true)
+	var asset := get_asset(asset_id)
+	if String(asset.get("kind", "")) != "image":
+		return {}
+	return asset
+
+func get_asset_count(kind: String = "") -> int:
+	if kind.is_empty():
+		return int(Dictionary(manifest.get("assets", {})).size())
+	return list_assets(kind).size()
 
 func get_image_count() -> int:
-	return int(manifest.get("images", {}).size())
+	return get_asset_count("image")
+
+func get_asset_path(asset_id: String) -> String:
+	return String(get_asset(asset_id).get("path", ""))
+
+func get_asset_absolute_path(asset_id: String) -> String:
+	var asset_path := get_asset_path(asset_id)
+	if asset_path.is_empty():
+		return ""
+	return _globalize_path(asset_path)
+
+func get_asset_kind(asset_id: String) -> String:
+	return String(get_asset(asset_id).get("kind", ""))
+
+func get_asset_kind_label(kind: String) -> String:
+	match kind:
+		"image":
+			return "图片"
+		"audio":
+			return "音频"
+		"font":
+			return "字体"
+		"video":
+			return "视频"
+		"file":
+			return "文件"
+		_:
+			return "素材"
+
+func get_supported_import_extensions() -> Array[String]:
+	var extensions: Array[String] = []
+	for kind in _ordered_kinds():
+		for ext_value in Array(SUPPORTED_ASSET_EXTENSIONS.get(kind, [])):
+			var ext := String(ext_value)
+			if not extensions.has(ext):
+				extensions.append(ext)
+	return extensions
+
+func get_import_dialog_filters() -> PackedStringArray:
+	var filters := PackedStringArray()
+	var all_patterns: Array[String] = []
+	for kind in _ordered_kinds():
+		var patterns: Array[String] = []
+		for ext_value in Array(SUPPORTED_ASSET_EXTENSIONS.get(kind, [])):
+			var ext := String(ext_value)
+			patterns.append("*.%s" % ext)
+			all_patterns.append("*.%s" % ext)
+		if patterns.is_empty():
+			continue
+		filters.append("%s;%s" % [",".join(patterns), get_asset_kind_label(kind)])
+	if not all_patterns.is_empty():
+		filters.insert(0, "%s;支持的素材文件" % ",".join(all_patterns))
+	return filters
 
 func bind_slot(slot_id: String, asset_id: String) -> void:
 	if slot_id.is_empty():
 		return
-	var images: Dictionary = manifest.get("images", {})
-	if not images.has(asset_id):
+	var asset := get_asset(asset_id)
+	if asset.is_empty():
 		return
-	manifest["bindings"][slot_id] = asset_id
+	var expected_kind := _expected_slot_kind(slot_id)
+	if not expected_kind.is_empty() and String(asset.get("kind", "")) != expected_kind:
+		return
+	var bindings: Dictionary = Dictionary(manifest.get("bindings", {})).duplicate(true)
+	bindings[slot_id] = asset_id
+	manifest["bindings"] = bindings
 	_save_manifest()
 
 func clear_slot(slot_id: String) -> void:
 	if slot_id.is_empty():
 		return
-	manifest["bindings"].erase(slot_id)
+	var bindings: Dictionary = Dictionary(manifest.get("bindings", {})).duplicate(true)
+	bindings.erase(slot_id)
+	manifest["bindings"] = bindings
 	_save_manifest()
 
 func get_slot_binding(slot_id: String) -> String:
@@ -185,21 +267,22 @@ func get_texture(asset_id: String) -> Texture2D:
 		return null
 	return ImageTexture.create_from_image(image)
 
-func get_external_library_dir_path() -> String:
-	return ProjectSettings.globalize_path(EXTERNAL_LIBRARY_DIR.path_join(EXTERNAL_IMAGE_DIR_NAME))
+func get_external_library_dir_path(kind: String = "image") -> String:
+	return ProjectSettings.globalize_path(EXTERNAL_LIBRARY_DIR.path_join(_dir_name_for_kind(kind)))
 
 func get_external_manifest_path() -> String:
 	return ProjectSettings.globalize_path(EXTERNAL_LIBRARY_DIR.path_join(EXTERNAL_MANIFEST_NAME))
 
 func _default_manifest() -> Dictionary:
 	return {
-		"images": {},
+		"assets": {},
 		"bindings": {},
 	}
 
 func _ensure_dirs() -> void:
 	DirAccess.make_dir_absolute(ROOT_DIR)
-	DirAccess.make_dir_absolute(IMAGE_DIR)
+	for kind in _ordered_kinds():
+		DirAccess.make_dir_absolute(_user_dir_path(kind))
 
 func _load_manifest() -> void:
 	manifest = _default_manifest()
@@ -209,74 +292,245 @@ func _load_manifest() -> void:
 	var parsed = JSON.parse_string(raw)
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return
-	manifest = Dictionary(parsed).duplicate(true)
-	if not manifest.has("images") or typeof(manifest.get("images", {})) != TYPE_DICTIONARY:
-		manifest["images"] = {}
-	if not manifest.has("bindings") or typeof(manifest.get("bindings", {})) != TYPE_DICTIONARY:
-		manifest["bindings"] = {}
+	manifest = _normalize_manifest(Dictionary(parsed).duplicate(true))
 
 func _save_manifest() -> void:
 	var file := FileAccess.open(MANIFEST_PATH, FileAccess.WRITE)
 	if file == null:
 		push_error("CustomAssetRepository: failed to open manifest for write")
 		return
-	file.store_string(JSON.stringify(manifest, "\t"))
+	file.store_string(JSON.stringify(_normalize_manifest(Dictionary(manifest).duplicate(true)), "\t"))
+
+func _normalize_manifest(data: Dictionary) -> Dictionary:
+	var normalized := _default_manifest()
+	var assets := {}
+	if typeof(data.get("assets", {})) == TYPE_DICTIONARY:
+		for key in Dictionary(data.get("assets", {})).keys():
+			var asset := _normalize_asset_record(String(key), Dictionary(data.get("assets", {}).get(key, {})).duplicate(true), "")
+			if asset.is_empty():
+				continue
+			assets[String(asset.get("id", ""))] = asset
+	if typeof(data.get("images", {})) == TYPE_DICTIONARY:
+		for key in Dictionary(data.get("images", {})).keys():
+			var asset := _normalize_asset_record(String(key), Dictionary(data.get("images", {}).get(key, {})).duplicate(true), "image")
+			if asset.is_empty():
+				continue
+			var asset_id := String(asset.get("id", ""))
+			if not assets.has(asset_id):
+				assets[asset_id] = asset
+	normalized["assets"] = assets
+	if typeof(data.get("bindings", {})) == TYPE_DICTIONARY:
+		normalized["bindings"] = Dictionary(data.get("bindings", {})).duplicate(true)
+	return normalized
+
+func _normalize_asset_record(entry_key: String, raw_info: Dictionary, fallback_kind: String) -> Dictionary:
+	var asset_id := String(raw_info.get("id", entry_key))
+	if asset_id.is_empty():
+		asset_id = entry_key
+	if asset_id.is_empty():
+		return {}
+	var filename := String(raw_info.get("filename", "")).get_file()
+	var original_ext := String(raw_info.get("original_ext", filename.get_extension())).to_lower()
+	var kind := _normalize_asset_kind(String(raw_info.get("kind", fallback_kind)), filename)
+	if kind.is_empty():
+		kind = _kind_for_extension(original_ext)
+	if kind.is_empty():
+		return {}
+	var folder := String(raw_info.get("folder", _dir_name_for_kind(kind)))
+	if folder.is_empty():
+		folder = _dir_name_for_kind(kind)
+	var path := String(raw_info.get("path", ""))
+	if path.is_empty() and not filename.is_empty():
+		path = _user_dir_path(kind).path_join(filename)
+	return {
+		"id": asset_id,
+		"kind": kind,
+		"label": String(raw_info.get("label", _sanitize_label(filename if not filename.is_empty() else asset_id))),
+		"filename": filename,
+		"folder": folder,
+		"path": path,
+		"width": int(raw_info.get("width", 0)),
+		"height": int(raw_info.get("height", 0)),
+		"file_size": int(raw_info.get("file_size", 0)),
+		"adapted": bool(raw_info.get("adapted", false)),
+		"source": String(raw_info.get("source", SOURCE_USER_IMPORT)),
+		"source_path": String(raw_info.get("source_path", "")),
+		"source_file": String(raw_info.get("source_file", filename)),
+		"original_file": String(raw_info.get("original_file", filename)),
+		"original_ext": original_ext,
+		"imported_at": int(raw_info.get("imported_at", Time.get_unix_time_from_system())),
+	}
 
 func _sanitize_label(src_path: String) -> String:
 	var base_name := src_path.get_file().get_basename().validate_filename().strip_edges().to_lower()
-	return base_name if not base_name.is_empty() else "image"
+	return base_name if not base_name.is_empty() else "asset"
 
 func _make_asset_id(safe_name: String) -> String:
 	var seed := "%s_%d" % [safe_name, Time.get_unix_time_from_system()]
 	var asset_id := seed
 	var serial := 1
-	while manifest.get("images", {}).has(asset_id):
+	while Dictionary(manifest.get("assets", {})).has(asset_id):
 		asset_id = "%s_%d" % [seed, serial]
 		serial += 1
 	return asset_id
 
+func _import_asset_file(
+	source_path: String,
+	asset_id: String,
+	label: String,
+	kind: String,
+	source: String,
+	source_file: String
+) -> Dictionary:
+	if kind == "image":
+		var image := Image.load_from_file(source_path)
+		if image.is_empty():
+			return {
+				"ok": false,
+				"path": source_path,
+				"message": "图片读取失败",
+			}
+		var dest_file_name := "%s.png" % asset_id
+		var dest_path := _user_dir_path(kind).path_join(dest_file_name)
+		var save_err := image.save_png(dest_path)
+		if save_err != OK:
+			return {
+				"ok": false,
+				"path": source_path,
+				"message": "保存到 user:// 失败",
+			}
+		var asset := _build_asset_entry(
+			asset_id,
+			label,
+			kind,
+			dest_file_name,
+			dest_path,
+			source,
+			source_path,
+			source_file,
+			source_path.get_extension(),
+			image.get_width(),
+			image.get_height(),
+			_get_file_size(_globalize_path(dest_path)),
+			source_path.get_extension().to_lower() != "png"
+		)
+		return {
+			"ok": true,
+			"asset": asset,
+		}
+	var ext := source_path.get_extension().to_lower()
+	var dest_file_name := "%s.%s" % [asset_id, ext]
+	var dest_path := _user_dir_path(kind).path_join(dest_file_name)
+	var copy_err := _copy_file(source_path, dest_path)
+	if copy_err != OK:
+		return {
+			"ok": false,
+			"path": source_path,
+			"message": "复制到 user:// 失败",
+		}
+	var asset := _build_asset_entry(
+		asset_id,
+		label,
+		kind,
+		dest_file_name,
+		dest_path,
+		source,
+		source_path,
+		source_file,
+		ext,
+		0,
+		0,
+		_get_file_size(_globalize_path(dest_path)),
+		false
+	)
+	return {
+		"ok": true,
+		"asset": asset,
+	}
+
+func _build_asset_entry(
+	asset_id: String,
+	label: String,
+	kind: String,
+	file_name: String,
+	user_path: String,
+	source: String,
+	source_path: String,
+	source_file: String,
+	original_ext: String,
+	width: int,
+	height: int,
+	file_size: int,
+	adapted: bool
+) -> Dictionary:
+	return {
+		"id": asset_id,
+		"kind": kind,
+		"label": label,
+		"filename": file_name,
+		"folder": _dir_name_for_kind(kind),
+		"path": user_path,
+		"width": width,
+		"height": height,
+		"file_size": file_size,
+		"adapted": adapted,
+		"source": source,
+		"source_path": source_path,
+		"source_file": source_file,
+		"original_file": source_file,
+		"original_ext": original_ext.to_lower(),
+		"imported_at": Time.get_unix_time_from_system(),
+	}
+
 func _scan_external_library() -> Dictionary:
+	var asset_rows: Array = []
 	var result := {
-		"images": [],
+		"assets": asset_rows,
 		"bindings": {},
 	}
 	var manifest_info := _read_external_manifest()
-	var declared_images: Dictionary = manifest_info.get("images", {})
+	var declared_assets: Dictionary = Dictionary(manifest_info.get("assets", {})).duplicate(true)
 	result["bindings"] = Dictionary(manifest_info.get("bindings", {})).duplicate(true)
-	var declared_by_file := {}
-	for key in declared_images.keys():
-		var declared := Dictionary(declared_images.get(key, {}))
+	var declared_by_key := {}
+	for key in declared_assets.keys():
+		var declared := Dictionary(declared_assets.get(key, {})).duplicate(true)
+		var kind := _normalize_asset_kind(String(declared.get("kind", "")), String(declared.get("filename", "")))
 		var filename := String(declared.get("filename", "")).get_file()
-		if filename.is_empty():
+		if kind.is_empty() or filename.is_empty():
 			continue
-		declared_by_file[filename.to_lower()] = {
+		declared_by_key["%s::%s" % [kind, filename.to_lower()]] = {
 			"id": _normalize_external_asset_id(String(declared.get("id", key)), filename),
 			"label": String(declared.get("label", _sanitize_label(filename))),
+			"kind": kind,
 		}
-	var image_dir := get_external_library_dir_path()
-	var dir := DirAccess.open(image_dir)
-	if dir == null:
-		return result
 	var used_ids := {}
-	dir.list_dir_begin()
-	while true:
-		var file_name := dir.get_next()
-		if file_name.is_empty():
-			break
-		if dir.current_is_dir() or not _is_supported_image_file(file_name):
+	for kind in _ordered_kinds():
+		var library_dir := get_external_library_dir_path(kind)
+		var dir := DirAccess.open(library_dir)
+		if dir == null:
 			continue
-		var external_info := Dictionary(declared_by_file.get(file_name.to_lower(), {}))
-		var asset_id := String(external_info.get("id", ""))
-		if asset_id.is_empty() or used_ids.has(asset_id):
-			asset_id = _make_external_asset_id(file_name, used_ids)
-		used_ids[asset_id] = true
-		result["images"].append({
-			"id": asset_id,
-			"label": String(external_info.get("label", _sanitize_label(file_name))),
-			"filename": file_name,
-			"source_path": image_dir.path_join(file_name),
-		})
-	dir.list_dir_end()
+		dir.list_dir_begin()
+		while true:
+			var file_name := dir.get_next()
+			if file_name.is_empty():
+				break
+			if dir.current_is_dir() or not _is_supported_file_for_kind(file_name, kind):
+				continue
+			var manifest_key := "%s::%s" % [kind, file_name.to_lower()]
+			var external_info := Dictionary(declared_by_key.get(manifest_key, {})).duplicate(true)
+			var asset_id := String(external_info.get("id", ""))
+			if asset_id.is_empty() or used_ids.has(asset_id):
+				asset_id = _make_external_asset_id(file_name, used_ids)
+			used_ids[asset_id] = true
+			asset_rows.append({
+				"id": asset_id,
+				"kind": kind,
+				"label": String(external_info.get("label", _sanitize_label(file_name))),
+				"filename": file_name,
+				"source_path": library_dir.path_join(file_name),
+			})
+		dir.list_dir_end()
+	result["assets"] = asset_rows
 	return result
 
 func _read_external_manifest() -> Dictionary:
@@ -287,15 +541,10 @@ func _read_external_manifest() -> Dictionary:
 	var parsed = JSON.parse_string(raw)
 	if typeof(parsed) != TYPE_DICTIONARY:
 		return _default_manifest()
-	var data := Dictionary(parsed).duplicate(true)
-	if not data.has("images") or typeof(data.get("images", {})) != TYPE_DICTIONARY:
-		data["images"] = {}
-	if not data.has("bindings") or typeof(data.get("bindings", {})) != TYPE_DICTIONARY:
-		data["bindings"] = {}
-	return data
+	return _normalize_manifest(Dictionary(parsed).duplicate(true))
 
-func _apply_external_bindings(external_bindings: Dictionary, images: Dictionary) -> void:
-	var bindings: Dictionary = manifest.get("bindings", {})
+func _apply_external_bindings(external_bindings: Dictionary, assets: Dictionary) -> void:
+	var bindings: Dictionary = Dictionary(manifest.get("bindings", {})).duplicate(true)
 	for slot_id in external_bindings.keys():
 		var slot_name := String(slot_id)
 		if slot_name.is_empty():
@@ -303,12 +552,18 @@ func _apply_external_bindings(external_bindings: Dictionary, images: Dictionary)
 		var asset_id := String(external_bindings.get(slot_id, ""))
 		if asset_id.is_empty():
 			bindings.erase(slot_name)
-		elif images.has(asset_id):
-			bindings[slot_name] = asset_id
+			continue
+		var asset := Dictionary(assets.get(asset_id, {})).duplicate(true)
+		if asset.is_empty():
+			continue
+		var expected_kind := _expected_slot_kind(slot_name)
+		if not expected_kind.is_empty() and String(asset.get("kind", "")) != expected_kind:
+			continue
+		bindings[slot_name] = asset_id
 	manifest["bindings"] = bindings
 
 func _clear_bindings_for_asset(asset_id: String) -> void:
-	var bindings: Dictionary = manifest.get("bindings", {})
+	var bindings: Dictionary = Dictionary(manifest.get("bindings", {})).duplicate(true)
 	var stale_slots: Array[String] = []
 	for slot_id in bindings.keys():
 		if String(bindings.get(slot_id, "")) == asset_id:
@@ -316,6 +571,14 @@ func _clear_bindings_for_asset(asset_id: String) -> void:
 	for slot_id in stale_slots:
 		bindings.erase(slot_id)
 	manifest["bindings"] = bindings
+
+func _remove_cached_asset(asset_info: Dictionary) -> void:
+	var cached_path := String(asset_info.get("path", ""))
+	if cached_path.is_empty():
+		return
+	var absolute_path := _globalize_path(cached_path)
+	if FileAccess.file_exists(absolute_path):
+		DirAccess.remove_absolute(absolute_path)
 
 func _normalize_external_asset_id(asset_id: String, fallback_name: String) -> String:
 	var safe_id := asset_id.validate_filename().strip_edges().to_lower()
@@ -334,6 +597,56 @@ func _make_external_asset_id(file_name: String, reserved_ids: Dictionary) -> Str
 		serial += 1
 	return asset_id
 
-func _is_supported_image_file(file_name: String) -> bool:
+func _copy_file(source_path: String, dest_path: String) -> int:
+	return DirAccess.copy_absolute(_globalize_path(source_path), _globalize_path(dest_path))
+
+func _globalize_path(path: String) -> String:
+	if path.begins_with("res://") or path.begins_with("user://"):
+		return ProjectSettings.globalize_path(path)
+	return path
+
+func _get_file_size(path: String) -> int:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return 0
+	return int(file.get_length())
+
+func _user_dir_path(kind: String) -> String:
+	return ROOT_DIR.path_join(_dir_name_for_kind(kind))
+
+func _dir_name_for_kind(kind: String) -> String:
+	return String(ASSET_KIND_DIR_NAMES.get(kind, "files"))
+
+func _ordered_kinds() -> Array[String]:
+	var kinds: Array[String] = []
+	for key in ASSET_KIND_DIR_NAMES.keys():
+		kinds.append(String(key))
+	kinds.sort()
+	if kinds.has("image"):
+		kinds.erase("image")
+		kinds.insert(0, "image")
+	return kinds
+
+func _expected_slot_kind(slot_id: String) -> String:
+	return String(SLOT_KIND_REQUIREMENTS.get(slot_id, ""))
+
+func _normalize_asset_kind(kind: String, file_name: String = "") -> String:
+	var cleaned := kind.strip_edges().to_lower()
+	if ASSET_KIND_DIR_NAMES.has(cleaned):
+		return cleaned
+	if not file_name.is_empty():
+		return _kind_for_extension(file_name.get_extension())
+	return ""
+
+func _kind_for_extension(extension: String) -> String:
+	var normalized_ext := extension.strip_edges().to_lower().trim_prefix(".")
+	if normalized_ext.is_empty():
+		return ""
+	for kind in _ordered_kinds():
+		if Array(SUPPORTED_ASSET_EXTENSIONS.get(kind, [])).has(normalized_ext):
+			return kind
+	return ""
+
+func _is_supported_file_for_kind(file_name: String, kind: String) -> bool:
 	var ext := file_name.get_extension().to_lower()
-	return SUPPORTED_IMAGE_EXTENSIONS.has(ext)
+	return Array(SUPPORTED_ASSET_EXTENSIONS.get(kind, [])).has(ext)

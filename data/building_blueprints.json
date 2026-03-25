@@ -615,6 +615,94 @@
       ]
     },
     {
+      "id": "settlement_apartment",
+      "name": "旅居公寓",
+      "site_type": "settlement",
+      "category": "housing",
+      "apartment_enabled": true,
+      "max_level": 3,
+      "levels": [
+        {
+          "level": 1,
+          "cost": {
+            "wood": 6,
+            "cloth": 2,
+            "paper": 1
+          },
+          "effects": [
+            "可容纳 1 名住客",
+            "住客每 2 天结租",
+            "本地高信赖 NPC 会搬来"
+          ],
+          "passive_effects": [
+            "可容纳 1 名住客",
+            "住客每 2 天结租",
+            "本地高信赖 NPC 会搬来"
+          ],
+          "apartment": {
+            "tenant_capacity": 1,
+            "rent_interval_days": 2,
+            "move_in_interval_days": 2,
+            "rent_bonus": 0,
+            "repair_interval_days": 3,
+            "gift_threshold": 5
+          }
+        },
+        {
+          "level": 2,
+          "cost": {
+            "wood": 8,
+            "cloth": 4,
+            "glass": 1
+          },
+          "effects": [
+            "可容纳 2 名住客",
+            "住客结租额外 +1 金",
+            "高照看住客更常顺手修补"
+          ],
+          "passive_effects": [
+            "可容纳 2 名住客",
+            "住客结租额外 +1 金",
+            "高照看住客更常顺手修补"
+          ],
+          "apartment": {
+            "tenant_capacity": 2,
+            "rent_interval_days": 2,
+            "move_in_interval_days": 2,
+            "rent_bonus": 1,
+            "repair_interval_days": 2,
+            "gift_threshold": 5
+          }
+        },
+        {
+          "level": 3,
+          "cost": {
+            "wood": 10,
+            "cloth": 5,
+            "parts": 2
+          },
+          "effects": [
+            "可容纳 3 名住客",
+            "住客每日结租",
+            "高好感住客偶尔送来小礼"
+          ],
+          "passive_effects": [
+            "可容纳 3 名住客",
+            "住客每日结租",
+            "高好感住客偶尔送来小礼"
+          ],
+          "apartment": {
+            "tenant_capacity": 3,
+            "rent_interval_days": 1,
+            "move_in_interval_days": 1,
+            "rent_bonus": 2,
+            "repair_interval_days": 1,
+            "gift_threshold": 5
+          }
+        }
+      ]
+    },
+    {
       "id": "watch_tower",
       "name": "观测塔",
       "site": "ancient_platform",

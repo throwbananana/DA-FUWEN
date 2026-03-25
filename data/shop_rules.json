@@ -205,6 +205,17 @@
               "tags": [
                 "周中轮换"
               ]
+            },
+            {
+              "id": "late_week_field_guide",
+              "item_id": "field_guide_book",
+              "price": 12,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 24,
+              "tags": [
+                "图鉴补录"
+              ]
             }
           ]
         },

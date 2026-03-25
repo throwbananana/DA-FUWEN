@@ -12,18 +12,26 @@ func get_interaction_menu(habitat_id: String) -> Array:
 			continue
 		var runtime_state: Dictionary = GameState.ensure_building_runtime_state(habitat_id, building_id)
 		var actions: Array = []
+		var damage_days := maxi(0, int(runtime_state.get("damage_days", 0)))
 		for action in _get_unlocked_actions(building, level):
 			var action_id := String(action.get("id", ""))
 			if action_id.is_empty():
 				continue
 			var cooldown_remaining := _get_cooldown_remaining(runtime_state, action_id)
+			var disabled_reason := ""
+			if damage_days > 0:
+				disabled_reason = "damaged"
+			elif cooldown_remaining > 0:
+				disabled_reason = "cooldown"
 			actions.append({
 				"id": action_id,
 				"label": String(action.get("label", action_id)),
 				"description": String(action.get("description", "")),
 				"cost": Dictionary(action.get("cost", {})).duplicate(true),
 				"cooldown_remaining": cooldown_remaining,
-				"disabled": cooldown_remaining > 0,
+				"damage_days": damage_days,
+				"disabled": cooldown_remaining > 0 or damage_days > 0,
+				"disabled_reason": disabled_reason,
 			})
 		if actions.is_empty():
 			continue
@@ -41,7 +49,7 @@ func execute_action(habitat_id: String, building_id: String, action_id: String) 
 	var building: Dictionary = DataRepository.get_building(building_id)
 	if building.is_empty():
 		return {"ok": false, "reason": "building_missing", "building_id": building_id}
-	if String(building.get("site", "")) != habitat_id:
+	if not DataRepository.building_matches_habitat(building, habitat_id):
 		return {"ok": false, "reason": "site_mismatch", "building_id": building_id, "habitat_id": habitat_id}
 	var level: int = GameState.get_building_level(habitat_id, building_id)
 	if level <= 0:
@@ -58,6 +66,15 @@ func execute_action(habitat_id: String, building_id: String, action_id: String) 
 			"building_id": building_id,
 			"action_id": action_id,
 			"cooldown_remaining": cooldown_remaining,
+		}
+	var damage_days := maxi(0, int(runtime_state.get("damage_days", 0)))
+	if damage_days > 0:
+		return {
+			"ok": false,
+			"reason": "building_damaged",
+			"building_id": building_id,
+			"action_id": action_id,
+			"damage_days": damage_days,
 		}
 	var cost: Dictionary = Dictionary(action.get("cost", {})).duplicate(true)
 	if not cost.is_empty() and not GameState.can_pay(cost):

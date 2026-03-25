@@ -114,7 +114,7 @@ func can_build(habitat_id: String, building_id: String) -> Dictionary:
 	if building.is_empty():
 		return {"ok": false, "reason": "building_missing"}
 
-	if String(building.get("site", "")) != habitat_id:
+	if not DataRepository.building_matches_habitat(building, habitat_id):
 		return {"ok": false, "reason": "site_mismatch"}
 
 	var habitat_state: Dictionary = GameState.habitats.get(habitat_id, {})

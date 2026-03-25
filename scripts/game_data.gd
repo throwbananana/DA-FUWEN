@@ -773,6 +773,13 @@ static func get_monster_template(species_id: String) -> Dictionary:
 			template[key] = profile[key]
 		if profile.has("combat_type"):
 			template["type"] = profile["combat_type"]
+	var fallback_elements: Array = Array(template.get("elements", [template.get("type", "mist")])).duplicate()
+	template["stamina"] = int(template.get("stamina", clampi(int(round(float(template.get("max_hp", 28)) / 6.0)), 4, 10)))
+	template["defense"] = int(template.get("defense", clampi(int(round(float(template.get("max_hp", 28)) / 5.5)), 4, 10)))
+	template["element_resistances"] = _build_element_resistances(
+		fallback_elements,
+		Dictionary(template.get("element_resistances", {})).duplicate(true)
+	)
 	return template
 
 static func get_species_synergy_profile(species_id: String) -> Dictionary:
@@ -861,11 +868,15 @@ static func type_multiplier(attacker_type: String, defender_type: String) -> flo
 		return 0.8
 	return 1.0
 
+static func build_element_resistance_map(types: Array, overrides: Dictionary = {}) -> Dictionary:
+	return _build_element_resistances(types, overrides)
+
 static func _monster_template_from_species(species_row: Dictionary) -> Dictionary:
 	var stats: Dictionary = species_row.get("base_stats", {})
 	var types: Array = species_row.get("types", [])
 	var primary_type := String(types[0]) if not types.is_empty() else "mist"
 	var attack_value := maxi(int(stats.get("atk", 50)), int(stats.get("sp_atk", 50)))
+	var defense_value := maxi(int(stats.get("def", 50)), int(stats.get("res", 50)))
 	var role_map := {}
 	for role_id in species_row.get("roles", []):
 		role_map[String(role_id)] = 2
@@ -876,12 +887,18 @@ static func _monster_template_from_species(species_row: Dictionary) -> Dictionar
 		"max_hp": clampi(int(round(float(stats.get("hp", 52)) / 4.0)), 18, 40),
 		"attack": clampi(int(round(float(attack_value) / 12.0)), 5, 14),
 		"speed": clampi(int(round(float(stats.get("spd", 52)) / 12.0)), 4, 14),
+		"stamina": clampi(int(round(float(stats.get("energy", 56)) / 10.0)), 4, 12),
+		"defense": clampi(int(round(float(defense_value) / 10.0)), 4, 12),
 		"skills": _pick_battle_skill_ids(species_row),
 		"roles": role_map,
 		"elements": Array(types).duplicate(),
 		"biome_tags": Array(species_row.get("ecology_tags", [])).duplicate(),
 		"job_tags": Array(species_row.get("roles", [])).duplicate(),
 		"building_tags": Array(species_row.get("building_affinities", [])).duplicate(),
+		"element_resistances": _build_element_resistances(
+			Array(types).duplicate(),
+			Dictionary(species_row.get("element_resistances", {})).duplicate(true)
+		),
 		"evolution_chain": Array(family.get("names", [])).duplicate(),
 		"stage": int(species_row.get("stage", 1)),
 		"rarity": String(species_row.get("rarity", "common")),
@@ -895,6 +912,34 @@ static func _pick_battle_skill_ids(species_row: Dictionary) -> Array:
 		result.append(String(skill_id))
 		if result.size() >= 3:
 			break
+	return result
+
+static func _build_element_resistances(types: Array, overrides: Dictionary = {}) -> Dictionary:
+	var result := {}
+	for type_id in TYPE_NAMES.keys():
+		result[String(type_id)] = 1.0
+	var seen_types := {}
+	for raw_type in types:
+		var defender_type := String(raw_type)
+		if defender_type.is_empty() or seen_types.has(defender_type):
+			continue
+		seen_types[defender_type] = true
+		if result.has(defender_type):
+			result[defender_type] = float(result[defender_type]) * 0.92
+		var resisted_type := String(TYPE_ADVANTAGE.get(defender_type, ""))
+		if result.has(resisted_type):
+			result[resisted_type] = float(result[resisted_type]) * 0.90
+		for attacker_type in TYPE_ADVANTAGE.keys():
+			if String(TYPE_ADVANTAGE.get(attacker_type, "")) != defender_type:
+				continue
+			var key := String(attacker_type)
+			if result.has(key):
+				result[key] = float(result[key]) * 1.10
+	for key in overrides.keys():
+		var type_key := String(key)
+		result[type_key] = float(result.get(type_key, 1.0)) * float(overrides[key])
+	for key in result.keys():
+		result[key] = clampf(float(result[key]), 0.65, 1.45)
 	return result
 
 static func _normalize_skill(skill_id: String, skill_row: Dictionary) -> Dictionary:

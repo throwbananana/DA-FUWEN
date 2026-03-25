@@ -48,7 +48,7 @@ godot --path .
 
 项目现在内置了一个不依赖 Godot 编辑器的外置素材链路：
 
-- 外置素材目录：`external_assets/images/`
+- 外置素材目录：`external_assets/images/`、`external_assets/audio/`、`external_assets/fonts/`、`external_assets/video/`、`external_assets/files/`
 - 外置素材元数据：`external_assets/manifest.json`
 - 外置编辑器启动脚本：`tools/launch_asset_editor.bat`
 - 编辑器源码：`tools/asset_editor.py`
@@ -59,8 +59,9 @@ godot --path .
 tools\launch_asset_editor.bat
 ```
 
-或直接把图片放进 `external_assets/images/`。  
-支持格式：`png`、`jpg`、`jpeg`、`webp`、`bmp`。
+或直接把素材文件放进对应目录。  
+外置编辑器支持导入图片、音频、字体、视频和常用数据文件；其中图片支持 `png`、`jpg`、`jpeg`、`webp`、`bmp`、`gif`、`tif`、`tiff`、`tga`、`ico`，并会在导入时自动适配成游戏可读取的格式；也支持整文件夹递归批量导入。  
+如果是手动直拷到 `external_assets/` 下，建议按类型分别放到 `images / audio / fonts / video / files` 目录里。
 
 游戏启动时会自动同步该目录；如果游戏已经在运行，重新打开一次开始菜单的“设置”页即可触发同步，不需要进入 Godot 编辑器执行导入。
 

@@ -718,6 +718,373 @@
         "机修市",
         "旧件"
       ]
+    },
+    {
+      "id": "soc_post_manifest_pause",
+      "title": "檐下清单的留白一行",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "sky_post",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "innkeeper_yun"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "traveling_peddler"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ],
+        "weather_in": [
+          "rain",
+          "fog",
+          "clear"
+        ]
+      },
+      "summary": "{npc_a}在核对托运单时，总会替{npc_b}留出一行空白，好让临时加进来的路上见闻也有地方落。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}先把最要紧的托运项圈出来，再把最后一行故意空着。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}没有立刻开口，只把路上听来的风向和延误原因慢慢补进那一行。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "manifest_sync",
+          "weight": 3,
+          "outcome": "驿站今夜没有因为多一条传闻变乱，反而像是替明天省下了第一轮解释。",
+          "effects": {
+            "journal_entry": "云升转运镇夜记：真正稳住流程的，常是给临时变化预留的一点空白。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "extra_note",
+          "weight": 2,
+          "outcome": "{npc_b}把一张写满小字的边角纸塞给你，说路上消息最怕的就是没地方先记。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "转运站",
+        "清单"
+      ]
+    },
+    {
+      "id": "soc_bazaar_manifest_tap",
+      "title": "旧件单据前的敲点确认",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "copper_hammer_bazaar",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "tinker_bo"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "parts_vendor"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "{npc_a}念旧件清单时，{npc_b}会只在最容易弄混的那几项上敲一下桌角，像是替清单自己打拍子。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把几样最像的配件并排摆开，念到型号时故意放慢了一拍。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}在最容易念串的那两项上轻轻敲了一下，让摊前的人也跟着听出区别。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "tap_confirm",
+          "weight": 3,
+          "outcome": "摊前没有再因为叫错一枚旧件而白忙一轮，这点默契比多卖出去一件还值。",
+          "effects": {
+            "journal_entry": "机修市单据记：把最容易混的两项单独敲出来，能让清单少掉一半返工。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "spare_part",
+          "weight": 2,
+          "outcome": "{npc_b}把一枚暂时没人认领的小零件推给你，说先留着，总比下次缺的时候再满市找强。",
+          "effects": {
+            "items": {
+              "parts": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "机修市",
+        "单据"
+      ]
+    },
+    {
+      "id": "soc_creek_blanket_stone",
+      "title": "浅滩边的垫布与暖石",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "crystal_creek",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "washer_grandma"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "stone_trader"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "clear",
+          "mist",
+          "fog"
+        ]
+      },
+      "summary": "{npc_a}会先铺好垫布，再让{npc_b}把暖石一块块放上去，确认小家伙靠上去时不会先碰到硌人的边。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把布角按住，像是在替之后那一下靠近先留好余地。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把最暖的石头都往后挪了半寸，只留下温度最稳的靠外。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "stone_blanket_fit",
+          "weight": 3,
+          "outcome": "浅滩边没有多出什么声响，可那块临时歇脚的地方一下就变得更像“给它们准备的”。",
+          "effects": {
+            "journal_entry": "晶溪照护补记：先铺垫布再摆暖石，能把“愿不愿意靠近”这件事做得更轻。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_small_chip",
+          "weight": 2,
+          "outcome": "{npc_b}把布边磨下的一小圈石屑收进纸里，说总有地方会需要这种不碍事的边角。",
+          "effects": {
+            "items": {
+              "stone_chip": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "晶溪",
+        "暖石"
+      ]
+    },
+    {
+      "id": "soc_platform_archive_margin",
+      "title": "记录页边上的补一行",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "ancient_platform",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "field_recorder"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "ruin_restorer"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening",
+          "night"
+        ]
+      },
+      "summary": "{npc_a}把记录页翻到最后时，{npc_b}会补上一行“别急着下结论”的维修备注，像在替明天的自己留后路。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}念完主记录后没有立刻合本，而是把最后一页故意停在空白边。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}只补了一行短短的注释，却刚好把今天最可能被误会的那一段拦住了。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "margin_saved",
+          "weight": 3,
+          "outcome": "这行边注没让监测站变得更轻松，却让明天的人不必从最错的地方开始理解今天。",
+          "effects": {
+            "journal_entry": "北城监测站补记：真正重要的备注，不该挤进正文里，而该留在最容易被回头看见的页边。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_blueprint_scrap",
+          "weight": 2,
+          "outcome": "{npc_b}把撕下来的旧页角叠给你，说草图不一定要完整，先能提醒人别走错就够了。",
+          "effects": {
+            "items": {
+              "blueprint_scrap": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "监测站",
+        "页边"
+      ]
     }
   ]
 }

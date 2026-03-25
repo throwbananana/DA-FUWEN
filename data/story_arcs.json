@@ -236,22 +236,47 @@
     },
     {
       "id": "arc_greenbark_grove_route_signs",
-      "title": "青栎林的临时近路",
+      "title": "青栎林的停雨叶棚",
       "priority": 50,
       "start_conditions": {
         "habitat_id": "greenbark_grove"
       },
       "beats": [
         {
+          "id": "intro",
+          "habitat_id": "greenbark_grove",
+          "npc_id": "grove_patrol",
+          "dialogue_id": "dlg_story_grove_intro",
+          "story_flags": [
+            "story_spire_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening"
+          ]
+        },
+        {
+          "id": "after_canopy",
+          "habitat_id": "greenbark_grove",
+          "npc_id": "grove_patrol",
+          "dialogue_id": "dlg_story_grove_after_canopy",
+          "requires_quests": [
+            "grove_canopy_patch"
+          ],
+          "set_story_flags": [
+            "story_grove_canopy_done"
+          ]
+        },
+        {
           "id": "resolve",
           "habitat_id": "greenbark_grove",
           "npc_id": "grove_patrol",
-          "dialogue_id": "dlg_grove_patrol_seed_line",
+          "dialogue_id": "dlg_story_grove_resolve",
           "requires_events": [
-            "evt_grove_seed_path"
+            "evt_grove_canopy_drops"
           ],
           "story_flags": [
-            "story_spire_arc_done"
+            "story_grove_canopy_done"
           ],
           "set_story_flags": [
             "story_grove_arc_done"
@@ -262,22 +287,47 @@
     },
     {
       "id": "arc_reed_mire_crossing_knots",
-      "title": "芦泽沼的渡线顺序",
+      "title": "芦泽沼的净池顺序",
       "priority": 60,
       "start_conditions": {
         "habitat_id": "reed_mire"
       },
       "beats": [
         {
+          "id": "intro",
+          "habitat_id": "reed_mire",
+          "npc_id": "mire_guide",
+          "dialogue_id": "dlg_story_mire_intro",
+          "story_flags": [
+            "story_grove_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening"
+          ]
+        },
+        {
+          "id": "after_pool",
+          "habitat_id": "reed_mire",
+          "npc_id": "mire_guide",
+          "dialogue_id": "dlg_story_mire_after_pool",
+          "requires_quests": [
+            "mire_purify_pool_open"
+          ],
+          "set_story_flags": [
+            "story_mire_pool_done"
+          ]
+        },
+        {
           "id": "resolve",
           "habitat_id": "reed_mire",
           "npc_id": "mire_guide",
-          "dialogue_id": "dlg_mire_guide_reed_knots",
+          "dialogue_id": "dlg_story_mire_resolve",
           "requires_events": [
-            "evt_mire_reed_knots"
+            "evt_mire_pool_skim"
           ],
           "story_flags": [
-            "story_grove_arc_done"
+            "story_mire_pool_done"
           ],
           "set_story_flags": [
             "story_mire_arc_done"

@@ -1724,6 +1724,366 @@
           "end": true
         }
       ]
+    },
+    {
+      "id": "dlg_grove_patrol_canopy_drops",
+      "npc": "grove_patrol",
+      "habitat_id": "greenbark_grove",
+      "topic": "canopy_drops",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "林地",
+        "遮雨"
+      ],
+      "conditions": {
+        "after_event": "evt_grove_canopy_drops"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "grove_patrol",
+          "text": "雨一落下来，很多人只会盯着泥。我更信叶尖先告诉人的那点事。",
+          "choices": [
+            {
+              "text": "原来最先该看的不是地面。",
+              "next": "reply_a"
+            },
+            {
+              "text": "那条最干的线，真是被雨自己指出来的。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "grove_patrol",
+          "text": "对。地面已经滑了才看地面，多半就晚半步了。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "grove_patrol",
+          "text": "林地会自己说话，只是它先用雨声说，不用脚印说。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_mire_guide_pool_skim",
+      "npc": "mire_guide",
+      "habitat_id": "reed_mire",
+      "topic": "pool_skim",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "湿地",
+        "净池"
+      ],
+      "conditions": {
+        "after_event": "evt_mire_pool_skim"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mire_guide",
+          "text": "净池最怕的不是脏，是人一着急，连该留下来的缓流都一起刮走。",
+          "choices": [
+            {
+              "text": "今天总算知道哪层浮沫不能急着清。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来“留一点”也是在净。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mire_guide",
+          "text": "嗯。会留，才说明你不是只想把表面弄干净。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mire_guide",
+          "text": "芦泽这地方，很多时候先学会留，再学会取。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_coast_keeper_rack_turn",
+      "npc": "coast_keeper",
+      "habitat_id": "saltglass_coast",
+      "topic": "rack_turn",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "海岸",
+        "晒架"
+      ],
+      "conditions": {
+        "after_event": "evt_coast_rack_turn"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "coast_keeper",
+          "text": "晒架这活看着像拼手快，其实谁先听懂回潮，谁才真占便宜。",
+          "choices": [
+            {
+              "text": "所以你刚才一直在听木梁吃风的声音。",
+              "next": "reply_a"
+            },
+            {
+              "text": "翻慢一点，反而比抢着翻更稳。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "coast_keeper",
+          "text": "木梁先响，货物后返潮。听得明白，手上自然不用乱。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "coast_keeper",
+          "text": "海边最不值钱的，就是那点自以为抢来的半拍。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_storm_mentor_reset_stride",
+      "npc": "storm_mentor",
+      "habitat_id": "thunder_meadow",
+      "topic": "stride_reset",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "草场",
+        "节奏"
+      ],
+      "conditions": {
+        "after_event": "evt_meadow_stride_reset"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "storm_mentor",
+          "text": "旧标记要是不舍得删，明天的步子多半就会踩在昨天的错上。",
+          "choices": [
+            {
+              "text": "原来练节奏，先学的是舍弃。",
+              "next": "reply_a"
+            },
+            {
+              "text": "怪不得你总说停顿比冲刺难。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "storm_mentor",
+          "text": "对。真正会跑的人，先知道哪一步今天不该再跑。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "storm_mentor",
+          "text": "停得对，后面的快才不是瞎撞。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_kiln_warden_ember_sort",
+      "npc": "kiln_warden",
+      "habitat_id": "ember_crater",
+      "topic": "ember_sort",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "余烬",
+        "分温"
+      ],
+      "conditions": {
+        "after_event": "evt_crater_ember_sort"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "kiln_warden",
+          "text": "坑口最会吓人的，从来不是最热的那块，是最会装热的那块。",
+          "choices": [
+            {
+              "text": "所以你才一直让我摸石背。",
+              "next": "reply_a"
+            },
+            {
+              "text": "今天终于分清哪种红是在骗人。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "kiln_warden",
+          "text": "石背不爱说谎。先信手，再信眼，火就没那么爱糊弄人。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "kiln_warden",
+          "text": "看懂虚热，才有资格谈真热。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_bridge_scout_marker_rope",
+      "npc": "bridge_scout",
+      "habitat_id": "echo_broken_bridge",
+      "topic": "marker_rope",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "桥头",
+        "绳结"
+      ],
+      "conditions": {
+        "after_event": "evt_bridge_marker_rope"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "bridge_scout",
+          "text": "桥口这地方，眼睛总爱看远。可真正先救命的，常常是手里这一下绳劲。",
+          "choices": [
+            {
+              "text": "今天那条先发紧的绳，差点就被我忽略了。",
+              "next": "reply_a"
+            },
+            {
+              "text": "先信手里的提醒，比先信胆子强。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "bridge_scout",
+          "text": "能忽略一次，就能多吃一次亏。记住它，下次就省事了。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "bridge_scout",
+          "text": "断桥从不奖胆大，只奖肯先听劝的人。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_mirror_keeper_tone_list",
+      "npc": "mirror_keeper",
+      "habitat_id": "frost_mirror_lake",
+      "topic": "tone_list",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "镜湖",
+        "冰裂"
+      ],
+      "conditions": {
+        "after_event": "evt_lake_tone_list"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mirror_keeper",
+          "text": "湖面最响的那道裂音往往只是吓人，真正该记的，反倒是最轻的那一下。",
+          "choices": [
+            {
+              "text": "今天我总算没再被大声的那道带跑。",
+              "next": "reply_a"
+            },
+            {
+              "text": "先记轻音，整面冰反而更清楚。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mirror_keeper",
+          "text": "会被大声带跑，是因为心里先急了。湖面不替急的人收尾。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mirror_keeper",
+          "text": "守住最细的那条线，剩下的杂音自然会自己让开。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_ruin_diviner_quiet_well",
+      "npc": "ruin_diviner",
+      "habitat_id": "moonfen_ruins",
+      "topic": "quiet_well",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "月井",
+        "回响"
+      ],
+      "conditions": {
+        "after_event": "evt_moonfen_quiet_well"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "ruin_diviner",
+          "text": "月井最会讨好的，总是第一句。你肯把它放过去，后面才轮到真话。",
+          "choices": [
+            {
+              "text": "今晚那句来得最快的，果然最不该信。",
+              "next": "reply_a"
+            },
+            {
+              "text": "慢半拍以后，井里的声音反而更像人话了。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "ruin_diviner",
+          "text": "快，不等于真。月井最喜欢把这两件事搅在一起。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "ruin_diviner",
+          "text": "肯慢半拍的人，才配听见第二层意思。",
+          "end": true
+        }
+      ]
     }
   ]
 }

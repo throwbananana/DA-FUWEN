@@ -491,6 +491,252 @@
           "end": true
         }
       ]
+    },
+    {
+      "id": "dlg_story_grove_intro",
+      "npc": "grove_patrol",
+      "habitat_id": "greenbark_grove",
+      "topic": "story_grove_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "青栎林",
+        "叶棚"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "grove_patrol",
+          "text": "林子里每逢连雨，最先乱的不是路，是人心里那句“快点过去”。我想先给这句快一点找个地方放下。",
+          "choices": [
+            {
+              "text": "所以你才想先搭一个能停一下的叶棚。",
+              "next": "reply_a"
+            },
+            {
+              "text": "先让人有地方慢下来，路才会讲理。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "grove_patrol",
+          "text": "对。先有一处肯让人停的地方，后面的近路才不会变成催人犯错的近路。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "grove_patrol",
+          "text": "林地不是不让人赶路，只是不想让人拿慌张当本事。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_grove_after_canopy",
+      "npc": "grove_patrol",
+      "habitat_id": "greenbark_grove",
+      "topic": "story_grove_after_canopy",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "青栎林",
+        "遮雨"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "grove_patrol",
+          "text": "叶棚一立起来，来往的人就都知道这里不是拿来冲过去的，是拿来先把脚下重新看明白的。",
+          "choices": [
+            {
+              "text": "它像给整条路都按了个慢一点的提醒。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来一处小棚，真能改掉一整段路的脾气。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "grove_patrol",
+          "text": "嗯。能让人慢一拍的地方，往往比能让人快两步的地方更难得。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "grove_patrol",
+          "text": "路也是有脾气的，你愿不愿意顺着它，它都会记住。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_grove_resolve",
+      "npc": "grove_patrol",
+      "habitat_id": "greenbark_grove",
+      "topic": "story_grove_resolve",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "青栎林",
+        "近路"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "grove_patrol",
+          "text": "现在这条近路总算像样了。不是因为它更短，而是因为它终于知道该把人从哪一步先劝住。",
+          "choices": [
+            {
+              "text": "会劝人的近路，才是真正能常走的近路。",
+              "next": "reply_a"
+            },
+            {
+              "text": "你其实是在给后来的人留一份判断。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "grove_patrol",
+          "text": "对。能常走，才比偶尔抄到一次捷径更有用。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "grove_patrol",
+          "text": "以后谁先站进叶棚里听雨，谁就会知道这条路为什么能走到今天。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_mire_intro",
+      "npc": "mire_guide",
+      "habitat_id": "reed_mire",
+      "topic": "story_mire_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "芦泽沼",
+        "净池"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mire_guide",
+          "text": "芦泽最难守住的不是哪条水线，是人一急就想把所有浑东西都一下子撇开的心。净池得先教人慢。",
+          "choices": [
+            {
+              "text": "所以你才想先把净池边线立住。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来净池是在教顺序，不只是教清理。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mire_guide",
+          "text": "对。边线一立，手就知道先停在哪，眼也知道先看哪。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mire_guide",
+          "text": "芦泽从不怕脏，它怕的是有人把顺序弄错。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_mire_after_pool",
+      "npc": "mire_guide",
+      "habitat_id": "reed_mire",
+      "topic": "story_mire_after_pool",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "芦泽沼",
+        "边线"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mire_guide",
+          "text": "净池边线有了以后，连来帮忙的人抬脚都稳了些。原来人先不乱，水也会跟着少乱一点。",
+          "choices": [
+            {
+              "text": "看起来像修池，其实先修的是手上的次序。",
+              "next": "reply_a"
+            },
+            {
+              "text": "这地方终于不像只会把人拖慢了。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mire_guide",
+          "text": "嗯。手上的次序一稳，芦泽就不再总拿浑水试你。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mire_guide",
+          "text": "芦泽不是要拖慢你，它只是想看你愿不愿意先学会慢。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_mire_resolve",
+      "npc": "mire_guide",
+      "habitat_id": "reed_mire",
+      "topic": "story_mire_resolve",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "芦泽沼",
+        "回流"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mire_guide",
+          "text": "现在你也会先认回流圈，再去碰净池边上的浮沫了。等你真把顺序记进身体里，芦泽就没那么爱刁难人。",
+          "choices": [
+            {
+              "text": "原来这地方给人的，不止是一条过法。",
+              "next": "reply_a"
+            },
+            {
+              "text": "学会这套顺序后，连心里都没那么慌了。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mire_guide",
+          "text": "它给的是一份分寸。会了这份分寸，很多地方都能少湿半截裤脚。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mire_guide",
+          "text": "心不先乱，脚下那层浑水就没那么可怕。",
+          "end": true
+        }
+      ]
     }
   ]
 }

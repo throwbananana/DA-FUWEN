@@ -221,6 +221,58 @@
         },
         "journal_entry": "白壳龟近岸换气记录"
       }
+    },
+    {
+      "id": "mire_night_eel_wait",
+      "title": "替芦娘守一晚夜潮鳗的静线",
+      "giver": "mire_guide",
+      "category": "fishing",
+      "target_habitat": "reed_mire",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "mire_guide"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_watch:moon_tide_eel"
+        },
+        {
+          "type": "return",
+          "npc": "mire_guide"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "夜潮鳗静线记录"
+      }
+    },
+    {
+      "id": "coast_fog_koi_watch",
+      "title": "帮砺潮记下雾鳍鲤翻身的那阵风",
+      "giver": "coast_keeper",
+      "category": "fishing",
+      "target_habitat": "saltglass_coast",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "coast_keeper"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_watch:glass_fin_koi"
+        },
+        {
+          "type": "return",
+          "npc": "coast_keeper"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "tea_leaf": 1
+        }
+      }
     }
   ]
 }

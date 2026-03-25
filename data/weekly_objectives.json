@@ -483,6 +483,134 @@
         }
       ],
       "reward_bundle_id": "weekly_supply_bundle"
+    },
+    {
+      "id": "spring_route_rehearsal",
+      "season_ids": [
+        "spring"
+      ],
+      "title": "把回身线先记熟",
+      "description": "本周完成 4 次落点访问，在春季前半段尽快摸清安全折返线。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 4,
+          "label": "访问节点"
+        }
+      ],
+      "reward_bundle_id": "weekly_supply_bundle"
+    },
+    {
+      "id": "spring_first_shed",
+      "season_ids": [
+        "spring"
+      ],
+      "title": "给据点先搭一个能用的棚",
+      "description": "本周完成 2 次建设，让春季的照护和补给尽早有固定落脚点。",
+      "requirements": [
+        {
+          "metric": "build_count",
+          "target": 2,
+          "label": "建设次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_growth_bundle"
+    },
+    {
+      "id": "summer_patrol_probe",
+      "season_ids": [
+        "summer"
+      ],
+      "title": "在高压周先探一圈",
+      "description": "本周完成 2 次野外相遇，尽快判断夏季中盘哪条线更适合继续压进。",
+      "requirements": [
+        {
+          "metric": "encounter_count",
+          "target": 2,
+          "label": "相遇次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_discovery_bundle"
+    },
+    {
+      "id": "summer_stride_test",
+      "season_ids": [
+        "summer"
+      ],
+      "title": "把训练和推进绑在一起",
+      "description": "本周完成 4 次落点访问，优先利用夏季速度窗口把路线节奏跑顺。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 4,
+          "label": "访问节点"
+        }
+      ],
+      "reward_bundle_id": "weekly_supply_bundle"
+    },
+    {
+      "id": "autumn_rack_and_route",
+      "season_ids": [
+        "autumn"
+      ],
+      "title": "边整理边推进",
+      "description": "本周完成 1 次建设，先把秋季资源线的基础设施立住。",
+      "requirements": [
+        {
+          "metric": "build_count",
+          "target": 1,
+          "label": "建设次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_growth_bundle"
+    },
+    {
+      "id": "autumn_night_listen",
+      "season_ids": [
+        "autumn"
+      ],
+      "title": "趁夜把危险听明白",
+      "description": "本周完成 2 次野外相遇，在秋季夜间节点前先摸清压力来源。",
+      "requirements": [
+        {
+          "metric": "encounter_count",
+          "target": 2,
+          "label": "相遇次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_discovery_bundle"
+    },
+    {
+      "id": "winter_hold_line",
+      "season_ids": [
+        "winter"
+      ],
+      "title": "守住冬线节奏",
+      "description": "本周完成 3 次落点访问，不求走远，先求把冬季安全线走稳。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 3,
+          "label": "访问节点"
+        }
+      ],
+      "reward_bundle_id": "weekly_supply_bundle"
+    },
+    {
+      "id": "winter_trial_prep",
+      "season_ids": [
+        "winter"
+      ],
+      "title": "把试炼前置动作做满",
+      "description": "本周完成 1 次道馆挑战，让冬季周结算前先把压力释放一次。",
+      "requirements": [
+        {
+          "metric": "dojo_clear_count",
+          "target": 1,
+          "label": "道馆挑战"
+        }
+      ],
+      "reward_bundle_id": "weekly_battle_bundle"
     }
   ]
 }

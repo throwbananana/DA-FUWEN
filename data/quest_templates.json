@@ -558,6 +558,119 @@
         "journal_entry": "辉嚎外缘轨迹",
         "try_story_from_giver": true
       }
+    },
+    {
+      "id": "grove_canopy_patch",
+      "title": "替青岚把遮雨叶棚先搭起来",
+      "giver": "grove_patrol",
+      "category": "build",
+      "target_habitat": "greenbark_grove",
+      "steps": [
+        {
+          "type": "deliver",
+          "item": "fiber",
+          "count": 3
+        },
+        {
+          "type": "visit",
+          "habitat_id": "greenbark_grove"
+        },
+        {
+          "type": "build",
+          "building_id": "herb_canopy",
+          "level": 1
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "amber_resin": 1
+        }
+      }
+    },
+    {
+      "id": "mire_purify_pool_open",
+      "title": "给芦娘先把净池的边线立住",
+      "giver": "mire_guide",
+      "category": "build",
+      "target_habitat": "reed_mire",
+      "steps": [
+        {
+          "type": "deliver",
+          "item": "reed",
+          "count": 3
+        },
+        {
+          "type": "visit",
+          "habitat_id": "reed_mire"
+        },
+        {
+          "type": "build",
+          "building_id": "purify_pool",
+          "level": 1
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "water_drop": 2
+        }
+      }
+    },
+    {
+      "id": "coast_rack_check",
+      "title": "帮砺潮记一遍晒架翻面的风向",
+      "giver": "coast_keeper",
+      "category": "observe",
+      "target_habitat": "saltglass_coast",
+      "steps": [
+        {
+          "type": "visit",
+          "habitat_id": "saltglass_coast"
+        },
+        {
+          "type": "observe",
+          "marker": "coast_rack_turn"
+        },
+        {
+          "type": "return",
+          "npc": "coast_keeper"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "clear_sand": 1
+        }
+      }
+    },
+    {
+      "id": "ember_pit_sorting",
+      "title": "把余烬坑边能带走的稳炭分出来",
+      "giver": "kiln_warden",
+      "category": "observe",
+      "target_habitat": "ember_crater",
+      "steps": [
+        {
+          "type": "visit",
+          "habitat_id": "ember_crater"
+        },
+        {
+          "type": "observe",
+          "marker": "ember_sort"
+        },
+        {
+          "type": "return",
+          "npc": "kiln_warden"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "warm_stone": 1
+        },
+        "journal_entry": "余烬坑分温笔记"
+      }
     }
   ]
 }

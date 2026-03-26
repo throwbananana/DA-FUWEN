@@ -12,7 +12,11 @@
 - 双击素材列表项可直接打开文件
 - 每个素材都可以带一个同目录的 `素材文件名.asset.json` 配置，例如 `hero.png.asset.json`
 - sidecar json 当前支持 `id`、`label`、`bindings`
-- `bindings` 当前可用槽位：`main_menu_bg`、`main_menu_logo`、`main_menu_bgm`、`battle_bgm`、`ui_confirm_sfx`、`ui_font`
+- `bindings` 当前可用槽位：`app_icon`、`main_menu_bg`、`main_menu_logo`、`main_menu_bgm`、`battle_bgm`、`ui_confirm_sfx`、`ui_font`、`ui_style_config`
+
+- `ui_style_config` 绑定的是 JSON 文件，可覆盖主菜单遮罩 / 面板 / 标签等运行时界面样式
+- `app_icon` 控制的是运行时窗口图标，不等同于导出产物的原生图标
+- 可参考 `external_assets/files/ui_style.sample.json` 作为样式配置模板
 - 启动游戏时会自动同步到运行时素材仓库
 - 如果游戏已经开着，重新打开一次“设置”即可触发同步
 - 可以直接运行 `tools/launch_asset_editor.bat` 打开外置素材编辑器

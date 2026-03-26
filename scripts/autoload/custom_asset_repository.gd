@@ -23,6 +23,10 @@ const SUPPORTED_ASSET_EXTENSIONS := {
 	"file": ["json", "txt", "cfg", "csv", "tsv", "md", "bin"],
 }
 const SLOT_DEFINITIONS := {
+	"app_icon": {
+		"kind": "image",
+		"label": "窗口图标（运行时）",
+	},
 	"main_menu_bg": {
 		"kind": "image",
 		"label": "主菜单背景",
@@ -49,6 +53,11 @@ const SLOT_DEFINITIONS := {
 	"ui_font": {
 		"kind": "font",
 		"label": "界面字体",
+	},
+	"ui_style_config": {
+		"kind": "file",
+		"label": "界面样式配置",
+		"runtime_extensions": ["json"],
 	},
 }
 
@@ -323,6 +332,12 @@ func get_bound_font(slot_id: String) -> FontFile:
 		return null
 	return get_font_file(asset_id)
 
+func get_bound_file_text(slot_id: String) -> String:
+	var asset_id := get_slot_binding(slot_id)
+	if asset_id.is_empty():
+		return ""
+	return get_file_text(asset_id)
+
 func get_texture(asset_id: String) -> Texture2D:
 	var image_info := get_image(asset_id)
 	if image_info.is_empty():
@@ -373,6 +388,18 @@ func get_font_file(asset_id: String) -> FontFile:
 	if font_file.data.is_empty():
 		return null
 	return font_file
+
+func get_file_text(asset_id: String) -> String:
+	var asset := get_asset(asset_id)
+	if String(asset.get("kind", "")) != "file":
+		return ""
+	var absolute_path := get_asset_absolute_path(asset_id)
+	if absolute_path.is_empty():
+		return ""
+	var file := FileAccess.open(absolute_path, FileAccess.READ)
+	if file == null:
+		return ""
+	return file.get_as_text()
 
 func get_external_library_dir_path(kind: String = "image") -> String:
 	return ProjectSettings.globalize_path(EXTERNAL_LIBRARY_DIR.path_join(_dir_name_for_kind(kind)))

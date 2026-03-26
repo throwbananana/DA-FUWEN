@@ -38,7 +38,7 @@ const InfirmaryService = preload("res://scripts/services/infirmary_service.gd")
 const AnnualCompetitionService = preload("res://scripts/services/annual_competition_service.gd")
 const BattleRosterServiceScript = preload("res://scripts/services/battle_roster_service.gd")
 const JrpgTheme = preload("res://scripts/jrpg_theme.gd")
-const CUSTOM_ASSET_SLOT_ORDER := ["main_menu_bg", "main_menu_logo", "main_menu_bgm", "battle_bgm", "ui_confirm_sfx", "ui_font"]
+const CUSTOM_ASSET_SLOT_ORDER := ["app_icon", "main_menu_bg", "main_menu_logo", "main_menu_bgm", "battle_bgm", "ui_confirm_sfx", "ui_font", "ui_style_config"]
 
 const GAME_TITLE := "雾野市"
 const INVENTORY_RESOURCE_TYPES: Array[String] = ["material", "rare_material"]
@@ -507,11 +507,30 @@ func _ensure_ui_sfx_player() -> void:
 	add_child(_ui_sfx_player)
 
 func _refresh_custom_asset_bindings() -> void:
+	_apply_custom_app_icon()
 	_apply_custom_ui_font()
 	_refresh_main_menu_logo()
 	_refresh_main_menu_visuals()
 	_refresh_background_audio()
 	_refresh_ui_audio()
+
+func _apply_custom_app_icon() -> void:
+	if not DisplayServer.has_feature(DisplayServer.FEATURE_ICON):
+		return
+	var custom_texture := CustomAssetRepository.get_bound_texture("app_icon")
+	if custom_texture != null:
+		var custom_image := custom_texture.get_image()
+		if custom_image != null and not custom_image.is_empty():
+			DisplayServer.set_icon(custom_image)
+			return
+	var default_icon_path := String(ProjectSettings.get_setting("application/config/icon", ""))
+	if default_icon_path.is_empty():
+		return
+	var default_icon_resource := load(default_icon_path)
+	if default_icon_resource is Texture2D:
+		var default_image := (default_icon_resource as Texture2D).get_image()
+		if default_image != null and not default_image.is_empty():
+			DisplayServer.set_icon(default_image)
 
 func _apply_custom_ui_font() -> void:
 	var custom_font := CustomAssetRepository.get_bound_font("ui_font")
@@ -591,23 +610,193 @@ func _setup_asset_import_dialog() -> void:
 	_asset_file_dialog.canceled.connect(_on_asset_import_canceled)
 	add_child(_asset_file_dialog)
 
+func _load_custom_ui_style_config() -> Dictionary:
+	var config_text := CustomAssetRepository.get_bound_file_text("ui_style_config")
+	if config_text.is_empty():
+		return {}
+	var parsed := JSON.parse_string(config_text)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	return Dictionary(parsed).duplicate(true)
+
+func _default_custom_ui_style_config() -> Dictionary:
+	return {
+		"menu_backdrop": {
+			"color": "091324",
+			"alpha": 0.92,
+		},
+		"menu_custom_background": {
+			"alpha": 0.78,
+		},
+		"overlay_panel": {
+			"bg_color": "0A1328",
+			"border_color": "E3C985",
+			"border_width": 3,
+			"corner_radius": 22,
+			"content_margin_left": 22,
+			"content_margin_top": 18,
+			"content_margin_right": 22,
+			"content_margin_bottom": 18,
+			"shadow_alpha": 0.24,
+			"shadow_size": 10,
+			"shadow_offset_x": 0,
+			"shadow_offset_y": 5,
+		},
+		"board_ribbon": {
+			"bg_color": "18315C",
+			"border_color": "F0CF84",
+			"border_width": 2,
+			"corner_radius_top_left": 18,
+			"corner_radius_top_right": 18,
+			"corner_radius_bottom_left": 12,
+			"corner_radius_bottom_right": 12,
+			"content_margin_left": 18,
+			"content_margin_top": 10,
+			"content_margin_right": 18,
+			"content_margin_bottom": 10,
+			"shadow_alpha": 0.14,
+			"shadow_size": 4,
+			"shadow_offset_x": 0,
+			"shadow_offset_y": 2,
+		},
+		"log_panel": {
+			"bg_color": "0A152B",
+			"border_color": "8E7A53",
+			"border_width": 2,
+			"corner_radius": 18,
+			"content_margin_left": 16,
+			"content_margin_top": 14,
+			"content_margin_right": 16,
+			"content_margin_bottom": 14,
+			"shadow_alpha": 0.12,
+			"shadow_size": 3,
+			"shadow_offset_x": 0,
+			"shadow_offset_y": 2,
+		},
+		"unit_card": {
+			"bg_color": "132241",
+			"border_color": "A88B57",
+			"border_width": 2,
+			"corner_radius": 16,
+			"content_margin_left": 14,
+			"content_margin_top": 12,
+			"content_margin_right": 14,
+			"content_margin_bottom": 12,
+			"shadow_alpha": 0.10,
+			"shadow_size": 3,
+			"shadow_offset_x": 0,
+			"shadow_offset_y": 2,
+		},
+		"status_chip": {
+			"bg_color": "1A2C52",
+			"border_color": "D9BC79",
+			"border_width": 2,
+			"corner_radius": 999,
+			"content_margin_left": 12,
+			"content_margin_top": 6,
+			"content_margin_right": 12,
+			"content_margin_bottom": 6,
+			"shadow_alpha": 0.10,
+			"shadow_size": 3,
+			"shadow_offset_x": 0,
+			"shadow_offset_y": 2,
+		},
+		"stage_highlight": {
+			"bg_color": "203763",
+			"border_color": "F0CF84",
+			"border_width": 3,
+			"corner_radius": 20,
+			"content_margin_left": 18,
+			"content_margin_top": 14,
+			"content_margin_right": 18,
+			"content_margin_bottom": 14,
+			"shadow_alpha": 0.18,
+			"shadow_size": 6,
+			"shadow_offset_x": 0,
+			"shadow_offset_y": 3,
+		},
+		"labels": {
+			"title": "FFF7D8",
+			"meta": "C8D5F0",
+			"round": "F4E7C2",
+			"weather": "D7E5FF",
+			"objective": "FFE8A8",
+		},
+	}
+
+func _deep_merge_dict(target: Dictionary, patch: Dictionary) -> void:
+	for key in patch.keys():
+		var incoming := patch[key]
+		if target.has(key) and typeof(target[key]) == TYPE_DICTIONARY and typeof(incoming) == TYPE_DICTIONARY:
+			var nested_target := Dictionary(target.get(key, {})).duplicate(true)
+			_deep_merge_dict(nested_target, Dictionary(incoming))
+			target[key] = nested_target
+		else:
+			target[key] = incoming
+
+func _resolve_custom_ui_style_config() -> Dictionary:
+	var resolved := _default_custom_ui_style_config()
+	var overrides := _load_custom_ui_style_config()
+	if not overrides.is_empty():
+		_deep_merge_dict(resolved, overrides)
+	return resolved
+
+func _config_color(config: Dictionary, key: String, fallback: Color) -> Color:
+	if not config.has(key):
+		return fallback
+	var raw_value := config.get(key, null)
+	if raw_value is Color:
+		return raw_value
+	if raw_value is String:
+		var color_text := String(raw_value).strip_edges()
+		if color_text.is_empty():
+			return fallback
+		if not color_text.begins_with("#"):
+			color_text = "#" + color_text
+		return Color(color_text)
+	return fallback
+
+func _config_float(config: Dictionary, key: String, fallback: float) -> float:
+	if not config.has(key):
+		return fallback
+	return float(config.get(key, fallback))
+
+func _config_int(config: Dictionary, key: String, fallback: int) -> int:
+	if not config.has(key):
+		return fallback
+	return int(config.get(key, fallback))
+
+func _build_configured_stylebox(config: Dictionary) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = _config_color(config, "bg_color", Color("0A1328"))
+	style.border_color = _config_color(config, "border_color", Color("E3C985"))
+	style.set_border_width_all(_config_int(config, "border_width", 0))
+	if config.has("corner_radius"):
+		style.set_corner_radius_all(_config_int(config, "corner_radius", 0))
+	else:
+		style.corner_radius_top_left = _config_int(config, "corner_radius_top_left", 0)
+		style.corner_radius_top_right = _config_int(config, "corner_radius_top_right", 0)
+		style.corner_radius_bottom_left = _config_int(config, "corner_radius_bottom_left", 0)
+		style.corner_radius_bottom_right = _config_int(config, "corner_radius_bottom_right", 0)
+	style.content_margin_left = _config_float(config, "content_margin_left", 0.0)
+	style.content_margin_top = _config_float(config, "content_margin_top", 0.0)
+	style.content_margin_right = _config_float(config, "content_margin_right", 0.0)
+	style.content_margin_bottom = _config_float(config, "content_margin_bottom", 0.0)
+	style.shadow_color = Color(0, 0, 0, clamp(_config_float(config, "shadow_alpha", 0.0), 0.0, 1.0))
+	style.shadow_size = _config_int(config, "shadow_size", 0)
+	style.shadow_offset = Vector2(_config_float(config, "shadow_offset_x", 0.0), _config_float(config, "shadow_offset_y", 0.0))
+	style.anti_aliasing = true
+	return style
+
 func _apply_basic_styles() -> void:
 	battle_panel.hide()
+	var style_config := _resolve_custom_ui_style_config()
+	var menu_backdrop_config := Dictionary(style_config.get("menu_backdrop", {}))
+	var menu_backdrop_color := _config_color(menu_backdrop_config, "color", Color("091324"))
+	menu_backdrop_color.a = clamp(_config_float(menu_backdrop_config, "alpha", 0.92), 0.0, 1.0)
+	menu_backdrop.color = menu_backdrop_color
 
-	var overlay_panel_style := StyleBoxFlat.new()
-	overlay_panel_style.bg_color = Color("0A1328")
-	overlay_panel_style.border_color = Color("E3C985")
-	overlay_panel_style.set_border_width_all(3)
-	overlay_panel_style.set_corner_radius_all(22)
-	overlay_panel_style.content_margin_left = 22
-	overlay_panel_style.content_margin_top = 18
-	overlay_panel_style.content_margin_right = 22
-	overlay_panel_style.content_margin_bottom = 18
-	overlay_panel_style.shadow_color = Color(0, 0, 0, 0.24)
-	overlay_panel_style.shadow_size = 10
-	overlay_panel_style.shadow_offset = Vector2(0, 5)
-	overlay_panel_style.anti_aliasing = true
-
+	var overlay_panel_style := _build_configured_stylebox(Dictionary(style_config.get("overlay_panel", {})))
 	var overlay_panels := [dice_roll_panel, decision_panel, base_panel, system_panel, main_menu_panel]
 	if is_instance_valid(save_slot_panel):
 		overlay_panels.append(save_slot_panel)
@@ -619,69 +808,17 @@ func _apply_basic_styles() -> void:
 		if panel is PanelContainer:
 			panel.add_theme_stylebox_override("panel", overlay_panel_style.duplicate())
 
-	var ribbon_style := StyleBoxFlat.new()
-	ribbon_style.bg_color = Color("18315C")
-	ribbon_style.border_color = Color("F0CF84")
-	ribbon_style.set_border_width_all(2)
-	ribbon_style.corner_radius_top_left = 18
-	ribbon_style.corner_radius_top_right = 18
-	ribbon_style.corner_radius_bottom_left = 12
-	ribbon_style.corner_radius_bottom_right = 12
-	ribbon_style.content_margin_left = 18
-	ribbon_style.content_margin_top = 10
-	ribbon_style.content_margin_right = 18
-	ribbon_style.content_margin_bottom = 10
-	ribbon_style.shadow_color = Color(0, 0, 0, 0.14)
-	ribbon_style.shadow_size = 4
-	ribbon_style.shadow_offset = Vector2(0, 2)
-	ribbon_style.anti_aliasing = true
+	var ribbon_style := _build_configured_stylebox(Dictionary(style_config.get("board_ribbon", {})))
 	board_top_strip.add_theme_stylebox_override("panel", ribbon_style)
 
-	var log_style := StyleBoxFlat.new()
-	log_style.bg_color = Color("0A152B")
-	log_style.border_color = Color("8E7A53")
-	log_style.set_border_width_all(2)
-	log_style.set_corner_radius_all(18)
-	log_style.content_margin_left = 16
-	log_style.content_margin_top = 14
-	log_style.content_margin_right = 16
-	log_style.content_margin_bottom = 14
-	log_style.shadow_color = Color(0, 0, 0, 0.12)
-	log_style.shadow_size = 3
-	log_style.shadow_offset = Vector2(0, 2)
-	log_style.anti_aliasing = true
+	var log_style := _build_configured_stylebox(Dictionary(style_config.get("log_panel", {})))
 	log_panel.add_theme_stylebox_override("panel", log_style)
 
-	var unit_card_style := StyleBoxFlat.new()
-	unit_card_style.bg_color = Color("132241")
-	unit_card_style.border_color = Color("A88B57")
-	unit_card_style.set_border_width_all(2)
-	unit_card_style.set_corner_radius_all(16)
-	unit_card_style.content_margin_left = 14
-	unit_card_style.content_margin_top = 12
-	unit_card_style.content_margin_right = 14
-	unit_card_style.content_margin_bottom = 12
-	unit_card_style.shadow_color = Color(0, 0, 0, 0.10)
-	unit_card_style.shadow_size = 3
-	unit_card_style.shadow_offset = Vector2(0, 2)
-	unit_card_style.anti_aliasing = true
+	var unit_card_style := _build_configured_stylebox(Dictionary(style_config.get("unit_card", {})))
 	for panel in [player_card, rival_card, control_card]:
 		panel.add_theme_stylebox_override("panel", unit_card_style.duplicate())
 
-	var chip_style := StyleBoxFlat.new()
-	chip_style.bg_color = Color("1A2C52")
-	chip_style.border_color = Color("D9BC79")
-	chip_style.set_border_width_all(2)
-	chip_style.set_corner_radius_all(999)
-	chip_style.content_margin_left = 12
-	chip_style.content_margin_top = 6
-	chip_style.content_margin_right = 12
-	chip_style.content_margin_bottom = 6
-	chip_style.shadow_color = Color(0, 0, 0, 0.10)
-	chip_style.shadow_size = 3
-	chip_style.shadow_offset = Vector2(0, 2)
-	chip_style.anti_aliasing = true
-
+	var chip_style := _build_configured_stylebox(Dictionary(style_config.get("status_chip", {})))
 	for path in [
 		"RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/RoundChip",
 		"RootMargin/MainVBox/HeaderBar/HeaderLeft/RunStatusRow/WeatherChip",
@@ -691,26 +828,15 @@ func _apply_basic_styles() -> void:
 		if chip is PanelContainer:
 			chip.add_theme_stylebox_override("panel", chip_style.duplicate())
 
-	var stage_highlight := StyleBoxFlat.new()
-	stage_highlight.bg_color = Color("203763")
-	stage_highlight.border_color = Color("F0CF84")
-	stage_highlight.set_border_width_all(3)
-	stage_highlight.set_corner_radius_all(20)
-	stage_highlight.content_margin_left = 18
-	stage_highlight.content_margin_top = 14
-	stage_highlight.content_margin_right = 18
-	stage_highlight.content_margin_bottom = 14
-	stage_highlight.shadow_color = Color(0, 0, 0, 0.18)
-	stage_highlight.shadow_size = 6
-	stage_highlight.shadow_offset = Vector2(0, 3)
-	stage_highlight.anti_aliasing = true
+	var stage_highlight := _build_configured_stylebox(Dictionary(style_config.get("stage_highlight", {})))
 	board_stage_panel.add_theme_stylebox_override("panel", stage_highlight)
 
-	title_label.modulate = Color("FFF7D8")
-	meta_label.modulate = Color("C8D5F0")
-	round_label.modulate = Color("F4E7C2")
-	weather_label.modulate = Color("D7E5FF")
-	objective_label.modulate = Color("FFE8A8")
+	var label_style_config := Dictionary(style_config.get("labels", {}))
+	title_label.modulate = _config_color(label_style_config, "title", Color("FFF7D8"))
+	meta_label.modulate = _config_color(label_style_config, "meta", Color("C8D5F0"))
+	round_label.modulate = _config_color(label_style_config, "round", Color("F4E7C2"))
+	weather_label.modulate = _config_color(label_style_config, "weather", Color("D7E5FF"))
+	objective_label.modulate = _config_color(label_style_config, "objective", Color("FFE8A8"))
 
 func _prepare_overlay_panels() -> void:
 	var centered_panels := [
@@ -1250,12 +1376,14 @@ func _build_settings_summary() -> String:
 			"menu": menu_binding,
 		}),
 		"自定义素材：%d 项 ｜ 图片 %d 张" % [CustomAssetRepository.get_asset_count(), CustomAssetRepository.get_image_count()],
+		"窗口图标：%s" % _custom_asset_slot_label("app_icon"),
 		"主菜单背景：%s" % _custom_asset_slot_label("main_menu_bg"),
 		"主菜单 Logo：%s" % _custom_asset_slot_label("main_menu_logo"),
 		"主菜单音乐：%s" % _custom_asset_slot_label("main_menu_bgm"),
 		"战斗音乐：%s" % _custom_asset_slot_label("battle_bgm"),
 		"确认音效：%s" % _custom_asset_slot_label("ui_confirm_sfx"),
 		"界面字体：%s" % _custom_asset_slot_label("ui_font"),
+		"界面样式配置：%s" % _custom_asset_slot_label("ui_style_config"),
 	])
 
 func _settings_binding_label(action_name: String) -> String:
@@ -1356,6 +1484,7 @@ func _open_settings_menu() -> void:
 	var imported_count := CustomAssetRepository.get_image_count()
 	var imported_audio_count := CustomAssetRepository.get_asset_count("audio")
 	var imported_font_count := CustomAssetRepository.get_asset_count("font")
+	var imported_file_count := CustomAssetRepository.get_asset_count("file")
 	var resolution_choices: Array = []
 	for preset in GameState.get_available_window_resolution_presets():
 		var resolution_id := String(preset.get("id", ""))
@@ -1407,6 +1536,18 @@ func _open_settings_menu() -> void:
 			"id": "open_custom_asset_import",
 			"label": "导入自定义素材",
 			"summary": "从本地导入图片 / 音频 / 字体 / 视频 / 文件到 user://custom_assets",
+		},
+		{
+			"id": "select_app_icon",
+			"label": "选择窗口图标",
+			"summary": "当前：%s ｜ 已导入 %d 张" % [_custom_asset_slot_label("app_icon"), imported_count],
+			"disabled": imported_count <= 0,
+		},
+		{
+			"id": "clear_app_icon",
+			"label": "恢复默认窗口图标",
+			"summary": "清除运行时窗口图标绑定，恢复项目默认图标。",
+			"disabled": CustomAssetRepository.get_slot_binding("app_icon").is_empty(),
 		},
 		{
 			"id": "select_main_menu_bg",
@@ -1480,6 +1621,18 @@ func _open_settings_menu() -> void:
 			"summary": "清除界面字体绑定，恢复项目默认主题字体。",
 			"disabled": CustomAssetRepository.get_slot_binding("ui_font").is_empty(),
 		},
+		{
+			"id": "select_ui_style_config",
+			"label": "选择界面样式配置",
+			"summary": "当前：%s ｜ 已导入 %d 个 JSON 文件" % [_custom_asset_slot_label("ui_style_config"), imported_file_count],
+			"disabled": imported_file_count <= 0,
+		},
+		{
+			"id": "clear_ui_style_config",
+			"label": "恢复默认界面样式",
+			"summary": "清除界面样式配置绑定，恢复代码内置样式。",
+			"disabled": CustomAssetRepository.get_slot_binding("ui_style_config").is_empty(),
+		},
 	]
 	pending_context = {"kind": "menu_settings"}
 	decision_panel.open_panel(localization_service.text("settings.title"), localization_service.text("settings.body"), choices, localization_service.text("settings.back"))
@@ -1505,6 +1658,12 @@ func _apply_menu_setting(choice_id: String) -> void:
 		"open_custom_asset_import":
 			reopen_settings = false
 			_open_asset_import_dialog()
+		"select_app_icon":
+			reopen_settings = false
+			_open_custom_asset_slot_picker("app_icon")
+		"clear_app_icon":
+			reopen_settings = false
+			_clear_custom_asset_slot("app_icon")
 		"select_main_menu_bg":
 			reopen_settings = false
 			_open_custom_asset_slot_picker("main_menu_bg")
@@ -1541,6 +1700,12 @@ func _apply_menu_setting(choice_id: String) -> void:
 		"clear_ui_font":
 			reopen_settings = false
 			_clear_custom_asset_slot("ui_font")
+		"select_ui_style_config":
+			reopen_settings = false
+			_open_custom_asset_slot_picker("ui_style_config")
+		"clear_ui_style_config":
+			reopen_settings = false
+			_clear_custom_asset_slot("ui_style_config")
 		_:
 			if choice_id.begins_with("set_window_resolution:"):
 				var resolution_id := choice_id.substr("set_window_resolution:".length())
@@ -1570,6 +1735,9 @@ func _refresh_main_menu_visuals() -> void:
 		return
 	var texture := CustomAssetRepository.get_bound_texture("main_menu_bg")
 	_menu_custom_background.texture = texture
+	var style_config := _resolve_custom_ui_style_config()
+	var background_config := Dictionary(style_config.get("menu_custom_background", {}))
+	_menu_custom_background.modulate = Color(1, 1, 1, clamp(_config_float(background_config, "alpha", 0.78), 0.0, 1.0))
 	_menu_custom_background.visible = texture != null and main_menu_panel.visible
 
 func _open_asset_import_dialog() -> void:
@@ -1589,6 +1757,8 @@ func _custom_asset_slot_title(slot_id: String) -> String:
 
 func _custom_asset_slot_picker_empty_text(slot_id: String) -> String:
 	match slot_id:
+		"app_icon":
+			return "先导入至少 1 张图片，之后才能绑定到运行时窗口图标。"
 		"main_menu_bg":
 			return "先导入至少 1 张图片，之后才能绑定到主菜单背景。"
 		"main_menu_logo":
@@ -1601,11 +1771,15 @@ func _custom_asset_slot_picker_empty_text(slot_id: String) -> String:
 			return "先导入至少 1 条可运行时播放的音频，之后才能绑定到界面确认音效。"
 		"ui_font":
 			return "先导入至少 1 个字体文件，之后才能绑定到界面字体。"
+		"ui_style_config":
+			return "先导入至少 1 个 JSON 文件，之后才能绑定到界面样式配置。"
 		_:
 			return "当前还没有可用于这个槽位的素材。"
 
 func _custom_asset_slot_picker_summary(slot_id: String, assets: Array) -> String:
 	match slot_id:
+		"app_icon":
+			return "已导入 %d 张图片。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
 		"main_menu_bg":
 			return "已导入 %d 张图片。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
 		"main_menu_logo":
@@ -1618,6 +1792,8 @@ func _custom_asset_slot_picker_summary(slot_id: String, assets: Array) -> String
 			return "已导入 %d 条音频。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
 		"ui_font":
 			return "已导入 %d 个字体。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
+		"ui_style_config":
+			return "已导入 %d 个 JSON 文件。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
 		_:
 			return "已导入 %d 个素材。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
 
@@ -1638,6 +1814,9 @@ func _build_custom_asset_choices(slot_id: String, asset_rows: Array) -> Array:
 		elif slot_kind == "font":
 			var font_ext := String(asset_info.get("original_ext", ""))
 			summary_parts.append(font_ext.trim_prefix(".").to_upper())
+		elif slot_kind == "file":
+			var file_ext := String(asset_info.get("original_ext", ""))
+			summary_parts.append(file_ext.trim_prefix(".").to_upper())
 		summary_parts.append("设为%s" % _custom_asset_slot_title(slot_id))
 		choices.append({
 			"id": asset_id,
@@ -1655,6 +1834,14 @@ func _open_custom_asset_slot_picker(slot_id: String) -> void:
 		assets = assets.filter(func(row): return CustomAssetRepository.get_audio_stream(String(Dictionary(row).get("id", ""))) != null)
 	elif slot_id == "ui_font":
 		assets = assets.filter(func(row): return CustomAssetRepository.get_font_file(String(Dictionary(row).get("id", ""))) != null)
+	elif slot_id == "ui_style_config":
+		assets = assets.filter(func(row):
+			var config_text := CustomAssetRepository.get_file_text(String(Dictionary(row).get("id", "")))
+			if config_text.is_empty():
+				return false
+			var parsed := JSON.parse_string(config_text)
+			return typeof(parsed) == TYPE_DICTIONARY
+		)
 	if assets.is_empty():
 		pending_context = {"kind": "custom_asset_picker", "on_close": "reopen_settings"}
 		decision_panel.open_panel("还没有可用素材", _custom_asset_slot_picker_empty_text(slot_id), [], "返回设置")

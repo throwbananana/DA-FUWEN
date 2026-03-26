@@ -61,6 +61,9 @@ tools\launch_asset_editor.bat
 
 或直接把素材文件放进对应目录。  
 外置编辑器支持导入图片、音频、字体、视频和常用数据文件；其中图片支持 `png`、`jpg`、`jpeg`、`webp`、`bmp`、`gif`、`tif`、`tiff`、`tga`、`ico`，并会在导入时自动适配成游戏可读取的格式；也支持整文件夹递归批量导入。  
+编辑器现在还支持按关键词和类型实时筛选、查看图片预览和素材元数据、双击直接打开文件，以及在不改变素材 ID / 绑定关系的前提下替换当前素材文件。  
+现在也支持“每个素材对应一个 sidecar json” 的载入方式：把配置文件放成 `素材文件名.asset.json`，例如 `hero.png.asset.json` 或 `battle_theme.ogg.asset.json`，即可为该素材声明 `id`、`label` 和 `bindings`。  
+当前内置可直接生效的绑定槽位有：`main_menu_bg`（主菜单背景）、`main_menu_logo`（主菜单 Logo）、`main_menu_bgm`（主菜单音乐）、`battle_bgm`（战斗音乐）、`ui_confirm_sfx`（界面确认音效）、`ui_font`（界面字体）。  
 如果是手动直拷到 `external_assets/` 下，建议按类型分别放到 `images / audio / fonts / video / files` 目录里。
 
 游戏启动时会自动同步该目录；如果游戏已经在运行，重新打开一次开始菜单的“设置”页即可触发同步，不需要进入 Godot 编辑器执行导入。

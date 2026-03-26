@@ -1,8 +1,10 @@
 extends RefCounted
 class_name JrpgTheme
 
-static func build() -> Theme:
+static func build(default_font: Font = null) -> Theme:
 	var theme := Theme.new()
+	if default_font != null:
+		theme.default_font = default_font
 
 	var panel := _box(
 		Color("0D1730"),

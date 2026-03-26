@@ -38,6 +38,7 @@ const InfirmaryService = preload("res://scripts/services/infirmary_service.gd")
 const AnnualCompetitionService = preload("res://scripts/services/annual_competition_service.gd")
 const BattleRosterServiceScript = preload("res://scripts/services/battle_roster_service.gd")
 const JrpgTheme = preload("res://scripts/jrpg_theme.gd")
+const CUSTOM_ASSET_SLOT_ORDER := ["main_menu_bg", "main_menu_logo", "main_menu_bgm", "battle_bgm", "ui_confirm_sfx", "ui_font"]
 
 const GAME_TITLE := "雾野市"
 const INVENTORY_RESOURCE_TYPES: Array[String] = ["material", "rare_material"]
@@ -261,6 +262,10 @@ var _last_ai_turn_report := {}
 var _post_travel_resolution_in_progress := false
 var _asset_file_dialog: FileDialog
 var _menu_custom_background: TextureRect
+var _menu_logo_rect: TextureRect
+var _menu_bgm_player: AudioStreamPlayer
+var _battle_bgm_player: AudioStreamPlayer
+var _ui_sfx_player: AudioStreamPlayer
 var _responsive_layout_queued := false
 var _menu_selected_slot_id := "slot_01"
 var _save_slot_panel_mode := "boot"
@@ -288,17 +293,22 @@ func _ready() -> void:
 	)
 	_ensure_save_slot_panel()
 	_connect_signals()
-	theme = JrpgTheme.build()
+	theme = JrpgTheme.build(CustomAssetRepository.get_bound_font("ui_font"))
 	_apply_basic_styles()
 	_prepare_overlay_panels()
 	_configure_safe_ui_bounds()
 	_configure_text_overflow_guards()
 	_queue_responsive_layout()
 	_ensure_menu_custom_background()
+	_ensure_menu_logo_rect()
+	_ensure_menu_bgm_player()
+	_ensure_battle_bgm_player()
+	_ensure_ui_sfx_player()
 	_setup_asset_import_dialog()
 	_ensure_synergy_banner()
 	_ensure_stage_transition_overlay()
 	_queue_responsive_layout()
+	_refresh_custom_asset_bindings()
 	install_visit_flow()
 	GameState.ensure_save_index()
 	GameState.migrate_legacy_run_save()
@@ -392,16 +402,27 @@ func _ensure_input_settings_panel() -> void:
 
 func _connect_signals() -> void:
 	roll_button.pressed.connect(_on_start_day_pressed)
+	roll_button.pressed.connect(_play_ui_confirm_sfx)
 	plus_button.pressed.connect(_on_plus_pressed)
+	plus_button.pressed.connect(_play_ui_confirm_sfx)
 	minus_button.pressed.connect(_on_minus_pressed)
+	minus_button.pressed.connect(_play_ui_confirm_sfx)
 	reroll_button.pressed.connect(_on_reroll_pressed)
+	reroll_button.pressed.connect(_play_ui_confirm_sfx)
 	support_button.pressed.connect(_on_support_pressed)
+	support_button.pressed.connect(_play_ui_confirm_sfx)
 	base_button.pressed.connect(_on_base_pressed)
+	base_button.pressed.connect(_play_ui_confirm_sfx)
 	new_game_button.pressed.connect(_on_main_menu_requested)
+	new_game_button.pressed.connect(_play_ui_confirm_sfx)
 	continue_button.pressed.connect(_on_continue_pressed)
+	continue_button.pressed.connect(_play_ui_confirm_sfx)
 	menu_new_game_button.pressed.connect(_on_menu_new_game_pressed)
+	menu_new_game_button.pressed.connect(_play_ui_confirm_sfx)
 	settings_button.pressed.connect(_on_settings_pressed)
+	settings_button.pressed.connect(_play_ui_confirm_sfx)
 	dice_roll_panel.confirmed.connect(_on_dice_roll_confirmed)
+	dice_roll_panel.confirmed.connect(_play_ui_confirm_sfx)
 	dice_roll_panel.closed.connect(_on_dice_roll_panel_closed)
 	dice_roll_panel.plus_requested.connect(_on_dice_roll_plus_requested)
 	dice_roll_panel.minus_requested.connect(_on_dice_roll_minus_requested)
@@ -409,6 +430,7 @@ func _connect_signals() -> void:
 	board_view.node_chosen.connect(_on_board_node_chosen)
 	board_view.travel_finished.connect(_on_board_travel_finished)
 	decision_panel.choice_selected.connect(_on_decision_choice_selected)
+	decision_panel.choice_selected.connect(func(_choice_id: String) -> void: _play_ui_confirm_sfx())
 	decision_panel.closed.connect(_on_decision_closed)
 	base_panel.manage_requested.connect(_on_base_manage_requested)
 	base_panel.closed.connect(_on_base_closed)
@@ -444,6 +466,119 @@ func _ensure_menu_custom_background() -> void:
 	var backdrop_index := overlay.get_children().find(menu_backdrop)
 	if backdrop_index >= 0:
 		overlay.move_child(_menu_custom_background, backdrop_index)
+
+func _ensure_menu_logo_rect() -> void:
+	if is_instance_valid(_menu_logo_rect):
+		return
+	_menu_logo_rect = TextureRect.new()
+	_menu_logo_rect.name = "MenuLogoRect"
+	_menu_logo_rect.visible = false
+	_menu_logo_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
+	_menu_logo_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_menu_logo_rect.custom_minimum_size = Vector2(0, 96)
+	_menu_logo_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_menu_logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var menu_vbox: VBoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer
+	menu_vbox.add_child(_menu_logo_rect)
+	menu_vbox.move_child(_menu_logo_rect, 0)
+
+func _ensure_menu_bgm_player() -> void:
+	if is_instance_valid(_menu_bgm_player):
+		return
+	_menu_bgm_player = AudioStreamPlayer.new()
+	_menu_bgm_player.name = "MenuBgmPlayer"
+	_menu_bgm_player.bus = "Master"
+	add_child(_menu_bgm_player)
+
+func _ensure_battle_bgm_player() -> void:
+	if is_instance_valid(_battle_bgm_player):
+		return
+	_battle_bgm_player = AudioStreamPlayer.new()
+	_battle_bgm_player.name = "BattleBgmPlayer"
+	_battle_bgm_player.bus = "Master"
+	add_child(_battle_bgm_player)
+
+func _ensure_ui_sfx_player() -> void:
+	if is_instance_valid(_ui_sfx_player):
+		return
+	_ui_sfx_player = AudioStreamPlayer.new()
+	_ui_sfx_player.name = "UiSfxPlayer"
+	_ui_sfx_player.bus = "Master"
+	add_child(_ui_sfx_player)
+
+func _refresh_custom_asset_bindings() -> void:
+	_apply_custom_ui_font()
+	_refresh_main_menu_logo()
+	_refresh_main_menu_visuals()
+	_refresh_background_audio()
+	_refresh_ui_audio()
+
+func _apply_custom_ui_font() -> void:
+	var custom_font := CustomAssetRepository.get_bound_font("ui_font")
+	theme = JrpgTheme.build(custom_font)
+	_apply_basic_styles()
+	queue_redraw()
+
+func _refresh_main_menu_logo() -> void:
+	if not is_instance_valid(_menu_logo_rect):
+		return
+	var texture := CustomAssetRepository.get_bound_texture("main_menu_logo")
+	_menu_logo_rect.texture = texture
+	_menu_logo_rect.visible = texture != null and main_menu_panel.visible
+
+func _refresh_background_audio() -> void:
+	_sync_menu_bgm()
+	_sync_battle_bgm()
+
+func _sync_menu_bgm() -> void:
+	if not is_instance_valid(_menu_bgm_player):
+		return
+	var stream := CustomAssetRepository.get_bound_audio_stream("main_menu_bgm")
+	if battle_panel.visible:
+		_menu_bgm_player.stop()
+		return
+	if stream == null or not main_menu_panel.visible:
+		_menu_bgm_player.stop()
+		_menu_bgm_player.stream = null
+		return
+	if _menu_bgm_player.stream != stream:
+		_menu_bgm_player.stop()
+		_menu_bgm_player.stream = stream
+	if not _menu_bgm_player.playing:
+		_menu_bgm_player.play()
+
+func _sync_battle_bgm() -> void:
+	if not is_instance_valid(_battle_bgm_player):
+		return
+	var stream := CustomAssetRepository.get_bound_audio_stream("battle_bgm")
+	if stream == null or not battle_panel.visible:
+		_battle_bgm_player.stop()
+		_battle_bgm_player.stream = null
+		return
+	if _battle_bgm_player.stream != stream:
+		_battle_bgm_player.stop()
+		_battle_bgm_player.stream = stream
+	if not _battle_bgm_player.playing:
+		_battle_bgm_player.play()
+
+func _refresh_ui_audio() -> void:
+	if not is_instance_valid(_ui_sfx_player):
+		return
+	var stream := CustomAssetRepository.get_bound_audio_stream("ui_confirm_sfx")
+	_ui_sfx_player.stream = stream
+
+func _play_ui_confirm_sfx() -> void:
+	if not is_instance_valid(_ui_sfx_player):
+		return
+	if _ui_sfx_player.stream == null:
+		return
+	_ui_sfx_player.stop()
+	_ui_sfx_player.play()
+
+func _start_battle_panel(battle_config: Dictionary) -> void:
+	_sync_menu_bgm()
+	battle_panel.start_battle(battle_config)
+	_sync_battle_bgm()
 
 func _setup_asset_import_dialog() -> void:
 	_asset_file_dialog = FileDialog.new()
@@ -986,22 +1121,30 @@ func _should_skip_runtime_tutorials() -> bool:
 
 func _show_main_menu() -> void:
 	CustomAssetRepository.sync_external_library()
+	_refresh_custom_asset_bindings()
 	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
 	_refresh_main_menu()
 	root_margin.hide()
 	if is_instance_valid(_menu_custom_background):
 		_menu_custom_background.visible = _menu_custom_background.texture != null
+	if is_instance_valid(_menu_logo_rect):
+		_menu_logo_rect.visible = _menu_logo_rect.texture != null
 	if is_instance_valid(save_slot_panel):
 		save_slot_panel.close_panel()
 	menu_backdrop.show()
 	menu_backdrop.move_to_front()
 	main_menu_panel.show()
 	main_menu_panel.move_to_front()
+	_sync_menu_bgm()
 	_focus_main_menu_primary_button()
 
 func _hide_main_menu() -> void:
 	if is_instance_valid(_menu_custom_background):
 		_menu_custom_background.hide()
+	if is_instance_valid(_menu_logo_rect):
+		_menu_logo_rect.hide()
+	if is_instance_valid(_menu_bgm_player):
+		_menu_bgm_player.stop()
 	if is_instance_valid(save_slot_panel):
 		save_slot_panel.close_panel()
 	if is_instance_valid(input_settings_panel):
@@ -1089,7 +1232,6 @@ func _build_settings_summary() -> String:
 	var motion_mode := localization_service.text("settings.motion.reduced") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.standard")
 	var tutorial_mode := localization_service.text("settings.tutorials.on") if GameState.tutorials_enabled() else localization_service.text("settings.tutorials.off")
 	var language_name := localization_service.language_name(GameState.current_language())
-	var custom_bg_label := _custom_main_menu_background_label()
 	var accept_binding := _settings_binding_label("ui_accept")
 	var cancel_binding := _settings_binding_label("ui_cancel")
 	var roll_binding := _settings_binding_label("game_roll")
@@ -1108,7 +1250,12 @@ func _build_settings_summary() -> String:
 			"menu": menu_binding,
 		}),
 		"自定义素材：%d 项 ｜ 图片 %d 张" % [CustomAssetRepository.get_asset_count(), CustomAssetRepository.get_image_count()],
-		"主菜单背景：%s" % custom_bg_label,
+		"主菜单背景：%s" % _custom_asset_slot_label("main_menu_bg"),
+		"主菜单 Logo：%s" % _custom_asset_slot_label("main_menu_logo"),
+		"主菜单音乐：%s" % _custom_asset_slot_label("main_menu_bgm"),
+		"战斗音乐：%s" % _custom_asset_slot_label("battle_bgm"),
+		"确认音效：%s" % _custom_asset_slot_label("ui_confirm_sfx"),
+		"界面字体：%s" % _custom_asset_slot_label("ui_font"),
 	])
 
 func _settings_binding_label(action_name: String) -> String:
@@ -1121,6 +1268,15 @@ func _settings_binding_label(action_name: String) -> String:
 	if labels.is_empty():
 		return localization_service.text("settings.input.empty")
 	return " / ".join(labels)
+
+func _custom_asset_slot_label(slot_id: String) -> String:
+	var asset_id := CustomAssetRepository.get_slot_binding(slot_id)
+	if asset_id.is_empty():
+		return "默认"
+	var asset_info := CustomAssetRepository.get_asset(asset_id)
+	if asset_info.is_empty():
+		return "默认"
+	return String(asset_info.get("label", asset_id))
 
 func _open_save_slot_panel(mode: String) -> void:
 	if not is_instance_valid(save_slot_panel):
@@ -1193,10 +1349,13 @@ func _start_new_game_in_slot(slot_id: String) -> void:
 
 func _open_settings_menu() -> void:
 	CustomAssetRepository.sync_external_library()
+	_refresh_custom_asset_bindings()
 	var window_label := localization_service.text("settings.window.to_windowed") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.to_fullscreen")
 	var motion_label := localization_service.text("settings.motion.to_standard") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.to_reduced")
 	var tutorial_label := localization_service.text("settings.tutorials.enable") if not GameState.tutorials_enabled() else localization_service.text("settings.tutorials.disable")
 	var imported_count := CustomAssetRepository.get_image_count()
+	var imported_audio_count := CustomAssetRepository.get_asset_count("audio")
+	var imported_font_count := CustomAssetRepository.get_asset_count("font")
 	var resolution_choices: Array = []
 	for preset in GameState.get_available_window_resolution_presets():
 		var resolution_id := String(preset.get("id", ""))
@@ -1252,7 +1411,7 @@ func _open_settings_menu() -> void:
 		{
 			"id": "select_main_menu_bg",
 			"label": "选择主菜单背景",
-			"summary": "当前：%s ｜ 已导入 %d 张" % [_custom_main_menu_background_label(), imported_count],
+			"summary": "当前：%s ｜ 已导入 %d 张" % [_custom_asset_slot_label("main_menu_bg"), imported_count],
 			"disabled": imported_count <= 0,
 		},
 		{
@@ -1260,6 +1419,66 @@ func _open_settings_menu() -> void:
 			"label": "恢复默认背景",
 			"summary": "清除主菜单背景绑定，回到默认遮罩。",
 			"disabled": CustomAssetRepository.get_slot_binding("main_menu_bg").is_empty(),
+		},
+		{
+			"id": "select_main_menu_logo",
+			"label": "选择主菜单 Logo",
+			"summary": "当前：%s ｜ 已导入 %d 张" % [_custom_asset_slot_label("main_menu_logo"), imported_count],
+			"disabled": imported_count <= 0,
+		},
+		{
+			"id": "clear_main_menu_logo",
+			"label": "恢复默认 Logo",
+			"summary": "清除主菜单 Logo 绑定，回到纯文字标题。",
+			"disabled": CustomAssetRepository.get_slot_binding("main_menu_logo").is_empty(),
+		},
+		{
+			"id": "select_main_menu_bgm",
+			"label": "选择主菜单音乐",
+			"summary": "当前：%s ｜ 已导入 %d 条音频" % [_custom_asset_slot_label("main_menu_bgm"), imported_audio_count],
+			"disabled": imported_audio_count <= 0,
+		},
+		{
+			"id": "clear_main_menu_bgm",
+			"label": "恢复默认音乐",
+			"summary": "清除主菜单音乐绑定，回到静默默认状态。",
+			"disabled": CustomAssetRepository.get_slot_binding("main_menu_bgm").is_empty(),
+		},
+		{
+			"id": "select_battle_bgm",
+			"label": "选择战斗音乐",
+			"summary": "当前：%s ｜ 已导入 %d 条音频" % [_custom_asset_slot_label("battle_bgm"), imported_audio_count],
+			"disabled": imported_audio_count <= 0,
+		},
+		{
+			"id": "clear_battle_bgm",
+			"label": "恢复默认战斗音乐",
+			"summary": "清除战斗音乐绑定，回到静默默认状态。",
+			"disabled": CustomAssetRepository.get_slot_binding("battle_bgm").is_empty(),
+		},
+		{
+			"id": "select_ui_confirm_sfx",
+			"label": "选择确认音效",
+			"summary": "当前：%s ｜ 已导入 %d 条音频" % [_custom_asset_slot_label("ui_confirm_sfx"), imported_audio_count],
+			"disabled": imported_audio_count <= 0,
+		},
+		{
+			"id": "clear_ui_confirm_sfx",
+			"label": "恢复默认确认音效",
+			"summary": "清除界面确认音效绑定，恢复静默默认状态。",
+			"disabled": CustomAssetRepository.get_slot_binding("ui_confirm_sfx").is_empty(),
+		},
+		{
+			"id": "select_ui_font",
+			"label": "选择界面字体",
+			"summary": "当前：%s ｜ 已导入 %d 个字体" % [_custom_asset_slot_label("ui_font"), imported_font_count],
+			"disabled": imported_font_count <= 0,
+		},
+		{
+			"id": "clear_ui_font",
+			"label": "恢复默认字体",
+			"summary": "清除界面字体绑定，恢复项目默认主题字体。",
+			"disabled": CustomAssetRepository.get_slot_binding("ui_font").is_empty(),
 		},
 	]
 	pending_context = {"kind": "menu_settings"}
@@ -1288,10 +1507,40 @@ func _apply_menu_setting(choice_id: String) -> void:
 			_open_asset_import_dialog()
 		"select_main_menu_bg":
 			reopen_settings = false
-			_open_main_menu_background_picker()
+			_open_custom_asset_slot_picker("main_menu_bg")
 		"clear_main_menu_bg":
 			reopen_settings = false
-			_clear_main_menu_background_binding()
+			_clear_custom_asset_slot("main_menu_bg")
+		"select_main_menu_logo":
+			reopen_settings = false
+			_open_custom_asset_slot_picker("main_menu_logo")
+		"clear_main_menu_logo":
+			reopen_settings = false
+			_clear_custom_asset_slot("main_menu_logo")
+		"select_main_menu_bgm":
+			reopen_settings = false
+			_open_custom_asset_slot_picker("main_menu_bgm")
+		"clear_main_menu_bgm":
+			reopen_settings = false
+			_clear_custom_asset_slot("main_menu_bgm")
+		"select_battle_bgm":
+			reopen_settings = false
+			_open_custom_asset_slot_picker("battle_bgm")
+		"clear_battle_bgm":
+			reopen_settings = false
+			_clear_custom_asset_slot("battle_bgm")
+		"select_ui_confirm_sfx":
+			reopen_settings = false
+			_open_custom_asset_slot_picker("ui_confirm_sfx")
+		"clear_ui_confirm_sfx":
+			reopen_settings = false
+			_clear_custom_asset_slot("ui_confirm_sfx")
+		"select_ui_font":
+			reopen_settings = false
+			_open_custom_asset_slot_picker("ui_font")
+		"clear_ui_font":
+			reopen_settings = false
+			_clear_custom_asset_slot("ui_font")
 		_:
 			if choice_id.begins_with("set_window_resolution:"):
 				var resolution_id := choice_id.substr("set_window_resolution:".length())
@@ -1314,13 +1563,7 @@ func _on_input_settings_panel_closed() -> void:
 		_open_settings_menu()
 
 func _custom_main_menu_background_label() -> String:
-	var asset_id := CustomAssetRepository.get_slot_binding("main_menu_bg")
-	if asset_id.is_empty():
-		return "默认"
-	var image_info := CustomAssetRepository.get_image(asset_id)
-	if image_info.is_empty():
-		return "默认"
-	return String(image_info.get("label", asset_id))
+	return _custom_asset_slot_label("main_menu_bg")
 
 func _refresh_main_menu_visuals() -> void:
 	if not is_instance_valid(_menu_custom_background):
@@ -1340,6 +1583,108 @@ func _on_asset_import_canceled() -> void:
 
 func _custom_asset_kind_label(kind: String) -> String:
 	return CustomAssetRepository.get_asset_kind_label(kind)
+
+func _custom_asset_slot_title(slot_id: String) -> String:
+	return CustomAssetRepository.get_slot_label(slot_id)
+
+func _custom_asset_slot_picker_empty_text(slot_id: String) -> String:
+	match slot_id:
+		"main_menu_bg":
+			return "先导入至少 1 张图片，之后才能绑定到主菜单背景。"
+		"main_menu_logo":
+			return "先导入至少 1 张图片，之后才能绑定到主菜单 Logo。"
+		"main_menu_bgm":
+			return "先导入至少 1 条可运行时播放的音频，之后才能绑定到主菜单音乐。"
+		"battle_bgm":
+			return "先导入至少 1 条可运行时播放的音频，之后才能绑定到战斗音乐。"
+		"ui_confirm_sfx":
+			return "先导入至少 1 条可运行时播放的音频，之后才能绑定到界面确认音效。"
+		"ui_font":
+			return "先导入至少 1 个字体文件，之后才能绑定到界面字体。"
+		_:
+			return "当前还没有可用于这个槽位的素材。"
+
+func _custom_asset_slot_picker_summary(slot_id: String, assets: Array) -> String:
+	match slot_id:
+		"main_menu_bg":
+			return "已导入 %d 张图片。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
+		"main_menu_logo":
+			return "已导入 %d 张图片。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
+		"main_menu_bgm":
+			return "已导入 %d 条音频。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
+		"battle_bgm":
+			return "已导入 %d 条音频。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
+		"ui_confirm_sfx":
+			return "已导入 %d 条音频。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
+		"ui_font":
+			return "已导入 %d 个字体。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
+		_:
+			return "已导入 %d 个素材。\n当前绑定：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
+
+func _build_custom_asset_choices(slot_id: String, asset_rows: Array) -> Array:
+	var choices: Array = []
+	var slot_kind := CustomAssetRepository.get_slot_kind(slot_id)
+	for row in asset_rows:
+		var asset_info := Dictionary(row)
+		var asset_id := String(asset_info.get("id", ""))
+		if asset_id.is_empty():
+			continue
+		var summary_parts: Array[String] = []
+		if slot_kind == "image":
+			summary_parts.append("%dx%d" % [int(asset_info.get("width", 0)), int(asset_info.get("height", 0))])
+		elif slot_kind == "audio":
+			var original_ext := String(asset_info.get("original_ext", ""))
+			summary_parts.append(original_ext.trim_prefix(".").to_upper())
+		elif slot_kind == "font":
+			var font_ext := String(asset_info.get("original_ext", ""))
+			summary_parts.append(font_ext.trim_prefix(".").to_upper())
+		summary_parts.append("设为%s" % _custom_asset_slot_title(slot_id))
+		choices.append({
+			"id": asset_id,
+			"label": String(asset_info.get("label", asset_id)),
+			"summary": " ｜ ".join(summary_parts),
+		})
+	return choices
+
+func _open_custom_asset_slot_picker(slot_id: String) -> void:
+	CustomAssetRepository.sync_external_library()
+	_refresh_custom_asset_bindings()
+	var slot_kind := CustomAssetRepository.get_slot_kind(slot_id)
+	var assets := CustomAssetRepository.list_assets(slot_kind)
+	if slot_id == "main_menu_bgm" or slot_id == "battle_bgm" or slot_id == "ui_confirm_sfx":
+		assets = assets.filter(func(row): return CustomAssetRepository.get_audio_stream(String(Dictionary(row).get("id", ""))) != null)
+	elif slot_id == "ui_font":
+		assets = assets.filter(func(row): return CustomAssetRepository.get_font_file(String(Dictionary(row).get("id", ""))) != null)
+	if assets.is_empty():
+		pending_context = {"kind": "custom_asset_picker", "on_close": "reopen_settings"}
+		decision_panel.open_panel("还没有可用素材", _custom_asset_slot_picker_empty_text(slot_id), [], "返回设置")
+		return
+	pending_context = {"kind": "custom_asset_bind_menu", "on_close": "reopen_settings", "slot_id": slot_id}
+	decision_panel.open_panel(
+		"选择%s" % _custom_asset_slot_title(slot_id),
+		_custom_asset_slot_picker_summary(slot_id, assets),
+		_build_custom_asset_choices(slot_id, assets),
+		"返回设置"
+	)
+
+func _bind_custom_asset_slot(slot_id: String, asset_id: String) -> void:
+	CustomAssetRepository.bind_slot(slot_id, asset_id)
+	_refresh_custom_asset_bindings()
+	_refresh_main_menu()
+	pending_context = {"kind": "custom_asset_bound", "on_close": "reopen_settings"}
+	decision_panel.open_panel(
+		"%s已更新" % _custom_asset_slot_title(slot_id),
+		"已将 %s 设为%s。" % [_custom_asset_slot_label(slot_id), _custom_asset_slot_title(slot_id)],
+		[],
+		"返回设置"
+	)
+
+func _clear_custom_asset_slot(slot_id: String) -> void:
+	CustomAssetRepository.clear_slot(slot_id)
+	_refresh_custom_asset_bindings()
+	_refresh_main_menu()
+	pending_context = {"kind": "custom_asset_cleared", "on_close": "reopen_settings"}
+	decision_panel.open_panel("已恢复默认", "%s已清除自定义绑定。" % _custom_asset_slot_title(slot_id), [], "返回设置")
 
 func _on_asset_files_selected(paths: PackedStringArray) -> void:
 	var results := CustomAssetRepository.import_assets(paths)
@@ -1388,58 +1733,21 @@ func _on_asset_files_selected(paths: PackedStringArray) -> void:
 		return
 	body_lines.append("")
 	body_lines.append("你也可以顺手把这次导入的图片绑定成主菜单背景。")
-	var choices := _build_custom_background_choices(image_rows)
-	pending_context = {"kind": "custom_asset_bind_menu", "on_close": "reopen_settings"}
+	var choices := _build_custom_asset_choices("main_menu_bg", image_rows)
+	pending_context = {"kind": "custom_asset_bind_menu", "on_close": "reopen_settings", "slot_id": "main_menu_bg"}
 	decision_panel.open_panel("素材导入完成", "\n".join(body_lines), choices, "返回设置")
 
 func _open_main_menu_background_picker() -> void:
-	CustomAssetRepository.sync_external_library()
-	var images := CustomAssetRepository.list_images()
-	if images.is_empty():
-		pending_context = {"kind": "custom_asset_picker", "on_close": "reopen_settings"}
-		decision_panel.open_panel("还没有可用素材", "先导入至少 1 张图片，之后才能绑定到主菜单背景。", [], "返回设置")
-		return
-	pending_context = {"kind": "custom_asset_bind_menu", "on_close": "reopen_settings"}
-	decision_panel.open_panel(
-		"选择主菜单背景",
-		"已导入 %d 张图片。\n当前绑定：%s" % [images.size(), _custom_main_menu_background_label()],
-		_build_custom_background_choices(images),
-		"返回设置"
-	)
+	_open_custom_asset_slot_picker("main_menu_bg")
 
 func _build_custom_background_choices(image_rows: Array) -> Array:
-	var choices: Array = []
-	for row in image_rows:
-		var image_info := Dictionary(row)
-		var asset_id := String(image_info.get("id", ""))
-		if asset_id.is_empty():
-			continue
-		choices.append({
-			"id": asset_id,
-			"label": String(image_info.get("label", asset_id)),
-			"summary": "%dx%d ｜ 设为主菜单背景" % [
-				int(image_info.get("width", 0)),
-				int(image_info.get("height", 0)),
-			],
-		})
-	return choices
+	return _build_custom_asset_choices("main_menu_bg", image_rows)
 
 func _bind_main_menu_background(asset_id: String) -> void:
-	CustomAssetRepository.bind_slot("main_menu_bg", asset_id)
-	_refresh_main_menu()
-	pending_context = {"kind": "custom_asset_bound", "on_close": "reopen_settings"}
-	decision_panel.open_panel(
-		"主菜单背景已更新",
-		"已将 %s 设为主菜单背景。" % _custom_main_menu_background_label(),
-		[],
-		"返回设置"
-	)
+	_bind_custom_asset_slot("main_menu_bg", asset_id)
 
 func _clear_main_menu_background_binding() -> void:
-	CustomAssetRepository.clear_slot("main_menu_bg")
-	_refresh_main_menu()
-	pending_context = {"kind": "custom_asset_cleared", "on_close": "reopen_settings"}
-	decision_panel.open_panel("已恢复默认背景", "主菜单背景已清除自定义绑定。", [], "返回设置")
+	_clear_custom_asset_slot("main_menu_bg")
 
 func _resume_onboarding_flow() -> void:
 	if _should_skip_runtime_tutorials() or season_finished:
@@ -1541,7 +1849,7 @@ func _open_pending_tutorial_battle() -> void:
 	if not battle_log.is_empty():
 		_push_log(battle_log)
 	pending_battle_source = battle_source
-	battle_panel.start_battle(battle_config)
+	_start_battle_panel(battle_config)
 
 func _start_battle_with_tutorial(battle_config: Dictionary, battle_source: String, battle_log: String) -> void:
 	if battle_config.is_empty():
@@ -1551,7 +1859,7 @@ func _start_battle_with_tutorial(battle_config: Dictionary, battle_source: Strin
 		if not battle_log.is_empty():
 			_push_log(battle_log)
 		pending_battle_source = battle_source
-		battle_panel.start_battle(battle_config)
+		_start_battle_panel(battle_config)
 		return
 	pending_tutorial_battle_config = battle_config.duplicate(true)
 	pending_tutorial_battle_source = battle_source
@@ -3291,7 +3599,7 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 		"menu_settings":
 			_apply_menu_setting(choice_id)
 		"custom_asset_bind_menu":
-			_bind_main_menu_background(choice_id)
+			_bind_custom_asset_slot(String(context.get("slot_id", "main_menu_bg")), choice_id)
 
 func _on_decision_closed() -> void:
 	if pending_context.is_empty():
@@ -3875,6 +4183,9 @@ func _on_base_manage_requested() -> void:
 	_open_team_manage_menu()
 
 func _on_battle_finished(result: Dictionary) -> void:
+	if is_instance_valid(_battle_bgm_player):
+		_battle_bgm_player.stop()
+		_battle_bgm_player.stream = null
 	if pending_battle_source == "npc_intro_duel":
 		_resolve_npc_intro_duel(result)
 	elif pending_battle_source == "environment_wild":
@@ -3883,6 +4194,7 @@ func _on_battle_finished(result: Dictionary) -> void:
 		visit_flow.resolve_dojo_battle(result)
 	pending_battle_source = ""
 	pending_npc_duel_id = ""
+	_sync_menu_bgm()
 	_update_ui()
 
 func _open_team_manage_menu() -> void:

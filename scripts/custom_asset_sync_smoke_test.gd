@@ -1,14 +1,16 @@
 extends SceneTree
 
 const TEST_ASSET_ID := "ext_smoke_asset_sync"
-const TEST_FILE_NAME := TEST_ASSET_ID + ".png"
 const TEST_AUDIO_ASSET_ID := "ext_smoke_audio_sync"
-const TEST_AUDIO_FILE_NAME := TEST_AUDIO_ASSET_ID + ".wav"
+const TEST_IMAGE_FILE_NAME := "smoke_sidecar_image.png"
+const TEST_AUDIO_FILE_NAME := "smoke_sidecar_audio.wav"
 
 var _original_manifest := ""
 var _manifest_existed := false
 var _test_file_path := ""
 var _test_audio_file_path := ""
+var _test_image_sidecar_path := ""
+var _test_audio_sidecar_path := ""
 
 func _initialize() -> void:
 	if not _run():
@@ -24,8 +26,10 @@ func _run() -> bool:
 	var manifest_path := String(repo.get_external_manifest_path())
 	var image_dir := String(repo.get_external_library_dir_path())
 	var audio_dir := String(repo.get_external_library_dir_path("audio"))
-	_test_file_path = image_dir.path_join(TEST_FILE_NAME)
+	_test_file_path = image_dir.path_join(TEST_IMAGE_FILE_NAME)
 	_test_audio_file_path = audio_dir.path_join(TEST_AUDIO_FILE_NAME)
+	_test_image_sidecar_path = _test_file_path + ".asset.json"
+	_test_audio_sidecar_path = _test_audio_file_path + ".asset.json"
 	DirAccess.make_dir_absolute(image_dir)
 	DirAccess.make_dir_absolute(audio_dir)
 	_manifest_existed = FileAccess.file_exists(manifest_path)
@@ -42,27 +46,48 @@ func _run() -> bool:
 		push_error("custom_asset_sync_smoke_test: failed to write test audio")
 		_cleanup()
 		return false
-	audio_file.store_buffer(PackedByteArray([82, 73, 70, 70, 0, 0, 0, 0, 87, 65, 86, 69]))
+	audio_file.store_buffer(PackedByteArray([
+		82, 73, 70, 70, 40, 0, 0, 0,
+		87, 65, 86, 69,
+		102, 109, 116, 32, 16, 0, 0, 0,
+		1, 0, 1, 0,
+		64, 31, 0, 0,
+		64, 31, 0, 0,
+		1, 0, 8, 0,
+		100, 97, 116, 97, 4, 0, 0, 0,
+		128, 128, 128, 128,
+	]))
 	audio_file.flush()
 	audio_file = null
+	var image_sidecar := {
+		"id": TEST_ASSET_ID,
+		"label": "smoke_asset",
+		"bindings": ["main_menu_bg", "main_menu_logo"],
+	}
+	var audio_sidecar := {
+		"id": TEST_AUDIO_ASSET_ID,
+		"label": "smoke_audio",
+		"bindings": ["main_menu_bgm", "battle_bgm", "ui_confirm_sfx"],
+	}
+	var image_sidecar_file := FileAccess.open(_test_image_sidecar_path, FileAccess.WRITE)
+	if image_sidecar_file == null:
+		push_error("custom_asset_sync_smoke_test: failed to write image sidecar")
+		_cleanup()
+		return false
+	image_sidecar_file.store_string(JSON.stringify(image_sidecar, "\t"))
+	image_sidecar_file.flush()
+	image_sidecar_file = null
+	var audio_sidecar_file := FileAccess.open(_test_audio_sidecar_path, FileAccess.WRITE)
+	if audio_sidecar_file == null:
+		push_error("custom_asset_sync_smoke_test: failed to write audio sidecar")
+		_cleanup()
+		return false
+	audio_sidecar_file.store_string(JSON.stringify(audio_sidecar, "\t"))
+	audio_sidecar_file.flush()
+	audio_sidecar_file = null
 	var manifest := {
-		"assets": {
-			TEST_ASSET_ID: {
-				"id": TEST_ASSET_ID,
-				"kind": "image",
-				"label": "smoke_asset",
-				"filename": TEST_FILE_NAME,
-			},
-			TEST_AUDIO_ASSET_ID: {
-				"id": TEST_AUDIO_ASSET_ID,
-				"kind": "audio",
-				"label": "smoke_audio",
-				"filename": TEST_AUDIO_FILE_NAME,
-			},
-		},
-		"bindings": {
-			"main_menu_bg": TEST_ASSET_ID,
-		},
+		"assets": {},
+		"bindings": {},
 	}
 	var file := FileAccess.open(manifest_path, FileAccess.WRITE)
 	if file == null:
@@ -83,8 +108,16 @@ func _run() -> bool:
 		push_error("custom_asset_sync_smoke_test: test asset missing after sync")
 		_cleanup()
 		return false
+	if String(image_info.get("label", "")) != "smoke_asset":
+		push_error("custom_asset_sync_smoke_test: image sidecar label did not load")
+		_cleanup()
+		return false
 	if String(repo.get_slot_binding("main_menu_bg")) != TEST_ASSET_ID:
 		push_error("custom_asset_sync_smoke_test: main_menu_bg binding did not update")
+		_cleanup()
+		return false
+	if String(repo.get_slot_binding("main_menu_logo")) != TEST_ASSET_ID:
+		push_error("custom_asset_sync_smoke_test: main_menu_logo binding did not update")
 		_cleanup()
 		return false
 	var texture: Texture2D = repo.get_bound_texture("main_menu_bg")
@@ -95,6 +128,34 @@ func _run() -> bool:
 	var audio_info: Dictionary = repo.get_asset(TEST_AUDIO_ASSET_ID)
 	if audio_info.is_empty() or String(audio_info.get("kind", "")) != "audio":
 		push_error("custom_asset_sync_smoke_test: audio asset missing after sync")
+		_cleanup()
+		return false
+	if String(audio_info.get("label", "")) != "smoke_audio":
+		push_error("custom_asset_sync_smoke_test: audio sidecar label did not load")
+		_cleanup()
+		return false
+	if String(repo.get_slot_binding("main_menu_bgm")) != TEST_AUDIO_ASSET_ID:
+		push_error("custom_asset_sync_smoke_test: main_menu_bgm binding did not update")
+		_cleanup()
+		return false
+	if repo.get_bound_audio_stream("main_menu_bgm") == null:
+		push_error("custom_asset_sync_smoke_test: bound audio stream could not be created")
+		_cleanup()
+		return false
+	if String(repo.get_slot_binding("battle_bgm")) != TEST_AUDIO_ASSET_ID:
+		push_error("custom_asset_sync_smoke_test: battle_bgm binding did not update")
+		_cleanup()
+		return false
+	if repo.get_bound_audio_stream("battle_bgm") == null:
+		push_error("custom_asset_sync_smoke_test: battle_bgm stream could not be created")
+		_cleanup()
+		return false
+	if String(repo.get_slot_binding("ui_confirm_sfx")) != TEST_AUDIO_ASSET_ID:
+		push_error("custom_asset_sync_smoke_test: ui_confirm_sfx binding did not update")
+		_cleanup()
+		return false
+	if repo.get_bound_audio_stream("ui_confirm_sfx") == null:
+		push_error("custom_asset_sync_smoke_test: ui_confirm_sfx stream could not be created")
 		_cleanup()
 		return false
 	var audio_path := String(audio_info.get("path", ""))
@@ -112,6 +173,12 @@ func _cleanup() -> void:
 	if not _test_audio_file_path.is_empty():
 		if FileAccess.file_exists(_test_audio_file_path):
 			DirAccess.remove_absolute(_test_audio_file_path)
+	if not _test_image_sidecar_path.is_empty():
+		if FileAccess.file_exists(_test_image_sidecar_path):
+			DirAccess.remove_absolute(_test_image_sidecar_path)
+	if not _test_audio_sidecar_path.is_empty():
+		if FileAccess.file_exists(_test_audio_sidecar_path):
+			DirAccess.remove_absolute(_test_audio_sidecar_path)
 	var repo = _repo()
 	if repo == null:
 		return

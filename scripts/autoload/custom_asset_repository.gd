@@ -4,6 +4,7 @@ const ROOT_DIR := "user://custom_assets"
 const MANIFEST_PATH := ROOT_DIR + "/manifest.json"
 const EXTERNAL_LIBRARY_DIR := "res://external_assets"
 const EXTERNAL_MANIFEST_NAME := "manifest.json"
+const EXTERNAL_ASSET_METADATA_SUFFIX := ".asset.json"
 const EXTERNAL_SOURCE_PREFIX := "ext_"
 const SOURCE_USER_IMPORT := "user_import"
 const SOURCE_EXTERNAL_LIBRARY := "external_library"
@@ -21,8 +22,34 @@ const SUPPORTED_ASSET_EXTENSIONS := {
 	"video": ["ogv", "webm", "mp4", "mov"],
 	"file": ["json", "txt", "cfg", "csv", "tsv", "md", "bin"],
 }
-const SLOT_KIND_REQUIREMENTS := {
-	"main_menu_bg": "image",
+const SLOT_DEFINITIONS := {
+	"main_menu_bg": {
+		"kind": "image",
+		"label": "主菜单背景",
+	},
+	"main_menu_logo": {
+		"kind": "image",
+		"label": "主菜单 Logo",
+	},
+	"main_menu_bgm": {
+		"kind": "audio",
+		"label": "主菜单音乐",
+		"runtime_extensions": ["ogg", "wav", "mp3"],
+	},
+	"battle_bgm": {
+		"kind": "audio",
+		"label": "战斗音乐",
+		"runtime_extensions": ["ogg", "wav", "mp3"],
+	},
+	"ui_confirm_sfx": {
+		"kind": "audio",
+		"label": "界面确认音效",
+		"runtime_extensions": ["ogg", "wav", "mp3"],
+	},
+	"ui_font": {
+		"kind": "font",
+		"label": "界面字体",
+	},
 }
 
 var manifest: Dictionary = _default_manifest()
@@ -202,6 +229,33 @@ func get_asset_kind_label(kind: String) -> String:
 		_:
 			return "素材"
 
+func get_slot_definitions() -> Dictionary:
+	return Dictionary(SLOT_DEFINITIONS).duplicate(true)
+
+func list_slot_ids(kind: String = "") -> Array[String]:
+	var slot_ids: Array[String] = []
+	for slot_id in SLOT_DEFINITIONS.keys():
+		var slot_name := String(slot_id)
+		if not kind.is_empty() and get_slot_kind(slot_name) != kind:
+			continue
+		slot_ids.append(slot_name)
+	slot_ids.sort()
+	return slot_ids
+
+func get_slot_kind(slot_id: String) -> String:
+	return String(Dictionary(SLOT_DEFINITIONS.get(slot_id, {})).get("kind", ""))
+
+func get_slot_label(slot_id: String) -> String:
+	return String(Dictionary(SLOT_DEFINITIONS.get(slot_id, {})).get("label", slot_id))
+
+func get_asset_bindings(asset_id: String) -> Array[String]:
+	var slot_ids: Array[String] = []
+	for slot_id in Dictionary(manifest.get("bindings", {})).keys():
+		if String(manifest.get("bindings", {}).get(slot_id, "")) == asset_id:
+			slot_ids.append(String(slot_id))
+	slot_ids.sort()
+	return slot_ids
+
 func get_supported_import_extensions() -> Array[String]:
 	var extensions: Array[String] = []
 	for kind in _ordered_kinds():
@@ -233,8 +287,7 @@ func bind_slot(slot_id: String, asset_id: String) -> void:
 	var asset := get_asset(asset_id)
 	if asset.is_empty():
 		return
-	var expected_kind := _expected_slot_kind(slot_id)
-	if not expected_kind.is_empty() and String(asset.get("kind", "")) != expected_kind:
+	if not _asset_can_bind_to_slot(asset, slot_id):
 		return
 	var bindings: Dictionary = Dictionary(manifest.get("bindings", {})).duplicate(true)
 	bindings[slot_id] = asset_id
@@ -258,6 +311,18 @@ func get_bound_texture(slot_id: String) -> Texture2D:
 		return null
 	return get_texture(asset_id)
 
+func get_bound_audio_stream(slot_id: String) -> AudioStream:
+	var asset_id := get_slot_binding(slot_id)
+	if asset_id.is_empty():
+		return null
+	return get_audio_stream(asset_id)
+
+func get_bound_font(slot_id: String) -> FontFile:
+	var asset_id := get_slot_binding(slot_id)
+	if asset_id.is_empty():
+		return null
+	return get_font_file(asset_id)
+
 func get_texture(asset_id: String) -> Texture2D:
 	var image_info := get_image(asset_id)
 	if image_info.is_empty():
@@ -266,6 +331,48 @@ func get_texture(asset_id: String) -> Texture2D:
 	if image.is_empty():
 		return null
 	return ImageTexture.create_from_image(image)
+
+func get_audio_stream(asset_id: String) -> AudioStream:
+	var asset := get_asset(asset_id)
+	if String(asset.get("kind", "")) != "audio":
+		return null
+	var absolute_path := get_asset_absolute_path(asset_id)
+	if absolute_path.is_empty():
+		return null
+	var path_lower := absolute_path.to_lower()
+	if path_lower.ends_with(".ogg"):
+		var ogg_stream := AudioStreamOggVorbis.load_from_file(absolute_path)
+		if ogg_stream != null:
+			ogg_stream.loop = true
+		return ogg_stream
+	if path_lower.ends_with(".mp3"):
+		var mp3_stream := AudioStreamMP3.load_from_file(absolute_path)
+		if mp3_stream != null:
+			mp3_stream.loop = true
+		return mp3_stream
+	if path_lower.ends_with(".wav"):
+		var wav_stream := AudioStreamWAV.load_from_file(absolute_path)
+		if wav_stream != null:
+			wav_stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+		return wav_stream
+	return null
+
+func get_font_file(asset_id: String) -> FontFile:
+	var asset := get_asset(asset_id)
+	if String(asset.get("kind", "")) != "font":
+		return null
+	var absolute_path := get_asset_absolute_path(asset_id)
+	if absolute_path.is_empty():
+		return null
+	var path_lower := absolute_path.to_lower()
+	var font_file := FontFile.new()
+	if path_lower.ends_with(".ttf") or path_lower.ends_with(".otf") or path_lower.ends_with(".woff") or path_lower.ends_with(".woff2"):
+		font_file.load_dynamic_font(absolute_path)
+	else:
+		return null
+	if font_file.data.is_empty():
+		return null
+	return font_file
 
 func get_external_library_dir_path(kind: String = "image") -> String:
 	return ProjectSettings.globalize_path(EXTERNAL_LIBRARY_DIR.path_join(_dir_name_for_kind(kind)))
@@ -518,14 +625,23 @@ func _scan_external_library() -> Dictionary:
 				continue
 			var manifest_key := "%s::%s" % [kind, file_name.to_lower()]
 			var external_info := Dictionary(declared_by_key.get(manifest_key, {})).duplicate(true)
-			var asset_id := String(external_info.get("id", ""))
+			var sidecar_info := _read_external_asset_sidecar(kind, file_name)
+			var asset_id := String(sidecar_info.get("id", external_info.get("id", "")))
 			if asset_id.is_empty() or used_ids.has(asset_id):
 				asset_id = _make_external_asset_id(file_name, used_ids)
 			used_ids[asset_id] = true
+			if bool(sidecar_info.get("has_bindings", false)):
+				for slot_id in Dictionary(result.get("bindings", {})).keys():
+					if String(result["bindings"].get(slot_id, "")) == asset_id:
+						result["bindings"].erase(slot_id)
+				for slot_value in Array(sidecar_info.get("bindings", [])):
+					var slot_id := String(slot_value)
+					if not slot_id.is_empty():
+						result["bindings"][slot_id] = asset_id
 			asset_rows.append({
 				"id": asset_id,
 				"kind": kind,
-				"label": String(external_info.get("label", _sanitize_label(file_name))),
+				"label": String(sidecar_info.get("label", external_info.get("label", _sanitize_label(file_name)))),
 				"filename": file_name,
 				"source_path": library_dir.path_join(file_name),
 			})
@@ -556,8 +672,7 @@ func _apply_external_bindings(external_bindings: Dictionary, assets: Dictionary)
 		var asset := Dictionary(assets.get(asset_id, {})).duplicate(true)
 		if asset.is_empty():
 			continue
-		var expected_kind := _expected_slot_kind(slot_name)
-		if not expected_kind.is_empty() and String(asset.get("kind", "")) != expected_kind:
+		if not _asset_can_bind_to_slot(asset, slot_name):
 			continue
 		bindings[slot_name] = asset_id
 	manifest["bindings"] = bindings
@@ -587,6 +702,40 @@ func _normalize_external_asset_id(asset_id: String, fallback_name: String) -> St
 	if not safe_id.begins_with(EXTERNAL_SOURCE_PREFIX):
 		safe_id = EXTERNAL_SOURCE_PREFIX + safe_id
 	return safe_id
+
+func _external_asset_sidecar_path(kind: String, file_name: String) -> String:
+	return get_external_library_dir_path(kind).path_join(file_name + EXTERNAL_ASSET_METADATA_SUFFIX)
+
+func _read_external_asset_sidecar(kind: String, file_name: String) -> Dictionary:
+	var sidecar_path := _external_asset_sidecar_path(kind, file_name)
+	if not FileAccess.file_exists(sidecar_path):
+		return {}
+	var raw := FileAccess.get_file_as_string(sidecar_path)
+	var parsed = JSON.parse_string(raw)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	var data := Dictionary(parsed).duplicate(true)
+	var sidecar := {}
+	var raw_id := String(data.get("id", "")).strip_edges()
+	if not raw_id.is_empty():
+		sidecar["id"] = _normalize_external_asset_id(raw_id, file_name)
+	var raw_label := String(data.get("label", "")).strip_edges()
+	if not raw_label.is_empty():
+		sidecar["label"] = raw_label
+	var bindings: Array[String] = []
+	var binding_value = data.get("bindings", data.get("binding", []))
+	if typeof(binding_value) == TYPE_STRING:
+		var slot_id := String(binding_value).strip_edges()
+		if not slot_id.is_empty() and SLOT_DEFINITIONS.has(slot_id):
+			bindings.append(slot_id)
+	elif typeof(binding_value) == TYPE_ARRAY:
+		for slot_value in Array(binding_value):
+			var slot_id := String(slot_value).strip_edges()
+			if not slot_id.is_empty() and SLOT_DEFINITIONS.has(slot_id):
+				bindings.append(slot_id)
+	sidecar["bindings"] = bindings
+	sidecar["has_bindings"] = data.has("bindings") or data.has("binding")
+	return sidecar
 
 func _make_external_asset_id(file_name: String, reserved_ids: Dictionary) -> String:
 	var base_id := _normalize_external_asset_id(_sanitize_label(file_name), file_name)
@@ -628,7 +777,19 @@ func _ordered_kinds() -> Array[String]:
 	return kinds
 
 func _expected_slot_kind(slot_id: String) -> String:
-	return String(SLOT_KIND_REQUIREMENTS.get(slot_id, ""))
+	return get_slot_kind(slot_id)
+
+func _asset_can_bind_to_slot(asset: Dictionary, slot_id: String) -> bool:
+	if not SLOT_DEFINITIONS.has(slot_id):
+		return false
+	var expected_kind := _expected_slot_kind(slot_id)
+	if not expected_kind.is_empty() and String(asset.get("kind", "")) != expected_kind:
+		return false
+	var runtime_extensions := Array(Dictionary(SLOT_DEFINITIONS.get(slot_id, {})).get("runtime_extensions", []))
+	if runtime_extensions.is_empty():
+		return true
+	var ext := String(asset.get("original_ext", String(asset.get("filename", "")).get_extension())).trim_prefix(".").to_lower()
+	return runtime_extensions.has(ext)
 
 func _normalize_asset_kind(kind: String, file_name: String = "") -> String:
 	var cleaned := kind.strip_edges().to_lower()
@@ -648,5 +809,7 @@ func _kind_for_extension(extension: String) -> String:
 	return ""
 
 func _is_supported_file_for_kind(file_name: String, kind: String) -> bool:
+	if file_name.to_lower().ends_with(EXTERNAL_ASSET_METADATA_SUFFIX):
+		return false
 	var ext := file_name.get_extension().to_lower()
 	return Array(SUPPORTED_ASSET_EXTENSIONS.get(kind, [])).has(ext)

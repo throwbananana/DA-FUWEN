@@ -23,6 +23,7 @@ const RunModifierService = preload("res://scripts/services/run_modifier_service.
 const MetaProgressionService = preload("res://scripts/services/meta_progression_service.gd")
 const NpcRouteService = preload("res://scripts/services/npc_route_service.gd")
 const ThreatService = preload("res://scripts/services/threat_service.gd")
+const TurnFlowController = preload("res://scripts/services/turn_flow_controller.gd")
 const AIPlayerService = preload("res://scripts/services/ai_player_service.gd")
 const DialogueService = preload("res://scripts/services/dialogue_service.gd")
 const StoryService = preload("res://scripts/services/story_service.gd")
@@ -193,6 +194,7 @@ var run_modifier_service := RunModifierService.new()
 var meta_progression_service := MetaProgressionService.new()
 var npc_route_service := NpcRouteService.new()
 var threat_service := ThreatService.new()
+var turn_flow_controller := TurnFlowController.new()
 var ai_player_service := AIPlayerService.new()
 var dialogue_service := DialogueService.new()
 var fishing_service := FishingService.new()
@@ -2110,6 +2112,7 @@ func start_new_game() -> void:
 	pending_tutorial_battle_source = ""
 	pending_tutorial_battle_log = ""
 	_last_ai_turn_report.clear()
+	turn_flow_controller.reset()
 	story_director.reset()
 	decision_panel.hide()
 	base_panel.hide()
@@ -2187,6 +2190,7 @@ func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
 	pending_tutorial_battle_source = ""
 	pending_tutorial_battle_log = ""
 	_last_ai_turn_report.clear()
+	turn_flow_controller.reset()
 	story_director.reset()
 	decision_panel.hide()
 	base_panel.hide()
@@ -3844,6 +3848,33 @@ func _on_visit_finished(_report: Dictionary) -> void:
 	current_visit_habitat_id = ""
 	_advance_after_travel_stop()
 
+func _sync_turn_phase_from_flags() -> void:
+	if season_finished:
+		turn_flow_controller.set_phase(TurnFlowController.TurnPhase.SEASON_FINISHED)
+		return
+	if ai_turn_in_progress:
+		turn_flow_controller.set_phase(TurnFlowController.TurnPhase.AI_TURN)
+		return
+	if _post_travel_resolution_in_progress:
+		turn_flow_controller.set_phase(TurnFlowController.TurnPhase.POST_TRAVEL_RESOLVE)
+		return
+	if not current_visit_habitat_id.is_empty():
+		turn_flow_controller.set_phase(TurnFlowController.TurnPhase.VISIT_FLOW)
+		return
+	if branch_choice_pending:
+		turn_flow_controller.set_phase(TurnFlowController.TurnPhase.BRANCH_CHOICE)
+		return
+	if board_anim_locked:
+		turn_flow_controller.set_phase(TurnFlowController.TurnPhase.TRAVEL_EXECUTING)
+		return
+	if awaiting_destination:
+		turn_flow_controller.set_phase(TurnFlowController.TurnPhase.ROUTE_PREVIEW)
+		return
+	if pending_roll.is_empty():
+		turn_flow_controller.set_phase(TurnFlowController.TurnPhase.DAY_READY)
+		return
+	turn_flow_controller.set_phase(TurnFlowController.TurnPhase.ARRIVAL_RESOLVE)
+
 func _resolve_board_event_node(node: Dictionary) -> void:
 	var event_package := dialogue_service.build_board_event_package(current_visit_habitat_id)
 	var body_lines: Array[String] = [
@@ -5257,6 +5288,7 @@ func _build_habitat_summaries() -> Array:
 	return result
 
 func _update_ui() -> void:
+	_sync_turn_phase_from_flags()
 	_update_header()
 	_update_action_ui()
 	_apply_casual_exposure_policy()
@@ -5296,21 +5328,24 @@ func _update_header() -> void:
 	]
 
 func _update_action_ui() -> void:
+	var phase_name := turn_flow_controller.get_phase_name()
 	var current_node: Dictionary = board_lookup.get(current_node_id, {})
 	var recent_roll: String = "待掷骰" if pending_roll.is_empty() else dice_service.describe_roll(pending_roll)
 	var selectable_nodes: Array[int] = _get_selectable_nodes()
 	var intro_copy := _is_casual_intro_phase()
 	var route_preview := _format_route_choice_preview(selectable_nodes, intro_copy and branch_choice_pending)
 	dice_label.text = "步数：%s" % recent_roll
+	dice_meta_label.tooltip_text = "Turn phase: %s" % phase_name
 	dice_meta_label.text = "修正 %d ｜ 重掷 %d/%d ｜ 锚定 %d" % [
 		GameState.season_adjust_points,
 		GameState.weekly_reroll_count,
 		GameState.weekly_reroll_limit,
 		GameState.anchor_points,
 	]
-	board_status_label.text = "区域：%s ｜ 当前位置：%s" % [
+	board_status_label.text = "区域：%s ｜ 当前位置：%s ｜ 阶段：%s" % [
 		board_progression_service.get_region_name(),
 		String(current_node.get("name", "营地")),
+		phase_name,
 	]
 	if branch_choice_pending:
 		board_route_label.text = "分叉 %d 选 ｜ %s" % [

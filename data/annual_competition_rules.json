@@ -12,7 +12,7 @@
 		},
 		"placement_rewards": {
 			"1": {
-				"title": "年度冠军",
+				"title": "岁末冠军",
 				"gold": 24,
 				"items": {
 					"master_badge": 1,
@@ -22,7 +22,7 @@
 				}
 			},
 			"2": {
-				"title": "年度亚军",
+				"title": "岁末亚席",
 				"gold": 18,
 				"items": {
 					"rare_decor_part": 1,
@@ -31,7 +31,7 @@
 				}
 			},
 			"3": {
-				"title": "年度季军",
+				"title": "打进前三",
 				"gold": 12,
 				"items": {
 					"repair_kit": 1,
@@ -39,8 +39,25 @@
 					"training_note": 1
 				}
 			},
+			"4": {
+				"title": "打进前四",
+				"gold": 10,
+				"items": {
+					"paper": 1,
+					"ink": 1,
+					"training_note": 1
+				}
+			},
+			"5": {
+				"title": "稳稳完赛",
+				"gold": 9,
+				"items": {
+					"tea_leaf": 1,
+					"warm_stone": 1
+				}
+			},
 			"default": {
-				"title": "年度完赛",
+				"title": "年赛完赛",
 				"gold": 8,
 				"items": {
 					"soft_moss": 2,

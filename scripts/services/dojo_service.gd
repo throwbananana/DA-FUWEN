@@ -42,7 +42,7 @@ func get_dojo_menu(habitat_id: String) -> Dictionary:
 		if locked_by_progress:
 			summary_parts.append(localization_service.text("dojo.summary.require_previous"))
 		elif not battle_slots_ready:
-			summary_parts.append("双打位未齐")
+			summary_parts.append("出战位还没凑齐")
 		elif not affordable:
 			summary_parts.append(localization_service.text("dojo.summary.ticket_missing"))
 		elif score_gap > 0:

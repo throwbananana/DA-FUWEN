@@ -173,7 +173,7 @@ custom_minimum_size = Vector2(0, 60)
 bbcode_enabled = true
 fit_content = true
 scroll_active = true
-text = "[b]掷骰前进，路过营地时会自动打开营地总览。[/b]"
+text = "[b]掷出点数就会往前走，路过营地时会顺手看看营地近况。[/b]"
 
 [node name="BoardMetaColumn" type="VBoxContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow"]
 layout_mode = 2
@@ -864,7 +864,7 @@ text = "雾野远征"
 [node name="MenuSubtitleLabel" type="Label" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "主界面与局外成长"
+text = "主界面与旅途积累"
 
 [node name="MenuContentRow" type="BoxContainer" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -902,7 +902,7 @@ layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
 scroll_active = true
-text = "[b]局外成长[/b]\n年度结算后会自动保存探索点与已解锁模组。"
+text = "[b]旅途积累[/b]\n每年结束后都会留下探索点和新的骰子花样。"
 
 [node name="SummaryColumn" type="VBoxContainer" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow"]
 layout_mode = 2
@@ -962,7 +962,7 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
-text = "系统手册"
+text = "雾野小本"
 
 [node name="CloseButton" type="Button" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer/HeaderRow"]
 layout_mode = 2

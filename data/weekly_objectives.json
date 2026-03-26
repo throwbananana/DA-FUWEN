@@ -6,8 +6,8 @@
       "season_ids": [
         "spring"
       ],
-      "title": "摸清上线路况",
-      "description": "本周完成 3 次落点访问，优先熟悉春季上半圈节奏。",
+      "title": "摸熟上边那条路",
+      "description": "这周去 3 个落点转转，先把春天上半圈走熟。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -22,8 +22,8 @@
       "season_ids": [
         "spring"
       ],
-      "title": "立下建设承诺",
-      "description": "本周完成 1 次建设，尽早决定这季是走建设线还是补给线。",
+      "title": "先搭个落脚点",
+      "description": "这周完成 1 次建设，早点把这一季常去的地方安顿好。",
       "requirements": [
         {
           "metric": "build_count",
@@ -38,8 +38,8 @@
       "season_ids": [
         "spring"
       ],
-      "title": "试探边境压力",
-      "description": "本周完成 1 次野外相遇，提前判断春季右半圈的风险强度。",
+      "title": "先看看外头动静",
+      "description": "这周来 1 次野外相遇，先摸清春天右半圈大概会遇到什么。",
       "requirements": [
         {
           "metric": "encounter_count",
@@ -54,8 +54,8 @@
       "season_ids": [
         "summer"
       ],
-      "title": "抢下桥区节奏",
-      "description": "本周完成 3 次落点访问，把推进重心放到夏季桥区。",
+      "title": "先把桥区跑热",
+      "description": "这周去 3 个落点转转，把重心放到夏天的桥区。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -70,8 +70,8 @@
       "season_ids": [
         "summer"
       ],
-      "title": "为强渡做准备",
-      "description": "本周完成 1 次建设，让队伍有资本处理桥头高压。",
+      "title": "先给过桥垫点底子",
+      "description": "这周完成 1 次建设，让队伍过桥时更从容些。",
       "requirements": [
         {
           "metric": "build_count",
@@ -86,8 +86,8 @@
       "season_ids": [
         "summer"
       ],
-      "title": "盛雷压测",
-      "description": "本周完成 1 次野外相遇，确认桥区外侧的敌意与资源回报。",
+      "title": "去桥外探探风",
+      "description": "这周来 1 次野外相遇，看看桥外那一带到底凶不凶、值不值得去。",
       "requirements": [
         {
           "metric": "encounter_count",
@@ -102,8 +102,8 @@
       "season_ids": [
         "autumn"
       ],
-      "title": "先做试炼筹备",
-      "description": "本周完成 1 次建设，为演武场验证准备最后一层构筑。",
+      "title": "试炼前再垫一点",
+      "description": "这周完成 1 次建设，去演武场前再把底子垫厚一点。",
       "requirements": [
         {
           "metric": "build_count",
@@ -118,8 +118,8 @@
       "season_ids": [
         "autumn"
       ],
-      "title": "把筹备转成结果",
-      "description": "本周完成 1 次试炼通关，让秋季 build 真正变成阶段成果。",
+      "title": "把准备变成结果",
+      "description": "这周通关 1 次试炼，让秋天这阵子的准备真正开花结果。",
       "requirements": [
         {
           "metric": "dojo_clear_count",
@@ -134,8 +134,8 @@
       "season_ids": [
         "autumn"
       ],
-      "title": "走完成型路线",
-      "description": "本周完成 3 次落点访问，把 build 核、桥头与试炼点连成一条节奏线。",
+      "title": "把这条路走顺",
+      "description": "这周去 3 个落点转转，把桥头、试炼点和常用路线连顺。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -150,8 +150,8 @@
       "season_ids": [
         "winter"
       ],
-      "title": "读懂终局天气",
-      "description": "本周完成 1 次野外相遇，在终局前确认异常区的真实压力。",
+      "title": "先看懂终局天气",
+      "description": "这周来 1 次野外相遇，进终局前先摸清异常区的脾气。",
       "requirements": [
         {
           "metric": "encounter_count",
@@ -166,8 +166,8 @@
       "season_ids": [
         "winter"
       ],
-      "title": "修短最终路线",
-      "description": "本周完成 3 次落点访问，把冬季推进集中到终局前修正点附近。",
+      "title": "把最后这段路理顺",
+      "description": "这周去 3 个落点转转，先把冬天终局前常走的路理顺。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -182,8 +182,8 @@
       "season_ids": [
         "winter"
       ],
-      "title": "补齐最后短板",
-      "description": "本周完成 1 次建设，避免把明显短板带进年度 Boss。",
+      "title": "最后再补一块短板",
+      "description": "这周完成 1 次建设，别把明显的短板带到年终决战里。",
       "requirements": [
         {
           "metric": "build_count",
@@ -198,8 +198,8 @@
       "season_ids": [
         "spring"
       ],
-      "title": "先把补给线接起来",
-      "description": "本周完成 2 次落点访问并完成 1 次建设，让春季前半段不只是探路，也开始形成补给闭环。",
+      "title": "先把补给路接上",
+      "description": "这周去 2 个落点、再做 1 次建设，让春天前半段不只是探路，也有个补给落脚点。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -219,8 +219,8 @@
       "season_ids": [
         "spring"
       ],
-      "title": "边推进边摸压",
-      "description": "本周完成 2 次落点访问并完成 1 次野外相遇，提前判断春季右半圈的风险和收益是否值得继续前压。",
+      "title": "边走边探探",
+      "description": "这周去 2 个落点，再来 1 次野外相遇，看看春天右半圈值不值得继续往前。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -240,8 +240,8 @@
       "season_ids": [
         "spring"
       ],
-      "title": "用首轮试炼定调",
-      "description": "本周完成 1 次试炼通关，把春季前段的资源投入尽快转成可以感知的阶段成果。",
+      "title": "拿首轮试炼热热身",
+      "description": "这周通关 1 次试炼，把春天前半段攒下的东西尽快变成看得见的收获。",
       "requirements": [
         {
           "metric": "dojo_clear_count",
@@ -256,8 +256,8 @@
       "season_ids": [
         "spring"
       ],
-      "title": "拉长第一圈视野",
-      "description": "本周完成 4 次落点访问，把春季第一圈能看的路线尽量看完，减少后续的盲走成本。",
+      "title": "把第一圈多看看",
+      "description": "这周去 4 个落点转转，尽量把春天第一圈能看的地方都看一遍。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -272,8 +272,8 @@
       "season_ids": [
         "summer"
       ],
-      "title": "先垫出过桥余量",
-      "description": "本周完成 2 次落点访问并完成 1 次建设，别把所有选择都压在桥区窗口刚出现的那一回合。",
+      "title": "过桥前先攒点余地",
+      "description": "这周去 2 个落点、再做 1 次建设，别把所有希望都压在桥口那一下。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -293,8 +293,8 @@
       "season_ids": [
         "summer"
       ],
-      "title": "把桥外压力看清楚",
-      "description": "本周完成 2 次野外相遇，把夏季高压区的敌意、掉落和推进成本一次看够。",
+      "title": "把桥外看明白",
+      "description": "这周来 2 次野外相遇，把夏天高压区的动静先看清。",
       "requirements": [
         {
           "metric": "encounter_count",
@@ -309,8 +309,8 @@
       "season_ids": [
         "summer"
       ],
-      "title": "桥中段转试炼",
-      "description": "本周完成 1 次试炼通关，让夏季中盘不只是扛压，而是能及时把投入转成战力回报。",
+      "title": "桥中段转去试炼",
+      "description": "这周通关 1 次试炼，让夏天中盘不只是硬扛，也能顺手涨点战力。",
       "requirements": [
         {
           "metric": "dojo_clear_count",
@@ -325,8 +325,8 @@
       "season_ids": [
         "summer"
       ],
-      "title": "多踩几段桥头路",
-      "description": "本周完成 4 次落点访问，把能接补给和能接突进的桥区分支都先踩一遍。",
+      "title": "把桥头多踩几趟",
+      "description": "这周去 4 个落点转转，把桥区的补给路和突进路都先摸一遍。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -341,8 +341,8 @@
       "season_ids": [
         "autumn"
       ],
-      "title": "把构筑压实一层",
-      "description": "本周完成 2 次建设，让秋季 build 不只是成型，而是真的开始覆盖更多节点和队伍短板。",
+      "title": "再把底子垫厚一点",
+      "description": "这周完成 2 次建设，让秋天这套准备更稳，也更照顾队伍短板。",
       "requirements": [
         {
           "metric": "build_count",
@@ -357,8 +357,8 @@
       "season_ids": [
         "autumn"
       ],
-      "title": "以试炼带动推进",
-      "description": "本周完成 1 次试炼通关并完成 2 次落点访问，把秋季中后段的路线收益真正串起来。",
+      "title": "边过试炼边往前走",
+      "description": "这周通关 1 次试炼，再去 2 个落点，把秋天中后段的收获串起来。",
       "requirements": [
         {
           "metric": "dojo_clear_count",
@@ -378,8 +378,8 @@
       "season_ids": [
         "autumn"
       ],
-      "title": "带着构筑去试压",
-      "description": "本周完成 1 次建设并完成 1 次野外相遇，确认秋季 build 到底能不能吃住真正的高压节点。",
+      "title": "带着准备去试试水",
+      "description": "这周完成 1 次建设，再来 1 次野外相遇，看看秋天这套准备顶不顶得住高压点。",
       "requirements": [
         {
           "metric": "build_count",
@@ -399,8 +399,8 @@
       "season_ids": [
         "autumn"
       ],
-      "title": "把成熟路线走长",
-      "description": "本周完成 4 次落点访问，尽量让秋季中后段的成熟路线多吃几次收益。",
+      "title": "把顺手的路多走几趟",
+      "description": "这周去 4 个落点转转，让秋天中后段的好路线多出点收获。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -415,8 +415,8 @@
       "season_ids": [
         "winter"
       ],
-      "title": "先把终局前线缩短",
-      "description": "本周完成 2 次落点访问并完成 1 次建设，让冬季终盘的路线和短板一起收束。",
+      "title": "先把终局前线收一收",
+      "description": "这周去 2 个落点、再做 1 次建设，把冬天终盘的路线和短板一起收拾好。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -436,8 +436,8 @@
       "season_ids": [
         "winter"
       ],
-      "title": "终局前再过一轮试炼",
-      "description": "本周完成 1 次试炼通关并完成 1 次建设，确保年度 Boss 前不是靠侥幸补齐阵容。",
+      "title": "终局前再练一轮",
+      "description": "这周通关 1 次试炼，再做 1 次建设，让年终决战前更踏实一点。",
       "requirements": [
         {
           "metric": "dojo_clear_count",
@@ -457,8 +457,8 @@
       "season_ids": [
         "winter"
       ],
-      "title": "把异常区看透一次",
-      "description": "本周完成 2 次野外相遇，尽量在终局前把冬季异常区的波动规律摸透。",
+      "title": "把异常区再看透些",
+      "description": "这周来 2 次野外相遇，终局前把冬天异常区的动静再摸清一点。",
       "requirements": [
         {
           "metric": "encounter_count",
@@ -473,8 +473,8 @@
       "season_ids": [
         "winter"
       ],
-      "title": "把收官路线走满",
-      "description": "本周完成 4 次落点访问，让终局前能兑现的节点收益尽量都兑现一遍。",
+      "title": "把收官这段走满",
+      "description": "这周去 4 个落点转转，终局前能拿的收获就尽量都拿到。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -489,8 +489,8 @@
       "season_ids": [
         "spring"
       ],
-      "title": "把回身线先记熟",
-      "description": "本周完成 4 次落点访问，在春季前半段尽快摸清安全折返线。",
+      "title": "先记熟回来的路",
+      "description": "这周去 4 个落点转转，尽快把春天前半段的安全回身线记熟。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -505,8 +505,8 @@
       "season_ids": [
         "spring"
       ],
-      "title": "给据点先搭一个能用的棚",
-      "description": "本周完成 2 次建设，让春季的照护和补给尽早有固定落脚点。",
+      "title": "先搭个能用的棚",
+      "description": "这周完成 2 次建设，让春天的照护和补给早点有个落脚处。",
       "requirements": [
         {
           "metric": "build_count",
@@ -521,8 +521,8 @@
       "season_ids": [
         "summer"
       ],
-      "title": "在高压周先探一圈",
-      "description": "本周完成 2 次野外相遇，尽快判断夏季中盘哪条线更适合继续压进。",
+      "title": "高压周先探一圈",
+      "description": "这周来 2 次野外相遇，先看看夏天中盘哪条路更适合继续走。",
       "requirements": [
         {
           "metric": "encounter_count",
@@ -537,8 +537,8 @@
       "season_ids": [
         "summer"
       ],
-      "title": "把训练和推进绑在一起",
-      "description": "本周完成 4 次落点访问，优先利用夏季速度窗口把路线节奏跑顺。",
+      "title": "把夏天的步子跑顺",
+      "description": "这周去 4 个落点转转，趁着夏天的速度把路线跑顺。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -553,8 +553,8 @@
       "season_ids": [
         "autumn"
       ],
-      "title": "边整理边推进",
-      "description": "本周完成 1 次建设，先把秋季资源线的基础设施立住。",
+      "title": "先把资源线立住",
+      "description": "这周完成 1 次建设，先让秋天的资源线有个稳稳的起点。",
       "requirements": [
         {
           "metric": "build_count",
@@ -569,8 +569,8 @@
       "season_ids": [
         "autumn"
       ],
-      "title": "趁夜把危险听明白",
-      "description": "本周完成 2 次野外相遇，在秋季夜间节点前先摸清压力来源。",
+      "title": "趁夜先听听动静",
+      "description": "这周来 2 次野外相遇，在秋天夜路前先摸清危险从哪来。",
       "requirements": [
         {
           "metric": "encounter_count",
@@ -585,8 +585,8 @@
       "season_ids": [
         "winter"
       ],
-      "title": "守住冬线节奏",
-      "description": "本周完成 3 次落点访问，不求走远，先求把冬季安全线走稳。",
+      "title": "先把冬线走稳",
+      "description": "这周去 3 个落点转转，不求走远，先求一路稳稳当当。",
       "requirements": [
         {
           "metric": "visit_count",
@@ -601,8 +601,8 @@
       "season_ids": [
         "winter"
       ],
-      "title": "把试炼前置动作做满",
-      "description": "本周完成 1 次道馆挑战，让冬季周结算前先把压力释放一次。",
+      "title": "冬天也去热热身",
+      "description": "这周完成 1 次道馆挑战，在周结算前先把压力放掉一点。",
       "requirements": [
         {
           "metric": "dojo_clear_count",
@@ -611,6 +611,505 @@
         }
       ],
       "reward_bundle_id": "weekly_battle_bundle"
+    },
+    {
+      "id": "spring_stop_for_greetings",
+      "season_ids": [
+        "spring"
+      ],
+      "title": "路过的时候多打两声招呼",
+      "description": "这周去 2 个落点，再聊 2 次天。春天起步别只顾着赶路，把人情也顺手接起来。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_social_bundle"
+    },
+    {
+      "id": "spring_creek_small_catch",
+      "season_ids": [
+        "spring"
+      ],
+      "title": "顺手钓一尾也算收获",
+      "description": "这周钓 1 次鱼，再聊 1 次天。春水正好，别把这些轻松小收成都错过。",
+      "requirements": [
+        {
+          "metric": "fish_count",
+          "target": 1,
+          "label": "钓鱼次数"
+        },
+        {
+          "metric": "talk_count",
+          "target": 1,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_fishing_bundle"
+    },
+    {
+      "id": "summer_cool_head_checkin",
+      "season_ids": [
+        "summer"
+      ],
+      "title": "越热越要先说两句",
+      "description": "这周去 2 个落点，再聊 2 次天。夏天节奏快，先把人和路都确认清楚再往前压。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_social_bundle"
+    },
+    {
+      "id": "summer_channel_cast",
+      "season_ids": [
+        "summer"
+      ],
+      "title": "先降降温再去碰硬仗",
+      "description": "这周钓 1 次鱼、再来 1 次野外相遇。先把心口那股燥劲压住，再看这圈值不值得硬闯。",
+      "requirements": [
+        {
+          "metric": "fish_count",
+          "target": 1,
+          "label": "钓鱼次数"
+        },
+        {
+          "metric": "encounter_count",
+          "target": 1,
+          "label": "相遇次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_discovery_bundle"
+    },
+    {
+      "id": "summer_toolbag_reset",
+      "season_ids": [
+        "summer"
+      ],
+      "title": "把工具包顺手理一理",
+      "description": "这周完成 1 次建设，再聊 2 次天。夏天手上忙，更要把人和工具都安顿顺。",
+      "requirements": [
+        {
+          "metric": "build_count",
+          "target": 1,
+          "label": "建设次数"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_growth_bundle"
+    },
+    {
+      "id": "autumn_market_checkin",
+      "season_ids": [
+        "autumn"
+      ],
+      "title": "摊前多站一会儿",
+      "description": "这周聊 3 次天。秋天最怕闷头准备，把消息和手感一起问一圈更稳。",
+      "requirements": [
+        {
+          "metric": "talk_count",
+          "target": 3,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_social_bundle"
+    },
+    {
+      "id": "autumn_before_trial_chat",
+      "season_ids": [
+        "autumn"
+      ],
+      "title": "上场前先把心定下来",
+      "description": "这周通关 1 次试炼，再聊 2 次天。上场前把话说开，很多手忙脚乱都会少一点。",
+      "requirements": [
+        {
+          "metric": "dojo_clear_count",
+          "target": 1,
+          "label": "试炼通关"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_battle_bundle"
+    },
+    {
+      "id": "autumn_sea_wind_small_catch",
+      "season_ids": [
+        "autumn"
+      ],
+      "title": "海风边也顺手捞一点",
+      "description": "这周钓 1 次鱼、去 2 个落点。秋天后段常忙得很，能顺手拿的补给就别空着。",
+      "requirements": [
+        {
+          "metric": "fish_count",
+          "target": 1,
+          "label": "钓鱼次数"
+        },
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        }
+      ],
+      "reward_bundle_id": "weekly_fishing_bundle"
+    },
+    {
+      "id": "winter_before_dark_round",
+      "season_ids": [
+        "winter"
+      ],
+      "title": "天黑前把该看的都看一眼",
+      "description": "这周去 2 个落点，再聊 2 次天。冬天收得早，很多事早点确认，晚上才不会乱。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_route_bundle"
+    },
+    {
+      "id": "winter_stove_side_notes",
+      "season_ids": [
+        "winter"
+      ],
+      "title": "炉边把情况再过一遍",
+      "description": "这周聊 3 次天，再来 1 次野外相遇。终局前别只顾着扛，把听来的和看来的都对一对。",
+      "requirements": [
+        {
+          "metric": "talk_count",
+          "target": 3,
+          "label": "交谈次数"
+        },
+        {
+          "metric": "encounter_count",
+          "target": 1,
+          "label": "相遇次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_social_bundle"
+    },
+    {
+      "id": "spring_post_late_bowl",
+      "season_ids": [
+        "spring"
+      ],
+      "title": "先替晚归的人留一口热",
+      "description": "这周去 2 个落点，再聊 2 次天。春天刚开线，别只顾着往外走，也顺手把回来的那口热气留稳。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_hearth_bundle"
+    },
+    {
+      "id": "spring_creek_halfshade",
+      "season_ids": [
+        "spring"
+      ],
+      "title": "给亮处也留一点阴",
+      "description": "这周去 2 个落点，再聊 2 次天。春水亮得快，先别急着把事情看满，给细节留半步反而更稳。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_station_log_bundle"
+    },
+    {
+      "id": "summer_market_pocket_order",
+      "season_ids": [
+        "summer"
+      ],
+      "title": "先把最会乱跑的安顿住",
+      "description": "这周完成 1 次建设，再聊 2 次天。夏天手上忙，先把工具和零件各自放稳，做事才不容易一路掉节奏。",
+      "requirements": [
+        {
+          "metric": "build_count",
+          "target": 1,
+          "label": "建设次数"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_market_bundle"
+    },
+    {
+      "id": "summer_platform_soft_light",
+      "season_ids": [
+        "summer"
+      ],
+      "title": "亮归亮，也先留一层软光",
+      "description": "这周去 2 个落点，再聊 2 次天。夏天判断最容易快过头，先把灯和话都放软一点，再往前看会更准。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_station_log_bundle"
+    },
+    {
+      "id": "autumn_route_cards_ready",
+      "season_ids": [
+        "autumn"
+      ],
+      "title": "出门前先把去处系清",
+      "description": "这周去 3 个落点，再聊 2 次天。秋天后段事情密，先把手里的去处和顺序系明白，忙起来才不至于乱拿乱放。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 3,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_route_bundle"
+    },
+    {
+      "id": "winter_margin_and_stove",
+      "season_ids": [
+        "winter"
+      ],
+      "title": "炉边留热，纸边留白",
+      "description": "这周去 2 个落点，再聊 3 次天。冬天最怕把话和活都做满，先给火气和判断各留一点余地，整周会顺很多。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 3,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_hearth_bundle"
+    },
+    {
+      "id": "spring_grove_patrol_window",
+      "season_ids": [
+        "spring"
+      ],
+      "title": "趁春天先把鹿路看熟",
+      "description": "这周去 2 个落点，再来 1 次野外相遇。春线刚开，先把林巡线和精英鹿常走的路摸熟。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "encounter_count",
+          "target": 1,
+          "label": "相遇次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_elite_patrol_bundle"
+    },
+    {
+      "id": "spring_crown_trace_round",
+      "season_ids": [
+        "spring"
+      ],
+      "title": "看见之前先学会放轻",
+      "description": "这周去 2 个落点，再聊 2 次天。想等林里的神宠，不如先把脚步和说话都收轻一点。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_window_watch_bundle"
+    },
+    {
+      "id": "summer_thunder_pause_listen",
+      "season_ids": [
+        "summer"
+      ],
+      "title": "雷响之前先会听静",
+      "description": "这周去 2 个落点，再来 2 次野外相遇。夏天的好窗口往往不在最吵的时候，而在那一拍忽然安静。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "encounter_count",
+          "target": 2,
+          "label": "相遇次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_thunder_watch_bundle"
+    },
+    {
+      "id": "summer_post_qilin_rumor",
+      "season_ids": [
+        "summer"
+      ],
+      "title": "先把雷季传闻听全",
+      "description": "这周聊 3 次天，再来 1 次野外相遇。驿站和草场都会传角兽的消息，先把真假分清，蹲点才不白等。",
+      "requirements": [
+        {
+          "metric": "talk_count",
+          "target": 3,
+          "label": "交谈次数"
+        },
+        {
+          "metric": "encounter_count",
+          "target": 1,
+          "label": "相遇次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_elite_patrol_bundle"
+    },
+    {
+      "id": "autumn_coast_lamp_watch",
+      "season_ids": [
+        "autumn"
+      ],
+      "title": "把潮灯边那口稳气留住",
+      "description": "这周去 2 个落点，再聊 2 次天。秋海风里很多精英宠都认灯边这点稳，先把准备做细。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_window_watch_bundle"
+    },
+    {
+      "id": "autumn_platform_margin_watch",
+      "season_ids": [
+        "autumn"
+      ],
+      "title": "页边留白，等录灵自己靠近",
+      "description": "这周去 2 个落点，再聊 2 次天。秋夜观测最怕写太满，先把旁注和判断都留点余地。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_station_log_bundle"
+    },
+    {
+      "id": "winter_lake_twin_shadow",
+      "season_ids": [
+        "winter"
+      ],
+      "title": "镜湖夜里分清光和影",
+      "description": "这周来 2 次野外相遇，再聊 2 次天。冬夜里很多精英宠就差这点眼力，先分清哪一道先改了水面。",
+      "requirements": [
+        {
+          "metric": "encounter_count",
+          "target": 2,
+          "label": "相遇次数"
+        },
+        {
+          "metric": "talk_count",
+          "target": 2,
+          "label": "交谈次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_mirror_watch_bundle"
+    },
+    {
+      "id": "winter_moonfen_second_echo",
+      "season_ids": [
+        "winter"
+      ],
+      "title": "等第二道回声再下判断",
+      "description": "这周去 2 个落点，再来 1 次野外相遇。冬末高异常最会骗人，先学会等第一层动静自己退下去。",
+      "requirements": [
+        {
+          "metric": "visit_count",
+          "target": 2,
+          "label": "访问节点"
+        },
+        {
+          "metric": "encounter_count",
+          "target": 1,
+          "label": "相遇次数"
+        }
+      ],
+      "reward_bundle_id": "weekly_myth_trace_bundle"
     }
   ]
 }

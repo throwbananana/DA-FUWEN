@@ -13,12 +13,14 @@ var current_sections: Array = []
 var current_section_id := ""
 var _panel_tween: Tween
 var _section_tween: Tween
+var _section_buttons: Array[Button] = []
 
 func _ready() -> void:
 	hide()
 	modulate.a = 1.0
 	scale = Vector2.ONE
 	_apply_responsive_layout()
+	close_button.focus_mode = Control.FOCUS_ALL
 	close_button.pressed.connect(close_panel)
 
 func open_panel(title_text: String, sections: Array, initial_section_id: String = "") -> void:
@@ -38,10 +40,36 @@ func open_panel(title_text: String, sections: Array, initial_section_id: String 
 		target_id = String(current_sections[0].get("id", ""))
 	_select_section(target_id)
 	_play_open_animation()
+	call_deferred("_focus_current_section")
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		_apply_responsive_layout()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		close_panel()
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_left"):
+		_select_neighbor_section(-1)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_right"):
+		_select_neighbor_section(1)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_up"):
+		_scroll_rich_text(summary_label, -80.0)
+		_scroll_rich_text(detail_label, -120.0)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_down"):
+		_scroll_rich_text(summary_label, 80.0)
+		_scroll_rich_text(detail_label, 120.0)
+		get_viewport().set_input_as_handled()
 
 func close_panel() -> void:
 	if GameState.should_skip_animations():
@@ -61,6 +89,7 @@ func close_panel() -> void:
 	)
 
 func _render_section_buttons() -> void:
+	_section_buttons.clear()
 	for child in section_row.get_children():
 		child.queue_free()
 	for section in current_sections:
@@ -69,12 +98,14 @@ func _render_section_buttons() -> void:
 			continue
 		var button := Button.new()
 		button.toggle_mode = true
-		button.focus_mode = Control.FOCUS_NONE
+		button.focus_mode = Control.FOCUS_ALL
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.custom_minimum_size = Vector2(0, 42)
 		button.text = String(section.get("label", section_id))
 		button.pressed.connect(_on_section_pressed.bind(section_id))
 		section_row.add_child(button)
+		_section_buttons.append(button)
+	_wire_focus_neighbors()
 
 func _on_section_pressed(section_id: String) -> void:
 	_select_section(section_id)
@@ -96,6 +127,7 @@ func _select_section(section_id: String) -> void:
 		var is_active := button.text == String(section.get("label", section_id))
 		button.button_pressed = is_active
 		button.modulate = Color(1.0, 0.94, 0.78) if is_active else Color(1, 1, 1)
+	_focus_current_section()
 
 func _apply_responsive_layout() -> void:
 	if not is_node_ready():
@@ -155,3 +187,47 @@ func _find_section(section_id: String) -> Dictionary:
 		if String(section.get("id", "")) == section_id:
 			return Dictionary(section).duplicate(true)
 	return {}
+
+func _wire_focus_neighbors() -> void:
+	for index in range(_section_buttons.size()):
+		var button := _section_buttons[index]
+		if button == null:
+			continue
+		if index > 0:
+			button.focus_neighbor_left = _section_buttons[index - 1].get_path()
+		if index + 1 < _section_buttons.size():
+			button.focus_neighbor_right = _section_buttons[index + 1].get_path()
+		else:
+			button.focus_neighbor_right = close_button.get_path()
+		button.focus_neighbor_bottom = close_button.get_path()
+	if not _section_buttons.is_empty():
+		close_button.focus_neighbor_left = _section_buttons[_section_buttons.size() - 1].get_path()
+		close_button.focus_neighbor_top = _section_buttons[0].get_path()
+
+func _focus_current_section() -> void:
+	for index in range(current_sections.size()):
+		if String(current_sections[index].get("id", "")) != current_section_id:
+			continue
+		if index < _section_buttons.size() and _section_buttons[index] != null:
+			_section_buttons[index].grab_focus()
+		return
+	close_button.grab_focus()
+
+func _select_neighbor_section(step: int) -> void:
+	if current_sections.is_empty():
+		return
+	var current_index := 0
+	for index in range(current_sections.size()):
+		if String(current_sections[index].get("id", "")) == current_section_id:
+			current_index = index
+			break
+	var next_index := posmod(current_index + step, current_sections.size())
+	_select_section(String(current_sections[next_index].get("id", current_section_id)))
+
+func _scroll_rich_text(label: RichTextLabel, delta: float) -> void:
+	if label == null:
+		return
+	var scroll_bar := label.get_v_scroll_bar()
+	if scroll_bar == null:
+		return
+	scroll_bar.value = clampf(scroll_bar.value + delta, scroll_bar.min_value, scroll_bar.max_value)

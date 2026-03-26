@@ -154,6 +154,28 @@
       },
       "unlocks": []
     },
+    "weekly_fishing_bundle": {
+      "items": {
+        "water_drop": 2,
+        "paper": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "exploration_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_route_bundle": {
+      "items": {
+        "rope": 1,
+        "paper": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "anchor_points": 1
+      },
+      "unlocks": []
+    },
     "weekly_discovery_bundle": {
       "items": {
         "glow_dust": 1
@@ -216,6 +238,126 @@
       "systems": {
         "season_points": 5,
         "exploration_points": 4
+      },
+      "unlocks": []
+    },
+    "fishing_festival_bundle": {
+      "items": {
+        "paper": 1,
+        "glass": 1,
+        "water_drop": 1
+      },
+      "systems": {
+        "season_points": 2,
+        "exploration_points": 1
+      },
+      "unlocks": []
+    },
+    "winter_care_bundle": {
+      "items": {
+        "warm_stone": 2,
+        "cloth": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "anchor_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_hearth_bundle": {
+      "items": {
+        "tea_leaf": 1,
+        "cloth": 1,
+        "paper": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "weekly_reroll_limit": 1
+      },
+      "unlocks": []
+    },
+    "weekly_station_log_bundle": {
+      "items": {
+        "ink": 1,
+        "paper": 1,
+        "blueprint_scrap": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "exploration_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_market_bundle": {
+      "items": {
+        "parts": 1,
+        "rope": 1,
+        "cloth": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "season_adjust_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_elite_patrol_bundle": {
+      "items": {
+        "paper": 1,
+        "cloth": 1,
+        "warm_stone": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "exploration_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_window_watch_bundle": {
+      "items": {
+        "ink": 1,
+        "paper": 1,
+        "glow_dust": 1
+      },
+      "systems": {
+        "season_points": 1,
+        "exploration_points": 1,
+        "weekly_reroll_limit": 1
+      },
+      "unlocks": []
+    },
+    "weekly_thunder_watch_bundle": {
+      "items": {
+        "storm_core": 1,
+        "rope": 1,
+        "paper": 1
+      },
+      "systems": {
+        "season_points": 2,
+        "anchor_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_mirror_watch_bundle": {
+      "items": {
+        "ice_glass": 1,
+        "glass": 1,
+        "warm_stone": 1
+      },
+      "systems": {
+        "season_points": 2,
+        "exploration_points": 1
+      },
+      "unlocks": []
+    },
+    "weekly_myth_trace_bundle": {
+      "items": {
+        "glow_dust": 1,
+        "storm_core": 1,
+        "paper": 1
+      },
+      "systems": {
+        "season_points": 2,
+        "exploration_points": 2
       },
       "unlocks": []
     }

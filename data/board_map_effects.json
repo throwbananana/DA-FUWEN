@@ -5,7 +5,7 @@
       "id": "spring_scout_cache",
       "trigger": "arrival",
       "title": "侦察标记",
-      "description": "前线留下的标记把模糊路况重新整理成了可执行路线。",
+      "description": "前线留下的标记把原本模糊的路况理顺成了更好走的路。",
       "once_per_node": true,
       "effects": [
         {
@@ -45,8 +45,8 @@
     {
       "id": "autumn_forge_cycle",
       "trigger": "arrival",
-      "title": "构筑预热",
-      "description": "试作台把零散素材压成了更顺手的中段推进节奏。",
+      "title": "先热热身",
+      "description": "试作台把零散素材理顺了，接下来走起来会顺手不少。",
       "once_per_node": true,
       "effects": [
         {
@@ -64,8 +64,8 @@
     {
       "id": "winter_route_alignment",
       "trigger": "arrival",
-      "title": "终局校线",
-      "description": "最后的路线校正迫使敌群后撤，也让终局前的情报重新清晰起来。",
+      "title": "终点前再看一眼路",
+      "description": "最后再顺一遍路线，敌群往后退了些，前面的动静也清楚多了。",
       "once_per_node": true,
       "effects": [
         {

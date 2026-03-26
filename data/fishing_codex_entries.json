@@ -168,6 +168,146 @@
         "winter",
         "care"
       ]
+    },
+    {
+      "id": "codex_creek_teacher_knots",
+      "species_id": "brook_lantern_fish",
+      "title": "溪边理线的那点手上分寸",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_event:creek_teacher_knots"
+      },
+      "portrait_hint": "比起看鱼口，更像是在看一双老手怎样把最容易炸开的线结慢慢拆开。",
+      "habitat_notes": [
+        "晶溪浅滩这种风轻、水稳的地方最容易学会",
+        "旁边要是有人肯慢慢讲，很多手势一下就能看懂"
+      ],
+      "behavior_notes": [
+        "乱线往往不是一下乱的，而是前面几次收得太急慢慢攒出来的",
+        "溪边最会教人的，常常不是一条大鱼，而是怎么先不把线弄坏"
+      ],
+      "care_notes": [
+        "先拆最紧的那一处，再去理看起来最乱的那一截",
+        "会理线以后，钓鱼这件事会先少掉一半的急"
+      ],
+      "research_tags": [
+        "fishing",
+        "technique",
+        "creek"
+      ]
+    },
+    {
+      "id": "codex_winter_ice_rescue",
+      "species_id": "mirror_ice_perch",
+      "title": "冰孔边先顾伤口的做法",
+      "rarity": "uncommon",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_event:winter_ice_rescue"
+      },
+      "portrait_hint": "真正被记住的不是起鱼那一下，而是有人先把冰孔边缘收拾得不再伤鱼。",
+      "habitat_notes": [
+        "霜镜湖冬季最常见这种先顾孔边、再顾鱼讯的做法",
+        "越冷的时候，越能看出谁愿意把手上动作先放轻"
+      ],
+      "behavior_notes": [
+        "冰孔边一旦有碎刺，很多个体就算靠近也不会真上浮",
+        "湖边安静的时候，救护动作本身就会让整片水面稳一些"
+      ],
+      "care_notes": [
+        "先清孔、再下手，比多换几次位置更重要",
+        "冬天的照护不一定热闹，但做对了会让后面都轻松很多"
+      ],
+      "research_tags": [
+        "fishing",
+        "winter",
+        "rescue"
+      ]
+    },
+    {
+      "id": "codex_reed_cleanup_chain",
+      "species_id": "reed_back_crab",
+      "title": "芦根下面那串旧线",
+      "rarity": "uncommon",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_event:reed_mire_cleanup_chain"
+      },
+      "portrait_hint": "一开始只像扯出一点旧线，真往下摸才发现整片边汊都被它拖得不痛快。",
+      "habitat_notes": [
+        "芦泽边汊、回流圈和芦根底下最容易攒这种旧线",
+        "水位一变，这些残线就会把原本顺的路全拖乱"
+      ],
+      "behavior_notes": [
+        "很多水边个体不是少了，而是被旧线逼得不再愿意靠近",
+        "先把这串旧线理掉，后面的鱼讯和放流都会顺很多"
+      ],
+      "care_notes": [
+        "清旧线和钓鱼一样，都讲究先顺着找，不要硬拽",
+        "边汊一旦被收干净，连站在岸边的人都会先松一口气"
+      ],
+      "research_tags": [
+        "fishing",
+        "cleanup",
+        "wetland"
+      ]
+    },
+    {
+      "id": "codex_saltglass_night_whisper",
+      "species_id": "moon_tide_eel",
+      "title": "盐镜夜潮先让人听见的那一声",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_event:saltglass_night_whisper"
+      },
+      "portrait_hint": "真正先到的不是鱼影，而是一小段轻得几乎像错觉的刮线声。",
+      "habitat_notes": [
+        "盐镜海岸夜里起潮时最容易碰上这种‘先听见、后看见’的水讯",
+        "风和潮都稳的时候，这类夜场会格外清楚"
+      ],
+      "behavior_notes": [
+        "夜潮会先把岸边的杂音一点点收走，再把真正的动静留给肯慢下来的人",
+        "很多高稀有个体并不是更猛，只是更会等人先安静"
+      ],
+      "care_notes": [
+        "想记住这种夜场，耳朵比手更要先准备好",
+        "别急着把每一次轻响都当作起鱼，先把潮线听明白"
+      ],
+      "research_tags": [
+        "fishing",
+        "night",
+        "shore"
+      ]
+    },
+    {
+      "id": "codex_lantern_derby_notice",
+      "species_id": "brook_lantern_fish",
+      "title": "河灯会那晚的榜单气氛",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "festival_score:summer_lantern_derby:6"
+      },
+      "portrait_hint": "灯一挂起来，岸边的人就不再只是钓手，像一群来陪河水热闹一晚的旧熟人。",
+      "habitat_notes": [
+        "夏天的晶溪最容易把‘比赛’过成‘大家都多待一会儿’的样子",
+        "河灯、榜单和浅滩边的小聊天会一起把岸边撑热"
+      ],
+      "behavior_notes": [
+        "真正让人记住的常不是分数，而是谁在那晚多说了两句顺手话",
+        "榜单一挂出来，连平时不爱凑热闹的人都会慢慢靠过来看看"
+      ],
+      "care_notes": [
+        "节庆钓会不一定要抢快，先把气氛接住反而更容易有手感",
+        "有时候愿意多停一会儿，本身就是这类夜会最好的收获"
+      ],
+      "research_tags": [
+        "fishing",
+        "festival",
+        "community"
+      ]
     }
   ]
 }

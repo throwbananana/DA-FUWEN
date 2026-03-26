@@ -282,6 +282,7 @@ func _default_settings() -> Dictionary:
 		"reduced_motion": false,
 		"tutorials_enabled": true,
 		"language": "zh_cn",
+		"input_bindings": {},
 	}
 
 func _ensure_settings_defaults() -> void:
@@ -294,6 +295,8 @@ func _ensure_settings_defaults() -> void:
 	settings["tutorials_enabled"] = bool(settings.get("tutorials_enabled", true))
 	var language_id := String(settings.get("language", "zh_cn"))
 	settings["language"] = language_id if language_id in ["zh_cn", "ja_jp", "en_us"] else "zh_cn"
+	var input_bindings_value = settings.get("input_bindings", {})
+	settings["input_bindings"] = Dictionary(input_bindings_value).duplicate(true) if typeof(input_bindings_value) == TYPE_DICTIONARY else {}
 
 func load_meta_progression() -> void:
 	_ensure_meta_progression_defaults()
@@ -349,6 +352,8 @@ func load_settings() -> void:
 	settings["reduced_motion"] = bool(parsed.get("reduced_motion", settings.get("reduced_motion", false)))
 	settings["tutorials_enabled"] = bool(parsed.get("tutorials_enabled", settings.get("tutorials_enabled", true)))
 	settings["language"] = String(parsed.get("language", settings.get("language", "zh_cn")))
+	var input_bindings_value = parsed.get("input_bindings", settings.get("input_bindings", {}))
+	settings["input_bindings"] = Dictionary(input_bindings_value).duplicate(true) if typeof(input_bindings_value) == TYPE_DICTIONARY else {}
 	_ensure_settings_defaults()
 
 func save_settings() -> void:
@@ -394,6 +399,15 @@ func tutorials_enabled() -> bool:
 func current_language() -> String:
 	_ensure_settings_defaults()
 	return String(settings.get("language", "zh_cn"))
+
+func get_input_bindings() -> Dictionary:
+	_ensure_settings_defaults()
+	return Dictionary(settings.get("input_bindings", {})).duplicate(true)
+
+func set_input_bindings(bindings: Dictionary) -> void:
+	_ensure_settings_defaults()
+	settings["input_bindings"] = Dictionary(bindings).duplicate(true)
+	save_settings()
 
 func minimum_window_size() -> Vector2i:
 	return MIN_WINDOW_SIZE
@@ -1149,9 +1163,13 @@ func _default_building_runtime_state() -> Dictionary:
 		"last_action_id": "",
 		"tenant_npc_ids": [],
 		"damage_days": 0,
+		"incident_kind": "",
+		"incident_note": "",
+		"incident_cost": {},
 		"last_income_turn": -1,
 		"last_incident_turn": -1,
 		"last_move_in_turn": -1,
+		"last_social_turn": -1,
 	}
 
 func _normalize_building_runtime_state(raw_state: Dictionary) -> Dictionary:
@@ -1165,9 +1183,13 @@ func _normalize_building_runtime_state(raw_state: Dictionary) -> Dictionary:
 	normalized["weekly_flags"] = _duplicate_dictionary(normalized.get("weekly_flags", {}))
 	normalized["tenant_npc_ids"] = _coerce_string_array(normalized.get("tenant_npc_ids", []))
 	normalized["damage_days"] = maxi(0, int(normalized.get("damage_days", 0)))
+	normalized["incident_kind"] = String(normalized.get("incident_kind", ""))
+	normalized["incident_note"] = String(normalized.get("incident_note", ""))
+	normalized["incident_cost"] = _duplicate_dictionary(normalized.get("incident_cost", {}))
 	normalized["last_income_turn"] = int(normalized.get("last_income_turn", -1))
 	normalized["last_incident_turn"] = int(normalized.get("last_incident_turn", -1))
 	normalized["last_move_in_turn"] = int(normalized.get("last_move_in_turn", -1))
+	normalized["last_social_turn"] = int(normalized.get("last_social_turn", -1))
 	return normalized
 
 func _seed_companions() -> void:
@@ -1553,6 +1575,57 @@ func set_building_runtime_state(habitat_id: String, building_id: String, runtime
 func is_building_damaged(habitat_id: String, building_id: String) -> bool:
 	return int(get_building_runtime_state(habitat_id, building_id).get("damage_days", 0)) > 0
 
+func get_building_repair_cost(habitat_id: String, building_id: String) -> Dictionary:
+	var runtime_state := get_building_runtime_state(habitat_id, building_id)
+	var configured_cost := _duplicate_dictionary(runtime_state.get("incident_cost", {}))
+	if not configured_cost.is_empty():
+		return configured_cost
+	var damage_days := maxi(0, int(runtime_state.get("damage_days", 0)))
+	if damage_days <= 0:
+		return {}
+	return _default_damage_repair_cost(building_id, damage_days)
+
+func repair_building_damage(habitat_id: String, building_id: String, consume_cost: bool = true) -> Dictionary:
+	var runtime_state := ensure_building_runtime_state(habitat_id, building_id)
+	var damage_days := maxi(0, int(runtime_state.get("damage_days", 0)))
+	if damage_days <= 0:
+		return {
+			"ok": false,
+			"reason": "building_not_damaged",
+			"habitat_id": habitat_id,
+			"building_id": building_id,
+		}
+	var repair_cost := get_building_repair_cost(habitat_id, building_id)
+	if consume_cost and not repair_cost.is_empty() and not can_pay(repair_cost):
+		return {
+			"ok": false,
+			"reason": "insufficient_items",
+			"habitat_id": habitat_id,
+			"building_id": building_id,
+			"cost": repair_cost,
+		}
+	if consume_cost and not repair_cost.is_empty() and not pay_cost(repair_cost):
+		return {
+			"ok": false,
+			"reason": "payment_failed",
+			"habitat_id": habitat_id,
+			"building_id": building_id,
+			"cost": repair_cost,
+		}
+	runtime_state["damage_days"] = 0
+	runtime_state["incident_kind"] = ""
+	runtime_state["incident_note"] = ""
+	runtime_state["incident_cost"] = {}
+	set_building_runtime_state(habitat_id, building_id, runtime_state)
+	add_journal_entry("%s 的 %s 修缮完毕。" % [_habitat_name(habitat_id), String(DataRepository.get_building(building_id).get("name", building_id))])
+	return {
+		"ok": true,
+		"habitat_id": habitat_id,
+		"building_id": building_id,
+		"cost": repair_cost,
+		"repaired_damage_days": damage_days,
+	}
+
 func get_apartment_status(habitat_id: String, building_id: String = "settlement_apartment") -> Dictionary:
 	var level := get_building_level(habitat_id, building_id)
 	var building := DataRepository.get_building(building_id)
@@ -1574,9 +1647,13 @@ func get_apartment_status(habitat_id: String, building_id: String = "settlement_
 		"tenant_count": tenant_names.size(),
 		"tenant_capacity": maxi(0, int(apartment_config.get("tenant_capacity", 0))),
 		"damage_days": maxi(0, int(runtime_state.get("damage_days", 0))),
+		"incident_kind": String(runtime_state.get("incident_kind", "")),
+		"incident_note": String(runtime_state.get("incident_note", "")),
+		"repair_cost": get_building_repair_cost(habitat_id, building_id),
 		"rent_interval_days": maxi(1, int(apartment_config.get("rent_interval_days", 1))),
 		"last_income_turn": int(runtime_state.get("last_income_turn", -1)),
 		"last_incident_turn": int(runtime_state.get("last_incident_turn", -1)),
+		"last_social_turn": int(runtime_state.get("last_social_turn", -1)),
 	}
 
 func get_nursery_state(habitat_id: String) -> Dictionary:
@@ -1872,6 +1949,7 @@ func _tick_building_runtime_states() -> Array[String]:
 				damage_days -= 1
 				runtime_state["damage_days"] = damage_days
 				if damage_days <= 0:
+					runtime_state["incident_cost"] = {}
 					lines.append("%s 的 %s 已经修整妥当，可以照常使用了。" % [
 						_habitat_name(String(habitat_id)),
 						String(DataRepository.get_building(String(building_id)).get("name", String(building_id))),
@@ -1957,13 +2035,44 @@ func _process_apartment_daily_updates() -> Array[String]:
 				})
 			var repair_choice := _pick_weighted_row(repair_rows, "%s|repair|%d" % [habitat_id, global_turn])
 			if not repair_choice.is_empty():
-				runtime_state["damage_days"] = maxi(0, damage_days - 1)
+				var repaired_damage := maxi(0, damage_days - 1)
+				runtime_state["damage_days"] = repaired_damage
+				if repaired_damage <= 0:
+					runtime_state["incident_kind"] = ""
+					runtime_state["incident_note"] = ""
+					runtime_state["incident_cost"] = {}
 				lines.append("%s 的住客 %s 顺手把公寓收拾了一遍。" % [
 					_habitat_name(habitat_id),
 					String(Dictionary(repair_choice.get("npc", {})).get("name", repair_choice.get("id", "住客"))),
 				])
 
 		tenant_ids = _coerce_string_array(runtime_state.get("tenant_npc_ids", []))
+		var social_gap := 5
+		if tenant_ids.size() < tenant_capacity and global_turn - int(runtime_state.get("last_social_turn", -999)) >= social_gap:
+			var host_rows := _apartment_story_host_rows(tenant_ids)
+			var blocked_tenants: Dictionary = reserved_tenants.duplicate(true)
+			var referral_rows := _apartment_candidate_rows(habitat_id, blocked_tenants)
+			var host_choice := _pick_weighted_row(host_rows, "%s|tenant_story_host|%d" % [habitat_id, global_turn])
+			var referral_choice := _pick_weighted_row(referral_rows, "%s|tenant_story_guest|%d" % [habitat_id, global_turn])
+			if not host_choice.is_empty() and not referral_choice.is_empty():
+				var host_name := String(Dictionary(host_choice.get("npc", {})).get("name", host_choice.get("id", "住客")))
+				var guest_id := String(referral_choice.get("id", ""))
+				if not guest_id.is_empty() and not tenant_ids.has(guest_id):
+					var guest_name := String(Dictionary(referral_choice.get("npc", {})).get("name", guest_id))
+					tenant_ids.append(guest_id)
+					claimed_tenants[guest_id] = habitat_id
+					reserved_tenants[guest_id] = habitat_id
+					runtime_state["tenant_npc_ids"] = tenant_ids.duplicate()
+					runtime_state["last_move_in_turn"] = global_turn
+					runtime_state["last_social_turn"] = global_turn
+					lines.append("%s 的住客 %s 介绍了熟人 %s，空房当晚就住满了一间。" % [
+						_habitat_name(habitat_id),
+						host_name,
+						guest_name,
+					])
+					add_journal_entry("%s 在 %s 的旅居公寓替你牵线，把 %s 也介绍来住下。" % [host_name, _habitat_name(habitat_id), guest_name])
+					note_ambient_event_seen("apartment_referral_move_in", ["apartment", "social", "move_in"], habitat_id)
+
 		var move_in_interval := maxi(1, int(apartment_config.get("move_in_interval_days", 2)))
 		if tenant_ids.size() < tenant_capacity and global_turn - int(runtime_state.get("last_move_in_turn", -1)) >= move_in_interval:
 			var blocked_tenants: Dictionary = reserved_tenants.duplicate(true)
@@ -1986,19 +2095,23 @@ func _process_apartment_daily_updates() -> Array[String]:
 			var grudge_rows := _apartment_grudge_rows(habitat_id)
 			var grudge_choice := _pick_weighted_row(grudge_rows, "%s|grudge|%d" % [habitat_id, global_turn])
 			if not grudge_choice.is_empty():
-				var damage_target := _pick_damage_target_building(habitat_id, apartment_id, "%s|damage_target|%d" % [habitat_id, global_turn])
-				if not damage_target.is_empty():
-					var culprit_name := String(Dictionary(grudge_choice.get("npc", {})).get("name", grudge_choice.get("id", "某人")))
-					var culprit_profile := Dictionary(grudge_choice.get("profile", {})).duplicate(true)
-					var target_id := String(damage_target.get("id", ""))
-					var target_name := String(Dictionary(damage_target.get("building", {})).get("name", target_id))
-					var applied_damage := 1 + int(culprit_profile.get("mischief", 1))
-					_apply_building_damage(habitat_id, target_id, applied_damage)
-					if target_id == apartment_id:
-						runtime_state["damage_days"] = maxi(int(runtime_state.get("damage_days", 0)), applied_damage)
+				var incident_result := _resolve_apartment_grudge_incident(habitat_id, apartment_id, grudge_choice)
+				if not incident_result.is_empty():
 					runtime_state["last_incident_turn"] = global_turn
-					lines.append("%s 对你心存芥蒂，夜里把 %s 的 %s 折腾坏了。" % [culprit_name, _habitat_name(habitat_id), target_name])
-					add_journal_entry("%s 在 %s 留下了人为破坏痕迹，%s 暂时受损。" % [culprit_name, _habitat_name(habitat_id), target_name])
+					lines.append(String(incident_result.get("line", "")))
+					var apartment_damage_days := int(incident_result.get("apartment_damage_days", -1))
+					if apartment_damage_days >= 0:
+						runtime_state["damage_days"] = apartment_damage_days
+					var apartment_incident_kind := String(incident_result.get("apartment_incident_kind", ""))
+					if not apartment_incident_kind.is_empty():
+						runtime_state["incident_kind"] = apartment_incident_kind
+					if incident_result.has("apartment_incident_note"):
+						runtime_state["incident_note"] = String(incident_result.get("apartment_incident_note", ""))
+					if incident_result.has("apartment_incident_cost"):
+						runtime_state["incident_cost"] = _duplicate_dictionary(incident_result.get("apartment_incident_cost", {}))
+					var journal_line := String(incident_result.get("journal", ""))
+					if not journal_line.is_empty():
+						add_journal_entry(journal_line)
 
 		set_building_runtime_state(habitat_id, apartment_id, runtime_state)
 	return lines
@@ -2048,6 +2161,24 @@ func _apartment_grudge_rows(habitat_id: String) -> Array:
 		})
 	return result
 
+func _apartment_story_host_rows(tenant_ids: Array[String]) -> Array:
+	var result: Array = []
+	for npc_id in tenant_ids:
+		var profile := _apartment_profile_for_npc(npc_id)
+		if profile.is_empty():
+			continue
+		var trust := int(npc_trust.get(npc_id, 0))
+		var care := int(profile.get("care", 0))
+		if trust < 5 or care < 1:
+			continue
+		result.append({
+			"id": npc_id,
+			"npc": DataRepository.get_npc(npc_id),
+			"profile": profile,
+			"weight": maxi(1, trust + care + int(profile.get("rent", 0))),
+		})
+	return result
+
 func _pick_damage_target_building(habitat_id: String, apartment_id: String, token: String) -> Dictionary:
 	var rows: Array = []
 	for raw_building in DataRepository.get_buildings_for_habitat(habitat_id):
@@ -2062,11 +2193,77 @@ func _pick_damage_target_building(habitat_id: String, apartment_id: String, toke
 		})
 	return _pick_weighted_row(rows, token)
 
-func _apply_building_damage(habitat_id: String, building_id: String, damage_days: int) -> void:
+func _resolve_apartment_grudge_incident(habitat_id: String, apartment_id: String, grudge_choice: Dictionary) -> Dictionary:
+	var culprit_id := String(grudge_choice.get("id", ""))
+	var culprit_name := String(Dictionary(grudge_choice.get("npc", {})).get("name", culprit_id if not culprit_id.is_empty() else "某人"))
+	var culprit_profile := Dictionary(grudge_choice.get("profile", {})).duplicate(true)
+	var mischief := maxi(1, int(culprit_profile.get("mischief", 1)))
+	var trust := int(npc_trust.get(culprit_id, 0))
+	var event_options: Array[String] = []
+	var theft_bundle := _pick_apartment_theft_bundle(mischief, "%s|nuisance_items|%s|%d" % [habitat_id, culprit_id, global_turn])
+	var gold_loss := mini(wallet_gold, maxi(1, mischief + (1 if trust <= 0 else 0)))
+	var damage_target := _pick_damage_target_building(habitat_id, apartment_id, "%s|damage_target|%d" % [habitat_id, global_turn])
+	if not theft_bundle.is_empty():
+		event_options.append("steal_items")
+	if gold_loss > 0:
+		event_options.append("steal_gold")
+	if not damage_target.is_empty():
+		event_options.append("damage")
+		if mischief >= 2:
+			event_options.append("repair_prank")
+	if event_options.is_empty():
+		return {}
+
+	var kind := String(event_options[int(abs(hash("%s|nuisance_kind|%s|%d" % [habitat_id, culprit_id, global_turn]))) % event_options.size()])
+	match kind:
+		"steal_items":
+			if theft_bundle.is_empty() or not remove_items(theft_bundle):
+				return {}
+			note_ambient_event_seen("apartment_nuisance_items", ["apartment", "nuisance", "theft"], habitat_id)
+			return {
+				"line": "%s 趁夜在 %s 顺走了备料：%s。" % [culprit_name, _habitat_name(habitat_id), _format_item_bundle(theft_bundle)],
+				"journal": "%s 对你还有怨气，夜里摸走了 %s 的备料。" % [culprit_name, _habitat_name(habitat_id)],
+			}
+		"steal_gold":
+			if not spend_wallet_gold(gold_loss):
+				return {}
+			note_ambient_event_seen("apartment_nuisance_gold", ["apartment", "nuisance", "gold"], habitat_id)
+			return {
+				"line": "%s 在 %s 借机掏走了 %d 金的杂项开销。" % [culprit_name, _habitat_name(habitat_id), gold_loss],
+				"journal": "%s 把你留在 %s 的零钱顺走了 %d 金。" % [culprit_name, _habitat_name(habitat_id), gold_loss],
+			}
+		"repair_prank", "damage":
+			if damage_target.is_empty():
+				return {}
+			var target_id := String(damage_target.get("id", ""))
+			var target_name := String(Dictionary(damage_target.get("building", {})).get("name", target_id))
+			var applied_damage := 1 + mischief + (1 if kind == "repair_prank" else 0)
+			var repair_cost := _default_damage_repair_cost(target_id, applied_damage)
+			var incident_note := "%s 留下了一堆手尾，想早点修好得补上 %s。" % [culprit_name, _format_item_bundle(repair_cost)]
+			_apply_building_damage(habitat_id, target_id, applied_damage, incident_note, kind, repair_cost)
+			note_ambient_event_seen("apartment_nuisance_damage", ["apartment", "nuisance", "damage"], habitat_id)
+			return {
+				"line": "%s 对你心存芥蒂，夜里把 %s 的 %s 折腾坏了。" % [culprit_name, _habitat_name(habitat_id), target_name],
+				"journal": "%s 在 %s 留下了人为破坏痕迹，%s 暂时受损。" % [culprit_name, _habitat_name(habitat_id), target_name],
+				"apartment_damage_days": maxi(0, int(get_building_runtime_state(habitat_id, apartment_id).get("damage_days", 0))) if target_id == apartment_id else -1,
+				"apartment_incident_kind": kind if target_id == apartment_id else "",
+				"apartment_incident_note": incident_note if target_id == apartment_id else "",
+				"apartment_incident_cost": repair_cost if target_id == apartment_id else {},
+			}
+		_:
+			return {}
+
+func _apply_building_damage(habitat_id: String, building_id: String, damage_days: int, incident_note: String = "", incident_kind: String = "", incident_cost: Dictionary = {}) -> void:
 	if damage_days <= 0:
 		return
 	var runtime_state := ensure_building_runtime_state(habitat_id, building_id)
 	runtime_state["damage_days"] = maxi(int(runtime_state.get("damage_days", 0)), damage_days)
+	if not incident_kind.is_empty():
+		runtime_state["incident_kind"] = incident_kind
+	if not incident_note.is_empty():
+		runtime_state["incident_note"] = incident_note
+	if not incident_cost.is_empty():
+		runtime_state["incident_cost"] = _duplicate_dictionary(incident_cost)
 	set_building_runtime_state(habitat_id, building_id, runtime_state)
 
 func _apartment_rent_for_npc(npc_id: String, habitat_id: String, building_id: String, building_level: int, damage_days: int) -> int:
@@ -2110,6 +2307,48 @@ func _npc_prefers_settlement(npc: Dictionary, profile: Dictionary, habitat_id: S
 		if String(raw_habitat_id) == habitat_id:
 			return true
 	return Array(profile.get("preferred_settlements", [])).is_empty()
+
+func _pick_apartment_theft_bundle(mischief: int, token: String) -> Dictionary:
+	var rows: Array = []
+	for raw_item_id in inventory.keys():
+		var item_id := String(raw_item_id)
+		var count := int(inventory.get(item_id, 0))
+		if item_id.is_empty() or count <= 0:
+			continue
+		var item := DataRepository.get_item(item_id)
+		var item_type := String(item.get("type", ""))
+		if item.is_empty() or ["material", "rare_material", "consumable"].find(item_type) == -1:
+			continue
+		rows.append({
+			"id": item_id,
+			"count": count,
+			"weight": maxi(1, count + (2 if item_type == "material" else 1)),
+		})
+	var choice := _pick_weighted_row(rows, token)
+	var chosen_id := String(choice.get("id", ""))
+	if chosen_id.is_empty():
+		return {}
+	return {
+		chosen_id: mini(int(choice.get("count", 1)), 1 + maxi(0, mischief - 1)),
+	}
+
+func _default_damage_repair_cost(building_id: String, damage_days: int) -> Dictionary:
+	var building := DataRepository.get_building(building_id)
+	var category := String(building.get("category", "utility"))
+	var cost := {}
+	match category:
+		"comfort", "service", "housing":
+			cost = {"wood": 1, "cloth": 1}
+		"workshop", "industry":
+			cost = {"wood": 1, "parts": 1}
+		"research":
+			cost = {"glass": 1, "parts": 1}
+		_:
+			cost = {"wood": 1, "stone_chip": 1}
+	if damage_days >= 3:
+		var bonus_item := "parts" if category in ["workshop", "industry", "research"] else "rope"
+		cost[bonus_item] = int(cost.get(bonus_item, 0)) + 1
+	return cost
 
 func _pick_weighted_row(rows: Array, token: String) -> Dictionary:
 	if rows.is_empty():

@@ -97,7 +97,7 @@ func get_menu(habitat_id: String) -> Dictionary:
 		choices.append({
 			"id": "hatch_incubation",
 			"label": "迎接破壳",
-			"summary": "把已经准备好的幼体正式接进照料名册。",
+			"summary": "把已经准备好的幼体接回身边，好好照看。",
 		})
 	else:
 		var cared_today := int(project.get("last_care_turn", -1)) == GameState.global_turn
@@ -173,7 +173,7 @@ func format_project_result(result: Dictionary) -> String:
 		else:
 			lines.append("新的偏好变成了：%s。" % _action_name(String(project.get("current_need_action", "observe"))))
 		return "\n".join(lines)
-	return "%s 的孵育记录已经建立。\n目标进度：%s。" % [species_name, _project_progress_text(project)]
+	return "%s 已经安顿进孵育位了。\n离破壳还差：%s。" % [species_name, _project_progress_text(project)]
 
 func _relationship_note(species_id: String) -> String:
 	var bonded: Dictionary = GameState.quest_memory.get("bonded_species", {})
@@ -200,7 +200,7 @@ func _access_reason_text(access: Dictionary) -> String:
 		"nursery_locked":
 			return "幼护角还没收拾出来，或暖窝还没稳到能单独开孵育位。"
 		"resident_required":
-			return "这里得先安排一位看守，孵育流程才稳得住。"
+			return "这里得先安排一位看守，幼体才会安心。"
 		"incubation_active":
 			return "这里已经有一个在孵的项目了。"
 		"species_not_recorded":

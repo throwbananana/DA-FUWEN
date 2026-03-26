@@ -314,7 +314,7 @@
         {
           "id": "dim_lantern",
           "text": "把灯调暗，只记录动作",
-          "outcome": "观察更安静，但笔记会偏向行为数据。",
+          "outcome": "周围更安静了，你也更容易记住它的小动作。",
           "effects": {
             "trust": {
               "lost_apprentice": 1
@@ -357,14 +357,14 @@
         {
           "type": "talk",
           "npc": "field_recorder",
-          "text": "叶衡会请玩家决定这次更偏记录数据还是先做现场加固。"
+          "text": "叶衡会问你，这次是先把光轨记下来，还是先把现场收拾稳妥。"
         }
       ],
       "choices": [
         {
           "id": "record_resonance",
           "text": "优先记录光轨与频率",
-          "outcome": "得到一段可写入图鉴的夜间监测数据。",
+          "outcome": "你记下了一段能写进图鉴的夜间光轨。",
           "effects": {
             "items": {
               "glow_dust": 1
@@ -516,7 +516,7 @@
         {
           "id": "bundle_notes",
           "text": "把同去向的纸条捆在一起",
-          "outcome": "托管与转递的流程都更顺。",
+          "outcome": "托管和捎信都顺手多了。",
           "effects": {
             "items": {
               "paper": 1
@@ -664,7 +664,7 @@
         "after_quest": "rescue_rift_fawn",
         "anomaly": "high"
       },
-      "summary": "异常强度升高后偶尔会出现极短的稳定窗口，澄会带玩家在窗口内完成记录与救助。",
+      "summary": "异常越闹，反而偶尔会冒出短短一小会儿安静时机，澄会带你趁那一刻去记录和救助。",
       "stages": [
         {
           "type": "observe",
@@ -1776,6 +1776,748 @@
         "终局",
         "月井",
         "静置"
+      ]
+    },
+    {
+      "id": "evt_post_late_soup",
+      "title": "驿站晚汤先暖手",
+      "category": "settlement_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 5,
+      "habitat_id": "sky_post",
+      "participants": [
+        "innkeeper_yun"
+      ],
+      "trigger": {
+        "time_in": [
+          "evening",
+          "night"
+        ],
+        "weather_in": [
+          "clear",
+          "rain",
+          "storm",
+          "fog"
+        ]
+      },
+      "summary": "云伯会把给晚归人的那锅汤多留半勺火，说人一着急总想先喝，其实先把手暖过来，才算真正回到驿站。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "innkeeper_yun",
+          "text": "云伯把木碗推给你，却先点了点碗沿，说别急着喝，先把指节暖开。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "warm_palms_first",
+          "text": "先捧着碗沿把手暖热",
+          "outcome": "热气从指尖慢慢往上爬，路上的那股赶劲也终于肯停下来。",
+          "effects": {
+            "trust": {
+              "innkeeper_yun": 1
+            },
+            "unlock_dialogue": "dlg_innkeeper_yun_late_soup"
+          }
+        },
+        {
+          "id": "save_half_for_next_watch",
+          "text": "替下一位晚归人留半碗",
+          "outcome": "汤没多出多少，可那点“总还有人会回来”的意思一下就有了。",
+          "effects": {
+            "items": {
+              "tea_leaf": 1
+            },
+            "journal_entry": "云升驿：晚汤最好别一口闷，先把手暖热，再把心里的赶路劲放下。"
+          }
+        }
+      ],
+      "tags": [
+        "驿站",
+        "晚汤",
+        "归站"
+      ]
+    },
+    {
+      "id": "evt_grove_lunch_whistle",
+      "title": "林间午哨先数人",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "greenbark_grove",
+      "participants": [
+        "grove_patrol"
+      ],
+      "trigger": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "clear",
+          "fog",
+          "mist"
+        ]
+      },
+      "summary": "青岚巡林时会在午后吹一段两短一长的小哨，不是为了好听，而是提醒走散的人先回声、再回头。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "grove_patrol",
+          "text": "青岚把木哨递给你，说林子里最怕的不是走远，是大家都以为对方就在前面。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "learn_whistle_pattern",
+          "text": "记住两短一长的午哨节奏",
+          "outcome": "这段哨声轻得很，却像替每个人都在林子里留了一条回来的线。",
+          "effects": {
+            "trust": {
+              "grove_patrol": 1
+            },
+            "unlock_dialogue": "dlg_grove_patrol_lunch_whistle"
+          }
+        },
+        {
+          "id": "tie_leaf_marker",
+          "text": "顺手在岔口系上叶绳记号",
+          "outcome": "小小一圈叶绳不显眼，但下一次抬头时，你会感谢今天多绕的这一步。",
+          "effects": {
+            "items": {
+              "fiber": 1
+            },
+            "journal_entry": "青栎林径：午哨先数人，再看路，巡林时很多慌张都会自己消下去。"
+          }
+        }
+      ],
+      "tags": [
+        "巡林",
+        "午哨",
+        "回程"
+      ]
+    },
+    {
+      "id": "evt_mire_boot_rinse",
+      "title": "进屋前先涮靴边",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "reed_mire",
+      "participants": [
+        "mire_guide"
+      ],
+      "trigger": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "rain",
+          "fog",
+          "clear"
+        ]
+      },
+      "summary": "芦娘总会在棚前留一浅盆净水，说沼地泥巴可以带去路上，别带回吃饭和歇脚的地方。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "mire_guide",
+          "text": "芦娘用脚尖碰了碰盆沿，笑你别嫌麻烦，靴边干净了，屋里的人才会觉得你是真回来了。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "rinse_boot_edge",
+          "text": "把靴边的泥先慢慢涮掉",
+          "outcome": "盆里的水一下浑了，可门口那股湿冷也跟着被挡在了外头。",
+          "effects": {
+            "trust": {
+              "mire_guide": 1
+            },
+            "unlock_dialogue": "dlg_mire_guide_boot_rinse"
+          }
+        },
+        {
+          "id": "cut_spare_reed_strip",
+          "text": "顺手割几根芦苇做门边垫",
+          "outcome": "芦苇扎得并不齐，可踩上去那一下，回家的感觉一下就出来了。",
+          "effects": {
+            "items": {
+              "reed": 1
+            },
+            "journal_entry": "芦泽浅滩：进屋前先涮靴边，很多潮气和疲惫都会少带进去一点。"
+          }
+        }
+      ],
+      "tags": [
+        "芦泽",
+        "门边",
+        "净水"
+      ]
+    },
+    {
+      "id": "evt_coast_salt_shake",
+      "title": "海风天先抖抖袖口",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "saltglass_coast",
+      "participants": [
+        "coast_keeper"
+      ],
+      "trigger": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "clear",
+          "windy",
+          "fog"
+        ]
+      },
+      "summary": "砺潮在海边收工后从不急着坐下，总要先把袖口和口袋边抖两下，说盐粒带进饭桌，连闲聊都会发涩。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "coast_keeper",
+          "text": "砺潮站在风口抖了抖袖子，示意你也照着来，说海边人的体面，往往就差这两下。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "shake_sleeves_first",
+          "text": "照他说的先把袖口和口袋抖净",
+          "outcome": "风把细盐吹开后，整个人都像比刚才轻了一点，连坐下都更踏实。",
+          "effects": {
+            "trust": {
+              "coast_keeper": 1
+            },
+            "unlock_dialogue": "dlg_coast_keeper_salt_shake"
+          }
+        },
+        {
+          "id": "save_clear_sand",
+          "text": "把鞋边最细的一小撮沙收起来",
+          "outcome": "这一撮细沙轻得几乎没分量，却把今天这阵海风安安静静留了下来。",
+          "effects": {
+            "items": {
+              "clear_sand": 1
+            },
+            "journal_entry": "盐镜海岸：吃饭前先把袖口和口袋边抖干净，连坐下来的心情都会松快很多。"
+          }
+        }
+      ],
+      "tags": [
+        "海风",
+        "袖口",
+        "细盐"
+      ]
+    },
+    {
+      "id": "evt_meadow_cup_ring",
+      "title": "栏杆上的水杯圈",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "thunder_meadow",
+      "participants": [
+        "storm_mentor"
+      ],
+      "trigger": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "storm",
+          "windy",
+          "clear"
+        ]
+      },
+      "summary": "雷练前，惊岚总会把栏杆上的水杯按路线摆成一圈，说人一跑热就容易拿错，顺手这件事也得提前练。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "storm_mentor",
+          "text": "惊岚把几个旧水杯排成一长一短，叫你别笑，说真正乱节奏的往往不是跑得慢，是停下来那一口水。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "set_cup_order",
+          "text": "记住每个水杯对应哪段训练",
+          "outcome": "几只旧杯子站在栏杆上，竟把整套训练的先后都排得明明白白。",
+          "effects": {
+            "trust": {
+              "storm_mentor": 1
+            },
+            "unlock_dialogue": "dlg_storm_mentor_cup_ring"
+          }
+        },
+        {
+          "id": "carry_spare_warm_stone",
+          "text": "替后来的训练生留一块暖手石",
+          "outcome": "你只是把一块石头挪到了杯子旁边，却像顺手把今天的急躁也一起挪开了。",
+          "effects": {
+            "items": {
+              "warm_stone": 1
+            },
+            "journal_entry": "雷驰训练公园：训练前先把水杯顺序排好，很多慌乱会在开跑前就少掉一半。"
+          }
+        }
+      ],
+      "tags": [
+        "草场",
+        "训练",
+        "水杯"
+      ]
+    },
+    {
+      "id": "evt_lake_glove_warm",
+      "title": "碰冰器前先暖手套",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "frost_mirror_lake",
+      "participants": [
+        "mirror_keeper"
+      ],
+      "trigger": {
+        "time_in": [
+          "day",
+          "evening",
+          "night"
+        ],
+        "weather_in": [
+          "fog",
+          "snow",
+          "clear"
+        ]
+      },
+      "summary": "冰珀在碰湖边那些细小冰器前，总先把手套靠在壶盖边烘一小会儿，说手太僵，连最稳的动作都会变得像惊扰。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "mirror_keeper",
+          "text": "冰珀把手套翻到壶盖上方，说别逞强，镜湖不怕你慢，只怕你手冷时还想装稳。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "wait_glove_warm",
+          "text": "耐心等手套先暖起来",
+          "outcome": "那点预热不过半盏茶的工夫，却让你之后每一下伸手都像更有分寸。",
+          "effects": {
+            "trust": {
+              "mirror_keeper": 1
+            },
+            "unlock_dialogue": "dlg_mirror_keeper_glove_warm"
+          }
+        },
+        {
+          "id": "save_clean_ice_fragment",
+          "text": "收起一小片最干净的冰缘",
+          "outcome": "冰片在掌心停得很短，可你已经记住了今天这湖面最安静的温度。",
+          "effects": {
+            "items": {
+              "ice_glass": 1
+            },
+            "journal_entry": "霜镜湖：碰细冰器前先把手套暖过，稳当这件事很多时候是从不逞强开始的。"
+          }
+        }
+      ],
+      "tags": [
+        "镜湖",
+        "手套",
+        "预热"
+      ]
+    },
+    {
+      "id": "evt_grove_crown_trace",
+      "title": "晴春林线的鹿冠光",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "greenbark_grove",
+      "participants": [
+        "grove_patrol"
+      ],
+      "trigger": {
+        "season_in": [
+          "spring"
+        ],
+        "weather_in": [
+          "clear"
+        ],
+        "time_in": [
+          "day"
+        ]
+      },
+      "summary": "青岚说春晴的林子若忽然安静得太整齐，常不是没人，而是鹿群刚给更高阶的巡林者让出了路。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "grove_patrol",
+          "text": "青岚指着花带边一圈没被踩乱的浅痕，说晨芽鹿会从这儿过，真要碰上春冠圣鹿，连风都像会先放轻一点。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "follow_soft_hoofline",
+          "text": "顺着最轻的蹄线慢慢看过去",
+          "outcome": "你没追上那道光，却第一次看懂什么叫整片林子都在替一只神宠留路。",
+          "effects": {
+            "trust": {
+              "grove_patrol": 1
+            },
+            "unlock_dialogue": "dlg_grove_patrol_crown_trace"
+          }
+        },
+        {
+          "id": "tie_branch_marker",
+          "text": "在岔口系下不挡路的软枝记号",
+          "outcome": "这记号轻得很，却让下一次回头的人更容易明白今天哪条线该放慢。",
+          "effects": {
+            "items": {
+              "fiber": 1
+            },
+            "journal_entry": "青栎林：林地真正安静下来时，常是更高阶的鹿灵在附近巡过。"
+          }
+        }
+      ],
+      "tags": [
+        "林地",
+        "春晴",
+        "神宠传闻"
+      ]
+    },
+    {
+      "id": "evt_coast_tide_lamp_ray",
+      "title": "潮灯边的光鳐影",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "saltglass_coast",
+      "participants": [
+        "coast_keeper"
+      ],
+      "trigger": {
+        "season_in": [
+          "autumn",
+          "winter"
+        ],
+        "weather_in": [
+          "clear",
+          "windy"
+        ],
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "summary": "砺潮说海边的灯不能只图亮，灯边若稳、潮线若顺，潮灯鳐和更高阶的镜祈光鳐就会自己靠近。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "coast_keeper",
+          "text": "砺潮把灯笼往桌边又挪开半掌，说真正难等的不是第一条潮灯鳐，是冬夜里那道会把星光一起带低的圣鳐影。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "shade_lamp_edge",
+          "text": "替潮灯压一压刺眼的边光",
+          "outcome": "亮处收了一点，海面反而更像有谁愿意靠过来了。",
+          "effects": {
+            "trust": {
+              "coast_keeper": 1
+            },
+            "unlock_dialogue": "dlg_coast_keeper_tide_lamp"
+          }
+        },
+        {
+          "id": "note_tide_bend",
+          "text": "记下今晚潮线在哪儿先拐了弯",
+          "outcome": "潮路像被你先看懂了一小截，回岸时心里也踏实了些。",
+          "effects": {
+            "items": {
+              "clear_sand": 1
+            },
+            "journal_entry": "盐镜海岸：想等光鳐，先把灯边和潮线都留得够稳。"
+          }
+        }
+      ],
+      "tags": [
+        "海岸",
+        "潮灯",
+        "精英宠"
+      ]
+    },
+    {
+      "id": "evt_meadow_horn_silence",
+      "title": "雷夜前那一拍安静",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "thunder_meadow",
+      "participants": [
+        "storm_mentor"
+      ],
+      "trigger": {
+        "season_in": [
+          "summer"
+        ],
+        "weather_in": [
+          "storm",
+          "clear"
+        ],
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "summary": "霁岚说草场最值钱的不是雷最响的时候，而是雷要落未落、整片栏线忽然静一拍的那一下。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "storm_mentor",
+          "text": "霁岚让你先别看天，只听引雷桩和栏杆之间那口安静。她说伏角兽会踩着这拍子来，真正的晴穹天麒更只认这种稳。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "count_pole_sparks",
+          "text": "数一数引雷桩退电的节奏",
+          "outcome": "你第一次觉得“安静”也能像鼓点一样，把整片草场都先排顺。",
+          "effects": {
+            "trust": {
+              "storm_mentor": 1
+            },
+            "unlock_dialogue": "dlg_storm_mentor_horn_silence"
+          }
+        },
+        {
+          "id": "tighten_old_ring",
+          "text": "顺手把旧桩环再紧一圈",
+          "outcome": "风还在跑，手下这一下却稳住了，连心里的急也跟着慢了半拍。",
+          "effects": {
+            "items": {
+              "parts": 1
+            },
+            "journal_entry": "鸣雷草场：很多神宠不是踩着最响的雷来，而是踩着雷前那一拍静。"
+          }
+        }
+      ],
+      "tags": [
+        "草场",
+        "雷夜",
+        "神宠传闻"
+      ]
+    },
+    {
+      "id": "evt_lake_night_fin",
+      "title": "镜湖夜里两道影",
+      "category": "habitat_story",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "frost_mirror_lake",
+      "participants": [
+        "mirror_keeper"
+      ],
+      "trigger": {
+        "season_in": [
+          "winter"
+        ],
+        "weather_in": [
+          "clear",
+          "snow"
+        ],
+        "time_in": [
+          "night"
+        ]
+      },
+      "summary": "冰珀说冬夜镜湖最难分辨的不是有没有东西经过，而是先掠过的是光鳐，还是沿冰边收走倒影的影貂。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "mirror_keeper",
+          "text": "冰珀压低了灯，说今晚若先看到水里起了很稳的一道亮，多半是镜祈光鳐；若是倒影先薄了一层，就得留心影貂是不是已经从边上过去了。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "shade_glow_lantern",
+          "text": "把灯火再收软一点",
+          "outcome": "光一退，湖面反而更像愿意把真正的来客让你看见。",
+          "effects": {
+            "trust": {
+              "mirror_keeper": 1
+            },
+            "unlock_dialogue": "dlg_mirror_keeper_night_fin"
+          }
+        },
+        {
+          "id": "sketch_ripple_order",
+          "text": "先记下亮痕和尾痕出现的先后",
+          "outcome": "今晚你没急着抢那一眼，反而把最值钱的顺序记了下来。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "journal_entry": "霜镜湖：先看哪一道影改变了水，再猜是谁经过，往往更准。"
+          }
+        }
+      ],
+      "tags": [
+        "镜湖",
+        "夜观",
+        "精英宠"
+      ]
+    },
+    {
+      "id": "evt_observatory_page_wisp",
+      "title": "页边暗线里的录灵",
+      "category": "anomaly_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 6,
+      "weight": 2,
+      "habitat_id": "radiant_observatory",
+      "participants": [
+        "tower_astronomer"
+      ],
+      "trigger": {
+        "season_in": [
+          "autumn"
+        ],
+        "weather_in": [
+          "clear"
+        ],
+        "time_in": [
+          "night"
+        ]
+      },
+      "summary": "望舒说真正高阶的录灵不爱停在最亮的地方，它们更偏爱星图旁那条被很多人忽略的暗线。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "tower_astronomer",
+          "text": "望舒把星盘往旁边挪了半寸，让你先看侧注再看正图。她说页辉灵会认谁写得稳，至于天衡录灵，只会来找肯给暗线留位置的人。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "compare_dark_line",
+          "text": "先比对旁注和主图哪一处在变",
+          "outcome": "你忽然看懂了，有些东西不是光更亮了，而是旁边那条线终于被认真看见。",
+          "effects": {
+            "trust": {
+              "tower_astronomer": 1
+            },
+            "unlock_dialogue": "dlg_tower_astronomer_dark_line"
+          }
+        },
+        {
+          "id": "weight_page_corner",
+          "text": "替星图四角重新压稳",
+          "outcome": "纸页不再乱颤后，整间观测室像连呼吸都更整齐了一点。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "journal_entry": "裂辉观测中心：录灵更偏爱被认真整理过的页边，而不是最亮的灯下。"
+          }
+        }
+      ],
+      "tags": [
+        "观测",
+        "页边",
+        "神宠传闻"
+      ]
+    },
+    {
+      "id": "evt_moonfen_shadow_tail",
+      "title": "月井边的第二道回声",
+      "category": "anomaly_event",
+      "mode": "ambient_talk",
+      "repeatable": true,
+      "cooldown_days": 6,
+      "weight": 2,
+      "habitat_id": "moonfen_ruins",
+      "participants": [
+        "ruin_diviner"
+      ],
+      "trigger": {
+        "season_in": [
+          "winter"
+        ],
+        "weather_in": [
+          "clear",
+          "fog"
+        ],
+        "time_in": [
+          "night"
+        ],
+        "anomaly": "high"
+      },
+      "summary": "玄沼提醒你，月沼夜里真正要听的不是第一声回响，而是它退下去之后，水边还剩没剩第二道很薄的尾音。",
+      "stages": [
+        {
+          "type": "talk",
+          "npc": "ruin_diviner",
+          "text": "玄沼看着月井水面，说镜尾貂只会让你以为自己慢了半拍，真正的月映玄貂则会把第一层回声先放掉，再从第二层里露出影子。"
+        }
+      ],
+      "choices": [
+        {
+          "id": "wait_second_ripple",
+          "text": "先等第一圈水纹自己退下去",
+          "outcome": "你什么也没抓，却第一次听见了月沼把多余动静都收走后的那种薄静。",
+          "effects": {
+            "trust": {
+              "ruin_diviner": 1
+            },
+            "unlock_dialogue": "dlg_ruin_diviner_shadow_tail"
+          }
+        },
+        {
+          "id": "mark_well_edge",
+          "text": "在井沿只记最薄的那一道痕",
+          "outcome": "少写了很多，却把今晚最像答案的那一笔留住了。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "journal_entry": "月沼遗址：很多高异常夜里的真动静，不在第一声，而在它退下去之后。"
+          }
+        }
+      ],
+      "tags": [
+        "月沼",
+        "高异常",
+        "神宠传闻"
       ]
     }
   ]

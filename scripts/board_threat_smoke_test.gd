@@ -45,7 +45,11 @@ func _run_checks(scene: Node) -> void:
 		_fail("Board threat smoke test failed: occupied nodes should expose a threat marker.")
 		return
 
-	scene.current_node_id = 8
+	var occupied_neighbors: Array = Array(scene.board_lookup.get(occupied_node, {}).get("edges", [])).duplicate(true)
+	if occupied_neighbors.is_empty():
+		_fail("Board threat smoke test failed: occupied threat nodes should remain attached to the route graph.")
+		return
+	scene.current_node_id = int(occupied_neighbors[0])
 	scene.pending_roll = {"value": 1}
 	scene._apply_current_roll_routes()
 	if scene._get_selectable_nodes().has(occupied_node):
@@ -86,9 +90,14 @@ func _run_checks(scene: Node) -> void:
 	if not has_peddler_quest:
 		_fail("Board threat smoke test failed: traveler quest should require its giver to be present.")
 		return
-	var npc_markers: Dictionary = scene.npc_route_service.build_node_markers()
-	if not str(npc_markers.get(3, [])).contains("流动商 青禾"):
-		_fail("Board threat smoke test failed: traveler nodes should expose map markers.")
+	var route_lines: Array[String] = scene.npc_route_service.build_status_lines(4)
+	var has_peddler_route_line := false
+	for line in route_lines:
+		if String(line).contains("青禾"):
+			has_peddler_route_line = true
+			break
+	if not has_peddler_route_line:
+		_fail("Board threat smoke test failed: traveler movement should appear in the route status summary.")
 		return
 	game_state.global_turn = 4
 	game_state.weekly_turn = 4

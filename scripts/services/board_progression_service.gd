@@ -1,7 +1,7 @@
 class_name BoardProgressionService
 extends RefCounted
 
-const REGION_NAME_SUFFIX := "环阵扩张盘"
+const REGION_NAME_SUFFIX := "外圈漫游图"
 const MAX_GENERATED_RINGS := 8
 const PREVIEW_RING_AHEAD := 1
 const START_UNLOCKED_RING_COUNT := 1
@@ -42,7 +42,7 @@ const ENVIRONMENT_VARIANTS := {
 		{"name": "赤痕猎道", "kind": "wild_battle", "focus": "遭遇 / 试锋", "description": "这里留着新鲜的爪痕和冲撞印，基本意味着今天会有正面交锋。", "reward_hint": "可能直接进入一次野外对抗。"},
 	],
 	"winter": [
-		{"name": "霜线雪凹", "kind": "forage", "focus": "采集 / 整备", "description": "雪线在这里压成了缓坡和雪凹，是环阵推进里少数能停下来整理物资的地方。", "reward_hint": "更容易带回冰湖与遗迹边缘的基础素材。"},
+		{"name": "霜线雪凹", "kind": "forage", "focus": "采集 / 整备", "description": "雪线在这里铺成了缓坡和雪凹，是少数能停下来整理物资的地方。", "reward_hint": "更容易带回冰湖与遗迹边缘的基础素材。"},
 		{"name": "镜雪断脊", "kind": "scout", "focus": "侦察 / 望远", "description": "折光的雪脊能把远处路线照得很清楚，适合先判断今天值不值得继续深压。", "reward_hint": "会额外显露前方几格路线。"},
 		{"name": "寒痕伏道", "kind": "wild_battle", "focus": "遭遇 / 伏击", "description": "雪地里全是新鲜拖痕，队伍经过时很容易把潜伏个体逼出来。", "reward_hint": "可能触发一次偏伏击型的野外遭遇。"},
 	],
@@ -229,7 +229,7 @@ const SPECIAL_RING_DEFS := {
 		"id": "swamp",
 		"name": "沼泽环带",
 		"gate_name": "沼泽浮栈门",
-		"gate_description": "更外侧是一整圈软泥和浮栈，得先学会涉泽步并完成赤叶演武场的一阶验证，才不会在入口就陷进去。",
+		"gate_description": "更外侧满是软泥和浮栈，得先学会涉泽步，再在赤叶演武场过掉第一关，才不至于刚进门就陷进去。",
 		"unlock_summary": "涉泽步已经稳住了沼泽环带的浮栈。",
 		"skill_id": "bog_stride",
 		"dojo_id": "autumn_leaf_dojo",
@@ -270,7 +270,7 @@ const SPECIAL_RING_DEFS := {
 		"id": "ocean",
 		"name": "海洋环带",
 		"gate_name": "海潮外闸",
-		"gate_description": "更外层会在傍晚到夜晚涨潮成整圈海路，必须先学会踏潮鳍，并完成更高一阶的演武验证，潮门才会接通。",
+		"gate_description": "更外层一到傍晚和夜里就会涨潮成海路，得先学会踏潮鳍，再把更高一阶的演武场过了，潮门才会真正打开。",
 		"unlock_summary": "涨潮已经把海洋环带推到了脚下。",
 		"skill_id": "tide_surf",
 		"dojo_id": "autumn_leaf_dojo",
@@ -534,10 +534,10 @@ func try_resolve_unlock_gate(node_id: int) -> Dictionary:
 		return {}
 	var kind := String(requirement.get("kind", "boss"))
 	if kind == "boss":
-		return _unlock_next_ring(target_ring, "击败了 %s。" % String(node.get("name", "路口领主")))
+		return _unlock_next_ring(target_ring, "闯过了 %s。" % String(node.get("name", "路口领主")))
 	var evaluation := _evaluate_gate_requirement(requirement)
 	if bool(evaluation.get("ok", false)):
-		return _unlock_next_ring(target_ring, String(evaluation.get("summary", "外环条件已经满足。")))
+		return _unlock_next_ring(target_ring, String(evaluation.get("summary", "往外走的条件已经够了。")))
 	if String(evaluation.get("awaiting", "")) == "dojo":
 		var progress := _ensure_loop_progress(_current_season_id)
 		progress["pending_dojo_ring"] = target_ring
@@ -546,7 +546,7 @@ func try_resolve_unlock_gate(node_id: int) -> Dictionary:
 	return {
 		"ok": false,
 		"awaiting": String(evaluation.get("awaiting", "")),
-		"message": String(evaluation.get("message", requirement.get("blocked_text", "还需要先满足外环条件。"))),
+		"message": String(evaluation.get("message", requirement.get("blocked_text", "还得再做点准备，前面的路才会开。"))),
 		"revealed_nodes": [],
 	}
 
@@ -569,9 +569,9 @@ func try_unlock_outer_ring_from_dojo(dojo_id: String, tier: String) -> Dictionar
 		return {
 			"ok": false,
 			"awaiting": String(evaluation.get("awaiting", "")),
-			"message": String(evaluation.get("message", requirement.get("blocked_text", "还需要先满足外环条件。"))),
+			"message": String(evaluation.get("message", requirement.get("blocked_text", "还得再做点准备，前面的路才会开。"))),
 		}
-	return _unlock_next_ring(target_ring, String(evaluation.get("summary", "外环条件已经满足。")))
+	return _unlock_next_ring(target_ring, String(evaluation.get("summary", "往外走的条件已经够了。")))
 
 func get_active_gate_text(node_id: int) -> String:
 	var node: Dictionary = node_lookup.get(node_id, {})
@@ -579,8 +579,8 @@ func get_active_gate_text(node_id: int) -> String:
 		return ""
 	var requirement: Dictionary = node.get("unlock_requirement", {}).duplicate(true)
 	if String(requirement.get("kind", "boss")) == "boss":
-		return "击败此路口领主后，会打开下一圈外环。"
-	return String(requirement.get("blocked_text", "需要满足当前外环条件后，下一圈才会解锁。"))
+		return "闯过这里的路口首领后，更远的一圈路就会露出来。"
+	return String(requirement.get("blocked_text", "得先把眼前这段路走顺，前面那圈才会打开。"))
 
 func _rebuild_lookup() -> void:
 	node_lookup.clear()
@@ -635,7 +635,7 @@ func _unlock_next_ring(target_ring: int, summary: String) -> Dictionary:
 	var revealed_nodes := _unlock_reveal_nodes(target_ring)
 	return {
 		"ok": true,
-		"message": "%s 新的外环已经展开。" % summary,
+		"message": "%s 更远的路已经露出来了。" % summary,
 		"revealed_nodes": revealed_nodes,
 		"target_ring": target_ring,
 	}
@@ -710,7 +710,7 @@ func _build_center_camp_node(season_id: String, node_id: int) -> Dictionary:
 		"id": node_id,
 		"name": String(names[0]) if not names.is_empty() else "营地",
 		"type": "camp",
-		"description": "环阵自动生成的中心营地。所有外环都从这里向外展开。",
+		"description": "这是外圈远行的中心营地，往外的路都从这里散开。",
 		"travel_cost": 0,
 		"focus": "整备 / 起点",
 		"reward_hint": "在这里重整队伍，再决定切向哪一圈。",
@@ -732,25 +732,25 @@ func _build_gate_node(season_id: String, boss_template: Dictionary, node_id: int
 	if kind == "boss":
 		var node: Dictionary = boss_template.duplicate(true)
 		node["id"] = node_id
-		node["name"] = String(requirement.get("label", "路口领主"))
+		node["name"] = String(requirement.get("label", "路口首领"))
 		node["type"] = "anomaly"
-		node["description"] = "这里是第 %d 圈的路口封门点。只要压过这里，下一圈外环就会展开。" % (ring_index + 1)
+		node["description"] = "这里守着第 %d 圈往外走的路。只要闯过去，更远的一圈就会露出来。" % (ring_index + 1)
 		node["travel_cost"] = 1
-		node["focus"] = "路口 Boss / 开环"
-		node["reward_hint"] = "击破后会立即生成并显露更外侧的一圈。"
+		node["focus"] = "路口首领 / 开路"
+		node["reward_hint"] = "闯过去后，更外面的那一圈就会亮出来。"
 		node["unlock_gate"] = true
 		node["unlock_requirement"] = requirement.duplicate(true)
 		node["unlock_target_ring"] = ring_index + 1
 		return node
 	var special_loop_name := String(requirement.get("ring_name", ""))
-	var focus_label := "道馆验证 / 开环"
+	var focus_label := "道馆试炼 / 开路"
 	if kind == "special" and not special_loop_name.is_empty():
-		focus_label = "%s / 开环" % special_loop_name
+		focus_label = "%s / 开路" % special_loop_name
 	return {
 		"id": node_id,
 		"name": String(requirement.get("gate_name", requirement.get("label", "道馆门"))),
 		"type": "event",
-		"description": String(requirement.get("gate_description", "这里通向更外侧的环路，但需要先通过当前层要求的道馆验证。")),
+		"description": String(requirement.get("gate_description", "这里通往更远的路，不过得先把这一层的道馆试炼过了。")),
 		"travel_cost": 1,
 		"focus": focus_label,
 		"reward_hint": String(requirement.get("blocked_text", "需要先通过当前道馆。")),
@@ -911,7 +911,7 @@ func _build_environment_node(season_id: String, template: Dictionary, node_id: i
 		"id": node_id,
 		"name": "%s · %02d" % [String(variant.get("name", "沿途环境")), node_id],
 		"type": "environment",
-		"description": "%s\n它属于自动扩张的第 %d 圈环境段。" % [String(variant.get("description", "这是一段会产生沿途内容的环境地貌。")), ring_index + 1],
+		"description": "%s\n这里在第 %d 圈外路上。" % [String(variant.get("description", "这是一段会产生沿途内容的环境地貌。")), ring_index + 1],
 		"travel_cost": 1,
 		"habitat_id": "",
 		"environment_kind": String(variant.get("kind", "forage")),
@@ -926,9 +926,9 @@ func _build_event_node(template: Dictionary, node_id: int, ring_index: int) -> D
 	node["type"] = "event"
 	node["primary_content"] = "board_event"
 	node["name"] = "%s · 插曲格 %02d" % [_template_display_name(template), node_id]
-	node["description"] = "%s\n当前位于第 %d 圈的插曲位，会在环阵上制造节奏变化。" % [String(template.get("description", "沿主干继续推进。")), ring_index + 1]
+	node["description"] = "%s\n这里在第 %d 圈外路上，常会冒出一段小插曲。" % [String(template.get("description", "沿主干继续推进。")), ring_index + 1]
 	node["focus"] = "插曲 / 机遇"
-	node["reward_hint"] = "落到这里会自动触发一段沿途插曲。"
+	node["reward_hint"] = "走到这里，多半会碰上一段沿路小插曲。"
 	return node
 
 func _build_path_node(template: Dictionary, node_id: int, ring_index: int) -> Dictionary:
@@ -936,14 +936,14 @@ func _build_path_node(template: Dictionary, node_id: int, ring_index: int) -> Di
 	if node.is_empty():
 		node = {
 			"type": "habitat",
-			"name": "外环节点",
-			"description": "自动生成的环阵节点。",
+			"name": "外路节点",
+			"description": "外路上的一个落脚点。",
 			"travel_cost": 1,
 			"habitat_id": "",
 		}
 	node["id"] = node_id
 	node["name"] = "%s · %02d格" % [_template_display_name(template), node_id]
-	node["description"] = "%s\n当前位于自动生成的第 %d 圈，可以继续沿环前压，或在路口切向更外层。" % [String(node.get("description", "沿主干继续推进。")), ring_index + 1]
+	node["description"] = "%s\n这里在第 %d 圈外路上，可以继续往前走，也可以在路口拐向更远处。" % [String(node.get("description", "沿主干继续推进。")), ring_index + 1]
 	node["focus"] = String(node.get("focus", "推进 / 观察"))
 	node["reward_hint"] = "精确走满骰面后才会落到这一格。"
 	return node
@@ -1023,7 +1023,7 @@ func _unlock_requirement_for_ring(ring_index: int, season_id: String) -> Diction
 		"dojo_id": dojo_id,
 		"tier": "tier_1",
 		"label": "%s一阶试炼" % dojo_name if not dojo_name.is_empty() else "当前道馆一阶试炼",
-		"blocked_text": "需要先通过 %s，下一圈外环才会解锁。" % ("%s的一阶试炼" % dojo_name if not dojo_name.is_empty() else "当前道馆的一阶试炼"),
+		"blocked_text": "先通过 %s，前面的路才会真正打开。" % ("%s的第一关试炼" % dojo_name if not dojo_name.is_empty() else "当前道馆的第一关试炼"),
 		"summary": "通过了 %s。" % String(dojo_name if not dojo_name.is_empty() else "当前道馆"),
 	}
 
@@ -1032,8 +1032,8 @@ func _ring_lock_reason(ring_index: int, season_id: String) -> String:
 		return ""
 	var requirement := _unlock_requirement_for_ring(ring_index - 1, season_id)
 	if String(requirement.get("kind", "boss")) == "boss":
-		return "需先击败上一圈的路口领主。"
-	return String(requirement.get("blocked_text", "需先满足当前外环条件。"))
+		return "得先过了上一圈的路口首领。"
+	return String(requirement.get("blocked_text", "得先把眼前这段路走顺。"))
 
 func _boss_gate_name(season_id: String, ring_index: int) -> String:
 	match season_id:
@@ -1079,7 +1079,7 @@ func _special_requirement_for_target_ring(target_ring: int) -> Dictionary:
 		"kind": "special",
 		"ring_id": String(special_ring.get("id", "")),
 		"ring_name": String(special_ring.get("name", "特殊环带")),
-		"gate_name": String(special_ring.get("gate_name", "特殊外环门")),
+		"gate_name": String(special_ring.get("gate_name", "特别外路入口")),
 		"gate_description": String(special_ring.get("gate_description", "这里通向更外层的特殊地块环带。")),
 		"skill_id": skill_id,
 		"skill_name": skill_name,
@@ -1087,9 +1087,9 @@ func _special_requirement_for_target_ring(target_ring: int) -> Dictionary:
 		"dojo_name": dojo_name,
 		"tier": tier,
 		"time_windows": Array(special_ring.get("time_windows", [])).duplicate(),
-		"label": String(special_ring.get("gate_name", special_ring.get("name", "特殊外环"))),
+		"label": String(special_ring.get("gate_name", special_ring.get("name", "特别外路"))),
 		"blocked_text": blocked_text,
-		"summary": String(special_ring.get("unlock_summary", "特殊外环已经接通。")),
+		"summary": String(special_ring.get("unlock_summary", "那条特别的外路已经通了。")),
 	}
 
 func _evaluate_gate_requirement(requirement: Dictionary) -> Dictionary:
@@ -1103,10 +1103,10 @@ func _evaluate_gate_requirement(requirement: Dictionary) -> Dictionary:
 		return {
 			"ok": false,
 			"awaiting": "dojo",
-			"message": String(requirement.get("blocked_text", "还需要先通过当前外环对应的道馆。")),
+			"message": String(requirement.get("blocked_text", "先把这圈对应的道馆过了，再往外走。")),
 		}
 	if kind != "special":
-		return {"ok": true, "summary": "外环条件已经满足。"}
+		return {"ok": true, "summary": "往外走的条件已经够了。"}
 	var reasons: Array[String] = []
 	var awaiting := ""
 	var skill_id := String(requirement.get("skill_id", ""))
@@ -1127,7 +1127,7 @@ func _evaluate_gate_requirement(requirement: Dictionary) -> Dictionary:
 	if reasons.is_empty():
 		return {
 			"ok": true,
-			"summary": String(requirement.get("summary", "特殊外环已经接通。")),
+			"summary": String(requirement.get("summary", "那条特别的外路已经通了。")),
 		}
 	return {
 		"ok": false,

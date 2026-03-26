@@ -14025,6 +14025,1713 @@
         "ironwall",
         "hoarder"
       ]
+    },
+    {
+      "id": "grove_cervid_1",
+      "family_id": "grove_cervid",
+      "dex_no": 121,
+      "name": "晨芽鹿",
+      "stage": 1,
+      "rarity": "uncommon",
+      "types": [
+        "grass",
+        "light"
+      ],
+      "roles": [
+        "healer",
+        "guardian"
+      ],
+      "temperament": "noble",
+      "habitat_preferences": [
+        "forest",
+        "meadow"
+      ],
+      "wild_habitats": [
+        "greenbark_grove"
+      ],
+      "ecology_tags": [
+        "forest",
+        "growth",
+        "healing"
+      ],
+      "resident_tags": [
+        "grass",
+        "light",
+        "healer",
+        "guardian",
+        "forest",
+        "meadow",
+        "purify",
+        "hope"
+      ],
+      "likes": [
+        "晨露叶片",
+        "树下慢步",
+        "药草香"
+      ],
+      "dislikes": [
+        "惊扰幼芽",
+        "粗暴砍枝"
+      ],
+      "care_actions": [
+        "梳角",
+        "喂叶",
+        "陪巡"
+      ],
+      "bond_skill": "chapel_stag_bond",
+      "work_style": "guardian",
+      "population_cost": 1,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 74,
+        "atk": 45,
+        "sp_atk": 58,
+        "def": 62,
+        "res": 67,
+        "spd": 39,
+        "energy": 55
+      },
+      "growth_curve": 1.0,
+      "skill_ids": [
+        "grass_basic",
+        "guardian_tactic",
+        "chapel_stag_sig_1",
+        "light_burst"
+      ],
+      "passive_id": "chapel_stag_passive",
+      "signature_tags": [
+        "purify",
+        "hope",
+        "protect",
+        "anchor"
+      ],
+      "building_affinities": [
+        "grove_perch",
+        "seed_house",
+        "herb_canopy",
+        "boarding_pen"
+      ],
+      "mda_profile": {
+        "mechanics_role": "guardian",
+        "dynamic_goal": "驻场护持",
+        "aesthetic_payoff": "春庭守望",
+        "flow_band": "mid_pressure"
+      },
+      "flow_target": {
+        "readability": "中",
+        "expected_decision_load": 4,
+        "intended_player_question": "要先养护队伍还是稳住前排？"
+      },
+      "unlock_rank": 3,
+      "evolution": {
+        "next_species_id": "grove_cervid_2",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 2,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "caretaker",
+        "pathfinder",
+        "ironwall"
+      ]
+    },
+    {
+      "id": "grove_cervid_2",
+      "family_id": "grove_cervid",
+      "dex_no": 122,
+      "name": "巡花灵鹿",
+      "stage": 2,
+      "rarity": "rare",
+      "types": [
+        "grass",
+        "light"
+      ],
+      "roles": [
+        "healer",
+        "guardian"
+      ],
+      "temperament": "noble",
+      "habitat_preferences": [
+        "forest",
+        "meadow"
+      ],
+      "wild_habitats": [
+        "greenbark_grove"
+      ],
+      "ecology_tags": [
+        "forest",
+        "growth",
+        "healing"
+      ],
+      "resident_tags": [
+        "grass",
+        "light",
+        "healer",
+        "guardian",
+        "forest",
+        "meadow",
+        "purify",
+        "hope"
+      ],
+      "likes": [
+        "晨露叶片",
+        "树下慢步",
+        "药草香"
+      ],
+      "dislikes": [
+        "惊扰幼芽",
+        "粗暴砍枝"
+      ],
+      "care_actions": [
+        "梳角",
+        "喂叶",
+        "陪巡"
+      ],
+      "bond_skill": "chapel_stag_bond",
+      "work_style": "guardian",
+      "population_cost": 2,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 93,
+        "atk": 58,
+        "sp_atk": 68,
+        "def": 74,
+        "res": 91,
+        "spd": 54,
+        "energy": 73
+      },
+      "growth_curve": 1.12,
+      "skill_ids": [
+        "grass_basic",
+        "guardian_tactic",
+        "chapel_stag_sig_2",
+        "light_burst"
+      ],
+      "passive_id": "chapel_stag_passive",
+      "signature_tags": [
+        "purify",
+        "hope",
+        "protect",
+        "anchor"
+      ],
+      "building_affinities": [
+        "grove_perch",
+        "seed_house",
+        "herb_canopy",
+        "boarding_pen"
+      ],
+      "mda_profile": {
+        "mechanics_role": "guardian",
+        "dynamic_goal": "驻场护持",
+        "aesthetic_payoff": "春庭守望",
+        "flow_band": "mid_pressure"
+      },
+      "flow_target": {
+        "readability": "中",
+        "expected_decision_load": 4,
+        "intended_player_question": "要先养护队伍还是稳住前排？"
+      },
+      "unlock_rank": 5,
+      "evolution": {
+        "next_species_id": "grove_cervid_3",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "caretaker",
+        "pathfinder",
+        "ironwall"
+      ]
+    },
+    {
+      "id": "grove_cervid_3",
+      "family_id": "grove_cervid",
+      "dex_no": 123,
+      "name": "春冠圣鹿",
+      "stage": 3,
+      "rarity": "legendary",
+      "types": [
+        "grass",
+        "light"
+      ],
+      "roles": [
+        "healer",
+        "guardian"
+      ],
+      "temperament": "noble",
+      "habitat_preferences": [
+        "forest",
+        "meadow"
+      ],
+      "wild_habitats": [
+        "greenbark_grove"
+      ],
+      "ecology_tags": [
+        "forest",
+        "growth",
+        "healing"
+      ],
+      "resident_tags": [
+        "grass",
+        "light",
+        "healer",
+        "guardian",
+        "forest",
+        "meadow",
+        "purify",
+        "hope"
+      ],
+      "likes": [
+        "晨露叶片",
+        "树下慢步",
+        "药草香"
+      ],
+      "dislikes": [
+        "惊扰幼芽",
+        "粗暴砍枝"
+      ],
+      "care_actions": [
+        "梳角",
+        "喂叶",
+        "陪巡"
+      ],
+      "bond_skill": "chapel_stag_bond",
+      "work_style": "guardian",
+      "population_cost": 3,
+      "bond_weight": 2,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 112,
+        "atk": 69,
+        "sp_atk": 94,
+        "def": 98,
+        "res": 117,
+        "spd": 71,
+        "energy": 94
+      },
+      "growth_curve": 1.26,
+      "skill_ids": [
+        "grass_basic",
+        "guardian_tactic",
+        "chapel_stag_sig_3",
+        "light_burst"
+      ],
+      "passive_id": "chapel_stag_passive",
+      "signature_tags": [
+        "purify",
+        "hope",
+        "protect",
+        "anchor"
+      ],
+      "building_affinities": [
+        "grove_perch",
+        "seed_house",
+        "herb_canopy",
+        "boarding_pen"
+      ],
+      "mda_profile": {
+        "mechanics_role": "guardian",
+        "dynamic_goal": "驻场护持",
+        "aesthetic_payoff": "春庭守望",
+        "flow_band": "mid_pressure"
+      },
+      "flow_target": {
+        "readability": "中",
+        "expected_decision_load": 4,
+        "intended_player_question": "要先养护队伍还是稳住前排？"
+      },
+      "unlock_rank": 8,
+      "evolution": {
+        "next_species_id": null,
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "caretaker",
+        "pathfinder",
+        "ironwall"
+      ]
+    },
+    {
+      "id": "glint_manta_1",
+      "family_id": "glint_manta",
+      "dex_no": 124,
+      "name": "潮灯鳐",
+      "stage": 1,
+      "rarity": "uncommon",
+      "types": [
+        "water",
+        "light"
+      ],
+      "roles": [
+        "healer",
+        "controller"
+      ],
+      "temperament": "calm",
+      "habitat_preferences": [
+        "shore",
+        "ice_lake"
+      ],
+      "wild_habitats": [
+        "saltglass_coast",
+        "frost_mirror_lake"
+      ],
+      "ecology_tags": [
+        "shore",
+        "water",
+        "reflection"
+      ],
+      "resident_tags": [
+        "water",
+        "light",
+        "healer",
+        "controller",
+        "shore",
+        "ice",
+        "gleam",
+        "zone"
+      ],
+      "likes": [
+        "浅水回光",
+        "夜灯微波",
+        "细盐风"
+      ],
+      "dislikes": [
+        "浑浊潮沟",
+        "硬声驱赶"
+      ],
+      "care_actions": [
+        "理鳍",
+        "投小鱼",
+        "照灯"
+      ],
+      "bond_skill": "cloud_crane_bond",
+      "work_style": "controller",
+      "population_cost": 1,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 52,
+        "atk": 43,
+        "sp_atk": 70,
+        "def": 46,
+        "res": 64,
+        "spd": 61,
+        "energy": 65
+      },
+      "growth_curve": 1.0,
+      "skill_ids": [
+        "water_basic",
+        "controller_tactic",
+        "cloud_crane_sig_1",
+        "light_burst"
+      ],
+      "passive_id": "cloud_crane_passive",
+      "signature_tags": [
+        "evasion",
+        "speed",
+        "debuff",
+        "zone"
+      ],
+      "building_affinities": [
+        "shallow_pool",
+        "sun_drying_rack",
+        "frost_mirror",
+        "glow_lantern"
+      ],
+      "mda_profile": {
+        "mechanics_role": "controller",
+        "dynamic_goal": "稳场回转",
+        "aesthetic_payoff": "潮光回照",
+        "flow_band": "mid_pressure"
+      },
+      "flow_target": {
+        "readability": "中",
+        "expected_decision_load": 4,
+        "intended_player_question": "这回合先回气还是先控场？"
+      },
+      "unlock_rank": 4,
+      "evolution": {
+        "next_species_id": "glint_manta_2",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 2,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "hoarder"
+      ]
+    },
+    {
+      "id": "glint_manta_2",
+      "family_id": "glint_manta",
+      "dex_no": 125,
+      "name": "镜祈光鳐",
+      "stage": 2,
+      "rarity": "rare",
+      "types": [
+        "water",
+        "light"
+      ],
+      "roles": [
+        "healer",
+        "controller"
+      ],
+      "temperament": "calm",
+      "habitat_preferences": [
+        "shore",
+        "ice_lake"
+      ],
+      "wild_habitats": [
+        "saltglass_coast",
+        "frost_mirror_lake"
+      ],
+      "ecology_tags": [
+        "shore",
+        "water",
+        "reflection"
+      ],
+      "resident_tags": [
+        "water",
+        "light",
+        "healer",
+        "controller",
+        "shore",
+        "ice",
+        "gleam",
+        "zone"
+      ],
+      "likes": [
+        "浅水回光",
+        "夜灯微波",
+        "细盐风"
+      ],
+      "dislikes": [
+        "浑浊潮沟",
+        "硬声驱赶"
+      ],
+      "care_actions": [
+        "理鳍",
+        "投小鱼",
+        "照灯"
+      ],
+      "bond_skill": "cloud_crane_bond",
+      "work_style": "controller",
+      "population_cost": 2,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 80,
+        "atk": 55,
+        "sp_atk": 97,
+        "def": 51,
+        "res": 87,
+        "spd": 82,
+        "energy": 84
+      },
+      "growth_curve": 1.12,
+      "skill_ids": [
+        "water_basic",
+        "controller_tactic",
+        "cloud_crane_sig_2",
+        "light_burst"
+      ],
+      "passive_id": "cloud_crane_passive",
+      "signature_tags": [
+        "evasion",
+        "speed",
+        "debuff",
+        "zone"
+      ],
+      "building_affinities": [
+        "shallow_pool",
+        "sun_drying_rack",
+        "frost_mirror",
+        "glow_lantern"
+      ],
+      "mda_profile": {
+        "mechanics_role": "controller",
+        "dynamic_goal": "稳场回转",
+        "aesthetic_payoff": "潮光回照",
+        "flow_band": "mid_pressure"
+      },
+      "flow_target": {
+        "readability": "中",
+        "expected_decision_load": 4,
+        "intended_player_question": "这回合先回气还是先控场？"
+      },
+      "unlock_rank": 6,
+      "evolution": {
+        "next_species_id": "glint_manta_3",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "hoarder"
+      ]
+    },
+    {
+      "id": "glint_manta_3",
+      "family_id": "glint_manta",
+      "dex_no": 126,
+      "name": "星潮圣鳐",
+      "stage": 3,
+      "rarity": "legendary",
+      "types": [
+        "water",
+        "light"
+      ],
+      "roles": [
+        "healer",
+        "controller"
+      ],
+      "temperament": "calm",
+      "habitat_preferences": [
+        "shore",
+        "ice_lake"
+      ],
+      "wild_habitats": [
+        "saltglass_coast",
+        "frost_mirror_lake"
+      ],
+      "ecology_tags": [
+        "shore",
+        "water",
+        "reflection"
+      ],
+      "resident_tags": [
+        "water",
+        "light",
+        "healer",
+        "controller",
+        "shore",
+        "ice",
+        "gleam",
+        "zone"
+      ],
+      "likes": [
+        "浅水回光",
+        "夜灯微波",
+        "细盐风"
+      ],
+      "dislikes": [
+        "浑浊潮沟",
+        "硬声驱赶"
+      ],
+      "care_actions": [
+        "理鳍",
+        "投小鱼",
+        "照灯"
+      ],
+      "bond_skill": "cloud_crane_bond",
+      "work_style": "controller",
+      "population_cost": 3,
+      "bond_weight": 2,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 96,
+        "atk": 65,
+        "sp_atk": 115,
+        "def": 70,
+        "res": 112,
+        "spd": 106,
+        "energy": 108
+      },
+      "growth_curve": 1.26,
+      "skill_ids": [
+        "water_basic",
+        "controller_tactic",
+        "cloud_crane_sig_3",
+        "light_burst"
+      ],
+      "passive_id": "cloud_crane_passive",
+      "signature_tags": [
+        "evasion",
+        "speed",
+        "debuff",
+        "zone"
+      ],
+      "building_affinities": [
+        "shallow_pool",
+        "sun_drying_rack",
+        "frost_mirror",
+        "glow_lantern"
+      ],
+      "mda_profile": {
+        "mechanics_role": "controller",
+        "dynamic_goal": "稳场回转",
+        "aesthetic_payoff": "潮光回照",
+        "flow_band": "mid_pressure"
+      },
+      "flow_target": {
+        "readability": "中",
+        "expected_decision_load": 4,
+        "intended_player_question": "这回合先回气还是先控场？"
+      },
+      "unlock_rank": 8,
+      "evolution": {
+        "next_species_id": null,
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "caretaker",
+        "tactician",
+        "hoarder"
+      ]
+    },
+    {
+      "id": "storm_qilin_1",
+      "family_id": "storm_qilin",
+      "dex_no": 127,
+      "name": "伏角兽",
+      "stage": 1,
+      "rarity": "uncommon",
+      "types": [
+        "electric",
+        "light"
+      ],
+      "roles": [
+        "charger",
+        "guardian"
+      ],
+      "temperament": "steady",
+      "habitat_preferences": [
+        "storm_field",
+        "highroad"
+      ],
+      "wild_habitats": [
+        "thunder_meadow",
+        "sky_post"
+      ],
+      "ecology_tags": [
+        "storm",
+        "meadow",
+        "travel"
+      ],
+      "resident_tags": [
+        "electric",
+        "light",
+        "charger",
+        "guardian",
+        "storm",
+        "highroad",
+        "charge",
+        "protect"
+      ],
+      "likes": [
+        "晴后草味",
+        "木桩冲刺",
+        "铜铃声"
+      ],
+      "dislikes": [
+        "闷雷不落",
+        "绊脚泥坑"
+      ],
+      "care_actions": [
+        "刷鬃",
+        "领跑",
+        "擦角"
+      ],
+      "bond_skill": "storm_yak_bond",
+      "work_style": "guardian",
+      "population_cost": 1,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 72,
+        "atk": 61,
+        "sp_atk": 59,
+        "def": 58,
+        "res": 49,
+        "spd": 59,
+        "energy": 54
+      },
+      "growth_curve": 1.0,
+      "skill_ids": [
+        "electric_basic",
+        "guardian_tactic",
+        "storm_yak_sig_1",
+        "light_burst"
+      ],
+      "passive_id": "storm_yak_passive",
+      "signature_tags": [
+        "charge",
+        "tempo",
+        "protect",
+        "anchor"
+      ],
+      "building_affinities": [
+        "lightning_rod",
+        "training_pole",
+        "wind_sail",
+        "boarding_pen"
+      ],
+      "mda_profile": {
+        "mechanics_role": "guardian",
+        "dynamic_goal": "充能顶线",
+        "aesthetic_payoff": "雷停天开",
+        "flow_band": "mid_pressure"
+      },
+      "flow_target": {
+        "readability": "中",
+        "expected_decision_load": 4,
+        "intended_player_question": "现在该吃雷蓄势还是直接扛线？"
+      },
+      "unlock_rank": 4,
+      "evolution": {
+        "next_species_id": "storm_qilin_2",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 2,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "ironwall",
+        "pathfinder",
+        "caretaker"
+      ]
+    },
+    {
+      "id": "storm_qilin_2",
+      "family_id": "storm_qilin",
+      "dex_no": 128,
+      "name": "霁雷麒",
+      "stage": 2,
+      "rarity": "epic",
+      "types": [
+        "electric",
+        "light"
+      ],
+      "roles": [
+        "charger",
+        "guardian"
+      ],
+      "temperament": "steady",
+      "habitat_preferences": [
+        "storm_field",
+        "highroad"
+      ],
+      "wild_habitats": [
+        "thunder_meadow",
+        "sky_post"
+      ],
+      "ecology_tags": [
+        "storm",
+        "meadow",
+        "travel"
+      ],
+      "resident_tags": [
+        "electric",
+        "light",
+        "charger",
+        "guardian",
+        "storm",
+        "highroad",
+        "charge",
+        "protect"
+      ],
+      "likes": [
+        "晴后草味",
+        "木桩冲刺",
+        "铜铃声"
+      ],
+      "dislikes": [
+        "闷雷不落",
+        "绊脚泥坑"
+      ],
+      "care_actions": [
+        "刷鬃",
+        "领跑",
+        "擦角"
+      ],
+      "bond_skill": "storm_yak_bond",
+      "work_style": "guardian",
+      "population_cost": 2,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 106,
+        "atk": 78,
+        "sp_atk": 72,
+        "def": 81,
+        "res": 66,
+        "spd": 67,
+        "energy": 71
+      },
+      "growth_curve": 1.12,
+      "skill_ids": [
+        "electric_basic",
+        "guardian_tactic",
+        "storm_yak_sig_2",
+        "light_burst"
+      ],
+      "passive_id": "storm_yak_passive",
+      "signature_tags": [
+        "charge",
+        "tempo",
+        "protect",
+        "anchor"
+      ],
+      "building_affinities": [
+        "lightning_rod",
+        "training_pole",
+        "wind_sail",
+        "boarding_pen"
+      ],
+      "mda_profile": {
+        "mechanics_role": "guardian",
+        "dynamic_goal": "充能顶线",
+        "aesthetic_payoff": "雷停天开",
+        "flow_band": "mid_pressure"
+      },
+      "flow_target": {
+        "readability": "中",
+        "expected_decision_load": 4,
+        "intended_player_question": "现在该吃雷蓄势还是直接扛线？"
+      },
+      "unlock_rank": 6,
+      "evolution": {
+        "next_species_id": "storm_qilin_3",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "ironwall",
+        "pathfinder",
+        "caretaker"
+      ]
+    },
+    {
+      "id": "storm_qilin_3",
+      "family_id": "storm_qilin",
+      "dex_no": 129,
+      "name": "晴穹天麒",
+      "stage": 3,
+      "rarity": "legendary",
+      "types": [
+        "electric",
+        "light"
+      ],
+      "roles": [
+        "charger",
+        "guardian"
+      ],
+      "temperament": "steady",
+      "habitat_preferences": [
+        "storm_field",
+        "highroad"
+      ],
+      "wild_habitats": [
+        "thunder_meadow",
+        "sky_post"
+      ],
+      "ecology_tags": [
+        "storm",
+        "meadow",
+        "travel"
+      ],
+      "resident_tags": [
+        "electric",
+        "light",
+        "charger",
+        "guardian",
+        "storm",
+        "highroad",
+        "charge",
+        "protect"
+      ],
+      "likes": [
+        "晴后草味",
+        "木桩冲刺",
+        "铜铃声"
+      ],
+      "dislikes": [
+        "闷雷不落",
+        "绊脚泥坑"
+      ],
+      "care_actions": [
+        "刷鬃",
+        "领跑",
+        "擦角"
+      ],
+      "bond_skill": "storm_yak_bond",
+      "work_style": "guardian",
+      "population_cost": 3,
+      "bond_weight": 2,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 128,
+        "atk": 94,
+        "sp_atk": 99,
+        "def": 91,
+        "res": 88,
+        "spd": 88,
+        "energy": 92
+      },
+      "growth_curve": 1.26,
+      "skill_ids": [
+        "electric_basic",
+        "guardian_tactic",
+        "storm_yak_sig_3",
+        "light_burst"
+      ],
+      "passive_id": "storm_yak_passive",
+      "signature_tags": [
+        "charge",
+        "tempo",
+        "protect",
+        "anchor"
+      ],
+      "building_affinities": [
+        "lightning_rod",
+        "training_pole",
+        "wind_sail",
+        "boarding_pen"
+      ],
+      "mda_profile": {
+        "mechanics_role": "guardian",
+        "dynamic_goal": "充能顶线",
+        "aesthetic_payoff": "雷停天开",
+        "flow_band": "mid_pressure"
+      },
+      "flow_target": {
+        "readability": "中",
+        "expected_decision_load": 4,
+        "intended_player_question": "现在该吃雷蓄势还是直接扛线？"
+      },
+      "unlock_rank": 8,
+      "evolution": {
+        "next_species_id": null,
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "ironwall",
+        "pathfinder",
+        "caretaker"
+      ]
+    },
+    {
+      "id": "moon_marten_1",
+      "family_id": "moon_marten",
+      "dex_no": 130,
+      "name": "镜尾貂",
+      "stage": 1,
+      "rarity": "rare",
+      "types": [
+        "shadow",
+        "water"
+      ],
+      "roles": [
+        "scout",
+        "striker"
+      ],
+      "temperament": "evasive",
+      "habitat_preferences": [
+        "ice_lake",
+        "anomaly"
+      ],
+      "wild_habitats": [
+        "frost_mirror_lake",
+        "moonfen_ruins"
+      ],
+      "ecology_tags": [
+        "shadow",
+        "water",
+        "anomaly"
+      ],
+      "resident_tags": [
+        "shadow",
+        "water",
+        "scout",
+        "striker",
+        "frost",
+        "anomaly",
+        "ambush",
+        "evasion"
+      ],
+      "likes": [
+        "冰缝小鱼",
+        "月井倒影",
+        "安静脚步"
+      ],
+      "dislikes": [
+        "嘈杂火光",
+        "封死退路"
+      ],
+      "care_actions": [
+        "顺毛",
+        "喂鱼",
+        "藏球"
+      ],
+      "bond_skill": "lunar_fennec_bond",
+      "work_style": "controller",
+      "population_cost": 1,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 56,
+        "atk": 55,
+        "sp_atk": 63,
+        "def": 33,
+        "res": 61,
+        "spd": 71,
+        "energy": 65
+      },
+      "growth_curve": 1.0,
+      "skill_ids": [
+        "shadow_basic",
+        "striker_tactic",
+        "lunar_fennec_sig_1",
+        "water_burst"
+      ],
+      "passive_id": "lunar_fennec_passive",
+      "signature_tags": [
+        "ambush",
+        "fear",
+        "debuff",
+        "zone"
+      ],
+      "building_affinities": [
+        "frost_mirror",
+        "glow_lantern",
+        "moon_well",
+        "stability_anchor"
+      ],
+      "mda_profile": {
+        "mechanics_role": "striker",
+        "dynamic_goal": "夜袭收线",
+        "aesthetic_payoff": "月下穿影",
+        "flow_band": "mastery"
+      },
+      "flow_target": {
+        "readability": "中高",
+        "expected_decision_load": 5,
+        "intended_player_question": "这一跳是先探路还是直接收掉后排？"
+      },
+      "unlock_rank": 5,
+      "evolution": {
+        "next_species_id": "moon_marten_2",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 2,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "pathfinder",
+        "tactician",
+        "hoarder"
+      ]
+    },
+    {
+      "id": "moon_marten_2",
+      "family_id": "moon_marten",
+      "dex_no": 131,
+      "name": "霜纹影貂",
+      "stage": 2,
+      "rarity": "epic",
+      "types": [
+        "shadow",
+        "water"
+      ],
+      "roles": [
+        "scout",
+        "striker"
+      ],
+      "temperament": "evasive",
+      "habitat_preferences": [
+        "ice_lake",
+        "anomaly"
+      ],
+      "wild_habitats": [
+        "frost_mirror_lake",
+        "moonfen_ruins"
+      ],
+      "ecology_tags": [
+        "shadow",
+        "water",
+        "anomaly"
+      ],
+      "resident_tags": [
+        "shadow",
+        "water",
+        "scout",
+        "striker",
+        "frost",
+        "anomaly",
+        "ambush",
+        "evasion"
+      ],
+      "likes": [
+        "冰缝小鱼",
+        "月井倒影",
+        "安静脚步"
+      ],
+      "dislikes": [
+        "嘈杂火光",
+        "封死退路"
+      ],
+      "care_actions": [
+        "顺毛",
+        "喂鱼",
+        "藏球"
+      ],
+      "bond_skill": "lunar_fennec_bond",
+      "work_style": "controller",
+      "population_cost": 2,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 69,
+        "atk": 70,
+        "sp_atk": 89,
+        "def": 49,
+        "res": 69,
+        "spd": 95,
+        "energy": 79
+      },
+      "growth_curve": 1.12,
+      "skill_ids": [
+        "shadow_basic",
+        "striker_tactic",
+        "lunar_fennec_sig_2",
+        "water_burst"
+      ],
+      "passive_id": "lunar_fennec_passive",
+      "signature_tags": [
+        "ambush",
+        "fear",
+        "debuff",
+        "zone"
+      ],
+      "building_affinities": [
+        "frost_mirror",
+        "glow_lantern",
+        "moon_well",
+        "stability_anchor"
+      ],
+      "mda_profile": {
+        "mechanics_role": "striker",
+        "dynamic_goal": "夜袭收线",
+        "aesthetic_payoff": "月下穿影",
+        "flow_band": "mastery"
+      },
+      "flow_target": {
+        "readability": "中高",
+        "expected_decision_load": 5,
+        "intended_player_question": "这一跳是先探路还是直接收掉后排？"
+      },
+      "unlock_rank": 7,
+      "evolution": {
+        "next_species_id": "moon_marten_3",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "pathfinder",
+        "tactician",
+        "hoarder"
+      ]
+    },
+    {
+      "id": "moon_marten_3",
+      "family_id": "moon_marten",
+      "dex_no": 132,
+      "name": "月映玄貂",
+      "stage": 3,
+      "rarity": "legendary",
+      "types": [
+        "shadow",
+        "water"
+      ],
+      "roles": [
+        "scout",
+        "striker"
+      ],
+      "temperament": "evasive",
+      "habitat_preferences": [
+        "ice_lake",
+        "anomaly"
+      ],
+      "wild_habitats": [
+        "frost_mirror_lake",
+        "moonfen_ruins"
+      ],
+      "ecology_tags": [
+        "shadow",
+        "water",
+        "anomaly"
+      ],
+      "resident_tags": [
+        "shadow",
+        "water",
+        "scout",
+        "striker",
+        "frost",
+        "anomaly",
+        "ambush",
+        "evasion"
+      ],
+      "likes": [
+        "冰缝小鱼",
+        "月井倒影",
+        "安静脚步"
+      ],
+      "dislikes": [
+        "嘈杂火光",
+        "封死退路"
+      ],
+      "care_actions": [
+        "顺毛",
+        "喂鱼",
+        "藏球"
+      ],
+      "bond_skill": "lunar_fennec_bond",
+      "work_style": "controller",
+      "population_cost": 3,
+      "bond_weight": 2,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 83,
+        "atk": 84,
+        "sp_atk": 103,
+        "def": 52,
+        "res": 91,
+        "spd": 123,
+        "energy": 101
+      },
+      "growth_curve": 1.26,
+      "skill_ids": [
+        "shadow_basic",
+        "striker_tactic",
+        "lunar_fennec_sig_3",
+        "water_burst"
+      ],
+      "passive_id": "lunar_fennec_passive",
+      "signature_tags": [
+        "ambush",
+        "fear",
+        "debuff",
+        "zone"
+      ],
+      "building_affinities": [
+        "frost_mirror",
+        "glow_lantern",
+        "moon_well",
+        "stability_anchor"
+      ],
+      "mda_profile": {
+        "mechanics_role": "striker",
+        "dynamic_goal": "夜袭收线",
+        "aesthetic_payoff": "月下穿影",
+        "flow_band": "mastery"
+      },
+      "flow_target": {
+        "readability": "中高",
+        "expected_decision_load": 5,
+        "intended_player_question": "这一跳是先探路还是直接收掉后排？"
+      },
+      "unlock_rank": 9,
+      "evolution": {
+        "next_species_id": null,
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "pathfinder",
+        "tactician",
+        "hoarder"
+      ]
+    },
+    {
+      "id": "archive_wisp_1",
+      "family_id": "archive_wisp",
+      "dex_no": 133,
+      "name": "页辉灵",
+      "stage": 1,
+      "rarity": "rare",
+      "types": [
+        "light",
+        "metal"
+      ],
+      "roles": [
+        "controller",
+        "scout"
+      ],
+      "temperament": "wise",
+      "habitat_preferences": [
+        "ruin",
+        "observatory"
+      ],
+      "wild_habitats": [
+        "ancient_platform",
+        "radiant_observatory"
+      ],
+      "ecology_tags": [
+        "light",
+        "metal",
+        "record"
+      ],
+      "resident_tags": [
+        "light",
+        "metal",
+        "controller",
+        "scout",
+        "ruin",
+        "observatory",
+        "forecast",
+        "zone"
+      ],
+      "likes": [
+        "纸页摩擦声",
+        "整齐卡槽",
+        "夜里抄星图"
+      ],
+      "dislikes": [
+        "油污手印",
+        "乱堆线夹"
+      ],
+      "care_actions": [
+        "拂尘",
+        "校页",
+        "巡灯"
+      ],
+      "bond_skill": "mind_owl_bond",
+      "work_style": "controller",
+      "population_cost": 1,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 54,
+        "atk": 48,
+        "sp_atk": 71,
+        "def": 40,
+        "res": 58,
+        "spd": 69,
+        "energy": 65
+      },
+      "growth_curve": 1.0,
+      "skill_ids": [
+        "light_basic",
+        "controller_tactic",
+        "mind_owl_sig_1",
+        "metal_burst"
+      ],
+      "passive_id": "mind_owl_passive",
+      "signature_tags": [
+        "control",
+        "forecast",
+        "debuff",
+        "zone"
+      ],
+      "building_affinities": [
+        "watch_tower",
+        "echo_room",
+        "star_map",
+        "resonance_frame"
+      ],
+      "mda_profile": {
+        "mechanics_role": "controller",
+        "dynamic_goal": "视野压制",
+        "aesthetic_payoff": "纸页生光",
+        "flow_band": "mastery"
+      },
+      "flow_target": {
+        "readability": "中高",
+        "expected_decision_load": 5,
+        "intended_player_question": "现在该压视野还是留手等神宠窗口？"
+      },
+      "unlock_rank": 5,
+      "evolution": {
+        "next_species_id": "archive_wisp_2",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 2,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
+    },
+    {
+      "id": "archive_wisp_2",
+      "family_id": "archive_wisp",
+      "dex_no": 134,
+      "name": "档辉灵",
+      "stage": 2,
+      "rarity": "epic",
+      "types": [
+        "light",
+        "metal"
+      ],
+      "roles": [
+        "controller",
+        "scout"
+      ],
+      "temperament": "wise",
+      "habitat_preferences": [
+        "ruin",
+        "observatory"
+      ],
+      "wild_habitats": [
+        "ancient_platform",
+        "radiant_observatory"
+      ],
+      "ecology_tags": [
+        "light",
+        "metal",
+        "record"
+      ],
+      "resident_tags": [
+        "light",
+        "metal",
+        "controller",
+        "scout",
+        "ruin",
+        "observatory",
+        "forecast",
+        "zone"
+      ],
+      "likes": [
+        "纸页摩擦声",
+        "整齐卡槽",
+        "夜里抄星图"
+      ],
+      "dislikes": [
+        "油污手印",
+        "乱堆线夹"
+      ],
+      "care_actions": [
+        "拂尘",
+        "校页",
+        "巡灯"
+      ],
+      "bond_skill": "mind_owl_bond",
+      "work_style": "controller",
+      "population_cost": 2,
+      "bond_weight": 1,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 67,
+        "atk": 60,
+        "sp_atk": 85,
+        "def": 45,
+        "res": 68,
+        "spd": 93,
+        "energy": 78
+      },
+      "growth_curve": 1.12,
+      "skill_ids": [
+        "light_basic",
+        "controller_tactic",
+        "mind_owl_sig_2",
+        "metal_burst"
+      ],
+      "passive_id": "mind_owl_passive",
+      "signature_tags": [
+        "control",
+        "forecast",
+        "debuff",
+        "zone"
+      ],
+      "building_affinities": [
+        "watch_tower",
+        "echo_room",
+        "star_map",
+        "resonance_frame"
+      ],
+      "mda_profile": {
+        "mechanics_role": "controller",
+        "dynamic_goal": "视野压制",
+        "aesthetic_payoff": "纸页生光",
+        "flow_band": "mastery"
+      },
+      "flow_target": {
+        "readability": "中高",
+        "expected_decision_load": 5,
+        "intended_player_question": "现在该压视野还是留手等神宠窗口？"
+      },
+      "unlock_rank": 7,
+      "evolution": {
+        "next_species_id": "archive_wisp_3",
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
+    },
+    {
+      "id": "archive_wisp_3",
+      "family_id": "archive_wisp",
+      "dex_no": 135,
+      "name": "天衡录灵",
+      "stage": 3,
+      "rarity": "legendary",
+      "types": [
+        "light",
+        "metal"
+      ],
+      "roles": [
+        "controller",
+        "scout"
+      ],
+      "temperament": "wise",
+      "habitat_preferences": [
+        "ruin",
+        "observatory"
+      ],
+      "wild_habitats": [
+        "ancient_platform",
+        "radiant_observatory"
+      ],
+      "ecology_tags": [
+        "light",
+        "metal",
+        "record"
+      ],
+      "resident_tags": [
+        "light",
+        "metal",
+        "controller",
+        "scout",
+        "ruin",
+        "observatory",
+        "forecast",
+        "zone"
+      ],
+      "likes": [
+        "纸页摩擦声",
+        "整齐卡槽",
+        "夜里抄星图"
+      ],
+      "dislikes": [
+        "油污手印",
+        "乱堆线夹"
+      ],
+      "care_actions": [
+        "拂尘",
+        "校页",
+        "巡灯"
+      ],
+      "bond_skill": "mind_owl_bond",
+      "work_style": "controller",
+      "population_cost": 3,
+      "bond_weight": 2,
+      "duplicate_species_counts_for_synergy": false,
+      "base_stats": {
+        "hp": 80,
+        "atk": 73,
+        "sp_atk": 100,
+        "def": 62,
+        "res": 88,
+        "spd": 105,
+        "energy": 100
+      },
+      "growth_curve": 1.26,
+      "skill_ids": [
+        "light_basic",
+        "controller_tactic",
+        "mind_owl_sig_3",
+        "metal_burst"
+      ],
+      "passive_id": "mind_owl_passive",
+      "signature_tags": [
+        "control",
+        "forecast",
+        "debuff",
+        "zone"
+      ],
+      "building_affinities": [
+        "watch_tower",
+        "echo_room",
+        "star_map",
+        "resonance_frame"
+      ],
+      "mda_profile": {
+        "mechanics_role": "controller",
+        "dynamic_goal": "视野压制",
+        "aesthetic_payoff": "纸页生光",
+        "flow_band": "mastery"
+      },
+      "flow_target": {
+        "readability": "中高",
+        "expected_decision_load": 5,
+        "intended_player_question": "现在该压视野还是留手等神宠窗口？"
+      },
+      "unlock_rank": 9,
+      "evolution": {
+        "next_species_id": null,
+        "merge_rule": {
+          "same_species_count": 3,
+          "same_species_required": true
+        },
+        "stage_gate": 3,
+        "extra_condition": null
+      },
+      "trait_tags": [
+        "tactician",
+        "pathfinder",
+        "hoarder"
+      ]
     }
   ]
 }

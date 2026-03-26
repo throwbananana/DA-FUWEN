@@ -62,6 +62,9 @@ var _base_position := Vector2.ZERO
 var _selection_label: Label
 var _battle_log_lines: Array[String] = []
 var _unit_card_nodes := {}
+var _action_buttons: Array[Button] = []
+var _ally_buttons: Array[Button] = []
+var _enemy_buttons: Array[Button] = []
 var localization_service := LocalizationService.new()
 var player_menu_mode := "root"
 
@@ -222,6 +225,8 @@ func _prompt_player_action_with_feedback(actor: MonsterInstance, show_banner: bo
 			_render_escape_action_buttons(actor)
 		_:
 			_render_root_action_buttons(actor)
+	_wire_controller_focus()
+	call_deferred("_focus_default_controller_target")
 
 func _player_menu_intro_text(actor: MonsterInstance) -> String:
 	if actor == null:
@@ -260,13 +265,14 @@ func _add_action_info_label(text: String) -> void:
 
 func _add_action_button(text: String, callback: Callable, disabled: bool = false, secondary: bool = false) -> Button:
 	var button := Button.new()
-	button.focus_mode = Control.FOCUS_NONE
+	button.focus_mode = Control.FOCUS_ALL
 	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	button.custom_minimum_size = Vector2(0, _secondary_action_button_height() if secondary else _action_button_height())
 	button.text = text
 	button.disabled = disabled
 	button.pressed.connect(callback)
 	action_box.add_child(button)
+	_action_buttons.append(button)
 	return button
 
 func _set_player_menu_mode(actor_uid: String, mode: String) -> void:
@@ -302,7 +308,7 @@ func _render_combat_action_buttons(actor: MonsterInstance) -> void:
 func _render_status_action_buttons(actor: MonsterInstance) -> void:
 	var lines: Array[String] = []
 	lines.append("当前行动：%s" % actor.display_name)
-	lines.append("待命位：%d 只 ｜ 战斗道具：%d 种" % [ally_reserve.size(), _battle_item_rows().size()])
+	lines.append("休息位：%d 只 ｜ 战斗道具：%d 种" % [ally_reserve.size(), _battle_item_rows().size()])
 	_add_action_info_label("\n".join(lines))
 	_add_action_info_label(_status_view_block(_get_unit_by_uid(selected_ally_uid), true))
 	_add_action_info_label(_status_view_block(_get_unit_by_uid(selected_enemy_uid), false))
@@ -312,7 +318,7 @@ func _render_bag_action_buttons(actor: MonsterInstance) -> void:
 	_add_action_info_label("背包操作会直接吃掉这回合。点左边可换当前上阵位，点右边可给当前锁定的敌人用捕捉球。")
 	_add_action_info_label("[换宠]")
 	if ally_reserve.is_empty():
-		_add_action_info_label("待命位里现在没有能换上的伙伴。")
+		_add_action_info_label("休息位里现在没有能换上的伙伴。")
 	else:
 		for unit_value in ally_reserve:
 			var reserve_unit: MonsterInstance = unit_value
@@ -582,6 +588,22 @@ func _schedule_enemy_action(actor: MonsterInstance) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		_apply_responsive_layout()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible or result_sent:
+		return
+	if not event.is_action_pressed("ui_cancel"):
+		return
+	var actor := _get_unit_by_uid(active_actor_uid)
+	if actor == null or not _is_ally(actor) or action_locked:
+		return
+	if not pending_action.is_empty():
+		_cancel_pending_action(actor.uid)
+		get_viewport().set_input_as_handled()
+		return
+	if player_menu_mode != "root":
+		_set_player_menu_mode(actor.uid, "root")
+		get_viewport().set_input_as_handled()
 
 func _on_enemy_wait_timeout(actor: MonsterInstance) -> void:
 	if result_sent or not actor.is_alive() or actor.uid != active_actor_uid:
@@ -1031,6 +1053,8 @@ func _finish_battle(result: Dictionary) -> void:
 
 func _render_rosters() -> void:
 	_unit_card_nodes.clear()
+	_ally_buttons.clear()
+	_enemy_buttons.clear()
 	for child in ally_list.get_children():
 		child.queue_free()
 	for child in enemy_list.get_children():
@@ -1062,7 +1086,7 @@ func _make_roster_header(text: String, accent: Color) -> Label:
 func _make_unit_button(unit: MonsterInstance, is_ally: bool) -> Button:
 	var button := Button.new()
 	button.custom_minimum_size = Vector2(250, 108)
-	button.focus_mode = Control.FOCUS_NONE
+	button.focus_mode = Control.FOCUS_ALL
 	button.text = ""
 	button.disabled = not unit.is_alive() or (_pending_target_selection_active() and not _is_unit_valid_pending_target(unit))
 	button.clip_contents = false
@@ -1131,8 +1155,10 @@ func _make_unit_button(unit: MonsterInstance, is_ally: bool) -> Button:
 	root.add_child(status_label)
 	if is_ally:
 		button.pressed.connect(_on_ally_selected.bind(unit.uid))
+		_ally_buttons.append(button)
 	else:
 		button.pressed.connect(_on_enemy_selected.bind(unit.uid))
+		_enemy_buttons.append(button)
 	_unit_card_nodes[unit.uid] = button
 	return button
 
@@ -1532,6 +1558,7 @@ func _show_unit_feedback(unit_uid: String, text: String, color: Color, rise: flo
 	)
 
 func _clear_action_buttons() -> void:
+	_action_buttons.clear()
 	for child in action_box.get_children():
 		child.queue_free()
 
@@ -1589,6 +1616,79 @@ func _ensure_fx_layer() -> void:
 	_fx_banner.offset_top = 18.0
 	_fx_banner.offset_bottom = 92.0
 	_fx_layer.add_child(_fx_banner)
+
+func _wire_controller_focus() -> void:
+	var action_anchor := _first_enabled_action_button()
+	var ally_anchor := _button_for_uid(selected_ally_uid)
+	var enemy_anchor := _button_for_uid(selected_enemy_uid)
+	_wire_vertical_focus(_action_buttons)
+	_wire_vertical_focus(_ally_buttons)
+	_wire_vertical_focus(_enemy_buttons)
+	for button in _action_buttons:
+		if button == null:
+			continue
+		if ally_anchor != null:
+			button.focus_neighbor_left = ally_anchor.get_path()
+		if enemy_anchor != null:
+			button.focus_neighbor_right = enemy_anchor.get_path()
+	for index in range(_ally_buttons.size()):
+		var button := _ally_buttons[index]
+		if button == null:
+			continue
+		if action_anchor != null:
+			button.focus_neighbor_left = action_anchor.get_path()
+		if not _enemy_buttons.is_empty():
+			button.focus_neighbor_right = _enemy_buttons[mini(index, _enemy_buttons.size() - 1)].get_path()
+	for index in range(_enemy_buttons.size()):
+		var button := _enemy_buttons[index]
+		if button == null:
+			continue
+		if action_anchor != null:
+			button.focus_neighbor_right = action_anchor.get_path()
+		if not _ally_buttons.is_empty():
+			button.focus_neighbor_left = _ally_buttons[mini(index, _ally_buttons.size() - 1)].get_path()
+
+func _wire_vertical_focus(buttons: Array[Button]) -> void:
+	for index in range(buttons.size()):
+		var button := buttons[index]
+		if button == null:
+			continue
+		if index > 0:
+			button.focus_neighbor_top = buttons[index - 1].get_path()
+		if index + 1 < buttons.size():
+			button.focus_neighbor_bottom = buttons[index + 1].get_path()
+
+func _focus_default_controller_target() -> void:
+	if not visible:
+		return
+	if _pending_target_selection_active():
+		var skill := GameData.get_skill(String(pending_action.get("skill_id", "")))
+		var target_mode := String(skill.get("target", "enemy"))
+		var preferred_uid := selected_ally_uid if target_mode == "ally" else selected_enemy_uid
+		var preferred_button := _button_for_uid(preferred_uid)
+		if preferred_button != null and not preferred_button.disabled:
+			preferred_button.grab_focus()
+			return
+		for button in (_ally_buttons if target_mode == "ally" else _enemy_buttons):
+			if button != null and not button.disabled:
+				button.grab_focus()
+				return
+	for button in _action_buttons:
+		if button != null and not button.disabled:
+			button.grab_focus()
+			return
+
+func _first_enabled_action_button() -> Button:
+	for button in _action_buttons:
+		if button != null and not button.disabled:
+			return button
+	return null
+
+func _button_for_uid(unit_uid: String) -> Button:
+	if unit_uid.is_empty():
+		return null
+	var button = _unit_card_nodes.get(unit_uid, null)
+	return button as Button
 
 func _play_open_animation() -> void:
 	if GameState.should_skip_animations():

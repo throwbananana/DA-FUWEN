@@ -22,11 +22,13 @@ var _is_typing := false
 var _is_info_popup := false
 var _pending_cancel_text := "取消"
 var _queued_close_signal := false
+var _choice_buttons: Array[Button] = []
 
 func _ready() -> void:
 	hide()
 	modulate.a = 1.0
 	_apply_responsive_layout()
+	cancel_button.focus_mode = Control.FOCUS_ALL
 	cancel_button.pressed.connect(_on_cancel_pressed)
 	body_label.gui_input.connect(_on_body_label_gui_input)
 
@@ -43,19 +45,23 @@ func open_panel(title_text: String, body_text: String, choices: Array, cancel_te
 	cancel_button.text = cancel_text
 	_queued_close_signal = false
 	_is_info_popup = not body_text.is_empty()
+	_choice_buttons.clear()
 
 	for child in button_container.get_children():
 		child.queue_free()
 	for choice in current_choices:
 		var button := Button.new()
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.focus_mode = Control.FOCUS_NONE
+		button.focus_mode = Control.FOCUS_ALL
 		button.text = "%s\n%s" % [String(choice.get("label", "")), String(choice.get("summary", ""))]
 		button.tooltip_text = String(choice.get("tooltip", choice.get("summary", "")))
 		button.disabled = bool(choice.get("disabled", false))
 		button.pressed.connect(_on_choice_pressed.bind(String(choice.get("id", ""))))
 		button_container.add_child(button)
+		_choice_buttons.append(button)
 	_apply_responsive_layout()
+	_wire_focus_neighbors()
+	_refresh_focus_targets()
 
 	if _is_info_popup:
 		_play_open_animation()
@@ -63,6 +69,7 @@ func open_panel(title_text: String, body_text: String, choices: Array, cancel_te
 	else:
 		modulate.a = 1.0
 		body_label.visible_ratio = 1.0
+		_focus_primary_action()
 
 func close_panel() -> void:
 	if _is_info_popup:
@@ -97,6 +104,13 @@ func _on_body_label_gui_input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		_apply_responsive_layout()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		_on_cancel_pressed()
+		get_viewport().set_input_as_handled()
 
 func _play_open_animation() -> void:
 	_stop_close_animation(false)
@@ -143,10 +157,12 @@ func _play_typewriter() -> void:
 	if visible_chars <= 0:
 		body_label.visible_ratio = 1.0
 		cancel_button.text = _pending_cancel_text
+		_refresh_focus_targets()
 		return
 	_is_typing = true
 	body_label.visible_ratio = 0.0
 	cancel_button.text = "跳过"
+	_refresh_focus_targets()
 	var duration := clampf(float(visible_chars) / TYPEWRITER_CHARS_PER_SECOND, TYPEWRITER_MIN_DURATION, TYPEWRITER_MAX_DURATION)
 	_body_tween = create_tween()
 	_body_tween.tween_property(body_label, "visible_ratio", 1.0, duration)
@@ -163,6 +179,8 @@ func _finish_typewriter() -> void:
 	body_label.visible_ratio = 1.0
 	_is_typing = false
 	cancel_button.text = _pending_cancel_text
+	_refresh_focus_targets()
+	_focus_primary_action()
 
 func _stop_typewriter(show_all_text: bool) -> void:
 	if _body_tween:
@@ -172,6 +190,7 @@ func _stop_typewriter(show_all_text: bool) -> void:
 		body_label.visible_ratio = 1.0
 	_is_typing = false
 	cancel_button.text = _pending_cancel_text
+	_refresh_focus_targets()
 
 func _apply_responsive_layout() -> void:
 	if not is_node_ready():
@@ -187,3 +206,33 @@ func _apply_responsive_layout() -> void:
 			continue
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.custom_minimum_size = Vector2(0, 48 if short_height else 56)
+
+func _wire_focus_neighbors() -> void:
+	for index in range(_choice_buttons.size()):
+		var button := _choice_buttons[index]
+		if button == null:
+			continue
+		if index > 0:
+			button.focus_neighbor_top = _choice_buttons[index - 1].get_path()
+		elif _choice_buttons.size() > 0:
+			button.focus_neighbor_top = cancel_button.get_path()
+		if index + 1 < _choice_buttons.size():
+			button.focus_neighbor_bottom = _choice_buttons[index + 1].get_path()
+		else:
+			button.focus_neighbor_bottom = cancel_button.get_path()
+	if not _choice_buttons.is_empty():
+		cancel_button.focus_neighbor_top = _choice_buttons[_choice_buttons.size() - 1].get_path()
+		cancel_button.focus_neighbor_bottom = _choice_buttons[0].get_path()
+
+func _refresh_focus_targets() -> void:
+	for button in _choice_buttons:
+		if button == null:
+			continue
+		button.disabled = _is_typing or bool(current_choices[_choice_buttons.find(button)].get("disabled", false))
+
+func _focus_primary_action() -> void:
+	for button in _choice_buttons:
+		if button != null and not button.disabled:
+			button.grab_focus()
+			return
+	cancel_button.grab_focus()

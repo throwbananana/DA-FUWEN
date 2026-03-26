@@ -12,7 +12,7 @@
         "type": "visit_habitat",
         "habitat_id": "mist_moss_cave"
       },
-      "summary": "雾苔窟是项目早期最适合承接照料与育幼玩法的试做点。",
+      "summary": "雾苔窟安静又暖和，很适合先学着照看幼体和温顺的小家伙。",
       "sections": [
         {
           "heading": "地貌",
@@ -20,7 +20,7 @@
         },
         {
           "heading": "玩法定位",
-          "body": "强调安静、保温、孵育与基础观察，是照料系统的上手区域。"
+          "body": "这里节奏很慢，适合先学保温、孵育和基础观察。"
         },
         {
           "heading": "关键设施",
@@ -79,7 +79,7 @@
         "type": "visit_habitat",
         "habitat_id": "sky_post"
       },
-      "summary": "云升驿承担休息、寄养、传闻与邮件，是多地点系统的枢纽。",
+      "summary": "云升驿能歇脚、寄养、听传闻、送消息，是旅途中最热闹的中转站。",
       "sections": [
         {
           "heading": "功能",
@@ -115,7 +115,7 @@
         "type": "unlock_habitat",
         "habitat_id": "ancient_platform"
       },
-      "summary": "古械平台偏向探索、修复与夜间观察，是系统从照料转向研究的中层节点。",
+      "summary": "古械平台偏向探索、修理和夜间观察，越往里走越有遗迹味。",
       "sections": [
         {
           "heading": "地貌",
@@ -194,7 +194,7 @@
         },
         {
           "heading": "推进条件",
-          "body": "现有数据中它依赖一定的总信任与地点推进等级才会开放。"
+          "body": "等你和伙伴们更让人放心些，就能往这里再走深一点。"
         }
       ],
       "keywords": [
@@ -218,7 +218,7 @@
         "building_id": "message_board",
         "level": 1
       },
-      "summary": "寄养与邮件让地点之间发生联系，把单点访问扩展为多点循环。",
+      "summary": "寄养和邮件会让各个地点互相有来有往，不只是去一下就走。",
       "sections": [
         {
           "heading": "寄养",
@@ -284,7 +284,7 @@
         "species_id": "rift_fawn",
         "count": 1
       },
-      "summary": "异常稳定化不是单纯压制危险，而是寻找可被利用的短暂安全窗口。",
+      "summary": "在异常地带，重要的不是硬扛，而是抓住那点短暂的安全时机。",
       "sections": [
         {
           "heading": "核心逻辑",
@@ -314,7 +314,7 @@
         "type": "talk_to_npc",
         "npc": "moss_keeper"
       },
-      "summary": "当前项目的委托推进与 NPC 信任奖励已经在数据层建立了基础对应关系。",
+      "summary": "和人慢慢熟起来之后，委托、消息和小奖励都会一点点变多。",
       "sections": [
         {
           "heading": "信任奖励",
@@ -322,17 +322,282 @@
         },
         {
           "heading": "委托结构",
-          "body": "现有任务模板已包含交付、访问、建造、观察、结缘、安抚等基础步骤。"
+          "body": "现在的委托已经有送东西、跑一趟、盖点东西、观察、结缘和安抚这些内容。"
         },
         {
           "heading": "扩展方向",
-          "body": "最适合继续接事件、对话、图鉴与百科，让任务结果能沉淀为长期内容。"
+          "body": "以后还能再接更多事件、对话和图鉴内容，让每次帮忙都留下点东西。"
         }
       ],
       "keywords": [
         "trust",
         "quest",
         "progression"
+      ]
+    },
+    {
+      "id": "ency_greenbark_grove",
+      "category": "location",
+      "title": "青栎林径",
+      "related_ids": {
+        "habitat_id": "greenbark_grove"
+      },
+      "unlock_rule": {
+        "type": "visit_habitat",
+        "habitat_id": "greenbark_grove"
+      },
+      "summary": "青栎林径不像会一下子给很多东西的地方，它更像把人和路线都放稳的那口气，适合在匆忙之前先慢下来。",
+      "sections": [
+        {
+          "heading": "地貌",
+          "body": "这片林地岔口不少、风也轻，最怕的从来不是走不动，而是大家都以为前面那个人还在不远处。"
+        },
+        {
+          "heading": "生活气",
+          "body": "巡林人的午哨、岔口叶绳和收工前的回声确认，让这里比起野地更像一条有人常走常看顾的林路。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "适合做侦察、稳定路线和成长承接，是把前半季节奏收稳的关键缓冲点。"
+        }
+      ],
+      "keywords": [
+        "grove",
+        "patrol",
+        "route"
+      ],
+      "related_entries": [
+        "ency_trust_and_commissions"
+      ]
+    },
+    {
+      "id": "ency_reed_mire",
+      "category": "location",
+      "title": "芦泽浅滩",
+      "related_ids": {
+        "habitat_id": "reed_mire"
+      },
+      "unlock_rule": {
+        "type": "visit_habitat",
+        "habitat_id": "reed_mire"
+      },
+      "summary": "芦泽浅滩会故意把人的步子拖慢一点，但也正因为慢，很多原本会被忽略的小麻烦都能在这里被看见、被处理。",
+      "sections": [
+        {
+          "heading": "走法",
+          "body": "这里不适合闷头赶路，涉水线、落脚点和回屋前的净水习惯，都会决定一天最后能不能收得舒服。"
+        },
+        {
+          "heading": "生活气",
+          "body": "棚前水盆、门边芦苇垫和沼地里特有的收工仪式感，让湿地不只是危险，也有很浓的“回家”味道。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "更偏观察、净化和回稳，适合在路线吃紧时把节奏从“硬撑”拉回“能过日子”。"
+        }
+      ],
+      "keywords": [
+        "wetland",
+        "reed",
+        "purify"
+      ]
+    },
+    {
+      "id": "ency_saltglass_coast",
+      "category": "location",
+      "title": "盐镜海岸",
+      "related_ids": {
+        "habitat_id": "saltglass_coast"
+      },
+      "unlock_rule": {
+        "type": "visit_habitat",
+        "habitat_id": "saltglass_coast"
+      },
+      "summary": "盐镜海岸表面上是潮路和回流线，真待久了才会发现，这里最鲜明的其实是一套从风里回到桌边的生活规矩。",
+      "sections": [
+        {
+          "heading": "体感",
+          "body": "海风、细盐和口袋里总会多出来的一点沙，让这里每次停下脚都像刚从外头收回来。"
+        },
+        {
+          "heading": "日常规矩",
+          "body": "抖袖口、清鞋边、把晒架和饭桌隔开，这些海边小讲究共同撑起了“再忙也还能坐下来”的秩序。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "适合做路线修整、观察和回流建设，是后段把远路重新接回主线的关键节点。"
+        }
+      ],
+      "keywords": [
+        "coast",
+        "tide",
+        "return_route"
+      ]
+    },
+    {
+      "id": "ency_thunder_meadow",
+      "category": "location",
+      "title": "雷驰训练公园",
+      "related_ids": {
+        "habitat_id": "thunder_meadow"
+      },
+      "unlock_rule": {
+        "type": "unlock_habitat",
+        "habitat_id": "thunder_meadow"
+      },
+      "summary": "雷驰训练公园不只是练速度和反应，它更像把一整天的节奏拆开来练，从热身、停步到喝水都有自己的秩序。",
+      "sections": [
+        {
+          "heading": "氛围",
+          "body": "雷声一大，这里就会显得格外热闹，但真正留下来的往往不是刺激，而是每个人都在努力把动作做顺。"
+        },
+        {
+          "heading": "训练日常",
+          "body": "栏杆上的旧水杯、练前标记和收工后的暖手石，都说明这里连休息和停顿都被当成训练的一部分。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "适合承接速度、节奏和试炼准备，是夏季从高压走向可控的关键训练带。"
+        }
+      ],
+      "keywords": [
+        "storm",
+        "training",
+        "tempo"
+      ]
+    },
+    {
+      "id": "ency_echo_broken_bridge",
+      "category": "location",
+      "title": "回声断桥",
+      "related_ids": {
+        "habitat_id": "echo_broken_bridge"
+      },
+      "unlock_rule": {
+        "type": "unlock_habitat",
+        "habitat_id": "echo_broken_bridge"
+      },
+      "summary": "回声断桥表面像个中转点，实际上更像一张靠经验、绳结和风口记忆撑起来的路线课桌。",
+      "sections": [
+        {
+          "heading": "路口意义",
+          "body": "这里不奖胆大，只奖肯先看风、先记绳的人。很多后段短路能不能成立，都取决于桥头有没有被认真对待。"
+        },
+        {
+          "heading": "常见规矩",
+          "body": "旧绳的朝向、桥板的松紧和哪一段风先发紧，这些桥头规矩听起来琐碎，却比远望更先救命。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "偏向定线、消息和中后段节奏修正，是把高压路线重新收回掌控的重要支点。"
+        }
+      ],
+      "keywords": [
+        "bridge",
+        "routing",
+        "echo"
+      ],
+      "related_entries": [
+        "ency_boarding_and_mail"
+      ]
+    },
+    {
+      "id": "ency_frost_mirror_lake",
+      "category": "location",
+      "title": "霜镜湖",
+      "related_ids": {
+        "habitat_id": "frost_mirror_lake"
+      },
+      "unlock_rule": {
+        "type": "unlock_habitat",
+        "habitat_id": "frost_mirror_lake"
+      },
+      "summary": "霜镜湖最值钱的不是冷，而是它逼着人把每个动作都做得更轻、更慢，也更像在认真看自己手上正在发生什么。",
+      "sections": [
+        {
+          "heading": "体感",
+          "body": "冰裂声、雾气和手套里慢慢回来的温度，会让人在这里自然而然地把声音放低、动作放缓。"
+        },
+        {
+          "heading": "观察习惯",
+          "body": "先记轻音、再碰冰器、最后才下判断，是镜湖这类环境里最常被反复提醒的顺序。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "更偏恢复、静观和后段资源回收，适合在终局前把心态和盘面一起放稳。"
+        }
+      ],
+      "keywords": [
+        "lake",
+        "ice",
+        "reflection"
+      ]
+    },
+    {
+      "id": "ency_ember_crater",
+      "category": "location",
+      "title": "烬火盆地",
+      "related_ids": {
+        "habitat_id": "ember_crater"
+      },
+      "unlock_rule": {
+        "type": "visit_habitat",
+        "habitat_id": "ember_crater"
+      },
+      "summary": "烬火盆地看起来总像在催人快点动手，其实真正熟这里的人都知道，先分清虚热和真热，很多事才不至于做猛了。",
+      "sections": [
+        {
+          "heading": "体感",
+          "body": "火色很晃眼，真正稳的温度却常常藏在不那么显眼的石背和坑沿。"
+        },
+        {
+          "heading": "日常手法",
+          "body": "摸石背、摆温盘、收余炭，这里很多经验都不是大开大合，而是教人先别被热闹骗过去。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "适合做成长冲刺和素材处理，是把中后期资源转成更实际收益的燥热节点。"
+        }
+      ],
+      "keywords": [
+        "ember",
+        "heat",
+        "sorting"
+      ]
+    },
+    {
+      "id": "ency_moonfen_ruins",
+      "category": "location",
+      "title": "月沼遗迹",
+      "related_ids": {
+        "habitat_id": "moonfen_ruins"
+      },
+      "unlock_rule": {
+        "type": "unlock_habitat",
+        "habitat_id": "moonfen_ruins"
+      },
+      "summary": "月沼遗迹并不只负责把气氛拉满，它更像一处要求你学会“先别急着信第一句”的地方，连回音都带着筛选意味。",
+      "sections": [
+        {
+          "heading": "氛围",
+          "body": "井沿冷、雾气沉、回声来得快，这些东西合在一起，会让人很自然地怀疑自己刚刚听见的到底算不算答案。"
+        },
+        {
+          "heading": "观察规则",
+          "body": "先放过第一层回音、再听留下来的第二层意思，是这里最重要也最像生活经验的一条规矩。"
+        },
+        {
+          "heading": "玩法定位",
+          "body": "承担终局前的异常观察、回响判断和氛围收束，是把高压体验做出层次感的重要遗迹区。"
+        }
+      ],
+      "keywords": [
+        "ruins",
+        "moonwell",
+        "echo"
+      ],
+      "related_entries": [
+        "ency_anomaly_stabilization"
       ]
     }
   ]

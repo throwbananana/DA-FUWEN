@@ -1790,6 +1790,231 @@
         }
       ],
       "flow_rationale": "先学一个主轴，再叠一层建筑或背包条件，避免前期进化理解负担过高。"
+    },
+    {
+      "family_id": "grove_cervid",
+      "names": [
+        "晨芽鹿",
+        "巡花灵鹿",
+        "春冠圣鹿"
+      ],
+      "type_signature": [
+        "grass",
+        "light"
+      ],
+      "role_signature": [
+        "healer",
+        "guardian"
+      ],
+      "entries": [
+        {
+          "species_id": "grove_cervid_1",
+          "stage": 1
+        },
+        {
+          "species_id": "grove_cervid_2",
+          "stage": 2,
+          "requirements": {
+            "merge": 3,
+            "site": "greenbark_grove",
+            "building": "herb_canopy",
+            "condition": "草系或森林≥2",
+            "bond": 50
+          }
+        },
+        {
+          "species_id": "grove_cervid_3",
+          "stage": 3,
+          "requirements": {
+            "merge": 3,
+            "site": "greenbark_grove",
+            "building": "grove_perch",
+            "condition": "草系或森林≥2 且 治疗 或 守护 ≥2",
+            "bond": 70
+          }
+        }
+      ],
+      "flow_rationale": "把春季巡林线做成更明确的三段进阶：普通幼宠负责陪伴，精英阶段开始承担驻场养护，神宠阶段只在春日白昼回应森林。"
+    },
+    {
+      "family_id": "glint_manta",
+      "names": [
+        "潮灯鳐",
+        "镜祈光鳐",
+        "星潮圣鳐"
+      ],
+      "type_signature": [
+        "water",
+        "light"
+      ],
+      "role_signature": [
+        "healer",
+        "controller"
+      ],
+      "entries": [
+        {
+          "species_id": "glint_manta_1",
+          "stage": 1
+        },
+        {
+          "species_id": "glint_manta_2",
+          "stage": 2,
+          "requirements": {
+            "merge": 3,
+            "site": "saltglass_coast",
+            "building": "sun_drying_rack",
+            "condition": "水系或岸线≥2",
+            "bond": 50
+          }
+        },
+        {
+          "species_id": "glint_manta_3",
+          "stage": 3,
+          "requirements": {
+            "merge": 3,
+            "site": "frost_mirror_lake",
+            "building": "glow_lantern",
+            "condition": "水系或光系≥2 且 治疗 或 控制 ≥2",
+            "bond": 70
+          }
+        }
+      ],
+      "flow_rationale": "先在海边见习，再到镜湖完成仪式，第三阶段只在冬夜晴空的静水里露面，形成明确的神宠追逐目标。"
+    },
+    {
+      "family_id": "storm_qilin",
+      "names": [
+        "伏角兽",
+        "霁雷麒",
+        "晴穹天麒"
+      ],
+      "type_signature": [
+        "electric",
+        "light"
+      ],
+      "role_signature": [
+        "charger",
+        "guardian"
+      ],
+      "entries": [
+        {
+          "species_id": "storm_qilin_1",
+          "stage": 1
+        },
+        {
+          "species_id": "storm_qilin_2",
+          "stage": 2,
+          "requirements": {
+            "merge": 3,
+            "site": "thunder_meadow",
+            "building": "lightning_rod",
+            "condition": "电系或风暴≥2",
+            "bond": 50
+          }
+        },
+        {
+          "species_id": "storm_qilin_3",
+          "stage": 3,
+          "requirements": {
+            "merge": 3,
+            "site": "thunder_meadow",
+            "building": "training_pole",
+            "condition": "电系或光系≥2 且 充能 或 守护 ≥2",
+            "bond": 70
+          }
+        }
+      ],
+      "flow_rationale": "普通个体在驿站和草场都能见到，精英个体偏雷季训练窗，神宠则锁在夏季雷夜，作为高压培养回报。"
+    },
+    {
+      "family_id": "moon_marten",
+      "names": [
+        "镜尾貂",
+        "霜纹影貂",
+        "月映玄貂"
+      ],
+      "type_signature": [
+        "shadow",
+        "water"
+      ],
+      "role_signature": [
+        "scout",
+        "striker"
+      ],
+      "entries": [
+        {
+          "species_id": "moon_marten_1",
+          "stage": 1
+        },
+        {
+          "species_id": "moon_marten_2",
+          "stage": 2,
+          "requirements": {
+            "merge": 3,
+            "site": "frost_mirror_lake",
+            "building": "frost_mirror",
+            "condition": "暗影或霜境≥2",
+            "bond": 50
+          }
+        },
+        {
+          "species_id": "moon_marten_3",
+          "stage": 3,
+          "requirements": {
+            "merge": 3,
+            "site": "moonfen_ruins",
+            "building": "moon_well",
+            "condition": "暗影或异常≥2 且 侦查 或 输出 ≥2",
+            "bond": 70
+          }
+        }
+      ],
+      "flow_rationale": "把湖边追影和月沼夜探绑定起来，精英阶段可稳定养成，神宠阶段必须吃到冬季高异常的极窄窗口。"
+    },
+    {
+      "family_id": "archive_wisp",
+      "names": [
+        "页辉灵",
+        "档辉灵",
+        "天衡录灵"
+      ],
+      "type_signature": [
+        "light",
+        "metal"
+      ],
+      "role_signature": [
+        "controller",
+        "scout"
+      ],
+      "entries": [
+        {
+          "species_id": "archive_wisp_1",
+          "stage": 1
+        },
+        {
+          "species_id": "archive_wisp_2",
+          "stage": 2,
+          "requirements": {
+            "merge": 3,
+            "site": "ancient_platform",
+            "building": "watch_tower",
+            "condition": "光系或金属≥2",
+            "bond": 50
+          }
+        },
+        {
+          "species_id": "archive_wisp_3",
+          "stage": 3,
+          "requirements": {
+            "merge": 3,
+            "site": "radiant_observatory",
+            "building": "star_map",
+            "condition": "光系或异常≥2 且 控制 或 侦查 ≥2",
+            "bond": 70
+          }
+        }
+      ],
+      "flow_rationale": "平台夜巡先放出精英录灵，真正的神宠只在秋夜晴空的观测中心现身，鼓励玩家围绕时间和地点编队。"
     }
   ]
 }

@@ -261,6 +261,173 @@
         "fish_event:saltglass_night_whisper"
       ],
       "log_line": "你在盐镜潮滩的夜里先听见了线，再看见了水。"
+    },
+    {
+      "id": "creek_noon_bucket",
+      "habitat_id": "crystal_creek",
+      "mode": "incident",
+      "choice_ids": [
+        "watch_tide",
+        "cast_line"
+      ],
+      "weight": 2,
+      "repeatable": true,
+      "times": [
+        "day",
+        "evening"
+      ],
+      "title": "午后那只先换过的水桶",
+      "body_lines": [
+        "婆婆在你落竿前先把岸边那只小水桶换了，说水都闷了，今天的鱼讯也会跟着闷。",
+        "你本来只当这是顺手活，等风真转过来时，才发现这一下确实替整个浅滩都松了口气。"
+      ],
+      "items": {
+        "water_drop": 1,
+        "paper": 1
+      },
+      "journal_entry": "今天先把溪边那只闷了一午后的旧水换掉，连浅滩的气都像新了些。",
+      "trust_rewards": {
+        "washer_grandma": 1
+      },
+      "observe_markers": [
+        "fish_event:creek_noon_bucket"
+      ],
+      "pressure_delta": -1,
+      "log_line": "你在晶溪先换了只水桶，再慢慢把线放下去。"
+    },
+    {
+      "id": "mire_boot_rinse_bank",
+      "habitat_id": "reed_mire",
+      "mode": "incident",
+      "choice_ids": [
+        "watch_tide",
+        "release_watch"
+      ],
+      "weight": 2,
+      "repeatable": true,
+      "times": [
+        "day",
+        "evening"
+      ],
+      "title": "岸边先把靴边洗干净",
+      "body_lines": [
+        "芦娘让你先别急着看浮漂，蹲下来把靴边那圈泥冲掉，说人要是还把沼气带在脚边，今天这段水也静不下来。",
+        "你照做以后，连自己站在岸上的那股烦躁都像先退了半步。"
+      ],
+      "items": {
+        "water_drop": 1,
+        "reed": 1
+      },
+      "journal_entry": "芦泽岸边，先洗净靴边再下竿，整段水都像更肯让人站住。",
+      "trust_rewards": {
+        "mire_guide": 1
+      },
+      "observe_markers": [
+        "fish_event:mire_boot_rinse_bank"
+      ],
+      "pressure_delta": -1,
+      "log_line": "你在芦泽先冲掉靴边泥，再去看今天的水纹。"
+    },
+    {
+      "id": "coast_cloth_shake",
+      "habitat_id": "saltglass_coast",
+      "mode": "incident",
+      "choice_ids": [
+        "watch_tide",
+        "cast_line"
+      ],
+      "weight": 2,
+      "repeatable": true,
+      "times": [
+        "day",
+        "evening"
+      ],
+      "title": "风口先抖一抖桌边布",
+      "body_lines": [
+        "砺潮把桌边那块旧布提起来抖了两下，盐粒和细砂一下全落回风里，说要先把碗边的位置替今晚留出来。",
+        "你站在旁边看着，只觉得这地方连准备坐下来这件事都带着一整套讲究。"
+      ],
+      "items": {
+        "clear_sand": 1,
+        "cloth": 1
+      },
+      "journal_entry": "海边先抖净桌边布，晚一点坐下来时，风和盐都没那么爱硌人了。",
+      "trust_rewards": {
+        "coast_keeper": 1
+      },
+      "observe_markers": [
+        "fish_event:coast_cloth_shake"
+      ],
+      "pressure_delta": -1,
+      "log_line": "你在海岸先看砺潮把桌边布抖净，再慢慢听潮。"
+    },
+    {
+      "id": "winter_glove_warm",
+      "habitat_id": "frost_mirror_lake",
+      "mode": "incident",
+      "choice_ids": [
+        "watch_tide",
+        "release_watch"
+      ],
+      "weight": 3,
+      "repeatable": true,
+      "seasons": [
+        "winter"
+      ],
+      "times": [
+        "day",
+        "evening",
+        "night"
+      ],
+      "title": "手套先在壶边暖一暖",
+      "body_lines": [
+        "冰珀没让你立刻蹲到孔边，只把手套按在温壶边，说冷着手去做细事，湖面会把所有慌都照出来。",
+        "等那阵僵劲退掉以后，你才发现今晚这片冰比刚才更像肯让人靠近。"
+      ],
+      "items": {
+        "warm_stone": 1
+      },
+      "journal_entry": "霜镜湖边，先暖手再碰冰器，后面的细活总算没那么容易乱。",
+      "trust_rewards": {
+        "mirror_keeper": 1
+      },
+      "observe_markers": [
+        "fish_event:winter_glove_warm"
+      ],
+      "pressure_delta": -1,
+      "log_line": "你在镜湖边先把手套暖开，再去碰今晚的冰孔。"
+    },
+    {
+      "id": "autumn_tide_table_meet",
+      "habitat_id": "saltglass_coast",
+      "mode": "festival",
+      "seasons": [
+        "autumn"
+      ],
+      "title": "潮桌边的小丰渔夜",
+      "menu_summary": "今晚海边不只比谁钓得多，更多人是来吹吹风、看榜单、顺手把一晚过舒服。",
+      "description": "有人围着潮桌分鱼讯，有人只管把热汤端稳。到了深秋，海边热闹得不像比赛，更像大家都想把这一晚待完整。",
+      "items": {
+        "paper": 1,
+        "tea_leaf": 1,
+        "glass": 1
+      },
+      "base_score": 4,
+      "trust_rewards": {
+        "coast_keeper": 1
+      },
+      "journal_entry": "盐镜海岸的潮桌边，大家把深秋这一晚过得比榜单还热闹。",
+      "story_flags": [
+        "autumn_tide_table_meet_joined"
+      ],
+      "host_npcs": [
+        "coast_keeper"
+      ],
+      "rival_names": [
+        "潮桌常客",
+        "晚归海手",
+        "驿站路过人"
+      ]
     }
   ]
 }

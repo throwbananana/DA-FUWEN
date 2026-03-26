@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 DataRepository="*res://scripts/autoload/data_repository.gd"
 GameState="*res://scripts/autoload/game_state.gd"
+InputManager="*res://scripts/autoload/input_manager.gd"
 CustomAssetRepository="*res://scripts/autoload/custom_asset_repository.gd"
 
 [display]

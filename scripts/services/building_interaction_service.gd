@@ -13,6 +13,19 @@ func get_interaction_menu(habitat_id: String) -> Array:
 		var runtime_state: Dictionary = GameState.ensure_building_runtime_state(habitat_id, building_id)
 		var actions: Array = []
 		var damage_days := maxi(0, int(runtime_state.get("damage_days", 0)))
+		if damage_days > 0:
+			var repair_cost := GameState.get_building_repair_cost(habitat_id, building_id)
+			var repair_disabled := not repair_cost.is_empty() and not GameState.can_pay(repair_cost)
+			actions.append({
+				"id": "repair_damage",
+				"label": "修缮",
+				"description": String(runtime_state.get("incident_note", "提前修好这栋暂时受损的建筑。")),
+				"cost": repair_cost,
+				"cooldown_remaining": 0,
+				"damage_days": damage_days,
+				"disabled": repair_disabled,
+				"disabled_reason": "missing_items" if repair_disabled else "",
+			})
 		for action in _get_unlocked_actions(building, level):
 			var action_id := String(action.get("id", ""))
 			if action_id.is_empty():
@@ -54,10 +67,17 @@ func execute_action(habitat_id: String, building_id: String, action_id: String) 
 	var level: int = GameState.get_building_level(habitat_id, building_id)
 	if level <= 0:
 		return {"ok": false, "reason": "building_not_built", "building_id": building_id, "habitat_id": habitat_id}
+	var runtime_state: Dictionary = GameState.ensure_building_runtime_state(habitat_id, building_id)
+	if action_id == "repair_damage":
+		var repair_result := GameState.repair_building_damage(habitat_id, building_id)
+		repair_result["building_id"] = building_id
+		repair_result["building_name"] = String(building.get("name", building_id))
+		repair_result["action_id"] = action_id
+		repair_result["action_label"] = "修缮"
+		return repair_result
 	var action := _find_action(building, level, action_id)
 	if action.is_empty():
 		return {"ok": false, "reason": "action_missing", "building_id": building_id, "action_id": action_id}
-	var runtime_state: Dictionary = GameState.ensure_building_runtime_state(habitat_id, building_id)
 	var cooldown_remaining := _get_cooldown_remaining(runtime_state, action_id)
 	if cooldown_remaining > 0:
 		return {

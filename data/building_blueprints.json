@@ -34,7 +34,7 @@
                 "restore_hunger": 8,
                 "bond_target": "resident",
                 "bond_delta": 1,
-                "journal": "恒温护理室完成了一次基础护理，驻守宠物状态稳定下来。"
+                "journal": "恒温护理室里忙了一阵，驻守的伙伴慢慢稳下来了。"
               }
             }
           ]
@@ -137,7 +137,7 @@
                 "restore_hunger": 4,
                 "bond_target": "resident",
                 "bond_delta": 1,
-                "journal": "康复床位区完成了一次额外的恢复引导。"
+                "journal": "康复床位又多照看了一会儿，伙伴状态更放松了。"
               }
             }
           ]
@@ -214,7 +214,7 @@
               "cooldown_turns": 2,
               "result": {
                 "set_next_observation_source": "nursery_rare_watch",
-                "journal": "幼护观察室完成了定向稀有观察准备。"
+                "journal": "幼护观察室把稀有线索都理顺了，接下来更容易碰上少见的小家伙。"
               }
             }
           ]
@@ -249,7 +249,7 @@
                 "restore_hunger": 4,
                 "bond_target": "service_pet",
                 "bond_delta": 1,
-                "journal": "亲水互动池完成了一次舒缓互动。"
+                "journal": "亲水互动池里玩了一会儿，伙伴也慢慢放松下来。"
               }
             }
           ]
@@ -261,10 +261,10 @@
             "warm_stone": 2
           },
           "effects": [
-            "结缘成功趋势提升"
+            "更容易和新伙伴熟起来"
           ],
           "passive_effects": [
-            "结缘成功趋势提升"
+            "更容易和新伙伴熟起来"
           ],
           "interactions": [
             {
@@ -535,7 +535,7 @@
             {
               "id": "preserve_morale",
               "label": "维持状态",
-              "description": "积累一次可供后续系统消费的托管服务额度。",
+              "description": "先攒下一次托管人情，之后会更方便照看伙伴。",
               "cooldown_turns": 2,
               "result": {
                 "store_output": {
@@ -598,7 +598,7 @@
             {
               "id": "broadcast_request",
               "label": "发布协作需求",
-              "description": "生成一份跨点委托刷新额度，供后续任务系统接入。",
+              "description": "放出一条新的协作消息，过阵子更容易接到跨点委托。",
               "cost": {
                 "paper": 1
               },
@@ -723,12 +723,12 @@
           "interactions": [
             {
               "id": "forecast_sweep",
-              "label": "执行预报扫描",
+              "label": "看看风向和异动",
               "description": "锁定更偏异常与遗迹的观察窗口。",
               "cooldown_turns": 1,
               "result": {
                 "set_next_observation_source": "anomaly_watch",
-                "journal": "城市监测塔完成了一轮预报扫描。"
+                "journal": "城市监测塔转了一圈，把天气和异动都先看清了。"
               }
             }
           ]
@@ -740,10 +740,10 @@
             "glass": 2
           },
           "effects": [
-            "观测成功率提升"
+            "观察更容易有收获"
           ],
           "passive_effects": [
-            "观测成功率提升"
+            "观察更容易有收获"
           ],
           "interactions": [
             {
@@ -753,7 +753,7 @@
               "cooldown_turns": 2,
               "result": {
                 "set_next_observation_source": "anomaly_rare_watch",
-                "journal": "城市监测塔已完成高精度校准。"
+                "journal": "城市监测塔把镜头调得更准了。"
               }
             }
           ]
@@ -900,7 +900,7 @@
               "cooldown_turns": 2,
               "result": {
                 "set_next_observation_source": "echo_rare_watch",
-                "journal": "信号回放室启动了深层共鸣程序。"
+                "journal": "信号回放室里的深层共鸣慢慢响起来了。"
               }
             }
           ]

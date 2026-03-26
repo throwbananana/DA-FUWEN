@@ -4,67 +4,98 @@
     {
       "id": "spring_pathing",
       "season_id": "spring",
-      "summary": "春季以观察、建设和关系型偶遇为主，适合建立基础 build。",
+      "summary": "春季更像把一整套生活重新铺开，适合边认路、边搭点小东西，也边把熟人的消息重新接上。",
       "encounter_flavors": [
         "护理",
         "观察",
         "市集",
         "路线",
-        "林地"
+        "林地",
+        "留言",
+        "晒垫",
+        "午后"
       ],
       "entries": [
         { "node_type": "habitat", "risk": "低", "reward": "材料、观察、驻守成长" },
         { "node_type": "settlement", "risk": "低", "reward": "委托、交易、路线信息" },
+        { "node_type": "shop", "risk": "低", "reward": "小修小补、材料换购、装饰灵感" },
+        { "node_type": "bulletin", "risk": "低", "reward": "传闻、折扣、下周去向" },
+        { "node_type": "environment", "risk": "低", "reward": "沿路小插曲、额外路况信息" },
+        { "node_type": "minigame", "risk": "低", "reward": "顺手热身、少量额外补给" },
         { "node_type": "anomaly", "risk": "中", "reward": "异常材料、阶段压力" }
       ]
     },
     {
       "id": "summer_pathing",
       "season_id": "summer",
-      "summary": "夏季以训练、风暴与高压偶遇为主，强调节奏控制。",
+      "summary": "夏季牌面更热也更急，常在训练、换线和临场修正之间来回切，讲究的是别被热度带跑。",
       "encounter_flavors": [
         "训练",
         "风暴",
         "桥头",
         "高压",
-        "修造"
+        "修造",
+        "凉茶",
+        "换班",
+        "午雷"
       ],
       "entries": [
-        { "node_type": "habitat", "risk": "中", "reward": "训练、成长与 build 成型" },
+        { "node_type": "habitat", "risk": "中", "reward": "训练、成长和队伍磨合" },
         { "node_type": "settlement", "risk": "低", "reward": "补给、桥头事件、交易" },
+        { "node_type": "shop", "risk": "低", "reward": "紧急补货、维修、路线回正" },
+        { "node_type": "bulletin", "risk": "低", "reward": "桥区传闻、天气提示、折价货" },
+        { "node_type": "minigame", "risk": "中", "reward": "节奏热身、下一战前的小幅加成" },
+        { "node_type": "environment", "risk": "中", "reward": "沿路压力测试、额外线路信息" },
+        { "node_type": "dojo", "risk": "高", "reward": "阶段试手、徽章、战斗反馈" },
         { "node_type": "anomaly", "risk": "高", "reward": "精英掉落、季末收益" }
       ]
     },
     {
       "id": "autumn_pathing",
       "season_id": "autumn",
-      "summary": "秋季强调构筑成型、验证型偶遇和路线精修。",
+      "summary": "秋季更像把准备一件件落到手上，既要看试炼前的手感，也要看收工后这条路是不是还能顺着走下去。",
       "encounter_flavors": [
         "锻炉",
         "潮汐",
-        "验证",
+        "试手",
         "精确",
-        "余烬"
+        "余烬",
+        "晚饭",
+        "桥风",
+        "账本"
       ],
       "entries": [
         { "node_type": "habitat", "risk": "中", "reward": "成长冲刺、恢复、素材" },
         { "node_type": "settlement", "risk": "低", "reward": "路线切换、任务推进" },
-        { "node_type": "dojo", "risk": "高", "reward": "徽章、阶段解锁" }
+        { "node_type": "shop", "risk": "低", "reward": "材料回收、临时采购、摊前情报" },
+        { "node_type": "bulletin", "risk": "低", "reward": "试炼提示、降价物资、野群风向" },
+        { "node_type": "environment", "risk": "中", "reward": "桥风修正、沿路事件、节奏校准" },
+        { "node_type": "dojo", "risk": "高", "reward": "徽章、阶段解锁" },
+        { "node_type": "anomaly", "risk": "高", "reward": "高压素材、后段推进窗口" }
       ]
     },
     {
       "id": "winter_pathing",
       "season_id": "winter",
-      "summary": "冬季强调恢复、镜面反射与终局偶遇的稳态处理。",
+      "summary": "冬季牌面会更安静，但也更讲究收口，很多收益都来自把人、灯和回流线先安顿好，再决定要不要碰终局。",
       "encounter_flavors": [
         "恢复",
         "镜面",
         "反射",
         "终局",
-        "观测"
+        "观测",
+        "热汤",
+        "手炉",
+        "回流",
+        "灯牌"
       ],
       "entries": [
         { "node_type": "habitat", "risk": "低", "reward": "恢复、终局资源" },
+        { "node_type": "settlement", "risk": "低", "reward": "回流、消息、终盘补给" },
+        { "node_type": "shop", "risk": "低", "reward": "冬线补货、修整、收官准备" },
+        { "node_type": "bulletin", "risk": "低", "reward": "终局风向、折扣、最后一圈提示" },
+        { "node_type": "environment", "risk": "中", "reward": "沿路观测、镜面线索、额外揭图" },
+        { "node_type": "infirmary", "risk": "低", "reward": "稳态回补、压力清理、继续推进的余地" },
         { "node_type": "anomaly", "risk": "高", "reward": "终局材料、年度结算" }
       ]
     }

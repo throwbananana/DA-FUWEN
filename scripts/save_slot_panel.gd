@@ -44,7 +44,7 @@ func _build_ui() -> void:
 	margin.add_child(root)
 
 	_title_label = Label.new()
-	_title_label.text = "存档槽位"
+	_title_label.text = "旅程存档"
 	_title_label.add_theme_font_size_override("font_size", 28)
 	root.add_child(_title_label)
 
@@ -58,6 +58,7 @@ func _build_ui() -> void:
 	root.add_child(content_row)
 
 	_slot_list = ItemList.new()
+	_slot_list.focus_mode = Control.FOCUS_ALL
 	_slot_list.custom_minimum_size = Vector2(220, 0)
 	_slot_list.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_slot_list.item_selected.connect(_on_slot_item_selected)
@@ -91,26 +92,31 @@ func _build_ui() -> void:
 	root.add_child(button_row)
 
 	_load_button = Button.new()
-	_load_button.text = "读取"
+	_load_button.focus_mode = Control.FOCUS_ALL
+	_load_button.text = "继续"
 	_load_button.pressed.connect(_on_load_pressed)
 	button_row.add_child(_load_button)
 
 	_new_button = Button.new()
+	_new_button.focus_mode = Control.FOCUS_ALL
 	_new_button.text = "新开"
 	_new_button.pressed.connect(_on_new_pressed)
 	button_row.add_child(_new_button)
 
 	_save_button = Button.new()
+	_save_button.focus_mode = Control.FOCUS_ALL
 	_save_button.text = "保存到这里"
 	_save_button.pressed.connect(_on_save_pressed)
 	button_row.add_child(_save_button)
 
 	_delete_button = Button.new()
+	_delete_button.focus_mode = Control.FOCUS_ALL
 	_delete_button.text = "删除"
 	_delete_button.pressed.connect(_on_delete_pressed)
 	button_row.add_child(_delete_button)
 
 	_close_button = Button.new()
+	_close_button.focus_mode = Control.FOCUS_ALL
 	_close_button.text = "返回"
 	_close_button.pressed.connect(func() -> void:
 		emit_signal("close_requested")
@@ -126,10 +132,29 @@ func open_panel(slots: Array[Dictionary], selected_slot_id: String, mode: String
 	_render_slots()
 	_refresh_labels()
 	_refresh_actions()
+	_wire_focus_neighbors()
 	show()
+	call_deferred("_focus_slot_list")
 
 func close_panel() -> void:
 	hide()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		emit_signal("close_requested")
+		get_viewport().set_input_as_handled()
+		return
+	if _slot_list.has_focus() and event.is_action_pressed("ui_right"):
+		var action_button := _first_visible_action_button()
+		if action_button != null:
+			action_button.grab_focus()
+			get_viewport().set_input_as_handled()
+		return
+	if _is_action_button_focused() and (event.is_action_pressed("ui_left") or event.is_action_pressed("ui_up")):
+		_focus_slot_list()
+		get_viewport().set_input_as_handled()
 
 func _render_slots() -> void:
 	_slot_list.clear()
@@ -162,14 +187,14 @@ func _current_slot() -> Dictionary:
 	return {}
 
 func _refresh_labels() -> void:
-	_title_label.text = "存档槽位"
-	_subtitle_label.text = "启动菜单可以直接从选中的槽位读取或新开；运行中则可以切槽保存、切槽开新局。"
+	_title_label.text = "旅程存档"
+	_subtitle_label.text = "开头可以从选中的存档继续，也能在这里开新旅程；旅途中也能随时换格保存。"
 	var slot := _current_slot()
 	_summary_label.text = _build_slot_summary(slot)
 	if _mode == "runtime":
-		_hint_label.text = "[b]运行中操作[/b]\n保存到别的槽位后，自动存档也会切到那个槽位。"
+		_hint_label.text = "[b]旅途中[/b]\n如果存到别的格子，之后的自动存档也会跟着记到那边。"
 	else:
-		_hint_label.text = "[b]启动菜单操作[/b]\n空槽按“继续”时会直接在这个槽位开新局。"
+		_hint_label.text = "[b]开头这里[/b]\n空槽点“继续”就会直接从这里开始新旅程。"
 
 func _refresh_actions() -> void:
 	var slot := _current_slot()
@@ -178,7 +203,7 @@ func _refresh_actions() -> void:
 	_new_button.visible = true
 	_save_button.visible = _mode == "runtime"
 	_delete_button.visible = true
-	_load_button.text = "读取这个槽位"
+	_load_button.text = "从这格继续"
 	_load_button.disabled = not exists
 	_new_button.text = "在这个槽位新开"
 	_new_button.disabled = _selected_slot_id.is_empty()
@@ -189,10 +214,10 @@ func _build_slot_summary(slot: Dictionary) -> String:
 	if slot.is_empty():
 		return "没有可用的槽位信息。"
 	if not bool(slot.get("exists", false)):
-		return "[b]%s[/b]\n这个槽位还是空的。" % String(slot.get("title", slot.get("id", "存档")))
+		return "[b]%s[/b]\n这格还是空的。" % String(slot.get("title", slot.get("id", "存档")))
 	var summary: Dictionary = Dictionary(slot.get("summary", {})).duplicate(true)
 	if summary.is_empty():
-		return "[b]%s[/b]\n这个槽位里有旧版本存档，但没有摘要。" % String(slot.get("title", slot.get("id", "存档")))
+		return "[b]%s[/b]\n这格里有旧存档，不过暂时看不到摘要。" % String(slot.get("title", slot.get("id", "存档")))
 	var battle_slots: Array[String] = []
 	for entry in summary.get("battle_slots", []):
 		battle_slots.append(String(entry))
@@ -208,7 +233,7 @@ func _build_slot_summary(slot: Dictionary) -> String:
 			int(summary.get("global_turn", 1)),
 		],
 		"位置：%s" % String(summary.get("node_name", "营地")),
-		"双打位：%s" % " / ".join(battle_slots),
+		"出战位：%s" % " / ".join(battle_slots),
 		"周目标：%s" % String(summary.get("objective_summary", "暂无")),
 	]
 	return "\n".join(lines)
@@ -235,3 +260,29 @@ func _on_delete_pressed() -> void:
 	if _selected_slot_id.is_empty():
 		return
 	emit_signal("delete_requested", _selected_slot_id)
+
+func _wire_focus_neighbors() -> void:
+	var buttons: Array[Button] = [_load_button, _new_button, _save_button, _delete_button, _close_button]
+	for index in range(buttons.size()):
+		var button: Button = buttons[index]
+		if button == null:
+			continue
+		button.focus_neighbor_left = _slot_list.get_path()
+		button.focus_neighbor_top = buttons[maxi(0, index - 1)].get_path()
+		button.focus_neighbor_bottom = buttons[mini(buttons.size() - 1, index + 1)].get_path()
+
+func _focus_slot_list() -> void:
+	if _slot_list != null:
+		_slot_list.grab_focus()
+
+func _first_visible_action_button() -> Button:
+	for button: Button in [_load_button, _new_button, _save_button, _delete_button, _close_button]:
+		if button != null and button.visible and not button.disabled:
+			return button
+	return _close_button
+
+func _is_action_button_focused() -> bool:
+	for button: Button in [_load_button, _new_button, _save_button, _delete_button, _close_button]:
+		if button != null and button.has_focus():
+			return true
+	return false

@@ -4,6 +4,10 @@
     {
       "id": "moss_keeper",
       "name": "保育员 迟叔",
+      "kind": "洞窟照护人",
+      "description": "说话不快，做事更慢半拍，像是生怕把窝里的安静碰碎。",
+      "signature_line": "先别急着伸手，看看它今天想不想让你靠近。",
+      "daily_habit": "每天先进洞口看水碗和窝边潮气，再决定今天照护从哪一处开始。",
       "role": "resident",
       "home": "mist_moss_cave",
       "tags": [
@@ -20,6 +24,10 @@
     {
       "id": "lost_apprentice",
       "name": "见习助理 小禾",
+      "kind": "跑腿见习生",
+      "description": "人总是转得飞快，东西也容易跟着转没，但那股认真劲是实打实的。",
+      "signature_line": "我记过的，真的，就是本子刚刚又不知道塞哪儿了。",
+      "daily_habit": "天一亮就先数今天要跑几趟，再把笔记分成“别丢的”和“已经快丢的”两摞。",
       "role": "resident",
       "home": "mist_moss_cave",
       "tags": [
@@ -34,6 +42,15 @@
     {
       "id": "washer_grandma",
       "name": "洗石婆婆",
+      "kind": "溪边照料人",
+      "description": "手上动作又轻又稳，连石头被她洗过都像会自己安静一点。",
+      "signature_line": "别嫌我慢，洗干净和洗过去，那可不是一回事。",
+      "daily_habit": "午前先挑暖石，午后再晒布，收工前一定会把浅滩边角再看一遍。",
+      "small_talk_topics": [
+        "为什么样石也得留半块阴",
+        "午后的布角该压多宽才不抢纹路",
+        "溪边最会替人省力的到底是水还是风"
+      ],
       "role": "resident",
       "home": "crystal_creek",
       "tags": [
@@ -49,6 +66,15 @@
     {
       "id": "stone_trader",
       "name": "石片商 阿砾",
+      "kind": "往返石材贩",
+      "description": "嘴上总说这块那块都普通，手里却很会挑出最顺手的那一片。",
+      "signature_line": "不怕石头小，就怕你拿的时候正好差这么一点。",
+      "daily_habit": "摆摊前先拿碎石垫平桌脚，再把最稳当的石片压在账本边上。",
+      "small_talk_topics": [
+        "哪种石片最适合压在账本边",
+        "样石什么时候该晒亮，什么时候该退半步",
+        "小摊桌脚不平为什么会把整天心气都带偏"
+      ],
       "role": "traveler",
       "home": "crystal_creek",
       "route": [
@@ -79,6 +105,15 @@
     {
       "id": "innkeeper_yun",
       "name": "站务长 云伯",
+      "kind": "驿站管事",
+      "description": "看着像只管锅灶和床位，其实连谁今天说话比昨天急都记得住。",
+      "signature_line": "先坐稳，再说别的，赶路的话不适合站着讲。",
+      "daily_habit": "晚饭后会把小火汤继续温着，等最后一批回站的人把气喘匀。",
+      "small_talk_topics": [
+        "锅耳边那张挂签到底是在安顿谁",
+        "驿站里哪一口热最不能断",
+        "为什么晚归的人先确认的不是规矩"
+      ],
       "role": "resident",
       "home": "sky_post",
       "tags": [
@@ -106,6 +141,15 @@
     {
       "id": "boarder_liu",
       "name": "托管员 柳姐",
+      "kind": "寄养栏看护",
+      "description": "一眼就能看出哪只小家伙今晚会拱毯角，也知道该给它留多大余地。",
+      "signature_line": "别把它们安顿得太死，能安心翻个身才算真放松。",
+      "daily_habit": "夜里睡前总会把每张垫布的一角重新掀松一点，再轻手轻脚离开。",
+      "small_talk_topics": [
+        "为什么托管垫布总得留一角松",
+        "哪种安静说明今晚真的能睡稳",
+        "照顾和安顿太死之间到底差在哪"
+      ],
       "role": "resident",
       "home": "sky_post",
       "tags": [
@@ -132,6 +176,15 @@
     {
       "id": "traveling_peddler",
       "name": "流动商 青禾",
+      "kind": "跑线小商",
+      "description": "路上消息比货多，偏偏两样都能让她捎得像模像样。",
+      "signature_line": "东西我能带，话我也能带，就是看你想先送哪一样。",
+      "daily_habit": "进站先顺纸角、捆袋口，再把今天路上听来的闲话按轻重分好。",
+      "small_talk_topics": [
+        "行囊把手为什么一定要系路签",
+        "远路货最怕拿错还是放错顺序",
+        "跑线的人怎么把消息和货一起带稳"
+      ],
       "role": "traveler",
       "home": "sky_post",
       "route": [
@@ -165,6 +218,15 @@
     {
       "id": "ruin_restorer",
       "name": "设施维护员 绛",
+      "kind": "遗迹维修员",
+      "description": "看着不爱多话，真动手时却像每颗旧螺丝都和她认识很久。",
+      "signature_line": "旧东西不是不能用，只是不能拿新脾气去催它。",
+      "daily_habit": "开工前会先沿着旧构件摸一圈边角，确认今天哪处最先需要让步。",
+      "small_talk_topics": [
+        "为什么夜里修补反而要把灯放软",
+        "旧构件先摸边角到底能听出什么",
+        "拿新脾气催旧东西会坏在哪一步"
+      ],
       "role": "resident",
       "home": "ancient_platform",
       "tags": [
@@ -181,6 +243,17 @@
     {
       "id": "field_recorder",
       "name": "现场记录员 叶衡",
+      "kind": "前线记录者",
+      "description": "本子翻得很快，落笔却很慢，像是每句话都得先在脑子里坐稳。",
+      "signature_line": "正文写给今天，页边那一行才是写给明天的。",
+      "daily_habit": "每天收工前一定会补一条页边注，提醒明天的自己别从最错的地方看起。",
+      "small_talk_topics": [
+        "页边细线为什么比多写一段还重要",
+        "记录里该给哪一句先留在门外",
+        "正文和页边到底谁更像真提醒",
+        "页边忽然自己亮一寸时该先看哪一笔记录",
+        "古观测台的录灵更认整齐还是更认分寸"
+      ],
       "role": "resident",
       "home": "ancient_platform",
       "tags": [
@@ -195,6 +268,15 @@
     {
       "id": "tinker_bo",
       "name": "快修师 阿铂",
+      "kind": "前台快修匠",
+      "description": "手快嘴也快，口袋里叮当响得厉害，但每个零件都真有它该待的位置。",
+      "signature_line": "乱响和顺响差很多，前者丢人，后者省事。",
+      "daily_habit": "早上先给工具口袋重新分班，把“立刻要用的”和“八成会用的”分开放。",
+      "small_talk_topics": [
+        "围裙哪一格该先留给最沉的零件",
+        "口袋里的顺响到底怎么练出来",
+        "快修时先安顿工具还是先安顿人"
+      ],
       "role": "resident",
       "home": "copper_hammer_bazaar",
       "tags": [
@@ -221,6 +303,10 @@
     {
       "id": "smith_ya",
       "name": "机修师 哑叔",
+      "kind": "锻台老匠",
+      "description": "话不多，点头和皱眉就够说明一整天该怎么干活。",
+      "signature_line": "……嗯。",
+      "daily_habit": "开炉前会先把借出去的工具把手都摸一遍，看看有没有哪圈布该重缠。",
       "role": "resident",
       "home": "copper_hammer_bazaar",
       "tags": [
@@ -247,6 +333,15 @@
     {
       "id": "parts_vendor",
       "name": "配件商 小轮",
+      "kind": "配件摊主",
+      "description": "摊面看着乱，真问起零件却能从最杂的一堆里一下捞到正主。",
+      "signature_line": "别看现在找不着，等真缺它的时候我比你先翻出来。",
+      "daily_habit": "收摊前一定把小票串上线、日期补重，忙一天也不让账糊过去。",
+      "small_talk_topics": [
+        "小票为什么得先串起来再说别的",
+        "摊面看着乱和真有章法怎么同时成立",
+        "跑线清单里哪一行最不能写含糊"
+      ],
       "role": "traveler",
       "home": "copper_hammer_bazaar",
       "route": [
@@ -277,6 +372,10 @@
     {
       "id": "grove_patrol",
       "name": "林巡人 青岚",
+      "kind": "林线巡路人",
+      "description": "走路比风声还轻，回头确认同伴在不在却从不含糊。",
+      "signature_line": "会认路不稀奇，会把人一起带回来才算本事。",
+      "daily_habit": "午后固定吹一次两短一长的木哨，先数人，再数今天的路。",
       "role": "resident",
       "home": "greenbark_grove",
       "tags": [
@@ -288,11 +387,20 @@
         "1": "开放草棚建造",
         "3": "共享巡林捷径",
         "5": "带来稀有林地足迹"
-      }
+      },
+      "small_talk_topics": [
+        "春晴时哪种安静最像鹿群在让路",
+        "花带没乱和真有神宠经过之间差几分眼力",
+        "巡林时该先追光还是先看脚下的回程线"
+      ]
     },
     {
       "id": "mire_guide",
       "name": "泽向导 芦娘",
+      "kind": "湿地带路人",
+      "description": "说话带笑，规矩却细得很，尤其不许把沼地泥巴一路带进屋里。",
+      "signature_line": "路上脏一点没事，门槛里头总得收拾得像样。",
+      "daily_habit": "棚前净水盆天天换，哪怕再忙，也要在天黑前把门边芦苇垫重新摆好。",
       "role": "resident",
       "home": "reed_mire",
       "tags": [
@@ -309,6 +417,17 @@
     {
       "id": "coast_keeper",
       "name": "海岸看守 砺潮",
+      "kind": "潮路守望人",
+      "description": "身上总带点海风和细盐，说话不急，做事却很有收口的分寸。",
+      "signature_line": "先把袖口抖干净，坐下来才像真回了岸。",
+      "daily_habit": "收工后先站在风口抖两下袖子，再去看晒架和饭桌边有没有沾上海盐。",
+      "small_talk_topics": [
+        "今天风是不是比昨天更会拐弯",
+        "哪种盐粒最容易跟着袖口带回屋里",
+        "海边人为什么坐下前总要先抖两下衣角",
+        "潮灯压暗半分为什么反而更容易等到光鳐",
+        "海边哪种稳潮最像精英个体愿意靠近的样子"
+      ],
       "role": "resident",
       "home": "saltglass_coast",
       "tags": [
@@ -325,6 +444,17 @@
     {
       "id": "storm_mentor",
       "name": "雷训师 霁岚",
+      "kind": "节奏教练",
+      "description": "最擅长把“跑快点”说成一整套有先后、有轻重的规矩。",
+      "signature_line": "冲出去不难，能不能把那口气稳稳收回来才见真章。",
+      "daily_habit": "练前总把旧水杯按路线摆成圈，连停下来喝哪一口都先排好。",
+      "small_talk_topics": [
+        "为什么停步比冲刺更难练",
+        "旧水杯摆一圈到底是在练什么",
+        "训练场上哪种安静最值钱",
+        "雷前那一拍静为什么比整场雷都难抓",
+        "精英角兽和神宠天麒到底认什么样的节奏"
+      ],
       "role": "resident",
       "home": "thunder_meadow",
       "tags": [
@@ -341,6 +471,10 @@
     {
       "id": "kiln_warden",
       "name": "窑守 炽伯",
+      "kind": "火坑守温人",
+      "description": "脸上总像被火光映着，真正讲究的却是怎么分出那些不吵不闹的稳温。",
+      "signature_line": "先摸石背，再看石面，火才没那么会骗人。",
+      "daily_habit": "开坑前先分三盘石，最热的反而不急着用，要先挑最稳的那一批。",
       "role": "resident",
       "home": "ember_crater",
       "tags": [
@@ -357,6 +491,15 @@
     {
       "id": "bridge_scout",
       "name": "桥路探子 迟桥",
+      "kind": "断桥探路人",
+      "description": "看着像个闲站桥头的人，其实手里每根旧绳都在替他记风向。",
+      "signature_line": "断桥不奖胆大，只奖肯先听绳劲的人。",
+      "daily_habit": "每天都会把桥口旧绳换个结法，再试哪一段今天先发紧。",
+      "small_talk_topics": [
+        "今天哪段旧绳先发紧",
+        "桥口最会骗人的到底是风还是回声",
+        "为什么探桥先看手里而不是先看远处"
+      ],
       "role": "resident",
       "home": "echo_broken_bridge",
       "tags": [
@@ -385,6 +528,10 @@
     {
       "id": "leaf_master",
       "name": "叶宗师 栖迟",
+      "kind": "演武场主教",
+      "description": "讲话不重，眼神却像能把你今天哪一步最虚都看个透。",
+      "signature_line": "上场前先把心里那点急收住，手自然就准了。",
+      "daily_habit": "开场前会沿着演武场边线走一圈，把落叶、风向和脚下摩擦都重新记熟。",
       "role": "resident",
       "home": "autumn_leaf_dojo",
       "tags": [
@@ -401,6 +548,17 @@
     {
       "id": "mirror_keeper",
       "name": "镜守 冰珀",
+      "kind": "湖面看镜人",
+      "description": "声音很轻，提醒人的话却总落在最该慢下来的那一下。",
+      "signature_line": "湖面不怕你慢，只怕你手冷时还想装稳。",
+      "daily_habit": "碰冰器之前一定先把手套在壶盖边暖一会儿，再开始今天的细活。",
+      "small_talk_topics": [
+        "为什么镜湖上很多失手都从手冷开始",
+        "先暖手和先听冰，到底哪一个更重要",
+        "哪种裂音一听就知道今天不该再往前",
+        "镜湖夜里先变的是光还是影要怎么听出来",
+        "冬夜里哪种水纹最像圣鳐来过而不是风掠过去"
+      ],
       "role": "resident",
       "home": "frost_mirror_lake",
       "tags": [
@@ -417,6 +575,17 @@
     {
       "id": "tower_astronomer",
       "name": "观星师 望舒",
+      "kind": "高塔观测师",
+      "description": "看天象时安静得近乎出神，转头讲路线时又会把每件事说得很落地。",
+      "signature_line": "别只抬头看亮的，真正要紧的变化常藏在旁边那条暗线里。",
+      "daily_habit": "夜深后会把星盘和气压记录对一遍，再把明天可能起势的节点圈出来。",
+      "small_talk_topics": [
+        "怎么看出哪条亮线只是好看",
+        "塔上的风和地上的路为什么总能对上",
+        "补一条侧注为什么比多记一整页更有用",
+        "亮线旁那条暗线为什么常比主图更像答案",
+        "录灵为什么更爱会留白的人而不是写得最快的人"
+      ],
       "role": "resident",
       "home": "radiant_observatory",
       "tags": [
@@ -433,6 +602,17 @@
     {
       "id": "ruin_diviner",
       "name": "旧站区卜者 玄沼",
+      "kind": "回响解读者",
+      "description": "不像在“算”，更像在等那些太快的话自己先退下去。",
+      "signature_line": "来得最快的那一句，常常最不值得先信。",
+      "daily_habit": "傍晚会在月井边静坐一会儿，先把第一层回音整句放过去，再记后面的余声。",
+      "small_talk_topics": [
+        "月井边为什么总要先放掉第一句",
+        "旧桶和杂响怎么会把整晚回声都带偏",
+        "什么叫肯慢半拍的人才配听第二层意思",
+        "月井边的第二道回声为什么比第一道更可信",
+        "什么样的薄静最像玄貂已经从井边过去了"
+      ],
       "role": "resident",
       "home": "moonfen_ruins",
       "tags": [
@@ -449,6 +629,15 @@
     {
       "id": "anomaly_researcher",
       "name": "应急观察员 澄",
+      "kind": "异常区观察员",
+      "description": "比起冒进更擅长收手，总能在紧张边缘替人和生物都留出一点余地。",
+      "signature_line": "先把动作放轻一点，安全距离有时候就是这样争出来的。",
+      "daily_habit": "入区前先检查稳定器和撤离线，确认今天最坏的情况要往哪边退。",
+      "small_talk_topics": [
+        "为什么高压区里最值钱的是退路",
+        "把动作放轻到底能替双方省下什么",
+        "稳态窗口短的时候该先做哪一件事"
+      ],
       "role": "resident",
       "home": "radiant_spire",
       "tags": [

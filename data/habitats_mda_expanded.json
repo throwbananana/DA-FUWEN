@@ -151,7 +151,9 @@
         "flare_rooster_1",
         "iron_pigeon_1",
         "shale_ram_1",
-        "storm_yak_1"
+        "storm_yak_1",
+        "storm_qilin_1",
+        "storm_qilin_2"
       ],
       "visit_actions": [
         "rest",
@@ -207,7 +209,9 @@
         "forge_beetle_1",
         "mind_owl_1",
         "rune_ant_1",
-        "ruin_gecko_1"
+        "ruin_gecko_1",
+        "archive_wisp_1",
+        "archive_wisp_2"
       ],
       "visit_actions": [
         "care",
@@ -365,7 +369,10 @@
         "embercat_1",
         "prism_hare_1",
         "chapel_stag_1",
-        "flare_rooster_1"
+        "flare_rooster_1",
+        "storm_qilin_1",
+        "storm_qilin_2",
+        "storm_qilin_3"
       ],
       "visit_actions": [
         "care",
@@ -470,7 +477,12 @@
         "lunar_fennec_1",
         "cloud_crane_2",
         "crystal_shrimp_2",
-        "frost_spider_2"
+        "frost_spider_2",
+        "glint_manta_1",
+        "glint_manta_2",
+        "glint_manta_3",
+        "moon_marten_1",
+        "moon_marten_2"
       ],
       "visit_actions": [
         "care",
@@ -486,7 +498,7 @@
           "倒影事件概率提升"
         ],
         "snow": [
-          "回复型构筑更稳定"
+          "偏恢复的准备会更稳"
         ]
       },
       "recommended_rank": 3,
@@ -565,7 +577,10 @@
       ],
       "wild_pool": [
         "null_fawn_1",
-        "null_fawn_2"
+        "null_fawn_2",
+        "archive_wisp_1",
+        "archive_wisp_2",
+        "archive_wisp_3"
       ],
       "visit_actions": [
         "observe",
@@ -674,7 +689,10 @@
         "thorn_boar_1",
         "breeze_swallow_1",
         "embercat_1",
-        "prism_hare_1"
+        "prism_hare_1",
+        "grove_cervid_1",
+        "grove_cervid_2",
+        "grove_cervid_3"
       ],
       "visit_actions": [
         "care",
@@ -785,7 +803,9 @@
         "ice_seal_1",
         "tide_ray_1",
         "crystal_shrimp_1",
-        "lunar_fennec_1"
+        "lunar_fennec_1",
+        "glint_manta_1",
+        "glint_manta_2"
       ],
       "visit_actions": [
         "care",
@@ -844,7 +864,10 @@
         "coil_lizard_2",
         "ruin_gecko_2",
         "rune_ant_2",
-        "null_fawn_2"
+        "null_fawn_2",
+        "moon_marten_1",
+        "moon_marten_2",
+        "moon_marten_3"
       ],
       "visit_actions": [
         "observe",

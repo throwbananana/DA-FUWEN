@@ -5,6 +5,9 @@
       "id": "soft_moss",
       "name": "湿苔团",
       "type": "material",
+      "kind": "保温垫材",
+      "description": "刚捧起来有点凉，摊开后却很服帖，拿来垫窝和包东西都很省心。",
+      "source_hint": "雾苔洞、照护窝边和潮湿石缝里最常见。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -19,6 +22,9 @@
       "id": "fiber",
       "name": "纤维束",
       "type": "material",
+      "kind": "编织纤材",
+      "description": "晒干后很耐折，绑牌子、补网眼、随手搓根细绳都好用。",
+      "source_hint": "林地边、旧棚口和修补活附近常能顺手收一点。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -33,6 +39,9 @@
       "id": "warm_stone",
       "name": "温石",
       "type": "material",
+      "kind": "余温石料",
+      "description": "白天晒过太阳、晚上还剩一点温，很多照护活都靠它稳住第一下接触。",
+      "source_hint": "晶溪、草场和晒架边最容易摸到温度正好的那几块。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -47,6 +56,9 @@
       "id": "amber_resin",
       "name": "树脂块",
       "type": "rare_material",
+      "kind": "林地树脂",
+      "description": "带着淡淡木香，黏得刚刚好，补裂缝和做防潮封口都挺顺手。",
+      "source_hint": "青栎林和秋路木架边偶尔能采到成色特别好的。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [
@@ -61,6 +73,9 @@
       "id": "water_drop",
       "name": "净水囊",
       "type": "material",
+      "kind": "净化水材",
+      "description": "装着过滤过的清水，平时不起眼，真缺这一口时最让人踏实。",
+      "source_hint": "净池、溪边处理台和补给点都常备这种小囊。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -75,6 +90,9 @@
       "id": "wood",
       "name": "木材",
       "type": "material",
+      "kind": "结构木料",
+      "description": "削一削能搭架子，垫一垫能当门槛，是最不会嫌多的基础料。",
+      "source_hint": "工棚、林地和临时搭建点总会留下一批能用的木料。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -89,6 +107,9 @@
       "id": "stone_chip",
       "name": "石片",
       "type": "material",
+      "kind": "边角石料",
+      "description": "看着只是边角料，拿来垫平、压角、磨边时反而特别顺手。",
+      "source_hint": "溪滩、石材摊和修边活附近经常能捡到合适的小块。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -103,6 +124,9 @@
       "id": "clear_sand",
       "name": "细沙",
       "type": "material",
+      "kind": "潮路细料",
+      "description": "摸起来细得像会自己流开，常被拿去配玻料或给潮路留记号。",
+      "source_hint": "盐镜海岸的风口和潮线退下去以后最好收。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -117,6 +141,9 @@
       "id": "reed",
       "name": "芦苇",
       "type": "material",
+      "kind": "湿地纤材",
+      "description": "风一吹就响，晒干后却很结实，编垫子和扎棚口都用得上。",
+      "source_hint": "芦泽浅滩和净池边总有一批长得正好的可收。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -131,6 +158,9 @@
       "id": "rope",
       "name": "绳索",
       "type": "material",
+      "kind": "系挂用品",
+      "description": "旧一点也不怕，能打结就有用，桥头和棚边总少不了它。",
+      "source_hint": "桥头旧绳、驿站仓角和工坊余料里都常能翻到。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -145,6 +175,9 @@
       "id": "parts",
       "name": "小机件",
       "type": "material",
+      "kind": "机修零件",
+      "description": "尺寸都不大，但真缺一颗时整台东西都会跟着闹脾气。",
+      "source_hint": "铜锤市集、旧机械和修理台边最容易凑齐。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -159,6 +192,9 @@
       "id": "glass",
       "name": "碎玻片",
       "type": "material",
+      "kind": "透明碎料",
+      "description": "边角有点利，磨圆以后很好用，常拿来补窗片和做小观察件。",
+      "source_hint": "海岸旧窗、观测站边和回收堆里时不时会有惊喜。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -173,6 +209,9 @@
       "id": "glow_dust",
       "name": "荧粉",
       "type": "rare_material",
+      "kind": "微光粉料",
+      "description": "一抖就会粘在指尖发亮，夜里做标记和共鸣记录都很有存在感。",
+      "source_hint": "辉蛾出没、遗迹夜观和异常区回收时最容易见到。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [
@@ -187,6 +226,9 @@
       "id": "spring_core",
       "name": "小弹簧",
       "type": "rare_material",
+      "kind": "弹性机芯",
+      "description": "比看上去更有劲，小东西装上它，动作一下就活了。",
+      "source_hint": "古械平台的旧机芯和修理间抽屉里最常找到。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [
@@ -201,6 +243,9 @@
       "id": "tea_leaf",
       "name": "茶叶",
       "type": "consumable",
+      "kind": "热饮补给",
+      "description": "泡开后不抢味，适合赶路回来那会儿慢慢喝，先把人坐稳。",
+      "source_hint": "云升驿、补给包和摊贩手边都常备几小包。",
       "stack_limit": 99,
       "sell_price": 8,
       "tags": [
@@ -216,6 +261,9 @@
       "id": "cloth",
       "name": "布料",
       "type": "material",
+      "kind": "柔性布材",
+      "description": "新旧都能用，包手、缠把手、当临时门帘都不亏。",
+      "source_hint": "驿站、托管间和工坊余料箱里都容易找到。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -230,6 +278,9 @@
       "id": "ink",
       "name": "墨汁",
       "type": "material",
+      "kind": "记录耗材",
+      "description": "颜色压得住，写在潮一点的纸上也不容易立刻化开。",
+      "source_hint": "记录台、公告板后头和文具摊都常有补充。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -244,6 +295,9 @@
       "id": "paper",
       "name": "便笺",
       "type": "material",
+      "kind": "记事纸品",
+      "description": "一张一张都不大，记路线和留口信却正好，不会让人舍不得下笔。",
+      "source_hint": "驿站信袋、摊前单据和记录夹里总能翻出几张平整的。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -258,6 +312,9 @@
       "id": "metal",
       "name": "金属块",
       "type": "material",
+      "kind": "基础金属",
+      "description": "沉是沉了点，但该硬的地方它从不含糊。",
+      "source_hint": "市集锻台、回收堆和旧构件拆件里最常见。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -272,6 +329,9 @@
       "id": "oil",
       "name": "润滑油",
       "type": "material",
+      "kind": "润滑耗材",
+      "description": "闻起来不算好闻，可东西一旦不吱呀了，人也会跟着顺气。",
+      "source_hint": "维修台、机修铺和工具架最爱囤这个。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -286,6 +346,9 @@
       "id": "herbal_steam",
       "name": "草药蒸汽包",
       "type": "consumable",
+      "kind": "舒缓蒸包",
+      "description": "热一热就能冒出草木气，劳累那天拿来熏一会儿，人会松得很快。",
+      "source_hint": "晶溪药棚、照护间和驿站后厨偶尔会备上几包。",
       "stack_limit": 99,
       "sell_price": 8,
       "tags": [
@@ -301,6 +364,9 @@
       "id": "capture_ball",
       "name": "捕捉球",
       "type": "consumable",
+      "kind": "捕捉器具",
+      "description": "握在手里刚好一掌，关键时刻丢得稳不稳，常比花样更重要。",
+      "source_hint": "商店补给、战前整备和部分委托奖励里都能拿到。",
       "stack_limit": 99,
       "sell_price": 10,
       "tags": [
@@ -316,6 +382,9 @@
       "id": "healing_potion",
       "name": "疗伤药",
       "type": "consumable",
+      "kind": "战斗药剂",
+      "description": "味道不算好，可伤口发热那阵子，谁都不会跟它计较。",
+      "source_hint": "药箱、商店和战后补给里通常都会备几瓶。",
       "stack_limit": 99,
       "sell_price": 10,
       "tags": [
@@ -332,6 +401,9 @@
       "id": "repair_kit",
       "name": "修理包",
       "type": "tool",
+      "kind": "快修工具",
+      "description": "里头零碎很多，真正好用的地方是该想到的小东西它基本都替你想到了。",
+      "source_hint": "工坊、建筑服务和维修委托里是标准配给。",
       "stack_limit": 99,
       "sell_price": 10,
       "tags": [
@@ -346,6 +418,9 @@
       "id": "dew_crystal",
       "name": "露晶",
       "type": "rare_material",
+      "kind": "晨露结晶",
+      "description": "晨雾收紧时才结得出这点清透，照护和调材时都很受欢迎。",
+      "source_hint": "清晨洞口、潮湿角落和保温照护台边最容易见到。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [
@@ -360,6 +435,9 @@
       "id": "spark_reed",
       "name": "电芒芦",
       "type": "material",
+      "kind": "导电芦材",
+      "description": "摸上去有点发麻，晒干后还带着细小导性，雷区工坊很爱收。",
+      "source_hint": "雷原湿地边和夏季采集线最常带回这种材料。",
       "stack_limit": 99,
       "sell_price": 4,
       "tags": [
@@ -374,6 +452,9 @@
       "id": "storm_core",
       "name": "雷核",
       "type": "rare_material",
+      "kind": "雷暴核心",
+      "description": "压着一股不安分的劲，拿来做高阶装置时得先把手稳住。",
+      "source_hint": "高压遭遇、雷区装置回收和季节奖励里偶尔能见到。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [
@@ -388,6 +469,9 @@
       "id": "blueprint_scrap",
       "name": "蓝图碎片",
       "type": "rare_material",
+      "kind": "草图残页",
+      "description": "边边角角上常画着最关键的那一笔，丢了怪可惜的。",
+      "source_hint": "观测站、旧图纸夹和修缮现场经常能翻出这种残页。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [
@@ -402,6 +486,9 @@
       "id": "master_badge",
       "name": "宗师徽章",
       "type": "trophy",
+      "kind": "荣誉纪念",
+      "description": "不是拿来卖的东西，放在包里都像在提醒你这段路真走过。",
+      "source_hint": "试炼首通和阶段性结算时才会郑重发到手里。",
       "stack_limit": 99,
       "sell_price": 0,
       "tags": [
@@ -416,6 +503,9 @@
       "id": "rare_decor_part",
       "name": "稀有饰件",
       "type": "rare_material",
+      "kind": "装饰零件",
+      "description": "做工不一定复杂，但往角落一装，整处地方的神气都不一样。",
+      "source_hint": "市集匠铺、装饰委托和特殊摊位最爱拿它做压箱货。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [
@@ -430,6 +520,9 @@
       "id": "training_note",
       "name": "练习手记",
       "type": "consumable",
+      "kind": "训练读物",
+      "description": "字不一定工整，旁边那些临时划掉又改回来的地方反而最有用。",
+      "source_hint": "草场、导师手边和试炼前后最容易拿到旧本子。",
       "stack_limit": 99,
       "sell_price": 8,
       "tags": [
@@ -445,6 +538,9 @@
       "id": "field_guide_book",
       "name": "图鉴手册",
       "type": "tool",
+      "kind": "观察工具书",
+      "description": "翻旧了才像样，边角越卷，说明它越常在路上帮忙。",
+      "source_hint": "记录员奖励、图鉴补给和研究整理时常会发到手上。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [
@@ -460,6 +556,9 @@
       "id": "ice_glass",
       "name": "薄冰片",
       "type": "rare_material",
+      "kind": "镜湖薄片",
+      "description": "薄得像一碰就碎，却把湖边最安静那层冷意留得很完整。",
+      "source_hint": "霜镜湖冰缘、冬季观测点和静置收集中最容易带回。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [
@@ -474,6 +573,9 @@
       "id": "stability_shard",
       "name": "稳定碎片",
       "type": "rare_material",
+      "kind": "稳态碎晶",
+      "description": "握久了会让人不自觉把呼吸放慢，高压地带的人都懂它的好。",
+      "source_hint": "异常稳定作业、高压区结算和救助回收时最常见。",
       "stack_limit": 99,
       "sell_price": 12,
       "tags": [

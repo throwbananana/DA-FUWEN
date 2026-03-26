@@ -7,7 +7,7 @@
       "node_id": 12,
       "habitat_id": "radiant_spire",
       "name": "裂辉尖塔",
-      "description": "春季终点，强调建设与基础 build 是否成型。",
+      "description": "春季终点，看看建设和基础养成有没有慢慢长起来。",
       "reward_bundle_id": "season_boss_spring"
     },
     {
@@ -25,7 +25,7 @@
       "node_id": 12,
       "habitat_id": "autumn_leaf_dojo",
       "name": "赤叶演武场",
-      "description": "秋季终点，强调试炼与构筑验收。",
+      "description": "秋季终点，看看试炼和整支队伍是不是都准备好了。",
       "reward_bundle_id": "season_boss_autumn"
     },
     {

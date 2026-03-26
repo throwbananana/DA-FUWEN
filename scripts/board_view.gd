@@ -49,6 +49,8 @@ var selectable_nodes: Array[int] = []
 var current_position := -1
 var node_markers := {}
 var locked_nodes: Array[int] = []
+var controller_navigation_enabled := false
+var controller_cursor_node_id := -1
 var button_size := BASE_BUTTON_SIZE
 var button_scale := 1.0
 var camera_padding := BASE_CAMERA_PADDING
@@ -452,9 +454,68 @@ func refresh_view(current_pos: int, selectable: Array[int], markers: Dictionary,
 		button.modulate = Color.WHITE
 		_apply_node_button_theme(button, type_id, is_selectable, current_position == node_id, locked_nodes.has(node_id) and not is_selectable)
 
+	if controller_navigation_enabled:
+		_sync_controller_cursor()
+	else:
+		controller_cursor_node_id = -1
 	_refresh_camera_target()
 	_apply_dynamic_node_fx()
 	queue_redraw()
+
+func set_controller_navigation_enabled(enabled: bool) -> void:
+	controller_navigation_enabled = enabled
+	if controller_navigation_enabled:
+		_sync_controller_cursor()
+	else:
+		controller_cursor_node_id = -1
+	_refresh_camera_target(true)
+	_apply_dynamic_node_fx()
+	queue_redraw()
+
+func move_controller_cursor(direction: Vector2i) -> bool:
+	if not controller_navigation_enabled or selectable_nodes.is_empty():
+		return false
+	_sync_controller_cursor()
+	if controller_cursor_node_id == -1:
+		return false
+	var from_position := _button_world_center(controller_cursor_node_id)
+	var axis := Vector2(direction).normalized()
+	var side_axis := Vector2(-axis.y, axis.x)
+	var best_node_id := controller_cursor_node_id
+	var best_score := INF
+	for node_id in selectable_nodes:
+		if int(node_id) == controller_cursor_node_id:
+			continue
+		var delta := _button_world_center(int(node_id)) - from_position
+		var forward := axis.dot(delta)
+		if forward <= 8.0:
+			continue
+		var lateral := absf(side_axis.dot(delta))
+		var score := delta.length() + lateral * 2.4
+		if score < best_score:
+			best_score = score
+			best_node_id = int(node_id)
+	if best_node_id == controller_cursor_node_id:
+		for node_id in selectable_nodes:
+			if int(node_id) == controller_cursor_node_id:
+				continue
+			var fallback_score := (_button_world_center(int(node_id)) - from_position).length()
+			if fallback_score < best_score:
+				best_score = fallback_score
+				best_node_id = int(node_id)
+	if best_node_id == controller_cursor_node_id:
+		return false
+	controller_cursor_node_id = best_node_id
+	_refresh_camera_target()
+	_apply_dynamic_node_fx()
+	queue_redraw()
+	return true
+
+func activate_controller_cursor() -> void:
+	if not controller_navigation_enabled or is_traveling:
+		return
+	if selectable_nodes.has(controller_cursor_node_id):
+		node_chosen.emit(controller_cursor_node_id)
 
 func _build_tooltip(node_id: int, node: Dictionary) -> String:
 	var text := "%s\n%s" % [String(node.get("name", "")), String(node.get("description", ""))]
@@ -489,6 +550,14 @@ func _draw() -> void:
 			false,
 			2.0
 		)
+	if controller_navigation_enabled and controller_cursor_node_id != -1 and buttons.has(controller_cursor_node_id):
+		var cursor_position := Vector2(node_positions.get(controller_cursor_node_id, Vector2.ZERO))
+		draw_rect(
+			Rect2(cursor_position - camera_offset - Vector2(9, 9), button_size + Vector2(18, 18)),
+			Color(0.92, 0.98, 1.0, 0.98),
+			false,
+			3.0
+		)
 
 func _on_node_pressed(node_id: int) -> void:
 	if is_traveling:
@@ -518,6 +587,8 @@ func _refresh_camera_target(immediate := false) -> void:
 		_apply_camera_transform()
 
 func _current_focus_world_point() -> Vector2:
+	if controller_navigation_enabled and controller_cursor_node_id != -1 and buttons.has(controller_cursor_node_id):
+		return _button_world_center(controller_cursor_node_id)
 	if observer_focus_active and observer_traveler != null and observer_traveler.visible:
 		return observer_world_position + observer_traveler.size * 0.5
 	if traveler != null and traveler.visible:
@@ -561,6 +632,9 @@ func _apply_dynamic_node_fx() -> void:
 		var pulse := 1.0 if GameState.prefers_reduced_motion() else 0.5 + 0.5 * sin(pulse_time * 4.2 + float(node_id) * 0.35)
 		if current_position == int(node_id):
 			button.modulate = Color(1.0, lerpf(0.88, 0.96, pulse), lerpf(0.68, 0.82, pulse))
+			continue
+		if controller_navigation_enabled and int(node_id) == controller_cursor_node_id:
+			button.modulate = Color(0.92, lerpf(0.94, 1.0, pulse), 1.0)
 			continue
 		var is_selectable := selectable_nodes.has(int(node_id))
 		if is_selectable:
@@ -610,3 +684,14 @@ func _apply_node_button_theme(button: Button, type_id: String, is_selectable: bo
 	button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 1.0))
 	button.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 1.0, 1.0))
 	button.add_theme_color_override("font_disabled_color", Color(0.66, 0.70, 0.78, 0.88))
+
+func _sync_controller_cursor() -> void:
+	if selectable_nodes.is_empty():
+		controller_cursor_node_id = -1
+		return
+	if selectable_nodes.has(controller_cursor_node_id):
+		return
+	if selectable_nodes.has(current_position):
+		controller_cursor_node_id = current_position
+		return
+	controller_cursor_node_id = int(selectable_nodes[0])

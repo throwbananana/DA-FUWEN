@@ -2084,6 +2084,1131 @@
           "end": true
         }
       ]
+    },
+    {
+      "id": "dlg_innkeeper_yun_late_soup",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "late_soup",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "驿站",
+        "晚汤"
+      ],
+      "conditions": {
+        "after_event": "evt_post_late_soup"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "晚归的人只要肯先把手暖热，后面那几句话就不会说得像在赶路。",
+          "choices": [
+            {
+              "text": "难怪你总把那锅汤留在最小的火上。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来这碗汤先照顾的不是肚子。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "innkeeper_yun",
+          "text": "火太大，人容易又急起来。驿站这地方，最值钱的就是让人慢下来。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "innkeeper_yun",
+          "text": "肚子好哄，心里那口风才难收。先把它收住，夜就不难过了。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_grove_patrol_lunch_whistle",
+      "npc": "grove_patrol",
+      "habitat_id": "greenbark_grove",
+      "topic": "lunch_whistle",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "巡林",
+        "午哨"
+      ],
+      "conditions": {
+        "after_event": "evt_grove_lunch_whistle"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "grove_patrol",
+          "text": "林子里最让人安心的，从来不是看见人影，是听见那声“我在这儿”。",
+          "choices": [
+            {
+              "text": "今天那段午哨一响，我心里确实定了很多。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来巡林先练的是别把人丢掉。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "grove_patrol",
+          "text": "哨子不是命令，是回声。有人肯回，路就没那么难走。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "grove_patrol",
+          "text": "会认路不稀奇，会顾人，才算真把这片林子走明白。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_mire_guide_boot_rinse",
+      "npc": "mire_guide",
+      "habitat_id": "reed_mire",
+      "topic": "boot_rinse",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "芦泽",
+        "门边"
+      ],
+      "conditions": {
+        "after_event": "evt_mire_boot_rinse"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mire_guide",
+          "text": "沼地上的泥巴不脏，它只是该留在沼地，不该跟着你进屋上桌。",
+          "choices": [
+            {
+              "text": "难怪你总在门口摆那盆水。",
+              "next": "reply_a"
+            },
+            {
+              "text": "今天把靴边洗干净，连人都像轻了点。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mire_guide",
+          "text": "人回来了，总得有个像样的样子。那盆水就是替“回来”这件事收个尾。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mire_guide",
+          "text": "门槛外头脏一点没事，门槛里头舒服一点，大家就愿意常回来。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_coast_keeper_salt_shake",
+      "npc": "coast_keeper",
+      "habitat_id": "saltglass_coast",
+      "topic": "salt_shake",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "海岸",
+        "细盐"
+      ],
+      "conditions": {
+        "after_event": "evt_coast_salt_shake"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "coast_keeper",
+          "text": "海边人的讲究不大，多半就是坐下前肯不肯先把身上的风和盐理一理。",
+          "choices": [
+            {
+              "text": "今天那两下抖袖子，确实比想的有用。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来饭桌边的舒服，也得从风口上开始准备。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "coast_keeper",
+          "text": "很多日子能不能过顺，不看大事，就看你肯不肯先收拾这些小硌绊。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "coast_keeper",
+          "text": "会从风里回来的人，坐下来的时候总会更像在过日子。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_storm_mentor_cup_ring",
+      "npc": "storm_mentor",
+      "habitat_id": "thunder_meadow",
+      "topic": "cup_ring",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "草场",
+        "训练"
+      ],
+      "conditions": {
+        "after_event": "evt_meadow_cup_ring"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "storm_mentor",
+          "text": "练节奏不只是跑的时候，连哪只杯子该在第几段喝，都是节奏的一部分。",
+          "choices": [
+            {
+              "text": "今天看着那圈水杯，我才发现顺手也是要练的。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来最容易乱套的，是停下来那一下。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "storm_mentor",
+          "text": "对。真正顺的人，不是不会乱，是把会乱的地方提前排好了。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "storm_mentor",
+          "text": "冲出去靠一口气，能不能把那口气收回来，才见真章。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_mirror_keeper_glove_warm",
+      "npc": "mirror_keeper",
+      "habitat_id": "frost_mirror_lake",
+      "topic": "glove_warm",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "镜湖",
+        "预热"
+      ],
+      "conditions": {
+        "after_event": "evt_lake_glove_warm"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mirror_keeper",
+          "text": "很多人把逞强错当成稳，其实肯先把手暖热，才是真的知道自己在做什么。",
+          "choices": [
+            {
+              "text": "今天那半盏茶的预热，后面省了我很多慌。",
+              "next": "reply_a"
+            },
+            {
+              "text": "镜湖好像更喜欢愿意慢一点的人。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mirror_keeper",
+          "text": "省下来的不是力气，是失手。湖面从来不替逞强的人补这一笔。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mirror_keeper",
+          "text": "它不偏心，只是慢的人更容易把自己的动作听清楚。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_boarder_liu_blanket_corner",
+      "npc": "boarder_liu",
+      "habitat_id": "sky_post",
+      "topic": "blanket_corner",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "驿站",
+        "托管"
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "boarder_liu",
+          "text": "给小家伙铺毯子，四个角都压死反而不好，留一个软角，它半夜想拱一拱才方便。",
+          "choices": [
+            {
+              "text": "原来连毯角都得给它们留余地。",
+              "next": "reply_a"
+            },
+            {
+              "text": "怪不得这里晚上总安安静静的。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "boarder_liu",
+          "text": "照顾不是捆严实，是让它想动的时候不用先害怕。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "boarder_liu",
+          "text": "肯把这些小地方想到了，夜里自然就少很多乱响。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_washer_grandma_sun_dry",
+      "npc": "washer_grandma",
+      "habitat_id": "crystal_creek",
+      "topic": "sun_dry",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "晶溪",
+        "晒布"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "clear",
+          "fog",
+          "mist"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "washer_grandma",
+          "text": "溪边晒布别贪整齐，缝和缝之间留点风，干得才匀，也不会一拿起来就冷扑扑的。",
+          "choices": [
+            {
+              "text": "原来晒东西也不能摆得太满。",
+              "next": "reply_a"
+            },
+            {
+              "text": "你连风从哪边过都算得这么细。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "washer_grandma",
+          "text": "留点空，布舒服，人也省心。很多活都是这个理。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "washer_grandma",
+          "text": "做久了就知道，风不是来添乱的，用好了，它比手还勤快。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_tinker_bo_pocket_screws",
+      "npc": "tinker_bo",
+      "habitat_id": "copper_hammer_bazaar",
+      "topic": "pocket_screws",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "铜锤",
+        "零件"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "tinker_bo",
+          "text": "我右边口袋放能立刻用的，左边口袋放“今天八成会用到”的。真到处乱塞，修到一半最容易翻白眼。",
+          "choices": [
+            {
+              "text": "原来你走路叮当响也有章法。",
+              "next": "reply_a"
+            },
+            {
+              "text": "听起来像是给零件也排了班次。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "tinker_bo",
+          "text": "当然。乱响和顺响差得可远了，前者丢人，后者省事。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "tinker_bo",
+          "text": "你要真把工具当伙伴，它们就不会在最要命的时候跟你闹别扭。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_field_recorder_margin_note",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "margin_note",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "平台",
+        "记录"
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "正文是给今天看的，页边那一行才是给明天的自己看的。我最怕的不是写少，是明天回头看不懂今天在急什么。",
+          "choices": [
+            {
+              "text": "所以你总在最后再补那一小句。",
+              "next": "reply_a"
+            },
+            {
+              "text": "听起来像是在替明天的你收尾。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "field_recorder",
+          "text": "对。人忙起来会把最重要的提醒写得最不像提醒，只能靠页边把它拽回来。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "field_recorder",
+          "text": "做记录的人，总得给自己留条回头路。不然资料再多，也只是把慌张存起来。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_moss_keeper_check_water",
+      "npc": "moss_keeper",
+      "habitat_id": "mist_moss_cave",
+      "topic": "check_water",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "照护",
+        "水碗"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "moss_keeper",
+          "text": "看窝之前我总先看水碗，水面要是还平，说明刚才那阵子它们睡得还算安稳。",
+          "choices": [
+            {
+              "text": "原来水面也是照护记录的一部分。",
+              "next": "reply_a"
+            },
+            {
+              "text": "难怪你总站在门口先看一眼再进去。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "moss_keeper",
+          "text": "很多话不用写，摆在那里就已经在告诉你了。水碗最诚实。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "moss_keeper",
+          "text": "人一脚迈太快，照护就容易变成打扰。我得先看看今天适不适合进去。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_parts_vendor_receipt_clip",
+      "npc": "parts_vendor",
+      "habitat_id": "copper_hammer_bazaar",
+      "topic": "receipt_clip",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "市集",
+        "单据"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "parts_vendor",
+          "text": "小票这种东西最会装没用，等你真想对账的时候，它偏偏最要紧。所以我都先夹在同一根线上。",
+          "choices": [
+            {
+              "text": "难怪你摊前看着乱，真找东西却特别快。",
+              "next": "reply_a"
+            },
+            {
+              "text": "听起来你管单据比管零件还认真。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "parts_vendor",
+          "text": "乱摆是给别人看的，真章法得藏在手一伸就够到的地方。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "parts_vendor",
+          "text": "零件丢了还能补，账要是糊了，后面整条生意都会跟着心虚。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_innkeeper_yun_kettle_tag",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "kettle_tag",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "驿站",
+        "挂签"
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "锅耳边那张小挂签不是摆给忙人看的，是摆给晚归的人看的。他一掀帘先瞄一眼，心里就知道今晚还赶不赶得上这口热。",
+          "choices": [
+            {
+              "text": "原来你守的是“还来得及”的那句话。",
+              "next": "reply_a"
+            },
+            {
+              "text": "难怪连一张小纸条你都挂得这么正。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "innkeeper_yun",
+          "text": "人跑了一天，先想确认的不是规矩，是自己还有没有被算进这一锅里。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "innkeeper_yun",
+          "text": "小东西摆正了，心就不容易慌。驿站很多体面，其实都靠这些撑着。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_traveling_peddler_route_cards",
+      "npc": "traveling_peddler",
+      "habitat_id": "sky_post",
+      "topic": "route_cards",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "驿站",
+        "路签"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "traveling_peddler",
+          "text": "行囊把手上那几张路签，我宁可系得慢一点，也不愿到半路才发现拿错了包。赶路最怕的不是远，是忙里把顺序丢了。",
+          "choices": [
+            {
+              "text": "所以你连绳结都按远近分手法。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来路签先写清，脚程反而会更快。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "traveling_peddler",
+          "text": "对。最远那一包最不能急，越远越得先把差错省掉。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "traveling_peddler",
+          "text": "会走路的人，靠的不是闷头冲，是出门前先把该分清的分清。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_washer_grandma_shade_stones",
+      "npc": "washer_grandma",
+      "habitat_id": "crystal_creek",
+      "topic": "shade_stones",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "晶溪",
+        "样石"
+      ],
+      "conditions": {
+        "time_in": [
+          "day"
+        ],
+        "weather_in": [
+          "clear",
+          "mist",
+          "fog"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "washer_grandma",
+          "text": "看样石别傻傻全摊在日头底下，太亮了反倒看不见细纹。我总爱拿布角压一压，给它留一点阴，它才肯把真模样露出来。",
+          "choices": [
+            {
+              "text": "原来留阴也是看清的一种办法。",
+              "next": "reply_a"
+            },
+            {
+              "text": "难怪你总说正午的光最会骗人。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "washer_grandma",
+          "text": "是啊。人也一样，太亮、太急的时候，反倒最不像自己。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "washer_grandma",
+          "text": "会看东西的人，不是只知道凑近，还得知道什么时候给它退半步。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_tinker_bo_weighted_pocket",
+      "npc": "tinker_bo",
+      "habitat_id": "copper_hammer_bazaar",
+      "topic": "weighted_pocket",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "铜锤",
+        "围裙"
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "tinker_bo",
+          "text": "围裙里总得留一格给最沉、最会乱跑的那几样。不先把它们安顿住，后面你手上再利索，也得被叮叮当当拖后腿。",
+          "choices": [
+            {
+              "text": "原来你缝口袋先缝的是脾气最大的那格。",
+              "next": "reply_a"
+            },
+            {
+              "text": "听起来像先把麻烦收进最听话的位置。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "tinker_bo",
+          "text": "那当然。先服住最会闹的，剩下的活才配叫顺手。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "tinker_bo",
+          "text": "工具跟人差不多，给够位置，它就不怎么跟你闹脾气了。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_field_recorder_margin_string",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "margin_string",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "平台",
+        "页边"
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "我现在写记录前，总先在页边比一根细线。不是为了好看，是提醒自己别把猜测写得比现象还快。纸上先有界，脑子里才不容易越界。",
+          "choices": [
+            {
+              "text": "原来你先量的是分寸，不是字距。",
+              "next": "reply_a"
+            },
+            {
+              "text": "难怪你总说页边是在替明天守门。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "field_recorder",
+          "text": "对。写字的人最怕一顺手就把话说满，细线就是专门拦我这一下的。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "field_recorder",
+          "text": "给明天留点能推翻今天的地方，记录才算真的尊重变化。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_ruin_restorer_lamp_cloth",
+      "npc": "ruin_restorer",
+      "habitat_id": "ancient_platform",
+      "topic": "lamp_cloth",
+      "weight": 3,
+      "cooldown_days": 4,
+      "tags": [
+        "日常",
+        "平台",
+        "灯罩"
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "ruin_restorer",
+          "text": "夜里做修补，我宁可让灯稍微暗一点，也不愿它亮得把人逼急。很多裂纹不是怕黑，是怕你拿着白天的脾气来盯它。",
+          "choices": [
+            {
+              "text": "所以你总爱给灯外再罩一层布。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来能让人坐住的光，比刺眼的光更顶用。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "ruin_restorer",
+          "text": "对。光一软，人手也会跟着软下来，很多细活这时候才做得成。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "ruin_restorer",
+          "text": "修东西这回事，肯慢一点，比看得多一点往往更重要。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_grove_patrol_crown_trace",
+      "npc": "grove_patrol",
+      "habitat_id": "greenbark_grove",
+      "topic": "crown_trace",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "林地",
+        "鹿迹"
+      ],
+      "conditions": {
+        "after_event": "evt_grove_crown_trace"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "grove_patrol",
+          "text": "林子肯给谁让路，一眼就能看出来。真见过春冠圣鹿的人，后来走路都会比之前轻一点。",
+          "choices": [
+            {
+              "text": "今天我第一次知道，安静也能像被谁提前整理过。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来神宠最先留下的不是光，是分寸。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "grove_patrol",
+          "text": "对。会巡林的不只认路，还会替整片林子把脚步排顺。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "grove_patrol",
+          "text": "你看懂这点，以后再进林子，很多东西都会自己愿意让你看见。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_coast_keeper_tide_lamp",
+      "npc": "coast_keeper",
+      "habitat_id": "saltglass_coast",
+      "topic": "tide_lamp",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "海岸",
+        "潮灯"
+      ],
+      "conditions": {
+        "after_event": "evt_coast_tide_lamp_ray"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "coast_keeper",
+          "text": "海边等东西，不是把灯点得越亮越好。肯把刺眼那一点收住，光鳐才分得清你是在看它，还是在逼它。",
+          "choices": [
+            {
+              "text": "今晚那道亮影，像是自己挑中了最稳的水面。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来等神宠也得先学会不抢光。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "coast_keeper",
+          "text": "会挑地方停的，不是胆小，是知道哪里能把日子过稳。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "coast_keeper",
+          "text": "海边很多好东西都这样，你越不急着抓，它越肯在你眼前多停一会儿。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_storm_mentor_horn_silence",
+      "npc": "storm_mentor",
+      "habitat_id": "thunder_meadow",
+      "topic": "horn_silence",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "草场",
+        "雷夜"
+      ],
+      "conditions": {
+        "after_event": "evt_meadow_horn_silence"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "storm_mentor",
+          "text": "很多人只会追最响的那下雷，真正会练的人都盯着雷前那一拍静。天麒认的也是这点本事。",
+          "choices": [
+            {
+              "text": "今天那一拍安静，比整场雷都难忘。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来精英宠和神宠都不是靠蛮追等来的。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "storm_mentor",
+          "text": "因为那一拍里没有侥幸，只有谁把自己先收稳了。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "storm_mentor",
+          "text": "没错。会来的东西认节奏，不认热闹。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_mirror_keeper_night_fin",
+      "npc": "mirror_keeper",
+      "habitat_id": "frost_mirror_lake",
+      "topic": "night_fin",
+      "weight": 5,
+      "cooldown_days": 5,
+      "tags": [
+        "事件后续",
+        "镜湖",
+        "夜观"
+      ],
+      "conditions": {
+        "after_event": "evt_lake_night_fin"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mirror_keeper",
+          "text": "镜湖夜里最难学的，不是认出那是什么，是认出先变的是光，还是影。",
+          "choices": [
+            {
+              "text": "我以前总想先看清，今天才知道先后次序更值钱。",
+              "next": "reply_a"
+            },
+            {
+              "text": "光鳐和影貂像是在教人别抢那一眼。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mirror_keeper",
+          "text": "对。手慢一点，眼反而会更准，镜湖一向只奖这种人。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mirror_keeper",
+          "text": "愿意让它们先把自己说完的人，后来通常都不会空手而归。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_tower_astronomer_dark_line",
+      "npc": "tower_astronomer",
+      "habitat_id": "radiant_observatory",
+      "topic": "dark_line",
+      "weight": 5,
+      "cooldown_days": 6,
+      "tags": [
+        "事件后续",
+        "观测",
+        "侧注"
+      ],
+      "conditions": {
+        "after_event": "evt_observatory_page_wisp"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "tower_astronomer",
+          "text": "真正高阶的录灵不怕亮，它只是更看重你会不会给暗线留位置。很多人看了一夜天，漏掉的偏偏就是最该记的旁边那笔。",
+          "choices": [
+            {
+              "text": "今晚像是先被它检查了记录习惯。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来“留白”也会被神宠看在眼里。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "tower_astronomer",
+          "text": "被看见不丢人，难得的是看过之后，你愿不愿意把手上的秩序也收一收。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "tower_astronomer",
+          "text": "留白不是空着，是知道哪一笔该晚一点再写。录灵最认这个。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_ruin_diviner_shadow_tail",
+      "npc": "ruin_diviner",
+      "habitat_id": "moonfen_ruins",
+      "topic": "shadow_tail",
+      "weight": 5,
+      "cooldown_days": 6,
+      "tags": [
+        "事件后续",
+        "月沼",
+        "回声"
+      ],
+      "conditions": {
+        "after_event": "evt_moonfen_shadow_tail"
+      },
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "ruin_diviner",
+          "text": "肯等第一句退下去的人，才有资格听第二句。月映玄貂也是，它从不和最吵的那层回声一起出现。",
+          "choices": [
+            {
+              "text": "今晚那道薄静，比看见影子还像答案。",
+              "next": "reply_a"
+            },
+            {
+              "text": "难怪你总说先放掉第一句。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "ruin_diviner",
+          "text": "月沼最会把真东西藏在退潮和退声之后，听懂了这点，很多急都会自己散掉。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "ruin_diviner",
+          "text": "来得太快的，多半只是吓人；肯慢半拍留下来的，才像真话。",
+          "end": true
+        }
+      ]
     }
   ]
 }

@@ -41,7 +41,7 @@
       "rank": 6,
       "backpack_capacity": 10,
       "new_system": "开放 4 层羁绊的主目标",
-      "flow_goal": "中后期表达构筑个性",
+      "flow_goal": "中后期慢慢打出自己的风格",
       "pet_capacity": 10
     },
     {
@@ -114,15 +114,15 @@
       "阶段性回访旧地图"
     ],
     "aesthetics": [
-      "构筑爽感",
+      "成队爽感",
       "养成质变",
       "收集可用性",
       "地点归属感"
     ]
   },
   "flow_mapping": {
-    "challenge_skill_balance": "通过 rank 与地图推荐值逐步加压，不让玩家在同一时间学习过多系统。",
-    "clear_goals": "每个 rank 只新增 1 个主系统焦点，如建筑驻守、4层羁绊、late 家族。",
+    "challenge_skill_balance": "通过 rank 和地图推荐值慢慢加压，不让玩家一下子学太多新东西。",
+    "clear_goals": "每个 rank 只多出 1 个新重点，比如建筑驻守、4层羁绊或后期家族。",
     "immediate_feedback": "羁绊与建筑增益都应在战前和战中显性显示。",
     "sense_of_control": "重复物种的规则与人口成本固定且透明。"
   }

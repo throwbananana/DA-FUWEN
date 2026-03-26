@@ -737,6 +737,662 @@
           "end": true
         }
       ]
+    },
+    {
+      "id": "dlg_story_coast_intro",
+      "npc": "coast_keeper",
+      "habitat_id": "saltglass_coast",
+      "topic": "story_coast_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "盐镜海岸",
+        "回流"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "coast_keeper",
+          "text": "海边最怕的不是风大，是人把该留在岸边的盐和急劲一起带回桌上。回流线得先把这口气收住。",
+          "choices": [
+            {
+              "text": "所以你先看人怎么回来，再看货怎么回来。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来回流线是在替收工留体面。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "coast_keeper",
+          "text": "对。会回来的人先不乱，海岸这地方就不会总像在催命。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "coast_keeper",
+          "text": "桌边能坐稳，才说明这条海路真的被人走顺了。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_coast_after_rack",
+      "npc": "coast_keeper",
+      "habitat_id": "saltglass_coast",
+      "topic": "story_coast_after_rack",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "盐镜海岸",
+        "晒架"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "coast_keeper",
+          "text": "风向一记准，晒架和回流线就像忽然肯讲道理了。很多人以为我在记布，其实我先记的是大家收工那一下会不会慌。",
+          "choices": [
+            {
+              "text": "你是在把乱风先变成顺手。",
+              "next": "reply_a"
+            },
+            {
+              "text": "难怪你连桌边那块布都要挑半天。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "coast_keeper",
+          "text": "海边没法叫风听话，只能先让人别被它带跑。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "coast_keeper",
+          "text": "小地方不顺，后面的大忙总会跟着一起乱。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_meadow_intro",
+      "npc": "storm_mentor",
+      "habitat_id": "thunder_meadow",
+      "topic": "story_meadow_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "鸣雷草场",
+        "节奏"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "storm_mentor",
+          "text": "草场上最难练的不是冲出去那一下，是停下来以后还能不能把杯子、呼吸和下一步都摆回原位。",
+          "choices": [
+            {
+              "text": "原来训练先练的是收，不是放。",
+              "next": "reply_a"
+            },
+            {
+              "text": "所以你连喝水顺序都不肯含糊。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "storm_mentor",
+          "text": "会收的人，爆发才不靠运气。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "storm_mentor",
+          "text": "一乱就会从最小的地方先乱，所以最小的地方也得先排顺。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_meadow_after_break",
+      "npc": "storm_mentor",
+      "habitat_id": "thunder_meadow",
+      "topic": "story_meadow_after_break",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "鸣雷草场",
+        "间歇"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "storm_mentor",
+          "text": "今天这轮间歇总算像样了。大家停的时候没再东一脚西一脚，连杯子落回去的声音都比以前顺耳。",
+          "choices": [
+            {
+              "text": "顺下来以后，草场都没那么吵了。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来训练场也会因为顺序对了而安静。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "storm_mentor",
+          "text": "吵不一定是热闹，很多时候只是没把自己排明白。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "storm_mentor",
+          "text": "越是要冲的地方，越得先把安静练出来。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_bridge_intro",
+      "npc": "bridge_scout",
+      "habitat_id": "echo_broken_bridge",
+      "topic": "story_bridge_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "回声断桥",
+        "旧绳"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "bridge_scout",
+          "text": "断桥这地方最会骗人的是远处那一眼，真能救命的，常常只是手里这段旧绳和耳边那声短哨。",
+          "choices": [
+            {
+              "text": "所以你总先让我摸绳结，再抬头看桥。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来这地方先信的是手，不是胆子。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "bridge_scout",
+          "text": "看得再远，也得先有一样握得住的东西。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "bridge_scout",
+          "text": "胆子大没用，断桥从来只认肯先听劝的人。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_bridge_after_knot",
+      "npc": "bridge_scout",
+      "habitat_id": "echo_broken_bridge",
+      "topic": "story_bridge_after_knot",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "回声断桥",
+        "结法"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "bridge_scout",
+          "text": "多备一段顺手结法以后，我心里那口悬着的气反倒先落下来。桥口就这样，先把手上的事收住，远处的风才没那么会吓人。",
+          "choices": [
+            {
+              "text": "看来断桥最值钱的是那点提前量。",
+              "next": "reply_a"
+            },
+            {
+              "text": "难怪你老说准备也算过桥的一半。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "bridge_scout",
+          "text": "对。真出事的时候，靠的从来不是临场突然聪明。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "bridge_scout",
+          "text": "平时多系稳一扣，坏风来的时候就能少慌一层。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_lake_intro",
+      "npc": "mirror_keeper",
+      "habitat_id": "frost_mirror_lake",
+      "topic": "story_lake_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "霜镜湖",
+        "预热"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mirror_keeper",
+          "text": "镜湖不怕人慢，它只怕人冷着手、急着心，还以为自己在稳。很多裂纹就是从这种误会里先长出来的。",
+          "choices": [
+            {
+              "text": "所以你才把预热看得和听冰一样重。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来先把手暖热，也是判断的一部分。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mirror_keeper",
+          "text": "手不先稳，耳朵听见的也会跟着偏。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mirror_keeper",
+          "text": "镜湖从不催人，它只是把你的急全照出来。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_lake_after_gloves",
+      "npc": "mirror_keeper",
+      "habitat_id": "frost_mirror_lake",
+      "topic": "story_lake_after_gloves",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "霜镜湖",
+        "手套"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "mirror_keeper",
+          "text": "手套一暖开，很多本来会僵住的小动作都回来了。镜湖上真正值钱的，从来不是硬撑，而是你肯不肯先把失手那一层省掉。",
+          "choices": [
+            {
+              "text": "今天这份稳，是提前准备出来的。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来湖面喜欢的是有余地的人。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "mirror_keeper",
+          "text": "嗯。很多人以为稳是天分，其实只是肯先做完这些不显眼的准备。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "mirror_keeper",
+          "text": "有余地，才听得见冰面真正想提醒你的那一句。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_moonfen_intro",
+      "npc": "ruin_diviner",
+      "habitat_id": "moonfen_ruins",
+      "topic": "story_moonfen_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "月沼遗迹",
+        "静置"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "ruin_diviner",
+          "text": "月井边最容易让人上当的，就是那句来得太快的话。你只要先被它哄住，后面真正该听的就全沉下去了。",
+          "choices": [
+            {
+              "text": "所以你总要先把边上的杂响收一收。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来这里先练的是不急着接话。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "ruin_diviner",
+          "text": "对。边上不静，人心就更难静，井也懒得给你第二层意思。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "ruin_diviner",
+          "text": "会慢半拍的人，才不容易被第一层好听的话领走。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_moonfen_after_bucket",
+      "npc": "ruin_diviner",
+      "habitat_id": "moonfen_ruins",
+      "topic": "story_moonfen_after_bucket",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "月沼遗迹",
+        "旧桶"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "ruin_diviner",
+          "text": "旧桶那点碎响一收，月井边就终于不像总有人抢着替你回答了。安静下来以后，很多原本分不清真假的回声自己就会让开。",
+          "choices": [
+            {
+              "text": "看来有些安静，是得先做出来的。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来你是在先替井边留一块能说真话的地方。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "ruin_diviner",
+          "text": "是啊。肯先做这点工夫，后面那句真话才有地方落。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "ruin_diviner",
+          "text": "月井不缺声音，它缺的是一处不被抢白的空隙。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_post_hearth_intro",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "story_post_hearth_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "天穹驿站",
+        "晚汤"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "一段路最后能不能让人松下来，常常不看走了多远，只看回来时那张凳子还在不在、锅里那口热气还给不给人留着。驿站真正难守的，从来不是门，是这份分寸。",
+          "choices": [
+            {
+              "text": "原来你一直在替迟归的人守最后那口热。",
+              "next": "reply_a"
+            },
+            {
+              "text": "所以连锅耳边那把勺子都得摆得像一句准话。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "innkeeper_yun",
+          "text": "是啊。人累的时候，最先想确认的不是规矩，是自己还有没有被算进这顿饭里。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "innkeeper_yun",
+          "text": "勺子摆正了，心里就知道今晚还来得及，这比大声招呼管用得多。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_post_hearth_after_kettle",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "story_post_hearth_after_kettle",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "天穹驿站",
+        "挂签"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "锅耳边那张挂签一写清，谁先盛、谁得等人回来再动、谁那份要替他温着，全都不用靠站在门口一遍遍喊。很多安稳，其实只是有人肯先把这些小事做在前头。",
+          "choices": [
+            {
+              "text": "这份秩序不像规矩，更像照顾。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来驿站的体面，是让每个晚到的人还有位置。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "innkeeper_yun",
+          "text": "规矩是给忙的时候不出错，照顾才是让人愿意一次次回来的那层根。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "innkeeper_yun",
+          "text": "嗯。能让人回来时不必先解释自己为什么晚，这地方才算真把灯留住了。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_post_hearth_resolve",
+      "npc": "innkeeper_yun",
+      "habitat_id": "sky_post",
+      "topic": "story_post_hearth_resolve",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "天穹驿站",
+        "落座"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "innkeeper_yun",
+          "text": "现在你再看这间驿站，门口的行囊、锅耳边的勺子、桌角那盏等人的灯，终于不像各忙各的了。它们全在替同一件事出力: 让路上的人回来以后，能先坐下，再慢慢把一路上的风说完。",
+          "choices": [
+            {
+              "text": "原来把人安安稳稳接回来，本身就是一门手艺。",
+              "next": "reply_a"
+            },
+            {
+              "text": "看来真正的终点，不是停下，而是有人替你把座位留着。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "innkeeper_yun",
+          "text": "手艺不一定要惊人，能把日子接稳，让人不必逞强，就已经很值钱了。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "innkeeper_yun",
+          "text": "人总要去更远的地方，但他肯回来时先放下肩膀，这里就算没白守。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_platform_margin_intro",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "story_platform_margin_intro",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "古观测台",
+        "页边"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "越到后面我越觉得，观测最难的不是看到东西，而是忍住别把自己想说的话比现象先写满一页。页边要是不给空白留位置，人就会拿猜测去把它挤掉。",
+          "choices": [
+            {
+              "text": "所以你现在先守的，是纸上的分寸。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来连记录也得先替沉默留座。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "field_recorder",
+          "text": "对。分寸先稳住，很多看起来非得立刻下的判断，自己就会往后退半步。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "field_recorder",
+          "text": "沉默不是空着，而是在等更可靠的那一句落下来。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_platform_margin_after_line",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "story_platform_margin_after_line",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "古观测台",
+        "界线"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "页边那道界线一定住，整页记录都像忽然学会了慢一点。你会发现很多原本急着落定的词，其实只要给它一点空白，它自己就知道先别越过去。",
+          "choices": [
+            {
+              "text": "看来真正让记录更准的，不只是写得多。",
+              "next": "reply_a"
+            },
+            {
+              "text": "原来空白不是浪费，是在替结论把门。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "field_recorder",
+          "text": "写得多只是热闹，写得稳才叫留下了能信的东西。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "field_recorder",
+          "text": "没错。谁都能急着写满一页，难的是肯替那句还不够准的话留出门外。",
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "dlg_story_platform_margin_resolve",
+      "npc": "field_recorder",
+      "habitat_id": "ancient_platform",
+      "topic": "story_platform_margin_resolve",
+      "weight": 1,
+      "tags": [
+        "剧情",
+        "古观测台",
+        "余地"
+      ],
+      "nodes": [
+        {
+          "id": "start",
+          "speaker": "field_recorder",
+          "text": "现在连页边那根细线都像成了这里的一部分。灯光被罩软了，记录懂得留白了，人说话也不再急着抢前一句。很多地方真正稳下来，不是因为它更满，而是终于知道该把哪一截余地留给明天。",
+          "choices": [
+            {
+              "text": "原来观测台最后守住的，是不把今天写得太满。",
+              "next": "reply_a"
+            },
+            {
+              "text": "看来能替明天留余地，也是这里最重要的准则。",
+              "next": "reply_b"
+            }
+          ]
+        },
+        {
+          "id": "reply_a",
+          "speaker": "field_recorder",
+          "text": "是。今天若把话说死了，明天真正来的东西反倒没地方进来了。",
+          "end": true
+        },
+        {
+          "id": "reply_b",
+          "speaker": "field_recorder",
+          "text": "能留余地的人，才有资格说自己真的见过变化。",
+          "end": true
+        }
+      ]
     }
   ]
 }

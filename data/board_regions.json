@@ -51,7 +51,7 @@
           "id": 3,
           "name": "天穹驿",
           "type": "settlement",
-          "description": "春季第一支点，负责把上半圈情报整理成可执行路线。",
+          "description": "春季第一支点，适合在这里把上半圈的消息听一听、把路子理顺。",
           "position": [340, 300],
           "edges": [1, 2, 4, 6, 14],
           "travel_cost": 1,
@@ -78,7 +78,7 @@
           "id": 5,
           "name": "古械前场",
           "type": "habitat",
-          "description": "春季上路的建设承诺点，一旦投入就意味着本周节奏开始成型。",
+          "description": "春季上路的建设点，一旦开始动手，这周的去向也就差不多定下来了。",
           "position": [700, 90],
           "edges": [4, 7],
           "travel_cost": 1,
@@ -169,7 +169,7 @@
           "id": 12,
           "name": "裂辉尖塔",
           "type": "anomaly",
-          "description": "春季阶段高潮，检验前半季建设和养成是否真正成型。",
+          "description": "春季的大场面，看看前半季攒下的建设和养成够不够用。",
           "position": [1180, 300],
           "edges": [11],
           "travel_cost": 2,
@@ -275,13 +275,13 @@
           "habitat_id": "thunder_meadow",
           "primary_content": "observe",
           "focus": "观察 / 训练",
-          "reward_hint": "先拿成长收益，再决定是否正式进试炼"
+          "reward_hint": "先拿一波成长收获，再看看要不要直接进试炼"
         },
         {
           "id": 5,
           "name": "烬火盆地",
           "type": "habitat",
-          "description": "夏季上路的爆发建设点，材料一旦成型回报很高。",
+          "description": "夏季上路的爆发建设点，材料攒够了就能狠狠干一把。",
           "position": [700, 90],
           "edges": [4, 7],
           "travel_cost": 1,
@@ -373,14 +373,14 @@
           "id": 12,
           "name": "裂辉尖塔",
           "type": "anomaly",
-          "description": "盛雷季高潮点，检验高压构筑和节奏调度是否成立。",
+          "description": "盛雷季的重头戏，看看这一路攒下来的底子够不够顶住高压。",
           "position": [1180, 300],
           "edges": [11],
           "travel_cost": 2,
           "habitat_id": "radiant_spire",
           "primary_content": "observe",
           "focus": "赛季高潮 / 异常",
-          "reward_hint": "只有节奏真的成型，才会觉得这座塔值得去"
+          "reward_hint": "等队伍和路子都顺了，再来闯这座塔会更值。"
         },
         {
           "id": 13,
@@ -426,7 +426,7 @@
           "edges": [1, 2, 13, 14],
           "travel_cost": 0,
           "habitat_id": "",
-          "focus": "规划 / 构筑",
+          "focus": "规划 / 成长",
           "reward_hint": "先想清楚这一圈是冲试炼，还是补后劲"
         },
         {
@@ -466,13 +466,13 @@
           "habitat_id": "copper_hammer_bazaar",
           "primary_content": "shop_menu",
           "focus": "排期 / 情报",
-          "reward_hint": "这里负责整理 build 与试炼顺序，不只是普通交易点"
+          "reward_hint": "这里会帮你理顺先去哪儿、后去哪儿，不只是逛个摊那么简单"
         },
         {
           "id": 4,
           "name": "烬火外圈",
           "type": "habitat",
-          "description": "秋季上路的预热建设点，适合在试炼前先补一层构筑。",
+          "description": "秋季上路的预热建设点，适合在试炼前再把底子垫厚一点。",
           "position": [520, 90],
           "edges": [3, 5],
           "travel_cost": 1,
@@ -485,14 +485,14 @@
           "id": 5,
           "name": "赤叶演武场前庭",
           "type": "dojo",
-          "description": "秋季上路的试炼入口，适合把刚成型的 build 先做一次阶段验收。",
+          "description": "秋季上路的试炼入口，适合先拿刚练起来的队伍试试手。",
           "position": [700, 90],
           "edges": [4, 7],
           "travel_cost": 1,
           "habitat_id": "autumn_leaf_dojo",
           "primary_content": "dojo_menu",
-          "focus": "试炼 / 验收",
-          "reward_hint": "这里是秋季的第一次验收，不急着通关也能看出 build 成色"
+          "focus": "试炼 / 试手",
+          "reward_hint": "这里是秋季第一次试手，不急着通关，也能看出队伍状态。"
         },
         {
           "id": 6,
@@ -518,21 +518,21 @@
           "habitat_id": "ancient_platform",
           "map_effect_id": "autumn_forge_cycle",
           "primary_content": "build_menu",
-          "focus": "爆发 / 验收前夜",
-          "reward_hint": "这是秋季真正的 build 核，决定你能不能把筹备转成结果"
+          "focus": "爆发 / 试炼前夜",
+          "reward_hint": "这是秋季真正的准备核心，能不能把筹备变成结果，就看这里。"
         },
         {
           "id": 8,
           "name": "回声北桥",
           "type": "settlement",
-          "description": "高压上路的桥头排程点，用来决定 build 核和试炼点的先后。",
+          "description": "高压上路的桥头安排点，用来决定先去试炼，还是先把路再顺一顺。",
           "position": [880, 90],
           "edges": [7, 9],
           "travel_cost": 1,
           "habitat_id": "echo_broken_bridge",
           "primary_content": "npc_menu",
           "focus": "排期 / 情报",
-          "reward_hint": "这里负责整理 build 核、桥头与试炼点的推进顺序"
+          "reward_hint": "这里会帮你把桥头、试炼点和常走路线排顺。"
         },
         {
           "id": 9,
@@ -545,7 +545,7 @@
           "habitat_id": "radiant_observatory",
           "primary_content": "observe",
           "focus": "观察 / 高压",
-          "reward_hint": "这里只适合构筑成型后再来试一次"
+          "reward_hint": "最好等队伍和准备都稳一些，再来这里试试。"
         },
         {
           "id": 10,
@@ -564,7 +564,7 @@
           "id": 11,
           "name": "芦泽会客棚",
           "type": "habitat",
-          "description": "冲秋季 Boss 前的最后软支点，适合先谈一轮再做终盘决定。",
+          "description": "冲秋季头目战前的最后缓冲点，适合先聊一轮再决定最后怎么走。",
           "position": [1060, 300],
           "edges": [9, 13, 12],
           "travel_cost": 2,
@@ -577,7 +577,7 @@
           "id": 12,
           "name": "赤叶演武场",
           "type": "dojo",
-          "description": "秋季赛季高潮，用试炼直接验收中后期构筑是否达标。",
+          "description": "秋季的重头戏，用一场试炼看看中后段准备得够不够。",
           "position": [1180, 300],
           "edges": [11],
           "travel_cost": 2,
@@ -609,7 +609,7 @@
           "travel_cost": 1,
           "habitat_id": "",
           "focus": "排期 / 折扣",
-          "reward_hint": "先看哪边更容易遇见野群、哪档试炼补给在降价，再决定这圈先 build 还是先试炼"
+          "reward_hint": "先看哪边更容易遇见野群、哪边试炼补给在降价，再决定这一圈先逛哪边"
         }
       ]
     },
@@ -683,7 +683,7 @@
           "habitat_id": "saltglass_coast",
           "primary_content": "npc_menu",
           "focus": "机动 / 修正",
-          "reward_hint": "冲年度 Boss 前的最终路线修正点"
+          "reward_hint": "冲年终头目战前，最后一次把路子理顺的地方"
         },
         {
           "id": 5,
@@ -741,7 +741,7 @@
           "id": 9,
           "name": "月沼外环",
           "type": "anomaly",
-          "description": "终局前的异常观察点，用来确认这季是否该直接冲年度 Boss。",
+          "description": "终局前的异常观察点，用来看看这季是不是该直接去冲年终头目战。",
           "position": [1060, 90],
           "edges": [8, 11],
           "travel_cost": 1,
@@ -761,7 +761,7 @@
           "habitat_id": "saltglass_coast",
           "primary_content": "build_menu",
           "focus": "建设 / 回稳",
-          "reward_hint": "回流线一旦成型，终局回合会宽很多"
+          "reward_hint": "回流线一旦走顺，终局前的几回合会宽松很多。"
         },
         {
           "id": 11,
@@ -781,13 +781,13 @@
           "id": 12,
           "name": "月沼遗迹",
           "type": "anomaly",
-          "description": "冬季与年度终局，负责验收整年远征准备是否真正收口。",
+          "description": "冬季和整年的收尾点，看看这一整年的远征到底收得稳不稳。",
           "position": [1180, 300],
           "edges": [11],
           "travel_cost": 2,
           "habitat_id": "moonfen_ruins",
           "primary_content": "observe",
-          "focus": "终局 / 年度 Boss",
+          "focus": "终局 / 年终头目战",
           "reward_hint": "真正的年终结算点，前面的修正都为这里服务"
         },
         {

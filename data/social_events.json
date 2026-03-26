@@ -157,7 +157,7 @@
         {
           "id": "pressure_rises",
           "weight": 3,
-          "outcome": "这不是正式冲突，但塔区边缘的压力又被记进了彼此的本能里。",
+          "outcome": "这还不算真的冲突，但塔区边缘那股紧绷感又留在了彼此心里。",
           "effects": {
             "journal_entry": "塔区夜间观察：隙鹿与辉嚎兽在疏散线附近保持了危险但克制的距离。",
             "relation_delta": [
@@ -774,7 +774,7 @@
           "weight": 3,
           "outcome": "驿站今夜没有因为多一条传闻变乱，反而像是替明天省下了第一轮解释。",
           "effects": {
-            "journal_entry": "云升转运镇夜记：真正稳住流程的，常是给临时变化预留的一点空白。",
+            "journal_entry": "云升转运镇夜记：真正让夜里不慌的，常常只是先留出一点转身的余地。",
             "relation_delta": [
               {
                 "pair": [
@@ -1084,6 +1084,1355 @@
         "社会事件",
         "监测站",
         "页边"
+      ]
+    },
+    {
+      "id": "soc_post_midnight_stew",
+      "title": "夜班汤锅旁的贴名签",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 4,
+      "habitat_id": "sky_post",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "innkeeper_yun"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "boarder_liu"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ],
+        "weather_in": [
+          "clear",
+          "rain",
+          "storm"
+        ]
+      },
+      "summary": "{npc_a}慢慢看着锅里的火，{npc_b}则把木碗底下的小纸签一张张贴好，省得晚归的人连自己那口汤都拿得匆忙。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}一边转着汤勺，一边把火压到最小，像是怕惊到门外刚回来的喘气声。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把碗底名字重新贴正，说半夜里手一热，人最容易拿错东西。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "warm_label_done",
+          "weight": 3,
+          "outcome": "驿站厨房并没有因此更热闹，可那份“回来以后不用再慌一下”的周到被留了下来。",
+          "effects": {
+            "journal_entry": "云升驿夜班补记：晚归汤碗先贴好名签，能让疲惫的人少慌一回。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "spare_tea_packet",
+          "weight": 2,
+          "outcome": "{npc_a}顺手把一小包压箱的茶叶塞给你，说夜里守着火的人，总得给明早也留点精神。",
+          "effects": {
+            "items": {
+              "tea_leaf": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "驿站",
+        "夜宵"
+      ]
+    },
+    {
+      "id": "soc_post_mailbag_fold",
+      "title": "邮袋边的折角顺一顺",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "sky_post",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "innkeeper_yun"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "traveling_peddler"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "clear",
+          "fog",
+          "rain"
+        ]
+      },
+      "summary": "{npc_b}把跑商路上卷皱的纸角一张张抹平，{npc_a}则顺手把邮袋口重新系好，免得一阵风就把消息吹得满地跑。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把手掌压在纸背上慢慢抹过去，说消息皱了，送到人手里也会显得心虚。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把邮袋绳结重新收紧，只留出刚够伸手取信的一点缝。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "mailbag_sorted",
+          "weight": 3,
+          "outcome": "明明只是顺了顺折角、紧了紧绳口，可整袋消息看上去都像更值得被好好送达了。",
+          "effects": {
+            "journal_entry": "云升驿邮袋补记：纸角抹平、袋口系稳，消息到了人手里才像是被认真对待过。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_flat_paper",
+          "weight": 2,
+          "outcome": "{npc_b}把一张抹平后的空白小纸塞给你，说临时记事最怕皱，平平整整时人也更肯写实话。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "驿站",
+        "邮袋"
+      ]
+    },
+    {
+      "id": "soc_creek_lunchbox_stone",
+      "title": "暖石上的午饭盒",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "crystal_creek",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "washer_grandma"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "stone_trader"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ],
+        "weather_in": [
+          "clear",
+          "fog",
+          "mist"
+        ]
+      },
+      "summary": "{npc_a}不让饭盒直接落在潮湿石沿上，{npc_b}便挑了两块温度最匀的暖石垫底，说这样饭菜和心情都不会凉得太快。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}先用布角把石面擦了一遍，像是连午饭落脚的地方都得先讲究。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把饭盒下的暖石左右挪平，直到它稳稳当当地不再晃。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "lunchbox_steady",
+          "weight": 3,
+          "outcome": "那只普通午饭盒忽然就有了被好好照顾的样子，溪边的午后也跟着显得更安稳。",
+          "effects": {
+            "journal_entry": "晶溪午后补记：饭盒别直接搁湿石沿，垫上暖石，连收工都像被照料了一下。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "keep_small_chip",
+          "weight": 2,
+          "outcome": "{npc_b}把磨下来的一点石边角递给你，说这种小料平时不起眼，真垫东西时倒最顺手。",
+          "effects": {
+            "items": {
+              "stone_chip": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "晶溪",
+        "午饭"
+      ]
+    },
+    {
+      "id": "soc_bazaar_handle_wrap",
+      "title": "旧布条缠一圈把手",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "copper_hammer_bazaar",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "tinker_bo"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "smith_ya"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "{npc_a}会把旧布条缠到借出的工具把手上，{npc_b}则站在旁边确认松紧，说给新手的东西，先得握着不硌手。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}缠布时手很快，却每一圈都压得服服帖帖，不让边角翘起来。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}用粗糙的手掌试了一下把手，只点点头，意思是这次总算不会磨出水泡。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "wrapped_handle",
+          "weight": 3,
+          "outcome": "市集里依旧叮叮当当，可那把准备借出去的工具忽然多了点“有人替你想过”的温度。",
+          "effects": {
+            "journal_entry": "铜锤市集补记：借出去的工具先缠一圈旧布，比多讲三句小心还管用。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_spare_cloth",
+          "weight": 2,
+          "outcome": "{npc_a}把剩下的布条塞给你，说这东西看着旧，真到握把打滑的时候才知道它值钱。",
+          "effects": {
+            "items": {
+              "cloth": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "市集",
+        "工具"
+      ]
+    },
+    {
+      "id": "soc_bazaar_receipt_thread",
+      "title": "摊前单据串成一挂",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "copper_hammer_bazaar",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "smith_ya"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "parts_vendor"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "{npc_b}把零碎单据都往细铁丝上串，{npc_a}则在旁边用粗笔补上日期，说市集忙起来，账目得比脾气还稳。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把小票一张张从孔眼里穿过去，动作像在给今天的热闹收尾。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}补日期时笔触很重，像是不想让哪一笔含糊地溜过去。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "receipts_sorted",
+          "weight": 3,
+          "outcome": "那些原本随时会飞走的小票被串一挂挂地挂起来，摊前顿时像把今天过成了能对得上账的一天。",
+          "effects": {
+            "journal_entry": "铜锤市集账簿补记：小票先串、日期写重，忙日子也能把心里那笔账压稳。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "spare_note_paper",
+          "weight": 2,
+          "outcome": "{npc_b}抖了抖手里多出的一截记账纸，说别嫌小，临时记个价最怕没这一下垫底。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "市集",
+        "单据"
+      ]
+    },
+    {
+      "id": "soc_platform_lamp_cover",
+      "title": "观测灯外多罩一层",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "ancient_platform",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "field_recorder"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "ruin_restorer"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "summary": "{npc_a}嫌观测灯太直会晃眼，{npc_b}便在外面多罩一层薄布，说夜里做事，不必把每个角落都照得像白天。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}抬手挡了挡灯光，说亮是亮了，就是人很难在这种亮里想清楚。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把罩布轻轻搭上去，整盏灯一下就从刺眼变成了肯让人久看的亮。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "lamp_softened",
+          "weight": 3,
+          "outcome": "平台上的夜色没有因此变浅，但那种总催着人快一点的光终于温和了下来。",
+          "effects": {
+            "journal_entry": "北城观测站补记：夜里不必把灯开得像白天，能让人坐得住的光，记录也会更稳。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_old_sketch",
+          "weight": 2,
+          "outcome": "{npc_b}从拆下来的旧罩夹层里摸出一角旧草图，随手递给你，说很多能用的东西都藏在替换下来的那层里。",
+          "effects": {
+            "items": {
+              "blueprint_scrap": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "监测站",
+        "灯罩"
+      ]
+    },
+    {
+      "id": "soc_post_soup_ladle",
+      "title": "汤勺先挂回锅耳边",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "sky_post",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "innkeeper_yun"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "boarder_liu"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "summary": "{npc_a}把晚汤最后一勺轻轻沥回锅里，叫{npc_b}先把汤勺挂回锅耳边，说回站的人先看见勺子在不在，就知道今晚这口热气还给不给后来的人留位。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把勺背在锅沿上磕了两下，像是在替今晚剩下的热气先把分寸敲明白。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把汤勺挂回锅耳边，退后看了一眼位置，说这样迟归的人一掀帘就知道自己还赶得上。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "soup_order_settled",
+          "weight": 3,
+          "outcome": "汤勺一挂回原处，驿站厨房忽然多了一种踏实感，像每个迟归的人都还被算在这一锅里。",
+          "effects": {
+            "journal_entry": "天穹驿站晚汤补记：锅耳边那把勺子摆正了，迟归的人也会觉得自己还在这顿饭里。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_tea_for_late_return",
+          "weight": 2,
+          "outcome": "{npc_a}顺手把一小包压在锅边的茶叶递给你，说真有人赶着回站时，先把热水坐上比问路还顶用。",
+          "effects": {
+            "items": {
+              "tea_leaf": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "驿站",
+        "晚汤"
+      ]
+    },
+    {
+      "id": "soc_post_route_tag",
+      "title": "行囊把手系好路签",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "sky_post",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "boarder_liu"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "traveling_peddler"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "{npc_a}嫌驿站门口那几只行囊一忙起来就分不清谁当天去当天回，{npc_b}便拿细绳把路签一张张系在把手上，说会走的人多，先别让人把东西拿错路。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把写好的路签按远近分成两摞，嘴里还在念哪包要先下坡、哪包得留到雨停。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}系绳结的手法很快，却每一张都特地把字面转向门外，好让来拿的人一眼看见。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "route_tags_sorted",
+          "weight": 3,
+          "outcome": "几只原本挤作一团的行囊一下就有了去处，驿站门边那种临走前的慌乱也被捋顺了许多。",
+          "effects": {
+            "journal_entry": "天穹驿站路签补记：先把把手上的去处写清，再忙的出发也不至于互相撞乱。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_blank_route_cards",
+          "weight": 2,
+          "outcome": "{npc_b}把剩下的空白路签塞给你，说这种小纸片平时不起眼，真急着出门的时候却比大主意更救场。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "驿站",
+        "路签"
+      ]
+    },
+    {
+      "id": "soc_creek_sun_cloth_corner",
+      "title": "晒布角给样石留阴",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "crystal_creek",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "washer_grandma"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "stone_trader"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day"
+        ]
+      },
+      "summary": "{npc_b}把几块刚捞净的样石排到溪边晒亮，{npc_a}却伸手把晒布的一角压过去，说正午的光太硬，给石面留一点阴，才看得清它原本的脾气。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}本还想把样石全摊在日头底下，听完这句后便老老实实挪了半掌宽的距离。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把布角压得很轻，像只是给那些亮得过分的边缘留一点能喘气的地方。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "shade_reveals_texture",
+          "weight": 3,
+          "outcome": "样石一旦不再被日头追着亮，细细的纹路反而全慢慢浮了出来，连旁边的溪水声都像跟着安静了一点。",
+          "effects": {
+            "journal_entry": "晶溪样石补记：正午的光太直，给石面留一块布角的阴，反倒更看得清它真正的纹理。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_spare_wiping_cloth",
+          "weight": 2,
+          "outcome": "{npc_a}把裁下来的旧布边塞给你，说擦样石、擦靴边、擦手心都行，真正顶用的东西通常就这一小截。",
+          "effects": {
+            "items": {
+              "cloth": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "晶溪",
+        "样石"
+      ]
+    },
+    {
+      "id": "soc_bazaar_parts_apron",
+      "title": "围裙口袋先留一格沉件",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "copper_hammer_bazaar",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "tinker_bo"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "parts_vendor"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "{npc_b}抱怨围裙口袋里一装满细件就会到处乱跑，{npc_a}便拿旧布在最里头补出一格沉件袋，说小零件先有个肯待住的地方，摊子才不总像在追自己的脚。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}补针脚时故意把最底下一层缝得更密，说会滚的东西，先得被日常收服。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把几枚垫圈放进去试了试，口袋终于不再哗啦作响，脸色也跟着松快了。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "apron_pocket_stabilized",
+          "weight": 3,
+          "outcome": "围裙里最闹腾的那一格终于安静下来，摊前许多原本会被零件带乱的动作也一下顺手了。",
+          "effects": {
+            "journal_entry": "铜锤市集围裙补记：先给最会乱滚的细件留一格沉口袋，手上的活才能真稳下来。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_spare_diagram_corner",
+          "weight": 2,
+          "outcome": "{npc_a}从桌边掀出一角旧零件图给你，说这些边角图样拼在一起，有时候比整张新图更知道东西会在哪儿卡住。",
+          "effects": {
+            "items": {
+              "blueprint_scrap": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "市集",
+        "围裙"
+      ]
+    },
+    {
+      "id": "soc_platform_margin_string",
+      "title": "页边先绷一根细线",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "ancient_platform",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "field_recorder"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "ruin_restorer"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "summary": "{npc_a}嫌记录页一写满就容易把猜测也挤进去，{npc_b}便在页边轻轻绷上一根细线，说先替纸留一截不必争抢的位置，很多结论才不会着急越界。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}用指背量了量页边的空隙，像在确认今晚该让多少空白替人守住分寸。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把细线按在纸边上，明明只是加了一道很轻的界，却让整页笔记都像沉住了气。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "margin_line_holds",
+          "weight": 3,
+          "outcome": "页边那根细线一落稳，连笔下本来想抢先落定的话都跟着慢了半拍，整页记录顿时像能多信几分。",
+          "effects": {
+            "journal_entry": "北城观测站页边补记：先替记录留出一截不争抢的位置，很多判断才不至于写得比现象还快。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_margin_slips",
+          "weight": 2,
+          "outcome": "{npc_a}把裁下来的几条空白页边递给你，说临时要记一个不敢下结论的现象，这种小纸条最合适。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "监测站",
+        "页边"
+      ]
+    },
+    {
+      "id": "soc_post_last_kettle_mark",
+      "title": "锅耳边先留最后一记",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "sky_post",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "innkeeper_yun"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "traveling_peddler"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "summary": "{npc_b}刚准备把最后一包路货卸下，{npc_a}却先在锅耳边挂好一张小记号，说今天还可能有人踩着更晚的风回来，锅里这口热得先替那一步留着。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把小记号压在锅耳边最顺手的位置，像在替一句“还来得及”先找好落点。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}看了眼门外天色，手上卸包的动作都跟着轻了些，说那这锅今晚就真是给人留回来的。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "kettle_mark_stays",
+          "weight": 3,
+          "outcome": "那张小记号一挂稳，驿站里连最晚回来的脚步都像提前被算进了这一顿热气里。",
+          "effects": {
+            "journal_entry": "天穹驿站晚锅补记：先在锅耳边留一句“还来得及”，很多风里回来的心气就不会散。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_late_route_note",
+          "weight": 2,
+          "outcome": "{npc_b}把口袋里压皱的一角路笺递给你，说这种临时补记最该留着，越晚的时候越不能靠猜。",
+          "effects": {
+            "items": {
+              "paper": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "驿站",
+        "晚锅"
+      ]
+    },
+    {
+      "id": "soc_creek_ledger_stone",
+      "title": "账本边先压一块稳石",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "crystal_creek",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "stone_trader"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "washer_grandma"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "{npc_a}正低头誊抄今天的石片来路，纸页却总被溪风掀边，{npc_b}便替他挑了块不大不小的稳石压在角上，说东西先坐稳，字才不会写得像人在追风。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}原本还想用手肘压纸，见稳石一放下，整个人写字的肩膀都跟着沉了下来。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}挑石头时根本没多看第二眼，像是这种该压哪一块的分寸早就被她握熟了。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "ledger_stone_set",
+          "weight": 3,
+          "outcome": "账本角一被稳稳压住，连那些本来会被风带散的进货顺序都像跟着坐回了原位。",
+          "effects": {
+            "journal_entry": "晶溪账页补记：先拿一块稳石把纸按住，很多本来会飘的来路和价目就都肯落定。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_flat_stone_chip",
+          "weight": 2,
+          "outcome": "{npc_a}把多出来的一片平石递给你，说拿去压纸、压布角、压路签都行，很多小事差的就是这一片不动。",
+          "effects": {
+            "items": {
+              "stone_chip": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "晶溪",
+        "账本"
+      ]
+    },
+    {
+      "id": "soc_bazaar_clip_board_weight",
+      "title": "清单夹上先压住一角",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 4,
+      "weight": 3,
+      "habitat_id": "copper_hammer_bazaar",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "smith_ya"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "parts_vendor"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "day",
+          "evening"
+        ]
+      },
+      "summary": "{npc_b}把明天跑线清单夹在板上还嫌不稳，{npc_a}便从手边挑了块小压片给他压住一角，说写得再明白，也得先让它别被风和手忙一起带走。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}试着晃了晃夹板，确认那页纸终于不再一抖就想翻过去。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}把压片放下时几乎没发声，像是在提醒人，真正有用的稳当往往都不张扬。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "clipboard_corner_holds",
+          "weight": 3,
+          "outcome": "清单夹的一角一稳，整张跑线表都像跟着有了底气，再忙的手也不那么容易写乱了。",
+          "effects": {
+            "journal_entry": "铜锤市集跑线补记：清单先压住一角，忙和风就不那么容易一起把顺序带跑。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_spare_clip_plate",
+          "weight": 2,
+          "outcome": "{npc_a}又敲出一枚边角圆润的小压片递给你，点点头，意思是这种东西最好手边永远多一枚。",
+          "effects": {
+            "items": {
+              "metal": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "市集",
+        "清单"
+      ]
+    },
+    {
+      "id": "soc_platform_lamp_page",
+      "title": "灯边先替纸留一圈静",
+      "category": "npc_npc",
+      "mode": "ambient_social",
+      "repeatable": true,
+      "cooldown_days": 5,
+      "weight": 3,
+      "habitat_id": "ancient_platform",
+      "actor_slots": [
+        {
+          "slot": "npc_a",
+          "type": "npc",
+          "npc_ids": [
+            "ruin_restorer"
+          ]
+        },
+        {
+          "slot": "npc_b",
+          "type": "npc",
+          "npc_ids": [
+            "field_recorder"
+          ]
+        }
+      ],
+      "conditions": {
+        "time_in": [
+          "evening",
+          "night"
+        ]
+      },
+      "summary": "{npc_b}翻记录时总被灯边那点微颤晃得眼酸，{npc_a}便把灯脚垫平，又把纸往外挪了半寸，说夜里写字先给纸留一圈静，人才不容易把急写进去。",
+      "stages": [
+        {
+          "type": "observe",
+          "slot": "npc_a",
+          "text": "{npc_a}用指节把灯脚一点点调平，动作慢得像在替这盏灯也把心气压下来。"
+        },
+        {
+          "type": "observe",
+          "slot": "npc_b",
+          "text": "{npc_b}把纸往外让开后，连落笔的停顿都变得更像思考，而不是被光催着赶工。"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "lamp_quiet_ring",
+          "weight": 3,
+          "outcome": "灯边那圈总晃人的细颤一静下去，整页记录忽然像多了一层肯让人久看的耐性。",
+          "effects": {
+            "journal_entry": "北城观测站夜录补记：先给灯边和纸边各留一圈静，夜里的判断才不至于被忙意推着走。",
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "affinity": 1,
+                "familiarity": 1
+              }
+            ]
+          }
+        },
+        {
+          "id": "save_soft_wick_cloth",
+          "weight": 2,
+          "outcome": "{npc_a}把裁下来的灯边旧布塞给你，说拿去垫器脚、垫纸角都行，很多静就是靠这一小圈换来的。",
+          "effects": {
+            "items": {
+              "cloth": 1
+            },
+            "relation_delta": [
+              {
+                "pair": [
+                  "npc_a",
+                  "npc_b"
+                ],
+                "familiarity": 1
+              }
+            ]
+          }
+        }
+      ],
+      "tags": [
+        "社会事件",
+        "监测站",
+        "夜录"
       ]
     }
   ]

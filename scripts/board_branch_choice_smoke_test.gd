@@ -36,20 +36,21 @@ func _run_checks(scene: Node) -> void:
 		return
 
 	var chosen_step := int(options[0])
+	var chosen_node: Dictionary = scene.board_lookup.get(chosen_step, {})
 	scene._on_board_node_chosen(chosen_step)
 	await process_frame
 
 	if scene.branch_choice_pending:
 		_fail("Branch choice smoke test failed: choosing a single-exit branch should resume travel immediately.")
 		return
-	if scene.current_node_id != 2:
-		_fail("Branch choice smoke test failed: choosing the first opening branch on a 2-step roll should end at node 2.")
+	if scene.current_node_id != chosen_step:
+		_fail("Branch choice smoke test failed: choosing a branch should end the 2-step route at the chosen node.")
 		return
 	if not scene.decision_panel.visible:
 		_fail("Branch choice smoke test failed: completing the branched route should open the arrival panel.")
 		return
-	if scene.current_visit_habitat_id != "mist_moss_cave":
-		_fail("Branch choice smoke test failed: the first opening branch should arrive at mist_moss_cave.")
+	if scene.current_visit_habitat_id != String(chosen_node.get("habitat_id", "")):
+		_fail("Branch choice smoke test failed: the arrival habitat should match the chosen branch node.")
 		return
 	if not scene.pending_roll.is_empty():
 		_fail("Branch choice smoke test failed: roll state should clear after arrival resolves.")

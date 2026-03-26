@@ -2,7 +2,7 @@
   "story_arcs": [
     {
       "id": "arc_mist_moss_guardianship",
-      "title": "雾岚镇保育中心的照护流程",
+      "title": "雾岚镇保育中心的一天",
       "priority": 10,
       "start_conditions": {
         "habitat_id": "mist_moss_cave",
@@ -345,6 +345,31 @@
       },
       "beats": [
         {
+          "id": "intro",
+          "habitat_id": "saltglass_coast",
+          "npc_id": "coast_keeper",
+          "dialogue_id": "dlg_story_coast_intro",
+          "story_flags": [
+            "story_mire_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening"
+          ]
+        },
+        {
+          "id": "after_rack",
+          "habitat_id": "saltglass_coast",
+          "npc_id": "coast_keeper",
+          "dialogue_id": "dlg_story_coast_after_rack",
+          "requires_quests": [
+            "coast_rack_check"
+          ],
+          "set_story_flags": [
+            "story_coast_rack_done"
+          ]
+        },
+        {
           "id": "resolve",
           "habitat_id": "saltglass_coast",
           "npc_id": "coast_keeper",
@@ -353,7 +378,7 @@
             "evt_coast_return_crate"
           ],
           "story_flags": [
-            "story_mire_arc_done"
+            "story_coast_rack_done"
           ],
           "set_story_flags": [
             "story_coast_arc_done"
@@ -371,6 +396,31 @@
       },
       "beats": [
         {
+          "id": "intro",
+          "habitat_id": "thunder_meadow",
+          "npc_id": "storm_mentor",
+          "dialogue_id": "dlg_story_meadow_intro",
+          "story_flags": [
+            "story_coast_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening"
+          ]
+        },
+        {
+          "id": "after_break",
+          "habitat_id": "thunder_meadow",
+          "npc_id": "storm_mentor",
+          "dialogue_id": "dlg_story_meadow_after_break",
+          "requires_quests": [
+            "storm_meadow_water_break"
+          ],
+          "set_story_flags": [
+            "story_meadow_break_done"
+          ]
+        },
+        {
           "id": "resolve",
           "habitat_id": "thunder_meadow",
           "npc_id": "storm_mentor",
@@ -379,7 +429,7 @@
             "evt_meadow_charge_markers"
           ],
           "story_flags": [
-            "story_coast_arc_done"
+            "story_meadow_break_done"
           ],
           "set_story_flags": [
             "story_meadow_arc_done"
@@ -397,6 +447,31 @@
       },
       "beats": [
         {
+          "id": "intro",
+          "habitat_id": "echo_broken_bridge",
+          "npc_id": "bridge_scout",
+          "dialogue_id": "dlg_story_bridge_intro",
+          "story_flags": [
+            "story_meadow_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening"
+          ]
+        },
+        {
+          "id": "after_knot",
+          "habitat_id": "echo_broken_bridge",
+          "npc_id": "bridge_scout",
+          "dialogue_id": "dlg_story_bridge_after_knot",
+          "requires_quests": [
+            "bridge_spare_knot"
+          ],
+          "set_story_flags": [
+            "story_bridge_knot_done"
+          ]
+        },
+        {
           "id": "resolve",
           "habitat_id": "echo_broken_bridge",
           "npc_id": "bridge_scout",
@@ -405,7 +480,7 @@
             "evt_bridge_whistle_test"
           ],
           "story_flags": [
-            "story_meadow_arc_done"
+            "story_bridge_knot_done"
           ],
           "set_story_flags": [
             "story_bridge_arc_done"
@@ -423,6 +498,32 @@
       },
       "beats": [
         {
+          "id": "intro",
+          "habitat_id": "frost_mirror_lake",
+          "npc_id": "mirror_keeper",
+          "dialogue_id": "dlg_story_lake_intro",
+          "story_flags": [
+            "story_bridge_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening",
+            "night"
+          ]
+        },
+        {
+          "id": "after_gloves",
+          "habitat_id": "frost_mirror_lake",
+          "npc_id": "mirror_keeper",
+          "dialogue_id": "dlg_story_lake_after_gloves",
+          "requires_quests": [
+            "mirror_glove_preheat"
+          ],
+          "set_story_flags": [
+            "story_lake_glove_done"
+          ]
+        },
+        {
           "id": "resolve",
           "habitat_id": "frost_mirror_lake",
           "npc_id": "mirror_keeper",
@@ -431,7 +532,7 @@
             "evt_lake_mirror_fog"
           ],
           "story_flags": [
-            "story_bridge_arc_done"
+            "story_lake_glove_done"
           ],
           "set_story_flags": [
             "story_lake_arc_done"
@@ -449,6 +550,31 @@
       },
       "beats": [
         {
+          "id": "intro",
+          "habitat_id": "moonfen_ruins",
+          "npc_id": "ruin_diviner",
+          "dialogue_id": "dlg_story_moonfen_intro",
+          "story_flags": [
+            "story_lake_arc_done"
+          ],
+          "time_in": [
+            "evening",
+            "night"
+          ]
+        },
+        {
+          "id": "after_bucket",
+          "habitat_id": "moonfen_ruins",
+          "npc_id": "ruin_diviner",
+          "dialogue_id": "dlg_story_moonfen_after_bucket",
+          "requires_quests": [
+            "ruin_quiet_bucket"
+          ],
+          "set_story_flags": [
+            "story_moonfen_bucket_done"
+          ]
+        },
+        {
           "id": "resolve",
           "habitat_id": "moonfen_ruins",
           "npc_id": "ruin_diviner",
@@ -457,10 +583,113 @@
             "evt_moonfen_well_echo"
           ],
           "story_flags": [
-            "story_lake_arc_done"
+            "story_moonfen_bucket_done"
           ],
           "set_story_flags": [
             "story_moonfen_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_sky_post_settle_routes",
+      "title": "天穹驿站的留座分寸",
+      "priority": 120,
+      "start_conditions": {
+        "habitat_id": "sky_post"
+      },
+      "beats": [
+        {
+          "id": "intro",
+          "habitat_id": "sky_post",
+          "npc_id": "innkeeper_yun",
+          "dialogue_id": "dlg_story_post_hearth_intro",
+          "story_flags": [
+            "story_moonfen_arc_done"
+          ],
+          "time_in": [
+            "day",
+            "evening",
+            "night"
+          ]
+        },
+        {
+          "id": "after_kettle",
+          "habitat_id": "sky_post",
+          "npc_id": "innkeeper_yun",
+          "dialogue_id": "dlg_story_post_hearth_after_kettle",
+          "requires_quests": [
+            "yun_kettle_hook_card"
+          ],
+          "set_story_flags": [
+            "story_post_hearth_kettle_done"
+          ]
+        },
+        {
+          "id": "resolve",
+          "habitat_id": "sky_post",
+          "npc_id": "innkeeper_yun",
+          "dialogue_id": "dlg_story_post_hearth_resolve",
+          "requires_events": [
+            "soc_post_soup_ladle"
+          ],
+          "story_flags": [
+            "story_post_hearth_kettle_done"
+          ],
+          "set_story_flags": [
+            "story_post_hearth_arc_done"
+          ],
+          "complete_arc": true
+        }
+      ]
+    },
+    {
+      "id": "arc_ancient_platform_margin_note",
+      "title": "古观测台的页边余地",
+      "priority": 130,
+      "start_conditions": {
+        "habitat_id": "ancient_platform"
+      },
+      "beats": [
+        {
+          "id": "intro",
+          "habitat_id": "ancient_platform",
+          "npc_id": "field_recorder",
+          "dialogue_id": "dlg_story_platform_margin_intro",
+          "story_flags": [
+            "story_post_hearth_arc_done"
+          ],
+          "time_in": [
+            "evening",
+            "night"
+          ]
+        },
+        {
+          "id": "after_margin",
+          "habitat_id": "ancient_platform",
+          "npc_id": "field_recorder",
+          "dialogue_id": "dlg_story_platform_margin_after_line",
+          "requires_quests": [
+            "platform_margin_line_note"
+          ],
+          "set_story_flags": [
+            "story_platform_margin_line_done"
+          ]
+        },
+        {
+          "id": "resolve",
+          "habitat_id": "ancient_platform",
+          "npc_id": "field_recorder",
+          "dialogue_id": "dlg_story_platform_margin_resolve",
+          "requires_events": [
+            "soc_platform_margin_string"
+          ],
+          "story_flags": [
+            "story_platform_margin_line_done"
+          ],
+          "set_story_flags": [
+            "story_platform_margin_arc_done"
           ],
           "complete_arc": true
         }

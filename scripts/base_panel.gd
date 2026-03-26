@@ -22,6 +22,8 @@ func _ready() -> void:
 	hide()
 	modulate.a = 1.0
 	scale = Vector2.ONE
+	manage_button.focus_mode = Control.FOCUS_ALL
+	close_button.focus_mode = Control.FOCUS_ALL
 	_apply_responsive_layout()
 	manage_button.pressed.connect(_on_manage_pressed)
 	close_button.pressed.connect(_on_close_pressed)
@@ -38,10 +40,29 @@ func open_panel(panel_state: Dictionary) -> void:
 	_render_companions(panel_state)
 	_render_habitats(panel_state)
 	_play_open_animation()
+	_wire_focus_neighbors()
+	call_deferred("_focus_primary_action")
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		_apply_responsive_layout()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
+		close_panel()
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_down"):
+		_scroll_container(monster_scroll, 120.0)
+		_scroll_container(building_scroll, 120.0)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_up"):
+		_scroll_container(monster_scroll, -120.0)
+		_scroll_container(building_scroll, -120.0)
+		get_viewport().set_input_as_handled()
 
 func close_panel() -> void:
 	if GameState.should_skip_animations():
@@ -122,20 +143,20 @@ func _render_summary(panel_state: Dictionary) -> void:
 		String(season.get("weather_name", "未知")),
 		String(season.get("time_name", "未知")),
 	])
-	lines.append("[b]照料进度[/b] %d ｜ [b]已完成委托[/b] %d" % [
+	lines.append("[b]照料进展[/b] %d ｜ [b]已完成委托[/b] %d" % [
 		int(season.get("care_progress", 0)),
 		completed_quests.size(),
 	])
-	lines.append("[b]构筑等级[/b] %d" % int(season.get("progression_rank", 1)))
+	lines.append("[b]成长阶段[/b] %d" % int(season.get("progression_rank", 1)))
 	if not String(season.get("progression_summary", "")).is_empty():
-		lines.append("[b]本阶焦点[/b] %s" % String(season.get("progression_summary", "")))
+		lines.append("[b]这阶段适合做[/b] %s" % String(season.get("progression_summary", "")))
 	lines.append("[b]徽章[/b] %d ｜ [b]季节点数[/b] %d" % [
 		int(season.get("badge_count", 0)),
 		int(season.get("season_points", 0)),
 	])
-	lines.append("[b]双打位[/b] %s" % (" / ".join(battle_slots) if not battle_slots.is_empty() else "未配置"))
+	lines.append("[b]出战位[/b] %s" % (" / ".join(battle_slots) if not battle_slots.is_empty() else "还没安排"))
 	lines.append("[b]背包容量[/b] %s" % String(panel_state.get("backpack_summary", "0 / 0")))
-	lines.append("[b]计数规则[/b] 同物种在上阵 / 背包 / 驻守中不重复计羁绊。")
+	lines.append("[b]小提醒[/b] 同一种伙伴不管在上阵、背包还是看守里，都只算一次羁绊。")
 	lines.append("[b]轮换试炼[/b] %s" % " / ".join(season.get("dojo_rotation", ["暂无"])))
 	lines.append("[b]已激活羁绊[/b] %s" % " / ".join(synergy_lines))
 	if not String(season.get("annual_competition_text", "")).is_empty():
@@ -184,7 +205,7 @@ func _render_companions(panel_state: Dictionary) -> void:
 		detail.text = "星级 ★%d ｜ 人口 %d ｜ 位置：%s ｜ 形态：%s\n属性：%s ｜ 职能：%s\n信赖 %d ｜ 驻守：%s ｜ 偏好：%s\n%s" % [
 			int(companion.get("star_level", 1)),
 			int(companion.get("population_cost", 1)),
-			String(companion.get("slot_label", "待命")),
+			String(companion.get("slot_label", "休息中")),
 			evolution_text,
 			String(companion.get("type_text", "未知")),
 			String(companion.get("role_text", "未知")),
@@ -265,3 +286,21 @@ func _apply_responsive_layout() -> void:
 	summary_label.scroll_active = true
 	monster_scroll.custom_minimum_size = Vector2(0, 160 if short_height else (200 if compact_width else 240))
 	building_scroll.custom_minimum_size = Vector2(0, 140 if short_height else (180 if compact_width else 220))
+
+func _wire_focus_neighbors() -> void:
+	manage_button.focus_neighbor_right = close_button.get_path()
+	close_button.focus_neighbor_left = manage_button.get_path()
+
+func _focus_primary_action() -> void:
+	if manage_button != null and manage_button.visible and not manage_button.disabled:
+		manage_button.grab_focus()
+	elif close_button != null:
+		close_button.grab_focus()
+
+func _scroll_container(target: ScrollContainer, delta: float) -> void:
+	if target == null:
+		return
+	var scroll_bar := target.get_v_scroll_bar()
+	if scroll_bar == null:
+		return
+	scroll_bar.value = clampf(scroll_bar.value + delta, scroll_bar.min_value, scroll_bar.max_value)

@@ -49,6 +49,34 @@
           ]
         },
         {
+          "id": "spring_paper_bundle",
+          "item_id": "paper",
+          "price": 3,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 22,
+          "season_ids": [
+            "spring"
+          ],
+          "tags": [
+            "记事"
+          ]
+        },
+        {
+          "id": "spring_tea_leaf",
+          "item_id": "tea_leaf",
+          "price": 5,
+          "quantity": 1,
+          "stock": 2,
+          "priority": 18,
+          "season_ids": [
+            "spring"
+          ],
+          "tags": [
+            "暖胃"
+          ]
+        },
+        {
           "id": "summer_glass",
           "item_id": "glass",
           "price": 4,
@@ -88,6 +116,34 @@
           ],
           "tags": [
             "工具"
+          ]
+        },
+        {
+          "id": "summer_tea_leaf",
+          "item_id": "tea_leaf",
+          "price": 5,
+          "quantity": 1,
+          "stock": 2,
+          "priority": 26,
+          "season_ids": [
+            "summer"
+          ],
+          "tags": [
+            "消暑热饮"
+          ]
+        },
+        {
+          "id": "summer_bridge_rope",
+          "item_id": "rope",
+          "price": 3,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 22,
+          "season_ids": [
+            "summer"
+          ],
+          "tags": [
+            "桥区常备"
           ]
         },
         {
@@ -133,6 +189,34 @@
           ]
         },
         {
+          "id": "autumn_clear_sand",
+          "item_id": "clear_sand",
+          "price": 4,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 24,
+          "season_ids": [
+            "autumn"
+          ],
+          "tags": [
+            "潮路材料"
+          ]
+        },
+        {
+          "id": "autumn_ink",
+          "item_id": "ink",
+          "price": 3,
+          "quantity": 1,
+          "stock": 2,
+          "priority": 20,
+          "season_ids": [
+            "autumn"
+          ],
+          "tags": [
+            "记号"
+          ]
+        },
+        {
           "id": "winter_cloth",
           "item_id": "cloth",
           "price": 3,
@@ -172,6 +256,34 @@
           ],
           "tags": [
             "冬季限定"
+          ]
+        },
+        {
+          "id": "winter_warm_stone",
+          "item_id": "warm_stone",
+          "price": 4,
+          "quantity": 2,
+          "stock": 2,
+          "priority": 29,
+          "season_ids": [
+            "winter"
+          ],
+          "tags": [
+            "暖手"
+          ]
+        },
+        {
+          "id": "winter_tea_leaf",
+          "item_id": "tea_leaf",
+          "price": 5,
+          "quantity": 1,
+          "stock": 2,
+          "priority": 25,
+          "season_ids": [
+            "winter"
+          ],
+          "tags": [
+            "炉边"
           ]
         }
       ],
@@ -271,6 +383,210 @@
               ]
             }
           ]
+        },
+        {
+          "id": "post_route_stationery",
+          "title": "转运线余单",
+          "required_story_flags": [
+            "story_post_arc_done"
+          ],
+          "offers": [
+            {
+              "id": "post_route_paper",
+              "item_id": "paper",
+              "price": 2,
+              "quantity": 2,
+              "stock": 1,
+              "priority": 50,
+              "tags": [
+                "转运余单"
+              ]
+            },
+            {
+              "id": "post_route_ink",
+              "item_id": "ink",
+              "price": 2,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 48,
+              "tags": [
+                "转运余单"
+              ]
+            },
+            {
+              "id": "post_route_tea",
+              "item_id": "tea_leaf",
+              "price": 4,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 46,
+              "tags": [
+                "路上热饮"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "winter_stove_corner",
+          "title": "炉边暖手货",
+          "season_ids": [
+            "winter"
+          ],
+          "week_range": [
+            2,
+            99
+          ],
+          "offers": [
+            {
+              "id": "winter_corner_warm_stone",
+              "item_id": "warm_stone",
+              "price": 3,
+              "quantity": 2,
+              "stock": 1,
+              "priority": 44,
+              "tags": [
+                "暖手"
+              ]
+            },
+            {
+              "id": "winter_corner_cloth",
+              "item_id": "cloth",
+              "price": 2,
+              "quantity": 2,
+              "stock": 1,
+              "priority": 42,
+              "tags": [
+                "炉边备品"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "post_hearth_holdovers",
+          "title": "驿站留座余货",
+          "required_story_flags": [
+            "story_post_hearth_arc_done"
+          ],
+          "offers": [
+            {
+              "id": "post_hearth_tag_paper",
+              "item_id": "paper",
+              "price": 2,
+              "quantity": 2,
+              "stock": 1,
+              "priority": 40,
+              "tags": [
+                "挂签余单"
+              ]
+            },
+            {
+              "id": "post_hearth_cloth",
+              "item_id": "cloth",
+              "price": 2,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 38,
+              "tags": [
+                "锅边备布"
+              ]
+            },
+            {
+              "id": "post_hearth_tea_leaf",
+              "item_id": "tea_leaf",
+              "price": 4,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 36,
+              "tags": [
+                "迟归热饮"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "platform_margin_supplies",
+          "title": "页边留白备品",
+          "required_story_flags": [
+            "story_platform_margin_arc_done"
+          ],
+          "offers": [
+            {
+              "id": "platform_margin_paper",
+              "item_id": "paper",
+              "price": 2,
+              "quantity": 2,
+              "stock": 1,
+              "priority": 34,
+              "tags": [
+                "页边留白"
+              ]
+            },
+            {
+              "id": "platform_margin_ink",
+              "item_id": "ink",
+              "price": 3,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 32,
+              "tags": [
+                "夜录"
+              ]
+            },
+            {
+              "id": "platform_margin_cloth",
+              "item_id": "cloth",
+              "price": 2,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 30,
+              "tags": [
+                "灯脚垫布"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "market_weighted_pockets",
+          "title": "袋口安稳小件",
+          "week_range": [
+            3,
+            99
+          ],
+          "offers": [
+            {
+              "id": "market_weight_parts",
+              "item_id": "parts",
+              "price": 4,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 28,
+              "tags": [
+                "沉件口袋"
+              ]
+            },
+            {
+              "id": "market_weight_rope",
+              "item_id": "rope",
+              "price": 3,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 26,
+              "tags": [
+                "袋口束线"
+              ]
+            },
+            {
+              "id": "market_weight_cloth",
+              "item_id": "cloth",
+              "price": 2,
+              "quantity": 1,
+              "stock": 1,
+              "priority": 24,
+              "tags": [
+                "旧布边"
+              ]
+            }
+          ]
         }
       ],
       "npc_services": [
@@ -356,6 +672,130 @@
             "札记"
           ],
           "success_text": "小轮把纸页重新誊抄了一遍，还顺手把一张试炼札记塞回你手里。"
+        },
+        {
+          "id": "bo_field_wrap_set",
+          "npc_id": "tinker_bo",
+          "label": "阿铂扎一套外出包布",
+          "description": "把绳和旧布给阿铂，他会替你拢成一套更不容易在路上散掉的修理包扎法。",
+          "type": "trade_in",
+          "cost_items": {
+            "cloth": 1,
+            "rope": 1
+          },
+          "reward_items": {
+            "repair_kit": 1
+          },
+          "required_trust": 2,
+          "uses_per_week": 1,
+          "priority": 38,
+          "tags": [
+            "外出",
+            "打包"
+          ],
+          "success_text": "阿铂把绳头一收，替你扎出一套拎起来就能上路的外出包布。"
+        },
+        {
+          "id": "ya_glass_edge_polish",
+          "npc_id": "smith_ya",
+          "label": "哑叔磨一块玻边牌",
+          "description": "拿一片海边玻料和布来，哑叔会把边角磨顺，给你留一块更耐看的小牌件。",
+          "type": "trade_in",
+          "cost_items": {
+            "glass": 1,
+            "cloth": 1
+          },
+          "reward_items": {
+            "rare_decor_part": 1
+          },
+          "required_trust": 2,
+          "uses_per_week": 1,
+          "priority": 36,
+          "tags": [
+            "玻边",
+            "装饰"
+          ],
+          "success_text": "哑叔把玻边一点点磨顺，最后留给你一块亮得不扎眼的小牌件。"
+        },
+        {
+          "id": "vendor_afterhours_manifest",
+          "npc_id": "parts_vendor",
+          "label": "小轮透个后手货单",
+          "description": "给他两枚路费，小轮会把再下一周才准备押来的那批货先悄悄点给你看。",
+          "type": "intel",
+          "cost_gold": 2,
+          "required_trust": 2,
+          "uses_per_week": 1,
+          "priority": 32,
+          "preview_week_offset": 2,
+          "preview_offer_count": 2,
+          "tags": [
+            "后手货单",
+            "两周后"
+          ],
+          "success_text": "小轮左右看了一圈，把账本往后翻了两页，低声给你点了几样更后手的货。"
+        },
+        {
+          "id": "bo_weighted_pocket_patch",
+          "npc_id": "tinker_bo",
+          "label": "阿铂补一格沉件袋",
+          "description": "拿旧布和零件给阿铂，他会顺手替你补出一格更肯待住重件的小口袋。",
+          "type": "trade_in",
+          "cost_items": {
+            "cloth": 1,
+            "parts": 1
+          },
+          "reward_items": {
+            "repair_kit": 1
+          },
+          "required_trust": 2,
+          "uses_per_week": 1,
+          "priority": 30,
+          "tags": [
+            "沉件袋",
+            "顺手改造"
+          ],
+          "success_text": "阿铂拿针脚和扣件一收，替你补出一格装重件也不乱晃的小口袋。"
+        },
+        {
+          "id": "ya_clip_plate_press",
+          "npc_id": "smith_ya",
+          "label": "哑叔敲一枚页角压片",
+          "description": "拿金属和玻料来，哑叔会替你敲出一枚压纸也压清单的圆角小压片。",
+          "type": "trade_in",
+          "cost_items": {
+            "metal": 1,
+            "glass": 1
+          },
+          "reward_items": {
+            "rare_decor_part": 1
+          },
+          "required_trust": 2,
+          "uses_per_week": 1,
+          "priority": 28,
+          "tags": [
+            "压片",
+            "页角"
+          ],
+          "success_text": "哑叔把料边收得很圆，最后交到你手里的，是一枚压纸不伤纸的沉手小压片。"
+        },
+        {
+          "id": "vendor_route_tag_preview",
+          "npc_id": "parts_vendor",
+          "label": "小轮划一页路签提要",
+          "description": "给他一点路费，小轮会把最近跑线常用的几条路签和去处分法先讲给你听。",
+          "type": "intel",
+          "cost_gold": 1,
+          "required_trust": 2,
+          "uses_per_week": 1,
+          "priority": 26,
+          "preview_week_offset": 1,
+          "preview_offer_count": 3,
+          "tags": [
+            "路签",
+            "跑线提要"
+          ],
+          "success_text": "小轮把夹板往你这边一偏，挑了几条最常用的路签分法给你看了个明白。"
         }
       ]
     }

@@ -4,6 +4,8 @@
     {
       "id": "moss_puff",
       "name": "苔团",
+      "kind": "苔生团兽",
+      "description": "圆乎乎一团，紧张时会把自己缩得像块湿石头，熟了以后又很爱蹭边角。",
       "rarity": "common",
       "temperament": "shy",
       "habitat_preferences": [
@@ -39,6 +41,8 @@
     {
       "id": "cave_sniffer",
       "name": "穴嗅兽",
+      "kind": "穴道嗅行兽",
+      "description": "鼻子比胆子跑得更快，总爱先闻到岔路，再慢半拍回头确认你跟上没有。",
       "rarity": "common",
       "temperament": "curious",
       "habitat_preferences": [
@@ -72,6 +76,8 @@
     {
       "id": "dew_slug",
       "name": "露涎虫",
+      "kind": "露腺软虫",
+      "description": "吃得勤、动得慢，只要环境够湿，它就能把日子过得很安稳。",
       "rarity": "common",
       "temperament": "hungry",
       "habitat_preferences": [
@@ -105,6 +111,8 @@
     {
       "id": "shell_pup",
       "name": "壳幼",
+      "kind": "亲水壳幼兽",
+      "description": "最爱贴着暖石打盹，壳面一晒热，整只都会跟着软下来。",
       "rarity": "common",
       "temperament": "gentle",
       "habitat_preferences": [
@@ -138,6 +146,8 @@
     {
       "id": "ripple_slime",
       "name": "漪团",
+      "kind": "净水胶团",
+      "description": "像一团会呼吸的水影，哪里混浊它就爱往哪里慢慢拱过去。",
       "rarity": "common",
       "temperament": "hungry",
       "habitat_preferences": [
@@ -171,6 +181,8 @@
     {
       "id": "stream_glider",
       "name": "溪翔",
+      "kind": "溪风滑翔种",
+      "description": "心一急就会掠得很低，心一稳又能把一整段水面飞得跟画线似的。",
       "rarity": "uncommon",
       "temperament": "alert",
       "habitat_preferences": [
@@ -204,6 +216,8 @@
     {
       "id": "gear_finch",
       "name": "齿翎雀",
+      "kind": "机巧翎鸟",
+      "description": "见到会转的东西就闲不住，忙起来像把小锤子和羽毛缝在了一起。",
       "rarity": "uncommon",
       "temperament": "busy",
       "habitat_preferences": [
@@ -238,6 +252,8 @@
     {
       "id": "spark_mite",
       "name": "霆粒",
+      "kind": "带电微虫",
+      "description": "个头不大，凑近机件时却像自己先被点亮了一样，总带着点停不下来的好奇。",
       "rarity": "common",
       "temperament": "curious",
       "habitat_preferences": [
@@ -272,6 +288,8 @@
     {
       "id": "glow_moth",
       "name": "辉蛾",
+      "kind": "共鸣夜蛾",
+      "description": "翅面发着不吵人的光，安静时看它绕圈，总像在替谁慢慢想事情。",
       "rarity": "rare",
       "temperament": "fragile",
       "habitat_preferences": [
@@ -305,6 +323,8 @@
     {
       "id": "rift_fawn",
       "name": "隙鹿",
+      "kind": "裂隙幼鹿",
+      "description": "胆子小得像风一重都会退半步，但只要觉得安全，眼神又会先一步靠过来。",
       "rarity": "rare",
       "temperament": "fearful",
       "habitat_preferences": [
@@ -338,6 +358,8 @@
     {
       "id": "lumen_howler",
       "name": "辉嚎",
+      "kind": "辉光嚎兽",
+      "description": "站远了像月边一块会动的亮影，真听见那声嚎时才知道它有多不好惹。",
       "rarity": "epic",
       "temperament": "wild",
       "habitat_preferences": [
@@ -373,6 +395,8 @@
     {
       "id": "storm_ram",
       "name": "霆角羊",
+      "kind": "雷角奔羊",
+      "description": "脾气不坏，只是站位和步子都很硬，认准一条线以后谁都别想轻易让它改。",
       "rarity": "rare",
       "temperament": "guarded",
       "habitat_preferences": [
@@ -416,6 +440,8 @@
     {
       "id": "glaze_crane",
       "name": "镜釉鹤",
+      "kind": "镜湖长羽种",
+      "description": "腿长、声轻，落在冰边时像怕把整片湖面都吵醒。",
       "rarity": "rare",
       "temperament": "fragile",
       "habitat_preferences": [

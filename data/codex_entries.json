@@ -366,6 +366,689 @@
       "related_npcs": [
         "anomaly_researcher"
       ]
+    },
+    {
+      "id": "codex_storm_ram",
+      "species_id": "storm_ram",
+      "title": "霆角羊观察档案",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "storm_ram",
+        "count": 1
+      },
+      "portrait_hint": "站定时像一块压着雷声的石头，真起步时又会把整段风都带起来。",
+      "habitat_notes": [
+        "鸣雷草场和大风空地最容易见到",
+        "越开阔的地方，它越愿意把步子放到底"
+      ],
+      "behavior_notes": [
+        "认准一条线以后，很少会被中途的小动静改掉方向",
+        "真正难的不是让它跑，是让它肯在该停的时候稳稳停住"
+      ],
+      "care_notes": [
+        "比起催它更快，先帮它把停步和转向排顺更有用",
+        "适合当节奏练习里的参照，而不是蛮力对抗的对象"
+      ],
+      "research_tags": [
+        "storm",
+        "tempo",
+        "vanguard"
+      ],
+      "related_npcs": [
+        "storm_mentor"
+      ],
+      "related_events": [
+        "evt_meadow_charge_markers"
+      ]
+    },
+    {
+      "id": "codex_glaze_crane",
+      "species_id": "glaze_crane",
+      "title": "镜釉鹤观察档案",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "glaze_crane",
+        "count": 1
+      },
+      "portrait_hint": "落到冰边时像怕把整片湖都惊醒，连抬脚都带着很轻的预留。",
+      "habitat_notes": [
+        "霜镜湖和带薄雾的冰边最常出现",
+        "湖面越静，它停留得越久"
+      ],
+      "behavior_notes": [
+        "会先确认冰面和人声都够稳，才把整只身形完全落下",
+        "不是怕人，更像是在挑一处不会被惊动的安静"
+      ],
+      "care_notes": [
+        "先把手上动作和脚下声音都收轻，再谈观察",
+        "适合和镜湖的预热、听冰、缓动作一起理解"
+      ],
+      "research_tags": [
+        "ice",
+        "reflection",
+        "calm"
+      ],
+      "related_npcs": [
+        "mirror_keeper"
+      ],
+      "related_events": [
+        "evt_lake_mirror_fog"
+      ]
+    },
+    {
+      "id": "codex_creek_noon_bucket_note",
+      "species_id": "brook_lantern_fish",
+      "title": "浅滩边先换一桶新水的讲究",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_event:creek_noon_bucket"
+      },
+      "portrait_hint": "看起来只是换了一小桶水，真正被换掉的其实是整片浅滩那股闷着的气。",
+      "habitat_notes": [
+        "晶溪这种近岸浅水多、午后容易发闷的地方最容易看出差别",
+        "越是日头顶着的时候，这种小准备越能救手感"
+      ],
+      "behavior_notes": [
+        "水边很多动静不是“有没有”，而是“闷不闷”",
+        "人一肯先顾这些不起眼的小地方，鱼讯反而更容易回来"
+      ],
+      "care_notes": [
+        "别把准备当成浪费工夫，很多顺手都从这一步开始",
+        "先把岸边气息换顺，比急着多下几竿更有用"
+      ],
+      "research_tags": [
+        "water",
+        "routine",
+        "creek"
+      ],
+      "related_npcs": [
+        "washer_grandma"
+      ]
+    },
+    {
+      "id": "codex_coast_cloth_shake",
+      "species_id": "moon_tide_eel",
+      "title": "海边坐下前先抖净一块布",
+      "rarity": "common",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "fish_event:coast_cloth_shake"
+      },
+      "portrait_hint": "一块旧布在风口上被抖净两下，桌边忽然就像替今晚先留好了位置。",
+      "habitat_notes": [
+        "盐镜海岸这种风和盐都细的地方，最能看出这类小讲究的分量",
+        "越靠近傍晚饭点，越容易觉得这种准备值钱"
+      ],
+      "behavior_notes": [
+        "很多海边人的从容不是天生的，而是靠这些小动作一点点攒出来的",
+        "先把会硌人的东西抖掉，后面不管听潮还是下竿都会顺很多"
+      ],
+      "care_notes": [
+        "想在海边坐稳，先收拾好桌边和袖口，比逞强更管用",
+        "这种做法照顾的不只是鱼具，也照顾人回来那一下的心情"
+      ],
+      "research_tags": [
+        "shore",
+        "routine",
+        "return"
+      ],
+      "related_npcs": [
+        "coast_keeper"
+      ]
+    },
+    {
+      "id": "codex_autumn_tide_table",
+      "species_id": "moon_tide_eel",
+      "title": "潮桌边把深秋过完整的一晚",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_marker",
+        "marker": "festival_score:autumn_tide_table_meet:8"
+      },
+      "portrait_hint": "榜单挂着，热汤也冒着气，海边那晚最热闹的反而不是分数，而是谁愿意多坐一会儿。",
+      "habitat_notes": [
+        "深秋的盐镜海岸最适合把“比赛”过成“一整晚都有人陪着海风”",
+        "潮桌、夜风和晚归的人会一起把场子撑起来"
+      ],
+      "behavior_notes": [
+        "真正留下来的往往不是赢没赢，而是那晚谁在风里还记得给别人留杯热的",
+        "丰渔夜会最会把陌生人也变成熟脸"
+      ],
+      "care_notes": [
+        "水边节庆不一定要拼快，先把气氛接稳才会更像这地方本来的样子",
+        "能把一晚过舒服，也是海边本事的一种"
+      ],
+      "research_tags": [
+        "festival",
+        "shore",
+        "community"
+      ],
+      "related_npcs": [
+        "coast_keeper"
+      ],
+      "related_events": [
+        "autumn_tide_table_meet"
+      ]
+    },
+    {
+      "id": "codex_grove_cervid_1",
+      "species_id": "grove_cervid_1",
+      "title": "晨芽鹿观察档案",
+      "rarity": "uncommon",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "grove_cervid_1",
+        "count": 1
+      },
+      "portrait_hint": "角芽上常沾着一点嫩叶水光，站进林间亮处时像把春天先顶出来了一小截。",
+      "habitat_notes": [
+        "青栎林边的新叶带最容易先见到它的脚印",
+        "春天晴日里会更靠近药棚和巡路口"
+      ],
+      "behavior_notes": [
+        "会对巡林哨声停耳回望",
+        "不喜欢被人从正面直直逼近"
+      ],
+      "care_notes": [
+        "先把脚步和说话声都放慢，再谈接近",
+        "带一点新鲜叶片会比伸手更容易建立好感"
+      ],
+      "research_tags": [
+        "forest",
+        "healing",
+        "patrol"
+      ],
+      "related_npcs": [
+        "grove_patrol"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_grove_cervid_2",
+      "species_id": "grove_cervid_2",
+      "title": "巡花灵鹿观察档案",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "grove_cervid_2",
+        "count": 1
+      },
+      "portrait_hint": "会沿着花带慢慢巡圈，鹿角上的浅亮总比脚步先一步让人看见。",
+      "habitat_notes": [
+        "常沿着林地花带和草棚之间来回巡走",
+        "天气越稳，它越愿意把巡路范围放大"
+      ],
+      "behavior_notes": [
+        "比幼体更在意队伍有没有把路让顺",
+        "会先确认幼枝和花带没被惊乱再继续前进"
+      ],
+      "care_notes": [
+        "适合在巡路结束后隔着花带观察",
+        "别急着跟跑，它更喜欢会守分寸的人"
+      ],
+      "research_tags": [
+        "forest",
+        "healing",
+        "patrol"
+      ],
+      "related_npcs": [
+        "grove_patrol"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_grove_cervid_3",
+      "species_id": "grove_cervid_3",
+      "title": "春冠圣鹿观察档案",
+      "rarity": "legendary",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "grove_cervid_3",
+        "count": 1
+      },
+      "portrait_hint": "真正静下来时才会发现它已经站在林光里，整副鹿冠像把晴春压成了一圈柔亮。",
+      "habitat_notes": [
+        "只在春季晴朗白昼的青栎林深处偶尔露面",
+        "往往是整片林子先安静下来，人才后知后觉看见它"
+      ],
+      "behavior_notes": [
+        "出现时周围普通林宠常会自然让出一圈空地",
+        "不像在躲人，更像在等人先把步子放轻"
+      ],
+      "care_notes": [
+        "追逐意义不大，先记住天气和林线变化更有价值",
+        "若真近距离见到，最重要的是别打乱它留给林子的安静"
+      ],
+      "research_tags": [
+        "forest",
+        "healing",
+        "patrol"
+      ],
+      "related_npcs": [
+        "grove_patrol"
+      ],
+      "related_events": [
+        "evt_grove_crown_trace"
+      ]
+    },
+    {
+      "id": "codex_glint_manta_1",
+      "species_id": "glint_manta_1",
+      "title": "潮灯鳐观察档案",
+      "rarity": "uncommon",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "glint_manta_1",
+        "count": 1
+      },
+      "portrait_hint": "贴着浅水转身时像一盏被潮纹托住的小灯，亮意总比身形先晃到人眼里。",
+      "habitat_notes": [
+        "盐镜海岸傍晚前后的浅潮边最容易见到它",
+        "有灯、有静水的时候停留更久"
+      ],
+      "behavior_notes": [
+        "对骤亮和大声招呼都很敏感",
+        "会顺着水面的平稳回光调整游向"
+      ],
+      "care_notes": [
+        "先把岸边手势和灯火都收轻，再谈观察",
+        "它更偏爱稳稳亮着的小灯，不喜欢追着它照"
+      ],
+      "research_tags": [
+        "shore",
+        "light",
+        "calm"
+      ],
+      "related_npcs": [
+        "coast_keeper",
+        "mirror_keeper"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_glint_manta_2",
+      "species_id": "glint_manta_2",
+      "title": "镜祈光鳐观察档案",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "glint_manta_2",
+        "count": 1
+      },
+      "portrait_hint": "鳍边会把灯影折成很细的光线，像在水上轻轻写字。",
+      "habitat_notes": [
+        "会在海岸和镜湖之间挑更安静的一侧停游",
+        "冬夜时更愿意靠近光灯照不到正中的边缘"
+      ],
+      "behavior_notes": [
+        "喜欢围着安静的灯影转小圈",
+        "受惊时不会猛窜，而是把整道光痕一起带走"
+      ],
+      "care_notes": [
+        "镜面和潮声都安定时最适合记录",
+        "比起投喂，更适合先替它把靠近的水面留安静"
+      ],
+      "research_tags": [
+        "shore",
+        "light",
+        "calm"
+      ],
+      "related_npcs": [
+        "coast_keeper",
+        "mirror_keeper"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_glint_manta_3",
+      "species_id": "glint_manta_3",
+      "title": "星潮圣鳐观察档案",
+      "rarity": "legendary",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "glint_manta_3",
+        "count": 1
+      },
+      "portrait_hint": "真正抬头看见时，整片静水都像先替它留好了位置，星光和潮线会在它背上慢慢合拢。",
+      "habitat_notes": [
+        "多见于冬季晴夜的霜镜湖静水区",
+        "若潮灯和星光同时稳住，出现概率会明显抬高"
+      ],
+      "behavior_notes": [
+        "出现前常先有整片水面一起慢下来的感觉",
+        "很少单独行动，更多像把周围的光和水都整理了一遍"
+      ],
+      "care_notes": [
+        "能见到就已经很难得，别为了多看一眼破坏静水",
+        "记录当时的天气、灯位和潮向，比贸然靠近更重要"
+      ],
+      "research_tags": [
+        "shore",
+        "light",
+        "calm"
+      ],
+      "related_npcs": [
+        "coast_keeper",
+        "mirror_keeper"
+      ],
+      "related_events": [
+        "evt_coast_tide_lamp_ray"
+      ]
+    },
+    {
+      "id": "codex_storm_qilin_1",
+      "species_id": "storm_qilin_1",
+      "title": "伏角兽观察档案",
+      "rarity": "uncommon",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "storm_qilin_1",
+        "count": 1
+      },
+      "portrait_hint": "低头蓄步时像把一阵还没落下的雷压在角根里，起身后草梗都会跟着发亮。",
+      "habitat_notes": [
+        "云升驿和鸣雷草场都能见到年轻个体经过",
+        "越是夏季换天的时候越活跃"
+      ],
+      "behavior_notes": [
+        "冲刺前会先把停步线看得很细",
+        "不爱被人从侧后方催赶"
+      ],
+      "care_notes": [
+        "比起催快，更该先帮它把停步和回身空间留足",
+        "适合在训练结束后观察它怎么收那一口气"
+      ],
+      "research_tags": [
+        "storm",
+        "charge",
+        "guardian"
+      ],
+      "related_npcs": [
+        "storm_mentor",
+        "innkeeper_yun"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_storm_qilin_2",
+      "species_id": "storm_qilin_2",
+      "title": "霁雷麒观察档案",
+      "rarity": "epic",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "storm_qilin_2",
+        "count": 1
+      },
+      "portrait_hint": "角侧常带一层雨后未散的淡电光，站住时比奔跑时更有压迫感。",
+      "habitat_notes": [
+        "偏爱雷季训练场和引雷桩附近",
+        "真正的精英个体多在雨势最乱的时候反而显得最稳"
+      ],
+      "behavior_notes": [
+        "越是嘈杂的雷雨里，动作越显得有条理",
+        "常会绕训练桩半圈再决定真正起跑方向"
+      ],
+      "care_notes": [
+        "雷雨里不要试图和它拼第一步",
+        "先看它怎么选地面和桩位，才能明白它为什么叫精英"
+      ],
+      "research_tags": [
+        "storm",
+        "charge",
+        "guardian"
+      ],
+      "related_npcs": [
+        "storm_mentor",
+        "innkeeper_yun"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_storm_qilin_3",
+      "species_id": "storm_qilin_3",
+      "title": "晴穹天麒观察档案",
+      "rarity": "legendary",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "storm_qilin_3",
+        "count": 1
+      },
+      "portrait_hint": "夜雷一停就像整片草场都被它踩稳了，角上的晴光会把黑云边缘一起推开。",
+      "habitat_notes": [
+        "只会在夏季雷夜的鸣雷草场深段偶然现身",
+        "往往先听见草场忽然静了一拍，才轮到人看见它"
+      ],
+      "behavior_notes": [
+        "出现时普通雷系个体常会跟着放慢节奏",
+        "不像在示威，更像在检验整片场地够不够稳"
+      ],
+      "care_notes": [
+        "真正重要的不是追上它，而是记住那一拍忽然安静下来的时机",
+        "见到神宠时先稳住队伍，比多跑两步有用得多"
+      ],
+      "research_tags": [
+        "storm",
+        "charge",
+        "guardian"
+      ],
+      "related_npcs": [
+        "storm_mentor",
+        "innkeeper_yun"
+      ],
+      "related_events": [
+        "evt_meadow_horn_silence"
+      ]
+    },
+    {
+      "id": "codex_moon_marten_1",
+      "species_id": "moon_marten_1",
+      "title": "镜尾貂观察档案",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "moon_marten_1",
+        "count": 1
+      },
+      "portrait_hint": "尾尖扫过冰边时会留下很浅的一缕暗亮，像影子在水面上试探。",
+      "habitat_notes": [
+        "霜镜湖的冰缝边和月沼旧路最常见到它的踪迹",
+        "越安静的地方越容易发现它而不是被它先发现"
+      ],
+      "behavior_notes": [
+        "对脚步声和衣角摩擦声都很敏感",
+        "喜欢先确认退路再靠近猎物或人影"
+      ],
+      "care_notes": [
+        "别堵退路，也别拿强光去逼它现身",
+        "最好的观察方式往往是先让自己别那么明显"
+      ],
+      "research_tags": [
+        "shadow",
+        "ambush",
+        "anomaly"
+      ],
+      "related_npcs": [
+        "mirror_keeper",
+        "ruin_diviner"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_moon_marten_2",
+      "species_id": "moon_marten_2",
+      "title": "霜纹影貂观察档案",
+      "rarity": "epic",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "moon_marten_2",
+        "count": 1
+      },
+      "portrait_hint": "转身快得像把一段霜纹从地上抽走，只剩人反应慢半拍地看见它经过。",
+      "habitat_notes": [
+        "精英个体更常在镜湖冬夜和旧城残墙边活动",
+        "会挑能同时看见退路和倒影的位置落脚"
+      ],
+      "behavior_notes": [
+        "会利用倒影和残墙遮住自己的真正落点",
+        "受惊后常不是直逃，而是换一条你没想到的线"
+      ],
+      "care_notes": [
+        "若想追踪精英个体，先记住它偏爱的转身角和回看点",
+        "急着补第二步的人往往第一步就已经输了"
+      ],
+      "research_tags": [
+        "shadow",
+        "ambush",
+        "anomaly"
+      ],
+      "related_npcs": [
+        "mirror_keeper",
+        "ruin_diviner"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_moon_marten_3",
+      "species_id": "moon_marten_3",
+      "title": "月映玄貂观察档案",
+      "rarity": "legendary",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "moon_marten_3",
+        "count": 1
+      },
+      "portrait_hint": "月井和冰面一起静下来的时候，它会像一道整齐的夜色，先映在水里，再落回地上。",
+      "habitat_notes": [
+        "神宠级个体通常只在冬季高异常的月沼遗址夜间出现",
+        "很多时候先见到的是第二道回声，而不是它本身"
+      ],
+      "behavior_notes": [
+        "出现时周围回声常会比平时更薄",
+        "不是环境变安静了，而是它把多余动静都带走了"
+      ],
+      "care_notes": [
+        "神宠只适合记录，不适合追赶",
+        "把水面、月井和异常波动一起记下，远比伸手更接近它的真样子"
+      ],
+      "research_tags": [
+        "shadow",
+        "ambush",
+        "anomaly"
+      ],
+      "related_npcs": [
+        "mirror_keeper",
+        "ruin_diviner"
+      ],
+      "related_events": [
+        "evt_moonfen_shadow_tail"
+      ]
+    },
+    {
+      "id": "codex_archive_wisp_1",
+      "species_id": "archive_wisp_1",
+      "title": "页辉灵观察档案",
+      "rarity": "rare",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "archive_wisp_1",
+        "count": 1
+      },
+      "portrait_hint": "像一小页会自己挪地方的微光，常躲在纸边和旧刻痕都刚好看得见的位置。",
+      "habitat_notes": [
+        "古观测台夜里最容易先发现低阶个体",
+        "它们偏爱有旧纸页、旧刻度和轻微金属响的地方"
+      ],
+      "behavior_notes": [
+        "喜欢停在纸角、卡槽和边注附近",
+        "对匆忙翻页和粗暴碰撞反应明显"
+      ],
+      "care_notes": [
+        "先把桌面和页边排顺，比补更亮的灯更重要",
+        "它们更喜欢被认真对待的秩序感"
+      ],
+      "research_tags": [
+        "record",
+        "light",
+        "forecast"
+      ],
+      "related_npcs": [
+        "field_recorder",
+        "tower_astronomer"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_archive_wisp_2",
+      "species_id": "archive_wisp_2",
+      "title": "档辉灵观察档案",
+      "rarity": "epic",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "archive_wisp_2",
+        "count": 1
+      },
+      "portrait_hint": "会沿着记录页角慢慢挪亮，好像在替人把散乱内容重新排顺。",
+      "habitat_notes": [
+        "精英个体会在平台和高塔之间挑更稳的夜晚活动",
+        "越是有人认真整理记录，它越愿意停留"
+      ],
+      "behavior_notes": [
+        "会沿着人的记录顺序移动，而不是沿着房间最亮的地方飞",
+        "像在挑谁写东西更有分寸"
+      ],
+      "care_notes": [
+        "观察精英个体时别急着多写，先留出空白让它愿意靠近",
+        "页边太乱，录灵会直接换地方"
+      ],
+      "research_tags": [
+        "record",
+        "light",
+        "forecast"
+      ],
+      "related_npcs": [
+        "field_recorder",
+        "tower_astronomer"
+      ],
+      "related_events": []
+    },
+    {
+      "id": "codex_archive_wisp_3",
+      "species_id": "archive_wisp_3",
+      "title": "天衡录灵观察档案",
+      "rarity": "legendary",
+      "unlock_rule": {
+        "type": "observe_species",
+        "species_id": "archive_wisp_3",
+        "count": 1
+      },
+      "portrait_hint": "真正现身时不像一团光，更像一条被写在暗处的准线，连星图旁的空白都会跟着安静下来。",
+      "habitat_notes": [
+        "神宠级个体只在秋季晴夜的裂辉观测中心极少现身",
+        "往往得先看懂亮线旁那条暗线，才知道它其实已经来过"
+      ],
+      "behavior_notes": [
+        "真正高阶个体常先整理环境再露面",
+        "很多人以为自己是先看见了它，其实是先被它看见记录习惯"
+      ],
+      "care_notes": [
+        "见到神宠时别抢着下定义",
+        "把当时没被光照满的那几处也记下来，往往才是关键"
+      ],
+      "research_tags": [
+        "record",
+        "light",
+        "forecast"
+      ],
+      "related_npcs": [
+        "field_recorder",
+        "tower_astronomer"
+      ],
+      "related_events": [
+        "evt_observatory_page_wisp"
+      ]
     }
   ]
 }

@@ -273,6 +273,154 @@
           "tea_leaf": 1
         }
       }
+    },
+    {
+      "id": "creek_lantern_knot_pair",
+      "title": "把溪灯鱼和理线手势一起补成记录",
+      "giver": "washer_grandma",
+      "category": "fishing",
+      "target_habitat": "crystal_creek",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "washer_grandma"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_catch:brook_lantern_fish"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_event:creek_teacher_knots"
+        },
+        {
+          "type": "return",
+          "npc": "washer_grandma"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "paper": 1
+        },
+        "journal_entry": "溪灯鱼与理线手势并记"
+      }
+    },
+    {
+      "id": "post_derby_catch_notice",
+      "title": "替云伯把河灯热闹劲记成一张加急消息",
+      "giver": "innkeeper_yun",
+      "category": "fishing",
+      "target_habitat": "crystal_creek",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "innkeeper_yun"
+        },
+        {
+          "type": "observe",
+          "marker": "festival_score:summer_lantern_derby:6"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_catch:brook_lantern_fish"
+        },
+        {
+          "type": "return",
+          "npc": "innkeeper_yun"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "河灯会加急消息"
+      }
+    },
+    {
+      "id": "mire_crab_release_note",
+      "title": "替芦娘把放回去的那只芦背蟹补上一笔",
+      "giver": "mire_guide",
+      "category": "fishing",
+      "target_habitat": "reed_mire",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "mire_guide"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_release:reed_back_crab"
+        },
+        {
+          "type": "return",
+          "npc": "mire_guide"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "reed": 1
+        },
+        "journal_entry": "芦背蟹回水补记"
+      }
+    },
+    {
+      "id": "coast_whisper_koi_wind",
+      "title": "把夜潮刮线声和雾鳍鲤的风向对一对",
+      "giver": "coast_keeper",
+      "category": "fishing",
+      "target_habitat": "saltglass_coast",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "coast_keeper"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_event:saltglass_night_whisper"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_watch:glass_fin_koi"
+        },
+        {
+          "type": "return",
+          "npc": "coast_keeper"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "clear_sand": 1
+        },
+        "journal_entry": "盐镜夜潮风向对记"
+      }
+    },
+    {
+      "id": "lake_quiet_perch_wait",
+      "title": "陪冰珀再守一回冰纹鲈的暗带",
+      "giver": "mirror_keeper",
+      "category": "fishing",
+      "target_habitat": "frost_mirror_lake",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "mirror_keeper"
+        },
+        {
+          "type": "observe",
+          "marker": "fish_watch:mirror_ice_perch"
+        },
+        {
+          "type": "return",
+          "npc": "mirror_keeper"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "ice_glass": 1
+        }
+      }
     }
   ]
 }

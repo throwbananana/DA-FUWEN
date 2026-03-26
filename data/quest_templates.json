@@ -4,6 +4,8 @@
     {
       "id": "build_warm_nest",
       "title": "给雾苔窟搭个保温窝",
+      "description": "迟叔想先把最潮的那处窝口暖起来，别让小家伙每晚都缩着睡。",
+      "completion_text": "保温窝一搭好，洞里那股贴手的湿冷立刻收了不少，连呼吸都像顺了。",
       "giver": "moss_keeper",
       "category": "build",
       "target_habitat": "mist_moss_cave",
@@ -33,6 +35,8 @@
     {
       "id": "send_letter_to_post",
       "title": "替驿站捎封信",
+      "description": "云伯嘴上说只是捎封信，其实是想把两头的人情先稳稳接上。",
+      "completion_text": "信送出去后，驿站这头的牵挂也像跟着落了地。",
       "giver": "innkeeper_yun",
       "category": "errand",
       "target_habitat": "sky_post",
@@ -56,6 +60,8 @@
     {
       "id": "observe_glow_moth",
       "title": "记录一只夜辉蛾",
+      "description": "叶衡想补一笔夜间观测，不求惊天动地，只求把那团微光写准。",
+      "completion_text": "那只辉蛾绕完一圈，今晚该记下来的细节也终于有了着落。",
       "giver": "field_recorder",
       "category": "observe",
       "target_habitat": "ancient_platform",
@@ -82,6 +88,8 @@
     {
       "id": "help_shell_pup_settle",
       "title": "帮壳幼安顿到浅池",
+      "description": "婆婆想让壳幼先熟悉浅池边的温度，不然再软的壳也睡不踏实。",
+      "completion_text": "壳幼肯在浅池边慢慢趴下后，整片水边都像跟着松了口气。",
       "giver": "washer_grandma",
       "category": "care",
       "target_habitat": "crystal_creek",
@@ -110,6 +118,8 @@
     {
       "id": "open_platform",
       "title": "修好平台的第一处观测架",
+      "description": "绛想先把旧平台最要紧的那处眼睛接回来，别让整座站一直像眯着看人。",
+      "completion_text": "第一处观测架立稳后，旧平台总算不像只剩半口气的地方了。",
       "giver": "ruin_restorer",
       "category": "unlock",
       "target_habitat": "ancient_platform",
@@ -137,6 +147,8 @@
     {
       "id": "bazaar_repair_stall",
       "title": "帮阿铂修好摊位",
+      "description": "阿铂的摊位一天到晚都有人来问，先把它修顺，后面很多事才不至于手忙脚乱。",
+      "completion_text": "摊位重新站稳后，那串熟悉的叮当声听着都更有底气了。",
       "giver": "tinker_bo",
       "category": "craft",
       "target_habitat": "copper_hammer_bazaar",
@@ -162,6 +174,8 @@
     {
       "id": "rescue_rift_fawn",
       "title": "安抚受惊的隙鹿",
+      "description": "澄想替那只受惊的隙鹿争出一小段能喘气的安全距离。",
+      "completion_text": "隙鹿肯停下来不再乱撞时，今天这趟高压也算没白挨。",
       "giver": "anomaly_researcher",
       "category": "rescue",
       "target_habitat": "radiant_spire",
@@ -190,6 +204,8 @@
     {
       "id": "find_apprentice_notes",
       "title": "替小禾找回笔记",
+      "description": "小禾又把本子落在了苔缝里，嘴硬说记得住，眼神却已经急得乱飘。",
+      "completion_text": "本子找回来后，小禾总算能把今天的慌张也一起夹进页缝里。",
       "giver": "lost_apprentice",
       "category": "errand",
       "target_habitat": "mist_moss_cave",
@@ -211,6 +227,8 @@
     {
       "id": "mist_lullaby_watch",
       "title": "陪迟叔守一晚幼巢",
+      "description": "迟叔想让你一起守夜，不是为了热闹，只是想多双眼睛看看今晚有没有哪只睡得不安稳。",
+      "completion_text": "这一夜没出什么大动静，本身就说明很多照护都做对了。",
       "giver": "moss_keeper",
       "category": "observe",
       "target_habitat": "mist_moss_cave",
@@ -241,6 +259,8 @@
     {
       "id": "set_nursery_corner",
       "title": "给小禾搭个育幼角",
+      "description": "小禾想把散在各处的小东西收进一个固定角落，免得每次照护都像临时拼桌。",
+      "completion_text": "育幼角一立起来，连杂七杂八的小物件都像终于有了归处。",
       "giver": "lost_apprentice",
       "category": "build",
       "target_habitat": "mist_moss_cave",
@@ -271,6 +291,8 @@
     {
       "id": "creek_reed_cleaning",
       "title": "帮婆婆清理浅滩漂苇",
+      "description": "浅滩边总会卡进些漂来的苇叶，婆婆想趁水还稳的时候先清出来。",
+      "completion_text": "漂苇一清，浅滩边那股乱劲也跟着退了，水面看着都更平整。",
       "giver": "washer_grandma",
       "category": "care",
       "target_habitat": "crystal_creek",
@@ -302,6 +324,8 @@
     {
       "id": "glider_mail_trial",
       "title": "试试让溪翔带路送信",
+      "description": "云伯想试一条更轻快的送信路，看看溪翔肯不肯带着消息一起飞过去。",
+      "completion_text": "信路一试通，驿站和外头那点距离也像一下被拉近了。",
       "giver": "innkeeper_yun",
       "category": "errand",
       "target_habitat": "crystal_creek",
@@ -333,6 +357,8 @@
     {
       "id": "boarding_pen_prep",
       "title": "替柳姐整理寄养栏",
+      "description": "柳姐想先把寄养栏收拾顺，别让新来的小家伙连落脚那一下都要犹豫。",
+      "completion_text": "栏位一整理妥当，连原本爱闹腾的家伙都像愿意先安静看看了。",
       "giver": "boarder_liu",
       "category": "build",
       "target_habitat": "sky_post",
@@ -363,6 +389,8 @@
     {
       "id": "message_board_refresh",
       "title": "给留信牌换一块新板",
+      "description": "青禾嫌旧留言板字迹太挤，想换块看着就肯让人好好写话的新板子。",
+      "completion_text": "新板一挂上，驿站那些零散消息忽然都像有地方好好站着了。",
       "giver": "traveling_peddler",
       "category": "build",
       "target_habitat": "sky_post",
@@ -391,6 +419,8 @@
     {
       "id": "repair_bench_opening",
       "title": "开张前先把修理间备齐",
+      "description": "绛不想让修理间开门第一天就缺这缺那，宁可现在多准备一点。",
+      "completion_text": "修理间一备齐，平台上那些“改天再修”的小毛病总算有地方收拾了。",
       "giver": "ruin_restorer",
       "category": "repair",
       "target_habitat": "ancient_platform",
@@ -421,6 +451,8 @@
     {
       "id": "echo_room_tuning",
       "title": "替叶衡完成回响室调频",
+      "description": "叶衡想把回响室第一次调到能听清又不刺耳的程度，差的就是今晚这一趟。",
+      "completion_text": "调频完成后，那些原本糊成一团的回声总算肯一句句分开说话了。",
       "giver": "field_recorder",
       "category": "observe",
       "target_habitat": "ancient_platform",
@@ -448,6 +480,8 @@
     {
       "id": "bazaar_badge_polish",
       "title": "帮哑叔打磨一枚铭牌",
+      "description": "哑叔想把一块小铭牌磨到顺眼，不是为了好看，是不想让收工这件事太随便。",
+      "completion_text": "铭牌一亮，摊前那点不起眼的角落都像跟着体面起来了。",
       "giver": "smith_ya",
       "category": "craft",
       "target_habitat": "copper_hammer_bazaar",
@@ -477,6 +511,8 @@
     {
       "id": "parts_vendor_manifest",
       "title": "替小轮对一次驿站清单",
+      "description": "小轮忙起来最怕账和货各走各的，想先把驿站那头的清单对扎实。",
+      "completion_text": "清单一对顺，今天这摊生意至少不用再半夜回头补心虚。",
       "giver": "parts_vendor",
       "category": "errand",
       "target_habitat": "sky_post",
@@ -504,6 +540,8 @@
     {
       "id": "spire_safe_route",
       "title": "替澄标出一条安全撤离线",
+      "description": "澄要的不是英雄路线，只是一条在最坏时候也能让人平安退下来的线。",
+      "completion_text": "撤离线标出来以后，连高压区的风声听着都没那么逼人了。",
       "giver": "anomaly_researcher",
       "category": "rescue",
       "target_habitat": "radiant_spire",
@@ -535,6 +573,8 @@
     {
       "id": "howler_trace_log",
       "title": "记录辉嚎的外缘足迹",
+      "description": "澄想补一份更完整的外缘足迹记录，免得每次都把危险想得又远又糊。",
+      "completion_text": "那串足迹一记下，辉嚎这回事总算不只是传闻里的影子了。",
       "giver": "anomaly_researcher",
       "category": "observe",
       "target_habitat": "radiant_spire",
@@ -562,6 +602,8 @@
     {
       "id": "grove_canopy_patch",
       "title": "替青岚把遮雨叶棚先搭起来",
+      "description": "青岚想先给巡路人和草药都留个避雨处，别等天真落下来才手忙脚乱。",
+      "completion_text": "叶棚一立住，林子里那股“总得赶着躲雨”的紧张也淡了不少。",
       "giver": "grove_patrol",
       "category": "build",
       "target_habitat": "greenbark_grove",
@@ -591,6 +633,8 @@
     {
       "id": "mire_purify_pool_open",
       "title": "给芦娘先把净池的边线立住",
+      "description": "芦娘想先把净池的边界摆明白，好让进出的人和水都知道该往哪边收。",
+      "completion_text": "净池边线一稳，湿地里那种总差一脚的感觉总算有了落点。",
       "giver": "mire_guide",
       "category": "build",
       "target_habitat": "reed_mire",
@@ -620,6 +664,8 @@
     {
       "id": "coast_rack_check",
       "title": "帮砺潮记一遍晒架翻面的风向",
+      "description": "砺潮想把今天这阵风记明白，省得翻晒时白忙半天还落一身潮气。",
+      "completion_text": "风向一对准，晒架上的布和鱼都像终于肯朝着同一个方向用力。",
       "giver": "coast_keeper",
       "category": "observe",
       "target_habitat": "saltglass_coast",
@@ -647,6 +693,8 @@
     {
       "id": "ember_pit_sorting",
       "title": "把余烬坑边能带走的稳炭分出来",
+      "description": "炽伯要的不是最亮那块炭，是那种带回去也还肯安稳发热的余炭。",
+      "completion_text": "稳炭一分好，火坑边那种虚张声势的热闹立刻就少了很多。",
       "giver": "kiln_warden",
       "category": "observe",
       "target_habitat": "ember_crater",
@@ -670,6 +718,1005 @@
           "warm_stone": 1
         },
         "journal_entry": "余烬坑分温笔记"
+      }
+    },
+    {
+      "id": "stone_trader_even_stack",
+      "title": "替阿砾把样石码平一轮",
+      "description": "阿砾想把摊前那几叠样石重新码顺，省得客人一上手就先碰掉半角。",
+      "completion_text": "样石码平以后，摊前连挑货的人都不自觉把动作放轻了。",
+      "giver": "stone_trader",
+      "category": "craft",
+      "target_habitat": "crystal_creek",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "stone_trader"
+        },
+        {
+          "type": "deliver",
+          "item": "stone_chip",
+          "count": 3
+        },
+        {
+          "type": "return",
+          "npc": "stone_trader"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "warm_stone": 1
+        }
+      }
+    },
+    {
+      "id": "storm_meadow_water_break",
+      "title": "替霁岚把训练间歇排明白",
+      "description": "霁岚想把今天这轮训练的停步和喝水顺序也练顺，免得大家总在最该缓的时候乱掉。",
+      "completion_text": "间歇一排清楚，草场上那股一热就乱的劲明显收住了。",
+      "giver": "storm_mentor",
+      "category": "observe",
+      "target_habitat": "thunder_meadow",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "storm_mentor"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "thunder_meadow"
+        },
+        {
+          "type": "encounter",
+          "species_id": "storm_ram"
+        },
+        {
+          "type": "observe",
+          "species_id": "storm_ram"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "training_note": 1
+        }
+      }
+    },
+    {
+      "id": "bridge_spare_knot",
+      "title": "替迟桥备一段顺手的旧绳结",
+      "description": "迟桥想多备一段顺手的结法，真起坏风的时候不至于临时和绳子较劲。",
+      "completion_text": "旧绳一备好，桥头那份总悬着的心也像被多系稳了一扣。",
+      "giver": "bridge_scout",
+      "category": "errand",
+      "target_habitat": "echo_broken_bridge",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "bridge_scout"
+        },
+        {
+          "type": "deliver",
+          "item": "rope",
+          "count": 2
+        },
+        {
+          "type": "return",
+          "npc": "bridge_scout"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "paper": 1
+        }
+      }
+    },
+    {
+      "id": "leaf_master_floor_grip",
+      "title": "替栖迟把场边落叶清出脚感",
+      "description": "栖迟想先把场边脚感收干净，别让今天的手感输给几片不合时宜的落叶。",
+      "completion_text": "地面一收利落，演武场那股“今天该认真一点”的味道立刻就上来了。",
+      "giver": "leaf_master",
+      "category": "craft",
+      "target_habitat": "autumn_leaf_dojo",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "leaf_master"
+        },
+        {
+          "type": "deliver",
+          "item": "amber_resin",
+          "count": 1
+        },
+        {
+          "type": "return",
+          "npc": "leaf_master"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "training_note": 1
+        }
+      }
+    },
+    {
+      "id": "mirror_frame_prep",
+      "title": "替冰珀先把镜架立起来",
+      "description": "冰珀想先把镜架搭稳，免得好不容易等来的静湖时刻又浪费在手忙脚乱上。",
+      "completion_text": "镜架一立住，湖边那些零碎动作都像跟着有了该落的位置。",
+      "giver": "mirror_keeper",
+      "category": "build",
+      "target_habitat": "frost_mirror_lake",
+      "steps": [
+        {
+          "type": "deliver",
+          "item": "ice_glass",
+          "count": 1
+        },
+        {
+          "type": "visit",
+          "habitat_id": "frost_mirror_lake"
+        },
+        {
+          "type": "build",
+          "building_id": "frost_mirror",
+          "level": 1
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "glow_dust": 1
+        }
+      }
+    },
+    {
+      "id": "observatory_side_note",
+      "title": "替望舒补一条塔边侧注",
+      "description": "望舒想把高压节点旁边那条不那么显眼的暗线也记下来，省得大家总只盯着最亮的地方看。",
+      "completion_text": "侧注一补上，观测塔里那些“差不多就行”的判断总算少了些。",
+      "giver": "tower_astronomer",
+      "category": "observe",
+      "target_habitat": "radiant_observatory",
+      "steps": [
+        {
+          "type": "visit",
+          "habitat_id": "radiant_observatory",
+          "time": "night"
+        },
+        {
+          "type": "encounter",
+          "species_id": "glow_moth"
+        },
+        {
+          "type": "observe",
+          "species_id": "glow_moth"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "观测塔侧注"
+      }
+    },
+    {
+      "id": "moon_well_first_bucket",
+      "title": "替玄沼先把月井边收利落",
+      "description": "玄沼想先把月井边那圈最扰人的小杂音收下去，不然今晚很多话都会来得太快。",
+      "completion_text": "月井边一静下来，连空气都像比刚才多留了一拍余地。",
+      "giver": "ruin_diviner",
+      "category": "build",
+      "target_habitat": "moonfen_ruins",
+      "steps": [
+        {
+          "type": "deliver",
+          "item": "glow_dust",
+          "count": 1
+        },
+        {
+          "type": "visit",
+          "habitat_id": "moonfen_ruins",
+          "time": "night"
+        },
+        {
+          "type": "build",
+          "building_id": "moon_well",
+          "level": 1
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "stability_shard": 1
+        }
+      }
+    },
+    {
+      "id": "boarder_blanket_corner",
+      "title": "替柳姐把毯角留出软边",
+      "description": "柳姐不想让新来的小家伙一钻进去就先被毯角硌到，想把今天这批毯子重新收边。",
+      "completion_text": "毯角一留软，寄养栏里那股试探着落脚的犹豫明显少了。",
+      "giver": "boarder_liu",
+      "category": "care",
+      "target_habitat": "sky_post",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "boarder_liu"
+        },
+        {
+          "type": "deliver",
+          "item": "cloth",
+          "count": 2
+        },
+        {
+          "type": "return",
+          "npc": "boarder_liu"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "tea_leaf": 1
+        }
+      }
+    },
+    {
+      "id": "yun_evening_soup_note",
+      "title": "替云伯把晚汤名单送一程",
+      "description": "云伯想把今晚那份晚汤名单提前递出去，免得真正回站的人还要站在风口等上一阵。",
+      "completion_text": "名单一送妥，驿站锅里那点热气像也跟着更有着落了。",
+      "giver": "innkeeper_yun",
+      "category": "errand",
+      "target_habitat": "sky_post",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "innkeeper_yun"
+        },
+        {
+          "type": "mail",
+          "destination": "ancient_platform"
+        },
+        {
+          "type": "return",
+          "npc": "innkeeper_yun"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "paper": 1
+        }
+      }
+    },
+    {
+      "id": "grove_lunch_whistle_tag",
+      "title": "替青岚补两处午哨记号",
+      "description": "青岚想把常走那条林路的午哨记号补明白，省得人一分散就只能靠猜彼此在哪。",
+      "completion_text": "记号一补上，林子里那种“人还在不在前头”的悬心一下就轻了。",
+      "giver": "grove_patrol",
+      "category": "errand",
+      "target_habitat": "greenbark_grove",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "grove_patrol"
+        },
+        {
+          "type": "deliver",
+          "item": "rope",
+          "count": 1
+        },
+        {
+          "type": "return",
+          "npc": "grove_patrol"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "青栎林径午哨补记"
+      }
+    },
+    {
+      "id": "mire_door_rinse_basin",
+      "title": "替芦娘把门口洗靴盆垫稳",
+      "description": "芦娘想把门边那只洗靴盆先垫平，不然每次回程第一脚都像还踩在烂泥里。",
+      "completion_text": "洗靴盆一放稳，回来这件事忽然就有了更像样的收尾。",
+      "giver": "mire_guide",
+      "category": "care",
+      "target_habitat": "reed_mire",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "mire_guide"
+        },
+        {
+          "type": "deliver",
+          "item": "reed",
+          "count": 2
+        },
+        {
+          "type": "return",
+          "npc": "mire_guide"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "water_drop": 1
+        }
+      }
+    },
+    {
+      "id": "coast_salt_table_cloth",
+      "title": "替砺潮备一块抖盐布",
+      "description": "砺潮想在饭桌边常备一块抖盐布，别让风口上的砂粒一路跟到碗边。",
+      "completion_text": "布一铺开，海边那种总带着细盐的忙乱也像被拦在了桌外。",
+      "giver": "coast_keeper",
+      "category": "craft",
+      "target_habitat": "saltglass_coast",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "coast_keeper"
+        },
+        {
+          "type": "deliver",
+          "item": "cloth",
+          "count": 1
+        },
+        {
+          "type": "deliver",
+          "item": "clear_sand",
+          "count": 2
+        },
+        {
+          "type": "return",
+          "npc": "coast_keeper"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "glass": 1
+        }
+      }
+    },
+    {
+      "id": "mirror_glove_preheat",
+      "title": "替冰珀先把手套温一温",
+      "description": "冰珀想把湖边常用那副厚手套先预热好，省得上冰第一下就把手忙乱。",
+      "completion_text": "手套一暖开，湖边很多本来会僵住的动作都跟着顺了。",
+      "giver": "mirror_keeper",
+      "category": "care",
+      "target_habitat": "frost_mirror_lake",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "mirror_keeper"
+        },
+        {
+          "type": "deliver",
+          "item": "warm_stone",
+          "count": 1
+        },
+        {
+          "type": "return",
+          "npc": "mirror_keeper"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "ice_glass": 1
+        }
+      }
+    },
+    {
+      "id": "spire_window_margin",
+      "title": "替澄把稳态窗口补进页边",
+      "description": "澄想把最近那次稳态窗口的边注写清楚，免得大家下次只记得危险，不记得那点能用的余地。",
+      "completion_text": "边注一写实，高压区那种“只能硬扛”的感觉终于松开了一点。",
+      "giver": "anomaly_researcher",
+      "category": "observe",
+      "target_habitat": "radiant_spire",
+      "steps": [
+        {
+          "type": "visit",
+          "habitat_id": "radiant_spire"
+        },
+        {
+          "type": "encounter",
+          "species_id": "rift_fawn"
+        },
+        {
+          "type": "observe",
+          "species_id": "rift_fawn"
+        },
+        {
+          "type": "return",
+          "npc": "anomaly_researcher"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "裂辉尖塔稳态窗口侧记"
+      }
+    },
+    {
+      "id": "ruin_quiet_bucket",
+      "title": "替玄沼把月井边那只旧桶收响",
+      "description": "玄沼嫌月井边那只旧桶回音太碎，想先把它收得安静一点，再听今晚的井声。",
+      "completion_text": "旧桶一不再乱响，月井边那层总催着人接话的噪声也跟着淡了。",
+      "giver": "ruin_diviner",
+      "category": "errand",
+      "target_habitat": "moonfen_ruins",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "ruin_diviner"
+        },
+        {
+          "type": "deliver",
+          "item": "glow_dust",
+          "count": 1
+        },
+        {
+          "type": "return",
+          "npc": "ruin_diviner"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "ink": 1
+        }
+      }
+    },
+    {
+      "id": "yun_kettle_hook_card",
+      "title": "替云伯把锅耳挂签写明",
+      "description": "云伯想把晚汤锅耳边那张小挂签重新写清，好让晚归的人一掀帘就知道今晚那口热气还留没留着。",
+      "completion_text": "挂签一挂正，驿站里那种“回来还赶不赶得上”的悬心就先轻了一半。",
+      "giver": "innkeeper_yun",
+      "category": "care",
+      "target_habitat": "sky_post",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "innkeeper_yun"
+        },
+        {
+          "type": "deliver",
+          "item": "paper",
+          "count": 1
+        },
+        {
+          "type": "return",
+          "npc": "innkeeper_yun"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "tea_leaf": 1
+        }
+      }
+    },
+    {
+      "id": "liu_satchel_route_tags",
+      "title": "替柳客补几张行囊路签",
+      "description": "柳客想把驿站门口那几只常走的行囊重新分好路签，免得一忙起来谁当天回、谁隔天走就全得靠喊。",
+      "completion_text": "路签一补齐，门口那些总像马上要撞在一起的出发也终于有了先后。",
+      "giver": "boarder_liu",
+      "category": "errand",
+      "target_habitat": "sky_post",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "boarder_liu"
+        },
+        {
+          "type": "deliver",
+          "item": "paper",
+          "count": 1
+        },
+        {
+          "type": "deliver",
+          "item": "rope",
+          "count": 1
+        },
+        {
+          "type": "return",
+          "npc": "boarder_liu"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "paper": 1
+        }
+      }
+    },
+    {
+      "id": "creek_shade_sample_cloth",
+      "title": "替洗婆留一角遮样布",
+      "description": "洗婆想给溪边那批待看的样石留一块遮光布角，别让正午的硬光把该看的纹理都照得发飘。",
+      "completion_text": "布角一压稳，样石的亮不再乱晃，连溪边说话的声音都像慢了下来。",
+      "giver": "washer_grandma",
+      "category": "care",
+      "target_habitat": "crystal_creek",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "washer_grandma"
+        },
+        {
+          "type": "deliver",
+          "item": "cloth",
+          "count": 1
+        },
+        {
+          "type": "return",
+          "npc": "washer_grandma"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "glass": 1
+        }
+      }
+    },
+    {
+      "id": "bazaar_apron_spare_loop",
+      "title": "替阿铂补一格沉件口袋",
+      "description": "阿铂想给常用那条工作围裙多补一格沉件口袋，好让最会乱滚的小零件先有个肯待住的位置。",
+      "completion_text": "口袋一稳，摊前那种总要追着零件跑的忙乱也像立刻少了一半。",
+      "giver": "tinker_bo",
+      "category": "craft",
+      "target_habitat": "copper_hammer_bazaar",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "tinker_bo"
+        },
+        {
+          "type": "deliver",
+          "item": "cloth",
+          "count": 1
+        },
+        {
+          "type": "deliver",
+          "item": "rope",
+          "count": 1
+        },
+        {
+          "type": "return",
+          "npc": "tinker_bo"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "blueprint_scrap": 1
+        }
+      }
+    },
+    {
+      "id": "platform_margin_line_note",
+      "title": "替记录员把页边界线定住",
+      "description": "记录员想把近几晚观测记录的页边界线先定好，省得一写顺手，就把猜测也挤进了本该留白的地方。",
+      "completion_text": "界线一落稳，那些原本想抢先写死的话也像跟着懂得往后让了。",
+      "giver": "field_recorder",
+      "category": "observe",
+      "target_habitat": "ancient_platform",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "field_recorder"
+        },
+        {
+          "type": "deliver",
+          "item": "paper",
+          "count": 1
+        },
+        {
+          "type": "deliver",
+          "item": "ink",
+          "count": 1
+        },
+        {
+          "type": "return",
+          "npc": "field_recorder"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "北城观测站页边界线补记"
+      }
+    },
+    {
+      "id": "trace_grove_cervid_turn",
+      "title": "替青岚记下巡花灵鹿的回身点",
+      "description": "青岚想把那只巡花灵鹿最常回头的那一小段路记清，好让后来巡林的人别一脚踏乱它给林子留的分寸。",
+      "completion_text": "那处回身点一记准，林线里原本总差半拍的犹豫也像跟着顺了。",
+      "giver": "grove_patrol",
+      "category": "observe",
+      "target_habitat": "greenbark_grove",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "grove_patrol"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "greenbark_grove",
+          "time": "day"
+        },
+        {
+          "type": "encounter",
+          "species_id": "grove_cervid_2"
+        },
+        {
+          "type": "observe",
+          "species_id": "grove_cervid_2"
+        },
+        {
+          "type": "return",
+          "npc": "grove_patrol"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "青栎林巡花灵鹿回身点记录"
+      }
+    },
+    {
+      "id": "watch_grove_cervid_crown",
+      "title": "替林子等一次春冠圣鹿",
+      "description": "青岚说这种事不能催，只能等林子自己把脚步理顺。她想让你试着记下，春冠圣鹿真经过时，周围究竟先变安静在哪一处。",
+      "completion_text": "你没把那道光留住，却把它让整片林子都先慢下来的分寸记了下来。",
+      "giver": "grove_patrol",
+      "category": "observe",
+      "target_habitat": "greenbark_grove",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "grove_patrol"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "greenbark_grove",
+          "time": "day"
+        },
+        {
+          "type": "encounter",
+          "species_id": "grove_cervid_3"
+        },
+        {
+          "type": "observe",
+          "species_id": "grove_cervid_3"
+        },
+        {
+          "type": "return",
+          "npc": "grove_patrol"
+        }
+      ],
+      "rewards": {
+        "trust": 2,
+        "items": {
+          "paper": 1,
+          "glow_dust": 1
+        }
+      }
+    },
+    {
+      "id": "coast_glint_manta_lamp",
+      "title": "替砺潮等一回镜祈光鳐",
+      "description": "砺潮想确认潮灯边那块最稳的水面是不是又回来了。若真有镜祈光鳐靠近，海边今晚很多准备就算没有白做。",
+      "completion_text": "那道光鳐影一靠近，连海风都像学会了先绕开刺眼的地方。",
+      "giver": "coast_keeper",
+      "category": "observe",
+      "target_habitat": "saltglass_coast",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "coast_keeper"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "saltglass_coast",
+          "time": "evening"
+        },
+        {
+          "type": "encounter",
+          "species_id": "glint_manta_2"
+        },
+        {
+          "type": "observe",
+          "species_id": "glint_manta_2"
+        },
+        {
+          "type": "return",
+          "npc": "coast_keeper"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "glass": 1
+        }
+      }
+    },
+    {
+      "id": "lake_glint_manta_starlight",
+      "title": "替冰珀记下星潮圣鳐的停水点",
+      "description": "冰珀想知道那只星潮圣鳐今年冬夜还认不认老地方。她说真要见着，不必追，记住它肯停在哪儿就够了。",
+      "completion_text": "那处停水点一记住，镜湖夜里原本飘着的心也像终于有了落处。",
+      "giver": "mirror_keeper",
+      "category": "observe",
+      "target_habitat": "frost_mirror_lake",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "mirror_keeper"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "frost_mirror_lake",
+          "time": "night"
+        },
+        {
+          "type": "encounter",
+          "species_id": "glint_manta_3"
+        },
+        {
+          "type": "observe",
+          "species_id": "glint_manta_3"
+        },
+        {
+          "type": "return",
+          "npc": "mirror_keeper"
+        }
+      ],
+      "rewards": {
+        "trust": 2,
+        "items": {
+          "ice_glass": 1
+        },
+        "journal_entry": "霜镜湖星潮圣鳐停水点侧记"
+      }
+    },
+    {
+      "id": "mark_storm_qilin_brake_line",
+      "title": "替霁岚记下霁雷麒的收步线",
+      "description": "霁岚想把那只霁雷麒最稳的收步线重新记一遍。她说会冲不稀奇，知道在哪儿稳稳停才算真本事。",
+      "completion_text": "那条收步线一落准，整片草场今天都像少了一层乱撞乱抢的急。",
+      "giver": "storm_mentor",
+      "category": "observe",
+      "target_habitat": "thunder_meadow",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "storm_mentor"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "thunder_meadow",
+          "time": "evening"
+        },
+        {
+          "type": "encounter",
+          "species_id": "storm_qilin_2"
+        },
+        {
+          "type": "observe",
+          "species_id": "storm_qilin_2"
+        },
+        {
+          "type": "return",
+          "npc": "storm_mentor"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "storm_core": 1
+        }
+      }
+    },
+    {
+      "id": "wait_storm_qilin_clear_sky",
+      "title": "替草场等一回晴穹天麒",
+      "description": "霁岚想让你记住，真正的晴穹天麒不是踩着最乱的雷来，而是踩着雷前那一拍忽然安静的空。",
+      "completion_text": "你等到的不是一场热闹，而是草场先学会安静的那一刻。",
+      "giver": "storm_mentor",
+      "category": "observe",
+      "target_habitat": "thunder_meadow",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "storm_mentor"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "thunder_meadow",
+          "time": "night"
+        },
+        {
+          "type": "encounter",
+          "species_id": "storm_qilin_3"
+        },
+        {
+          "type": "observe",
+          "species_id": "storm_qilin_3"
+        },
+        {
+          "type": "return",
+          "npc": "storm_mentor"
+        }
+      ],
+      "rewards": {
+        "trust": 2,
+        "items": {
+          "storm_core": 1,
+          "paper": 1
+        }
+      }
+    },
+    {
+      "id": "sort_archive_wisp_margin",
+      "title": "替叶衡等一回档辉灵靠页",
+      "description": "叶衡想试试最近几晚的页边是不是终于收得够安稳，能让档辉灵肯贴近记录本落一会儿。",
+      "completion_text": "那点微光一靠到页边，原本怎么都像猜测的话忽然就各自找到了位置。",
+      "giver": "field_recorder",
+      "category": "observe",
+      "target_habitat": "ancient_platform",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "field_recorder"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "ancient_platform",
+          "time": "night"
+        },
+        {
+          "type": "encounter",
+          "species_id": "archive_wisp_2"
+        },
+        {
+          "type": "observe",
+          "species_id": "archive_wisp_2"
+        },
+        {
+          "type": "return",
+          "npc": "field_recorder"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "journal_entry": "古观测台档辉灵贴页记录"
+      }
+    },
+    {
+      "id": "hold_archive_wisp_dark_line",
+      "title": "替望舒守住那条暗线",
+      "description": "望舒想确认今年秋夜的侧注是不是还等得到天衡录灵。她说真看见了，别抢着写满，先记那条暗线是怎么亮起来的。",
+      "completion_text": "你守住了那条暗线，整间观测室也像跟着把最要紧的一笔留在了后头。",
+      "giver": "tower_astronomer",
+      "category": "observe",
+      "target_habitat": "radiant_observatory",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "tower_astronomer"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "radiant_observatory",
+          "time": "night"
+        },
+        {
+          "type": "encounter",
+          "species_id": "archive_wisp_3"
+        },
+        {
+          "type": "observe",
+          "species_id": "archive_wisp_3"
+        },
+        {
+          "type": "return",
+          "npc": "tower_astronomer"
+        }
+      ],
+      "rewards": {
+        "trust": 2,
+        "items": {
+          "ink": 1,
+          "paper": 1
+        }
+      }
+    },
+    {
+      "id": "follow_moon_marten_tail",
+      "title": "替冰珀认出霜纹影貂的转身点",
+      "description": "冰珀说影貂最难认的不是经过，而是它到底在哪一步把自己从倒影里抽走。她想让你把那处转身点找出来。",
+      "completion_text": "那一处转身点一看明白，镜湖夜里很多原本像错觉的动静都不再含糊。",
+      "giver": "mirror_keeper",
+      "category": "observe",
+      "target_habitat": "frost_mirror_lake",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "mirror_keeper"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "frost_mirror_lake",
+          "time": "night"
+        },
+        {
+          "type": "encounter",
+          "species_id": "moon_marten_2"
+        },
+        {
+          "type": "observe",
+          "species_id": "moon_marten_2"
+        },
+        {
+          "type": "return",
+          "npc": "mirror_keeper"
+        }
+      ],
+      "rewards": {
+        "trust": 1,
+        "items": {
+          "glass": 1,
+          "paper": 1
+        }
+      }
+    },
+    {
+      "id": "hear_moon_marten_second_echo",
+      "title": "替玄沼等一句第二层回声",
+      "description": "玄沼想知道月映玄貂今年冬末还认不认月井边那处旧位置。她提醒你，别抢第一句，第二层回声才更像答案。",
+      "completion_text": "你等到了那句最薄的回响，月沼整晚最像真话的一刻也终于没再溜走。",
+      "giver": "ruin_diviner",
+      "category": "observe",
+      "target_habitat": "moonfen_ruins",
+      "steps": [
+        {
+          "type": "talk",
+          "npc": "ruin_diviner"
+        },
+        {
+          "type": "visit",
+          "habitat_id": "moonfen_ruins",
+          "time": "night"
+        },
+        {
+          "type": "encounter",
+          "species_id": "moon_marten_3"
+        },
+        {
+          "type": "observe",
+          "species_id": "moon_marten_3"
+        },
+        {
+          "type": "return",
+          "npc": "ruin_diviner"
+        }
+      ],
+      "rewards": {
+        "trust": 2,
+        "journal_entry": "月沼第二层回声与玄貂影迹记录"
       }
     }
   ]

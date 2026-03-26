@@ -9,6 +9,7 @@ const DecisionPanel = preload("res://scripts/decision_panel.gd")
 const BasePanel = preload("res://scripts/base_panel.gd")
 const SystemPanel = preload("res://scripts/system_panel.gd")
 const SaveSlotPanel = preload("res://scripts/save_slot_panel.gd")
+const InputSettingsPanel = preload("res://scripts/input_settings_panel.gd")
 const VisitFlowController = preload("res://scripts/services/visit_flow_controller.gd")
 const HabitatService = preload("res://scripts/services/habitat_service.gd")
 const NpcService = preload("res://scripts/services/npc_service.gd")
@@ -156,6 +157,7 @@ const NODE_TEMPLATES := [
 @onready var menu_content_row: BoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow
 @onready var menu_action_column: VBoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn
 var save_slot_panel: SaveSlotPanel
+var input_settings_panel: InputSettingsPanel
 @onready var board_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel
 @onready var board_top_strip: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip
 @onready var board_stage_panel: PanelContainer = %BoardStagePanel
@@ -274,6 +276,7 @@ func _ready() -> void:
 	minus_button.hide()
 	reroll_button.hide()
 	_ensure_cutscene_panel()
+	_ensure_input_settings_panel()
 	story_director.configure(
 		story_service,
 		cutscene_service,
@@ -305,6 +308,55 @@ func _ready() -> void:
 	else:
 		_start_new_game_in_slot(_menu_selected_slot_id)
 
+func _unhandled_input(event: InputEvent) -> void:
+	if is_instance_valid(input_settings_panel) and input_settings_panel.visible:
+		return
+	if main_menu_panel.visible and not decision_panel.visible and not (is_instance_valid(save_slot_panel) and save_slot_panel.visible):
+		if runtime_session_started and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("game_menu")):
+			_hide_main_menu()
+			get_viewport().set_input_as_handled()
+		return
+	if _is_modal_open():
+		return
+	if _handle_board_controller_input(event):
+		get_viewport().set_input_as_handled()
+		return
+	if _handle_global_shortcut_input(event):
+		get_viewport().set_input_as_handled()
+
+func _handle_board_controller_input(event: InputEvent) -> bool:
+	if not branch_choice_pending or board_anim_locked:
+		return false
+	if event.is_action_pressed("ui_up"):
+		return board_view.move_controller_cursor(Vector2i.UP)
+	if event.is_action_pressed("ui_down"):
+		return board_view.move_controller_cursor(Vector2i.DOWN)
+	if event.is_action_pressed("ui_left"):
+		return board_view.move_controller_cursor(Vector2i.LEFT)
+	if event.is_action_pressed("ui_right"):
+		return board_view.move_controller_cursor(Vector2i.RIGHT)
+	if event.is_action_pressed("ui_accept"):
+		board_view.activate_controller_cursor()
+		return true
+	return false
+
+func _handle_global_shortcut_input(event: InputEvent) -> bool:
+	if board_anim_locked or awaiting_destination or branch_choice_pending:
+		return false
+	if event.is_action_pressed("game_roll") and not roll_button.disabled:
+		_on_start_day_pressed()
+		return true
+	if event.is_action_pressed("game_support") and not support_button.disabled:
+		_on_support_pressed()
+		return true
+	if event.is_action_pressed("game_base") and not base_button.disabled:
+		_on_base_pressed()
+		return true
+	if (event.is_action_pressed("game_menu") or event.is_action_pressed("ui_cancel")) and not new_game_button.disabled:
+		_on_main_menu_requested()
+		return true
+	return false
+
 func install_visit_flow() -> void:
 	visit_flow = VisitFlowController.new()
 	add_child(visit_flow)
@@ -328,6 +380,15 @@ func _ensure_save_slot_panel() -> void:
 	save_slot_panel.visible = false
 	save_slot_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	overlay.add_child(save_slot_panel)
+
+func _ensure_input_settings_panel() -> void:
+	if is_instance_valid(input_settings_panel):
+		return
+	input_settings_panel = InputSettingsPanel.new()
+	input_settings_panel.name = "InputSettingsPanel"
+	input_settings_panel.visible = false
+	input_settings_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	overlay.add_child(input_settings_panel)
 
 func _connect_signals() -> void:
 	roll_button.pressed.connect(_on_start_day_pressed)
@@ -360,6 +421,8 @@ func _connect_signals() -> void:
 		save_slot_panel.save_requested.connect(_on_save_slot_save_requested)
 		save_slot_panel.delete_requested.connect(_on_save_slot_delete_requested)
 		save_slot_panel.close_requested.connect(_on_save_slot_closed)
+	if is_instance_valid(input_settings_panel):
+		input_settings_panel.closed.connect(_on_input_settings_panel_closed)
 
 func _ensure_menu_custom_background() -> void:
 	if is_instance_valid(_menu_custom_background):
@@ -415,6 +478,8 @@ func _apply_basic_styles() -> void:
 		overlay_panels.append(save_slot_panel)
 	if is_instance_valid(cutscene_panel):
 		overlay_panels.append(cutscene_panel)
+	if is_instance_valid(input_settings_panel):
+		overlay_panels.append(input_settings_panel)
 	for panel in overlay_panels:
 		if panel is PanelContainer:
 			panel.add_theme_stylebox_override("panel", overlay_panel_style.duplicate())
@@ -521,6 +586,7 @@ func _prepare_overlay_panels() -> void:
 		system_panel,
 		main_menu_panel,
 		save_slot_panel,
+		input_settings_panel,
 	]
 	if is_instance_valid(cutscene_panel):
 		centered_panels.append(cutscene_panel)
@@ -592,6 +658,7 @@ func _configure_safe_ui_bounds() -> void:
 		system_panel,
 		save_slot_panel,
 		cutscene_panel,
+		input_settings_panel,
 	]:
 		control.clip_contents = true
 
@@ -705,6 +772,8 @@ func _apply_responsive_layout() -> void:
 	_fit_overlay_panel(system_panel, Vector2(620, 460) if tight_height else Vector2(700, 520), window_size, Vector2(420, 320), overlay_padding)
 	if is_instance_valid(save_slot_panel):
 		_fit_overlay_panel(save_slot_panel, Vector2(760, 520) if tight_height else Vector2(840, 580), window_size, Vector2(480, 360), overlay_padding)
+	if is_instance_valid(input_settings_panel):
+		_fit_overlay_panel(input_settings_panel, Vector2(880, 520) if tight_height else Vector2(960, 600), window_size, Vector2(520, 360), overlay_padding)
 	_fit_overlay_panel(battle_panel, Vector2(700, 500) if tight_height else Vector2(760, 560), window_size, Vector2(520, 360), overlay_padding)
 	menu_action_column.custom_minimum_size = Vector2(0, 0) if menu_content_row.vertical else Vector2(200 if compact_width else 220, 0)
 	menu_run_summary_label.custom_minimum_size = Vector2(0, 148 if menu_content_row.vertical else (180 if compact_width else 200))
@@ -928,12 +997,15 @@ func _show_main_menu() -> void:
 	menu_backdrop.move_to_front()
 	main_menu_panel.show()
 	main_menu_panel.move_to_front()
+	_focus_main_menu_primary_button()
 
 func _hide_main_menu() -> void:
 	if is_instance_valid(_menu_custom_background):
 		_menu_custom_background.hide()
 	if is_instance_valid(save_slot_panel):
 		save_slot_panel.close_panel()
+	if is_instance_valid(input_settings_panel):
+		input_settings_panel.hide()
 	menu_backdrop.hide()
 	main_menu_panel.hide()
 	root_margin.show()
@@ -954,14 +1026,30 @@ func _refresh_main_menu() -> void:
 		menu_run_summary_label.text = _build_main_menu_run_summary()
 	else:
 		menu_subtitle_label.text = localization_service.text("menu.subtitle.start")
-		continue_button.text = "读取当前槽位" if slot_has_save else localization_service.text("menu.start_game")
+		continue_button.text = "继续这格存档" if slot_has_save else localization_service.text("menu.start_game")
 		menu_new_game_button.text = "存档槽位"
 		menu_new_game_button.disabled = false
-		menu_action_hint_label.text = "当前槽位：%s\n按“继续”会读取这个槽位；空槽则会直接在这里开始新远征。" % _slot_title(slot_meta)
+		menu_action_hint_label.text = "当前槽位：%s\n点“继续”就从这里接着玩；如果还是空的，就会直接在这里开始新远征。" % _slot_title(slot_meta)
 		menu_run_summary_label.text = _build_saved_run_summary()
 	settings_button.text = localization_service.text("menu.settings")
 	menu_meta_summary_label.text = "%s\n\n%s" % [_build_main_menu_meta_summary(), _build_settings_summary()]
 	_refresh_main_menu_visuals()
+
+func _focus_main_menu_primary_button() -> void:
+	if not main_menu_panel.visible:
+		return
+	for button in [continue_button, menu_new_game_button, settings_button]:
+		button.focus_mode = Control.FOCUS_ALL
+	continue_button.focus_neighbor_bottom = menu_new_game_button.get_path()
+	menu_new_game_button.focus_neighbor_top = continue_button.get_path()
+	menu_new_game_button.focus_neighbor_bottom = settings_button.get_path()
+	settings_button.focus_neighbor_top = menu_new_game_button.get_path()
+	if not continue_button.disabled:
+		continue_button.grab_focus()
+	elif not menu_new_game_button.disabled:
+		menu_new_game_button.grab_focus()
+	else:
+		settings_button.grab_focus()
 
 func _build_saved_run_summary() -> String:
 	var slot_meta := GameState.get_run_slot_meta(_menu_selected_slot_id)
@@ -1002,6 +1090,10 @@ func _build_settings_summary() -> String:
 	var tutorial_mode := localization_service.text("settings.tutorials.on") if GameState.tutorials_enabled() else localization_service.text("settings.tutorials.off")
 	var language_name := localization_service.language_name(GameState.current_language())
 	var custom_bg_label := _custom_main_menu_background_label()
+	var accept_binding := _settings_binding_label("ui_accept")
+	var cancel_binding := _settings_binding_label("ui_cancel")
+	var roll_binding := _settings_binding_label("game_roll")
+	var menu_binding := _settings_binding_label("game_menu")
 	return "\n".join([
 		localization_service.text("settings.summary.title"),
 		localization_service.text("settings.summary.window", {"value": window_mode}),
@@ -1009,9 +1101,26 @@ func _build_settings_summary() -> String:
 		localization_service.text("settings.summary.motion", {"value": motion_mode}),
 		localization_service.text("settings.summary.tutorials", {"value": tutorial_mode}),
 		localization_service.text("settings.summary.language", {"value": language_name}),
+		localization_service.text("settings.summary.controls", {
+			"accept": accept_binding,
+			"cancel": cancel_binding,
+			"roll": roll_binding,
+			"menu": menu_binding,
+		}),
 		"自定义素材：%d 项 ｜ 图片 %d 张" % [CustomAssetRepository.get_asset_count(), CustomAssetRepository.get_image_count()],
 		"主菜单背景：%s" % custom_bg_label,
 	])
+
+func _settings_binding_label(action_name: String) -> String:
+	var labels: Array[String] = []
+	for slot_index in range(2):
+		var label := InputManager.describe_binding_slot(action_name, slot_index)
+		if label.is_empty():
+			continue
+		labels.append(label)
+	if labels.is_empty():
+		return localization_service.text("settings.input.empty")
+	return " / ".join(labels)
 
 func _open_save_slot_panel(mode: String) -> void:
 	if not is_instance_valid(save_slot_panel):
@@ -1070,6 +1179,7 @@ func _on_save_slot_closed() -> void:
 		save_slot_panel.close_panel()
 	if main_menu_panel.visible:
 		_refresh_main_menu()
+		_focus_main_menu_primary_button()
 	else:
 		_update_ui()
 	story_director.try_flush_pending_quest_story_beats()
@@ -1130,6 +1240,11 @@ func _open_settings_menu() -> void:
 			"summary": localization_service.text("settings.current", {"value": localization_service.language_name("en_us")}),
 		},
 		{
+			"id": "open_input_settings",
+			"label": localization_service.text("settings.input.open"),
+			"summary": localization_service.text("settings.input.summary"),
+		},
+		{
 			"id": "open_custom_asset_import",
 			"label": "导入自定义素材",
 			"summary": "从本地导入图片 / 音频 / 字体 / 视频 / 文件到 user://custom_assets",
@@ -1165,6 +1280,9 @@ func _apply_menu_setting(choice_id: String) -> void:
 			GameState.set_setting("language", "ja_jp")
 		"set_language_en_us":
 			GameState.set_setting("language", "en_us")
+		"open_input_settings":
+			reopen_settings = false
+			_open_input_settings_panel()
 		"open_custom_asset_import":
 			reopen_settings = false
 			_open_asset_import_dialog()
@@ -1183,6 +1301,16 @@ func _apply_menu_setting(choice_id: String) -> void:
 				return
 	_refresh_main_menu()
 	if reopen_settings:
+		_open_settings_menu()
+
+func _open_input_settings_panel() -> void:
+	if not is_instance_valid(input_settings_panel):
+		return
+	input_settings_panel.open_panel()
+
+func _on_input_settings_panel_closed() -> void:
+	if main_menu_panel.visible:
+		_refresh_main_menu()
 		_open_settings_menu()
 
 func _custom_main_menu_background_label() -> String:
@@ -1332,13 +1460,13 @@ func _open_starter_selection() -> void:
 		choices.append({
 			"id": species_id,
 			"label": String(species.get("name", species_id)),
-			"summary": "%s ｜ %s ｜ 会直接替换到 1 号双打位" % [
+			"summary": "%s ｜ %s ｜ 会直接放进 1 号出战位" % [
 				_format_type_tags(profile.get("elements", [])),
 				_format_role_tags(profile.get("job_tags", [])),
 			],
 		})
 	pending_context = {"kind": "starter_select", "on_close": "starter_random"}
-	decision_panel.open_panel("起始伙伴选择", "新远征开始前，从后备里再挑 1 只起始伙伴。被选中的伙伴会直接放入 1 号双打位，帮助你决定这轮前期节奏。", choices, "随机分配")
+	decision_panel.open_panel("起始伙伴选择", "新远征开始前，从后备里再挑 1 只起始伙伴。被选中的伙伴会直接放入 1 号出战位，帮你决定这轮前期节奏。", choices, "随机分配")
 
 func _apply_starter_choice(species_id: String, random_choice := false) -> void:
 	if species_id.is_empty() or starter_choice_done:
@@ -1358,7 +1486,7 @@ func _apply_starter_choice(species_id: String, random_choice := false) -> void:
 			_format_type_tags(profile.get("elements", [])),
 			_format_role_tags(profile.get("job_tags", [])),
 		],
-		"它已经进入 1 号双打位，前期路线和第一场战斗会围绕它展开。",
+		"它已经进入 1 号出战位，前期路线和第一场战斗会围绕它展开。",
 	]
 	_push_log("起始伙伴确定为 %s，本轮开局会更偏向它的战斗与经营节奏。" % String(species.get("name", species_id)))
 	_save_run_state()
@@ -1513,11 +1641,11 @@ func _load_run_state_from_save(slot_id: String = "") -> void:
 	var payload := GameState.load_run_payload(_menu_selected_slot_id)
 	if payload.is_empty():
 		pending_context.clear()
-		decision_panel.open_panel("没有存档", "当前槽位没有可读取的运行存档。按“继续”会在这个槽位创建新的远征。", [], "返回开始界面")
+		decision_panel.open_panel("没有存档", "这格还没有旅程记录。点“继续”就会直接从这里开始新远征。", [], "返回开始界面")
 		return
 	_apply_run_payload(payload)
 	_hide_main_menu()
-	_push_log("已读取 %s。" % _slot_title(GameState.get_run_slot_meta(_menu_selected_slot_id)))
+	_push_log("已从 %s 接上这段旅程。" % _slot_title(GameState.get_run_slot_meta(_menu_selected_slot_id)))
 
 func _apply_run_payload(payload: Dictionary) -> bool:
 	if payload.is_empty():
@@ -1819,7 +1947,7 @@ func _build_dice_roll_panel_state() -> Dictionary:
 		"[b]当前骰面[/b] %s" % dice_service.describe_roll(pending_roll),
 	]
 	if intro_copy:
-		body_lines.append("[b]这几步先交给系统带着走[/b]。确认后会沿路前进，只有遇到分叉才会停下来让你选。")
+		body_lines.append("[b]前几步先顺着路走就好[/b]。确认后会一路往前，只有碰到岔路口才会停下来让你选。")
 		if awaiting_destination and not route_preview.is_empty():
 			body_lines.append("[b]这一步偏向[/b] %s" % route_preview)
 		body_lines.append("修正和重掷会在熟悉几回合后再放出来。")
@@ -1833,8 +1961,8 @@ func _build_dice_roll_panel_state() -> Dictionary:
 		else:
 			body_lines.append("[b]当前没有安全落点[/b] 这次结果只作为展示，你可以关掉面板后等待下一次掷骰。")
 	return {
-		"title": "掷骰完成",
-		"subtitle": "先确认今天会走多远" if intro_copy else "本回合步数已经结算",
+		"title": "骰子停好了",
+		"subtitle": "先看看今天会走多远" if intro_copy else "这一回合会走到哪儿",
 		"body": "\n".join(body_lines),
 		"confirm_text": "开始前进" if awaiting_destination else "收起结果",
 		"advanced_controls_visible": _advanced_dice_controls_visible(),
@@ -1885,9 +2013,9 @@ func _apply_current_roll_routes() -> void:
 		selectable = _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
 		if not reachable_paths.is_empty():
 			if not blocked_before_anchor.is_empty():
-				_push_log("原路线被敌对群占据，自动消耗 1 个锚定点，改为自动锚定到最近的安全显露节点。")
+				_push_log("原来的路被敌对群堵住了，顺手花掉 1 个锚定点，改走最近的安全落点。")
 			else:
-				_push_log("当前掷骰没有安全落点，自动消耗 1 个锚定点，改为自动锚定到最近的安全显露节点。")
+				_push_log("这次落不到安全点，顺手花掉 1 个锚定点，改走最近的安全落点。")
 	awaiting_destination = not selectable.is_empty()
 	if not awaiting_destination:
 		if not _get_blocked_reachable_nodes().is_empty():
@@ -2127,7 +2255,7 @@ func _build_ai_report_sections(ai_result: Dictionary) -> Array:
 
 		var summary_lines: Array[String] = [
 			"[b]当前位置[/b] %s" % node_name,
-			"[b]短行为[/b] %s" % String(report.get("short", "待命")),
+			"[b]短行为[/b] %s" % String(report.get("short", "歇一会儿")),
 			"[b]下回合意图[/b] %s" % String(report.get("intent", "继续观察")),
 		]
 
@@ -2529,17 +2657,17 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 			"label": _primary_content_label(primary_action),
 			"summary": "%s\n这就是你到这儿后最值得先顾上的那件事。" % _primary_content_summary(primary_action),
 		})
-	if String(habitat.get("type", "")) == "habitat":
-		choices.append({
-			"id": "assign_resident",
-			"label": "安排看守",
-			"summary": "把这里交给更合适的人或伙伴看着。",
-		})
-	if nursery_service.supports_nursery(current_visit_habitat_id):
+	elif nursery_service.supports_nursery(current_visit_habitat_id):
 		choices.append({
 			"id": "nursery_menu",
 			"label": "照料孵育",
 			"summary": "查看这里的孵育位，安排孵化或继续照看幼体。",
+		})
+	elif String(habitat.get("type", "")) == "habitat":
+		choices.append({
+			"id": "assign_resident",
+			"label": "安排看守",
+			"summary": "把这里交给更合适的人或伙伴看着。",
 		})
 	pending_context = {"kind": "visit_arrival", "on_close": "finish_visit"}
 	decision_panel.open_panel(String(habitat.get("name", "地点")), "\n".join(lines), choices, "继续前进")
@@ -2628,7 +2756,7 @@ func _show_build_menu(payload: Dictionary) -> void:
 	pending_context = {"kind": "build_select", "on_close": "arrival"}
 	decision_panel.open_panel(
 		"推进建设",
-		"只有抵达地点后才允许施工。\n[b]当前据点等级[/b] %d ｜ [b]当前构筑等级[/b] %d" % [
+		"到了地方再动手，才更像真的在把这里安顿起来。\n[b]当前据点等级[/b] %d ｜ [b]当前成长阶段[/b] %d" % [
 			int(GameState.habitats.get(current_visit_habitat_id, {}).get("rank", 0)),
 			GameState.get_progression_rank(),
 		],
@@ -2659,7 +2787,7 @@ func _show_build_result(payload: Dictionary) -> void:
 		var progression_rank_before := int(payload.get("progression_rank_before", GameState.get_progression_rank()))
 		var progression_rank_after := int(payload.get("progression_rank_after", progression_rank_before))
 		if progression_rank_after != progression_rank_before:
-			body_lines.append("[b]构筑等级[/b] %d → %d" % [progression_rank_before, progression_rank_after])
+			body_lines.append("[b]成长阶段[/b] %d → %d" % [progression_rank_before, progression_rank_after])
 			var capacity_before := int(payload.get("capacity_before", 0))
 			var capacity_after := int(payload.get("capacity_after", capacity_before))
 			if capacity_after != capacity_before:
@@ -2822,7 +2950,7 @@ func _show_npc_menu(payload: Dictionary) -> void:
 		choices.append({
 			"id": "duel:%s" % npc_id if intro_pending else "talk:%s" % npc_id,
 			"label": "%s（先决斗）" % String(npc.get("name", "未命名 NPC")) if intro_pending else String(npc.get("name", "未命名 NPC")),
-			"summary": "第一次见面必须先决斗；胜利后基础信赖 2，失败后基础信赖 0。" if intro_pending else "正式偶遇并推进关系。当前信赖 %d ｜ %s" % [npc_service.get_npc_trust(npc_id), "首战胜利" if bool(duel_status.get("won", false)) else "首战失利"],
+			"summary": "第一次见面先切磋一场；赢了更容易聊开，输了也还能慢慢熟起来。" if intro_pending else "今天可以好好聊聊。当前信赖 %d ｜ %s" % [npc_service.get_npc_trust(npc_id), "首战赢过" if bool(duel_status.get("won", false)) else "还在慢慢熟"],
 		})
 	for quest in payload.get("quests", []):
 		var quest_id := String(quest.get("id", ""))
@@ -2831,14 +2959,18 @@ func _show_npc_menu(payload: Dictionary) -> void:
 		var giver_id := String(quest.get("giver", ""))
 		var giver := DataRepository.get_npc(giver_id)
 		var duel_locked := npc_service.needs_intro_duel(giver_id)
+		var quest_description := String(quest.get("description", ""))
+		var quest_summary := "得先和 %s 过过招，聊熟之后才能接这份委托。" % String(giver.get("name", "委托人")) if duel_locked else "先记在这季安排里，之后回来时会顺手看看进展。"
+		if not duel_locked and not quest_description.is_empty():
+			quest_summary = quest_description
 		choices.append({
 			"id": "quest:%s" % quest_id,
 			"label": "接委托：%s" % String(quest.get("title", "")),
-			"summary": "需先与 %s 完成初见决斗，之后才能正式受理。" % String(giver.get("name", "委托人")) if duel_locked else "记录到本季计划里，后续回访时自动检查进度。",
+			"summary": quest_summary,
 			"disabled": duel_locked,
 		})
 	pending_context = {"kind": "npc_menu", "on_close": "arrival"}
-	decision_panel.open_panel("你在这里遇到的人", "第一次见面要先决斗，定下态度之后才能正式深谈。", choices, "返回地点")
+	decision_panel.open_panel("你在这里遇到的人", "第一次见面先过过招，熟了之后再慢慢聊。", choices, "返回地点")
 
 func _show_dojo_menu(payload: Dictionary) -> void:
 	var dojo: Dictionary = payload.get("dojo", {})
@@ -2848,12 +2980,12 @@ func _show_dojo_menu(payload: Dictionary) -> void:
 		return
 	var lines: Array[String] = []
 	lines.append("[b]什么时候来更轻松[/b] %d 级左右" % int(dojo.get("recommended_rank", 1)))
-	lines.append("[b]当前构筑等级[/b] %d ｜ [b]总据点等级[/b] %d" % [
+	lines.append("[b]当前成长阶段[/b] %d ｜ [b]总据点等级[/b] %d" % [
 		int(payload.get("progression_rank", GameState.get_progression_rank())),
 		int(payload.get("habitat_rank_total", GameState.get_habitat_rank_total())),
 	])
 	lines.append("[b]门票[/b] %s" % _format_item_cost(payload.get("entry_cost", {})))
-	lines.append("[b]当前双打位[/b] %s" % (" / ".join(payload.get("battle_slots", [])) if not payload.get("battle_slots", []).is_empty() else "尚未就绪"))
+	lines.append("[b]当前出战位[/b] %s" % (" / ".join(payload.get("battle_slots", [])) if not payload.get("battle_slots", []).is_empty() else "还没安排好"))
 	lines.append("[b]宠物栏容量[/b] %s" % String(payload.get("backpack_summary", payload.get("reserve_summary", "0 / 0"))))
 	if not bool(payload.get("battle_slots_ready", true)):
 		lines.append("[b]当前限制[/b] 还没站稳两位同行，未满足的阶段会先锁住。")
@@ -2898,16 +3030,16 @@ func _show_dojo_result(payload: Dictionary) -> void:
 		var ring_result := board_progression_service.try_unlock_outer_ring_from_dojo(String(dojo.get("id", "")), tier)
 		if bool(ring_result.get("ok", false)):
 			_apply_ring_unlock_result(ring_result, false)
-			lines.append("[b]外环变化[/b] %s" % String(ring_result.get("message", "新的外环已经展开。")))
+			lines.append("[b]前路变化[/b] %s" % String(ring_result.get("message", "更远的路已经露出来了。")))
 		elif not ring_result.is_empty():
-			lines.append("[b]外环条件[/b] %s" % String(ring_result.get("message", "更外层还差一点条件。")))
+			lines.append("[b]前路还差一点[/b] %s" % String(ring_result.get("message", "更远的路还差一点条件。")))
 		_push_log("%s 通过了 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
 	else:
 		lines.append("[b]结果[/b] 暂未通过 %s" % _dojo_tier_name(tier))
 		if payload.has("gap"):
 			lines.append("还差约 %d 点准备度，建议先补据点等级、信赖或门票素材。" % int(payload.get("gap", 1)))
 		else:
-			lines.append("建议先补双打位羁绊、建筑看守或星级，再来验证这一阶。")
+			lines.append("建议先补一补出战位羁绊、建筑看守或星级，再来试这一级。")
 		if not reward_text.is_empty():
 			lines.append("[b]安慰奖励[/b] %s" % reward_text)
 		_push_log("%s 暂时没能通过 %s。" % [String(dojo.get("name", "试炼")), _dojo_tier_name(tier)])
@@ -2924,7 +3056,7 @@ func _start_dojo_battle(payload: Dictionary) -> void:
 	_start_battle_with_tutorial(
 		battle_config,
 		"dojo",
-		"进入 %s，准备进行双打验证。" % String(battle_config.get("title", "试炼"))
+		"进入 %s，准备来一场双打试炼。" % String(battle_config.get("title", "试炼"))
 	)
 
 func _show_encounter_preview(payload: Dictionary) -> void:
@@ -3140,7 +3272,7 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 		"team_battle_slot":
 			GameState.set_party_slot(int(context.get("slot_index", 0)), choice_id)
 			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
-			decision_panel.open_panel("队伍已更新", "%s 已被放到双打位 %d。" % [GameState.get_pet_display_name(choice_id), int(context.get("slot_index", 0)) + 1], [], "返回营地")
+			decision_panel.open_panel("队伍已更新", "%s 已被放到出战位 %d。" % [GameState.get_pet_display_name(choice_id), int(context.get("slot_index", 0)) + 1], [], "返回营地")
 		"team_reserve_slot":
 			GameState.toggle_reserve_slot(choice_id)
 			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
@@ -3548,12 +3680,12 @@ func _show_locked_board_stop(node: Dictionary) -> void:
 	var habitat_id := String(node.get("habitat_id", ""))
 	var body_lines: Array[String] = [
 		"[b]%s[/b]" % String(node.get("name", "未开放据点")),
-		String(node.get("description", "这里暂时还不能展开正式偶遇。")),
+		String(node.get("description", "这里现在还不适合久留。")),
 		"",
 		"%s" % _unlock_marker_text(habitat_id),
-		"这次你只能路过这里，等条件满足后再回来深入处理。",
+		"这次先从这里路过，等时机到了再回来好好看看。",
 	]
-	_push_log("路过 %s，但这里还没开放正式偶遇流程。" % String(node.get("name", "未开放据点")))
+	_push_log("路过 %s，这里现在还只能先看看。" % String(node.get("name", "未开放据点")))
 	pending_context = {"kind": "locked_stop", "on_close": "finish_transit_stop"}
 	decision_panel.open_panel("暂时只能路过", "\n".join(body_lines), [], "继续前进")
 
@@ -3564,20 +3696,20 @@ func _show_ring_gate_blocked(node: Dictionary, message: String) -> void:
 		"",
 		message,
 	]
-	_push_log("抵达 %s，但更外侧的环路还未满足开启条件。" % String(node.get("name", "外环路口")))
+	_push_log("抵达 %s，但前面的路现在还没完全打开。" % String(node.get("name", "外环路口")))
 	pending_context = {"kind": "ring_gate_locked", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel("外环尚未解锁", "\n".join(body_lines), [], "继续前进")
+	decision_panel.open_panel("前路还没打开", "\n".join(body_lines), [], "继续前进")
 
 func _apply_ring_unlock_result(result: Dictionary, open_panel: bool = true) -> void:
 	if result.is_empty() or not bool(result.get("ok", false)):
 		return
 	GameState.reveal_board_nodes(result.get("revealed_nodes", []))
 	_refresh_board_region(false)
-	_push_log(String(result.get("message", "新的外环已经展开。")))
+	_push_log(String(result.get("message", "更远的路已经露出来了。")))
 	if not open_panel:
 		return
 	pending_context = {"kind": "ring_unlock", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel("外环展开", String(result.get("message", "新的外环已经展开。")), [], "继续前进")
+	decision_panel.open_panel("前路打开了", String(result.get("message", "更远的路已经露出来了。")), [], "继续前进")
 
 func _finish_board_event_visit() -> void:
 	current_visit_habitat_id = ""
@@ -3755,8 +3887,8 @@ func _on_battle_finished(result: Dictionary) -> void:
 
 func _open_team_manage_menu() -> void:
 	var choices := [
-		{"id": "battle_0", "label": "双打位 1", "summary": "当前：%s" % _battle_slot_name_at(0)},
-		{"id": "battle_1", "label": "双打位 2", "summary": "当前：%s" % _battle_slot_name_at(1)},
+		{"id": "battle_0", "label": "出战位 1", "summary": "当前：%s" % _battle_slot_name_at(0)},
+		{"id": "battle_1", "label": "出战位 2", "summary": "当前：%s" % _battle_slot_name_at(1)},
 		{"id": "backpack", "label": "调整宠物栏", "summary": "当前：%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity]},
 		{"id": "resident_sites", "label": "安排看守", "summary": "在营地统一调整各据点的主看守。"},
 		{"id": "mail_menu", "label": "处理留信", "summary": "当前待处理：%d 处" % _pending_mail_targets().size(), "disabled": _pending_mail_targets().is_empty()},
@@ -3774,7 +3906,7 @@ func _open_battle_slot_picker(slot_index: int) -> void:
 			"summary": "%s ｜ 当前：%s" % [String(companion.get("species_id", "")), _companion_slot_label(pet_uid)],
 		})
 	pending_context = {"kind": "team_battle_slot", "slot_index": slot_index, "on_close": "team_manage"}
-	decision_panel.open_panel("选择双打位 %d" % (slot_index + 1), "挑一只本场直接上阵的伙伴。", choices, "返回整备")
+	decision_panel.open_panel("选择出战位 %d" % (slot_index + 1), "挑一只本场直接上阵的伙伴。", choices, "返回整备")
 
 func _open_pet_roster_picker() -> void:
 	var choices := []
@@ -3784,11 +3916,11 @@ func _open_pet_roster_picker() -> void:
 		choices.append({
 			"id": pet_uid,
 			"label": "%s ★%d" % [String(companion.get("display_name", "未命名伙伴")), int(companion.get("star_level", 1))],
-			"summary": "%s ｜ 人口 %d ｜ %s" % [String(companion.get("species_id", "")), GameState.get_pet_population_cost(pet_uid), "当前已在待命位" if in_reserve else "当前未在待命位"],
+			"summary": "%s ｜ 人口 %d ｜ %s" % [String(companion.get("species_id", "")), GameState.get_pet_population_cost(pet_uid), "当前已在休息位" if in_reserve else "当前未在休息位"],
 			"disabled": GameState.get_party_uids().has(pet_uid),
 		})
 	pending_context = {"kind": "team_reserve_slot", "on_close": "team_manage"}
-	decision_panel.open_panel("调整宠物栏", "待命位不上场，但会提供羁绊；每只会占用不同人口值。元素/生态/职能按独特物种计数，特性羁绊按实际单位计数。", choices, "返回整备")
+	decision_panel.open_panel("调整宠物栏", "休息位不上场，但会提供羁绊；每只会占用不同人口值。元素、生态和职能按独特物种计数，特性羁绊按实际单位计数。", choices, "返回整备")
 
 func _open_camp_resident_site_picker() -> void:
 	var choices := []
@@ -3919,9 +4051,9 @@ func _start_npc_intro_duel(npc_id: String) -> void:
 		var body := "这场初见决斗暂时无法开始。"
 		match reason:
 			"battle_slots_missing":
-				body = "先去总览配好 2 个双打位，第一次偶遇才允许决斗。"
+				body = "先去总览安排好 2 个出战位，第一次见面才能切磋。"
 			"already_resolved":
-				body = "这场初见决斗已经打过了，现在可以正式偶遇。"
+				body = "这场初见切磋已经打过了，现在可以好好聊聊了。"
 			"enemy_pool_missing":
 				body = "暂时找不到可用的切磋对手。"
 			"npc_missing":
@@ -3948,7 +4080,7 @@ func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
 	var npc_name := String(npc.get("name", "某人"))
 	var body_lines: Array[String] = []
 	if bool(result.get("won", false)):
-		body_lines.append("[b]%s[/b] 认可了你的实力，愿意正式接待你。" % npc_name)
+		body_lines.append("[b]%s[/b] 认可了你的实力，愿意坐下来和你好好聊。" % npc_name)
 		body_lines.append("基础信赖提高到 %d。" % int(result.get("base_trust", 0)))
 		_push_log("你赢下了与 %s 的初见切磋，对方明显更愿意配合。" % npc_name)
 	else:
@@ -3972,7 +4104,7 @@ func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
 func _handle_talk_to_npc(npc_id: String) -> void:
 	if npc_service.needs_intro_duel(npc_id):
 		pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("还不能正式偶遇", "第一次见面要先决斗，定下彼此态度之后才能偶遇。", [], "结束偶遇")
+		decision_panel.open_panel("现在还聊不开", "第一次见面要先切磋一下，熟了之后再慢慢聊。", [], "结束偶遇")
 		return
 
 	GameState.note_talk(npc_id)
@@ -4207,7 +4339,7 @@ func _try_accept_quest(quest_id: String) -> void:
 	if npc_service.needs_intro_duel(giver_id):
 		var giver := DataRepository.get_npc(giver_id)
 		pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("还不能正式接委托", "第一次见面要先和 %s 完成决斗，之后才能受理委托。" % String(giver.get("name", "委托人")), [], "结束偶遇")
+		decision_panel.open_panel("现在还接不了委托", "第一次见面要先和 %s 切磋一下，熟了之后才能接这份委托。" % String(giver.get("name", "委托人")), [], "结束偶遇")
 		return
 	var cost := _accept_cost_for_quest(quest)
 	if not cost.is_empty() and not GameState.can_pay(cost):
@@ -4222,7 +4354,12 @@ func _try_accept_quest(quest_id: String) -> void:
 	_push_log("接下委托：%s。" % String(quest.get("title", "")))
 	_check_active_quests()
 	pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("委托记录", "已记下这件事：%s" % String(quest.get("title", "")), [], "结束偶遇")
+	var quest_lines: Array[String] = ["已记下这件事：%s" % String(quest.get("title", ""))]
+	var quest_description := String(quest.get("description", ""))
+	if not quest_description.is_empty():
+		quest_lines.append("")
+		quest_lines.append(quest_description)
+	decision_panel.open_panel("委托记录", "\n".join(quest_lines), [], "结束偶遇")
 
 func _accept_cost_for_quest(quest: Dictionary) -> Dictionary:
 	var cost := {}
@@ -4629,6 +4766,7 @@ func _update_ui() -> void:
 	_update_log()
 	_update_map_hint()
 	board_view.refresh_view(current_node_id, _get_selectable_nodes(), _build_board_markers(), _get_locked_nodes())
+	board_view.set_controller_navigation_enabled(branch_choice_pending)
 	if main_menu_panel.visible:
 		_refresh_main_menu()
 
@@ -4686,7 +4824,7 @@ func _update_action_ui() -> void:
 			route_preview if not route_preview.is_empty() else "等待路线计算",
 		]
 	else:
-		board_route_label.text = "待命中 ｜ 今日 %s · %s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
+		board_route_label.text = "先歇一会 ｜ 今日 %s · %s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
 	roll_button.text = "掷骰"
 	support_button.text = "背包 / 小本"
 	base_button.text = "落脚处"
@@ -4730,10 +4868,10 @@ func _update_summaries() -> void:
 	var treasury := GameState.get_treasury_snapshot()
 	var ai_entries: Array = ai_player_service.build_summary_entries(board_lookup)
 	player_summary_label.text = "\n".join([
-		"构筑 Lv%d ｜ 照料 %d" % [GameState.get_progression_rank(), GameState.get_care_progress()],
+		"成长阶段 Lv%d ｜ 照料 %d" % [GameState.get_progression_rank(), GameState.get_care_progress()],
 		"徽章 %d ｜ 季节点 %d ｜ 探索点 %d" % [GameState.badge_count, GameState.season_points, GameState.exploration_points_total],
 		"资金 %d 金 ｜ 银行 %d 金" % [int(treasury.get("wallet_gold", 0)), int(treasury.get("bank_gold", 0))],
-		"饥饿 %d / %d ｜ 资源与补给请看背包页 / 手册" % [GameState.hunger, GameState.max_hunger],
+		"饥饿 %d / %d ｜ 资源和补给翻背包页 / 小本" % [GameState.hunger, GameState.max_hunger],
 	])
 	GameState.set_trait_runtime_bonus(synergy_service.build_runtime_bonus(synergy_report))
 	var season_goal := String(GameState.get_current_season_rule().get("season_goal", "维持推进感。"))
@@ -4769,9 +4907,9 @@ func _update_summaries() -> void:
 
 func _update_roster() -> void:
 	var lines: Array[String] = []
-	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
+	lines.append("出战位：%s" % " / ".join(_battle_slot_names()))
 	lines.append("待命人口：%d / %d ｜ 已安居据点 %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity, GameState.get_settled_habitat_count()])
-	lines.append("生存：饥饿 %d / %d ｜ 资源与补给请看背包页 / 手册" % [GameState.hunger, GameState.max_hunger])
+	lines.append("生存：饥饿 %d / %d ｜ 资源和补给翻背包页 / 小本" % [GameState.hunger, GameState.max_hunger])
 	if not starter_companion_uid.is_empty():
 		lines.append("起始伙伴：%s" % GameState.get_pet_display_name(starter_companion_uid))
 	else:
@@ -5064,6 +5202,9 @@ func _format_building_levels(habitat_id: String, buildings: Array) -> String:
 			])
 		if GameState.is_building_damaged(habitat_id, building_id):
 			status_parts.append("受损")
+			var repair_cost: Dictionary = GameState.get_building_repair_cost(habitat_id, building_id)
+			if not repair_cost.is_empty():
+				status_parts.append("待修")
 		if not status_parts.is_empty():
 			part += "（%s）" % "，".join(status_parts)
 		parts.append(part)
@@ -5081,6 +5222,12 @@ func _apartment_visit_line(habitat_id: String) -> String:
 		parts.append("住客：%s" % " / ".join(tenant_names))
 	if int(apartment_status.get("damage_days", 0)) > 0:
 		parts.append("房屋受损")
+	var incident_note := String(apartment_status.get("incident_note", "")).strip_edges()
+	if not incident_note.is_empty():
+		parts.append(incident_note)
+	var repair_cost: Dictionary = Dictionary(apartment_status.get("repair_cost", {})).duplicate(true)
+	if not repair_cost.is_empty():
+		parts.append("修缮需求：%s" % _format_item_cost(repair_cost))
 	return " ｜ ".join(parts)
 
 func _format_item_cost(cost: Dictionary) -> String:
@@ -5106,7 +5253,7 @@ func _build_choice_summary(check: Dictionary) -> String:
 		var progression_rank_before := int(check.get("progression_rank_before", GameState.get_progression_rank()))
 		var progression_rank_after := int(check.get("progression_rank_after", progression_rank_before))
 		if progression_rank_after > progression_rank_before:
-			parts.append("构筑 Lv%d→%d" % [progression_rank_before, progression_rank_after])
+			parts.append("成长 Lv%d→%d" % [progression_rank_before, progression_rank_after])
 		var effects: Array = check.get("effects", [])
 		if not effects.is_empty():
 			parts.append("下一阶 %s" % String(effects[0]))
@@ -5144,7 +5291,7 @@ func _build_choice_tooltip(check: Dictionary) -> String:
 		var progression_rank_before := int(check.get("progression_rank_before", GameState.get_progression_rank()))
 		var progression_rank_after := int(check.get("progression_rank_after", progression_rank_before))
 		if progression_rank_after != progression_rank_before:
-			lines.append("构筑等级：%d → %d" % [progression_rank_before, progression_rank_after])
+			lines.append("成长阶段：%d → %d" % [progression_rank_before, progression_rank_after])
 			lines.append("宠物栏容量：%d → %d" % [
 				int(check.get("capacity_before", 0)),
 				int(check.get("capacity_after", 0)),
@@ -5226,24 +5373,24 @@ func _battle_slot_names() -> Array[String]:
 	for pet_uid in GameState.get_party_uids():
 		names.append(GameState.get_pet_display_name(pet_uid))
 	if names.is_empty():
-		names.append("未配置")
+		names.append("还没安排")
 	return names
 
 func _battle_slot_name_at(slot_index: int) -> String:
 	var battle_uids := GameState.get_party_uids()
 	if slot_index < 0 or slot_index >= battle_uids.size():
-		return "未配置"
+		return "还没安排"
 	return GameState.get_pet_display_name(String(battle_uids[slot_index]))
 
 func _companion_slot_label(pet_uid: String) -> String:
 	if GameState.get_party_uids().has(pet_uid):
 		return "上阵"
 	if GameState.get_reserve_uids().has(pet_uid):
-		return "待命"
+		return "休息中"
 	for habitat_state in GameState.habitats.values():
 		if String(habitat_state.get("resident_uid", "")) == pet_uid or String(habitat_state.get("assistant_uid", "")) == pet_uid:
 			return "看守"
-	return "待命"
+	return "休息中"
 
 func _action_name(action_id: String) -> String:
 	match action_id:
@@ -5610,7 +5757,7 @@ func _dojo_status_text(dojo_id: String) -> String:
 		return ""
 	var dojo := DataRepository.get_dojo(dojo_id)
 	if dojo.is_empty():
-		return "试炼未配置"
+		return "试炼暂时还没准备好"
 	for tier in ["tier_3", "tier_2", "tier_1"]:
 		if GameState.has_cleared_dojo(dojo_id, tier):
 			return "%s已通过" % _dojo_tier_name(tier)
@@ -5685,7 +5832,7 @@ func _build_main_menu_run_summary() -> String:
 			GameState.global_turn,
 		])
 	lines.append("周目标：%s" % weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress))
-	lines.append("双打位：%s" % " / ".join(_battle_slot_names()))
+	lines.append("出战位：%s" % " / ".join(_battle_slot_names()))
 	lines.append("待命人口：%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity])
 	lines.append("通行技：%s" % _format_traversal_skill_names(GameState.get_traversal_skill_ids()))
 	lines.append("饥饿：%d / %d" % [GameState.hunger, GameState.max_hunger])
@@ -5707,14 +5854,14 @@ func _build_main_menu_run_summary() -> String:
 
 func _build_main_menu_meta_summary() -> String:
 	var lines: Array[String] = [
-		"[b]局外成长[/b]",
+		"[b]旅途积累[/b]",
 		"累计探索点：%d" % GameState.exploration_points_total,
 	]
 	var modules: Array[String] = []
 	for module_id in GameState.meta_unlocks.get("dice_modules", []):
 		var module := DataRepository.get_dice_module(String(module_id))
 		modules.append(String(module.get("name", module_id)))
-	lines.append("已解锁模组：%s" % (" / ".join(modules) if not modules.is_empty() else "暂无"))
+	lines.append("已收集的骰子花样：%s" % (" / ".join(modules) if not modules.is_empty() else "暂无"))
 	lines.append("")
 	lines.append("[b]成长轨道[/b]")
 	for track in DataRepository.get_meta_progression_tracks():
@@ -5763,7 +5910,7 @@ func _build_system_sections() -> Array:
 		quest_lines.append("[b]年赛[/b] %s" % annual_competition_text)
 
 	var battle_lines: Array[String] = [
-		"[b]双打位[/b] %s" % " / ".join(_battle_slot_names()),
+		"[b]出战位[/b] %s" % " / ".join(_battle_slot_names()),
 		"[b]宠物栏容量[/b] %d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity],
 		"[b]通行技[/b] %s" % _format_traversal_skill_names(GameState.get_traversal_skill_ids()),
 		"[b]已激活羁绊[/b] %s" % " / ".join(synergy_service.format_active_lines(synergy_report, 4)),
@@ -6077,6 +6224,9 @@ func _check_active_quests() -> void:
 		var reward_items: Dictionary = result.get("items", {})
 		var reward_text := _format_item_cost(reward_items)
 		var line := "委托完成：%s。" % String(quest.get("title", quest_id))
+		var completion_text := String(quest.get("completion_text", ""))
+		if not completion_text.is_empty():
+			line += " %s" % completion_text
 		if not reward_text.is_empty():
 			line += " 收到 %s。" % reward_text
 		_push_log(line)
@@ -6127,4 +6277,4 @@ func _step_is_complete(step: Dictionary) -> bool:
 			return false
 
 func _is_modal_open() -> bool:
-	return ai_turn_in_progress or battle_panel.visible or dice_roll_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible or main_menu_panel.visible or (is_instance_valid(save_slot_panel) and save_slot_panel.visible) or (is_instance_valid(cutscene_panel) and cutscene_panel.visible)
+	return ai_turn_in_progress or battle_panel.visible or dice_roll_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible or main_menu_panel.visible or (is_instance_valid(save_slot_panel) and save_slot_panel.visible) or (is_instance_valid(cutscene_panel) and cutscene_panel.visible) or (is_instance_valid(input_settings_panel) and input_settings_panel.visible)

@@ -26,6 +26,10 @@ func _ready() -> void:
 	rng.randomize()
 	modulate.a = 1.0
 	scale = Vector2.ONE
+	minus_button.focus_mode = Control.FOCUS_ALL
+	plus_button.focus_mode = Control.FOCUS_ALL
+	reroll_button.focus_mode = Control.FOCUS_ALL
+	confirm_button.focus_mode = Control.FOCUS_ALL
 	_apply_responsive_layout()
 	minus_button.pressed.connect(func() -> void:
 		minus_requested.emit()
@@ -46,8 +50,10 @@ func open_panel(roll_state: Dictionary, panel_state: Dictionary, animation_mode:
 	move_to_front()
 	_apply_responsive_layout()
 	_render(roll_state, panel_state)
+	_wire_focus_neighbors()
 	_play_open_animation()
 	_play_value_feedback(int(roll_state.get("value", 0)), animation_mode)
+	call_deferred("_focus_primary_button")
 
 func refresh_panel(roll_state: Dictionary, panel_state: Dictionary, animation_mode: String = "adjust") -> void:
 	if not visible:
@@ -55,7 +61,9 @@ func refresh_panel(roll_state: Dictionary, panel_state: Dictionary, animation_mo
 		return
 	_apply_responsive_layout()
 	_render(roll_state, panel_state)
+	_wire_focus_neighbors()
 	_play_value_feedback(int(roll_state.get("value", 0)), animation_mode)
+	call_deferred("_focus_primary_button")
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
@@ -112,6 +120,22 @@ func _apply_responsive_layout() -> void:
 	plus_button.custom_minimum_size = Vector2(0, button_height)
 	reroll_button.custom_minimum_size = Vector2(0, button_height)
 	confirm_button.custom_minimum_size = Vector2(0, 48 if short_height else 52)
+
+func _wire_focus_neighbors() -> void:
+	minus_button.focus_neighbor_right = plus_button.get_path()
+	plus_button.focus_neighbor_left = minus_button.get_path()
+	plus_button.focus_neighbor_right = reroll_button.get_path()
+	reroll_button.focus_neighbor_left = plus_button.get_path()
+	for button in [minus_button, plus_button, reroll_button]:
+		button.focus_neighbor_bottom = confirm_button.get_path()
+		confirm_button.focus_neighbor_top = button.get_path()
+
+func _focus_primary_button() -> void:
+	for button in [minus_button, plus_button, reroll_button]:
+		if button_row.visible and not button.disabled:
+			button.grab_focus()
+			return
+	confirm_button.grab_focus()
 
 func _play_open_animation() -> void:
 	if GameState.should_skip_animations():

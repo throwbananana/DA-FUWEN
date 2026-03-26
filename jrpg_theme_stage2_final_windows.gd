@@ -1,5 +1,5 @@
 extends RefCounted
-class_name JrpgTheme
+# Reference copy kept outside the runtime script path; avoid registering a duplicate global class.
 
 static func build() -> Theme:
 	var theme := Theme.new()

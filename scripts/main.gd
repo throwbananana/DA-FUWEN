@@ -3424,6 +3424,55 @@ func _show_shop_result(payload: Dictionary) -> void:
 	pending_context = {"kind": "shop_result", "on_close": "shop_menu"}
 	decision_panel.open_panel("交易完成", "\n".join(lines), [], "继续逛摊")
 
+func _extract_reward_entry_ids(raw_value) -> Array[String]:
+	var values: Array = []
+	if raw_value is Array:
+		values = Array(raw_value).duplicate(true)
+	elif raw_value != null and not String(raw_value).is_empty():
+		values = [raw_value]
+	var result: Array[String] = []
+	for raw_item in values:
+		var entry_id := ""
+		if raw_item is Dictionary:
+			entry_id = String(Dictionary(raw_item).get("id", ""))
+		else:
+			entry_id = String(raw_item)
+		if entry_id.is_empty() or result.has(entry_id):
+			continue
+		result.append(entry_id)
+	return result
+
+func _resolve_codex_unlock_titles(raw_value) -> Array[String]:
+	var titles: Array[String] = []
+	for entry_id in _extract_reward_entry_ids(raw_value):
+		var entry := DataRepository.get_codex_entry(entry_id)
+		var title := String(entry.get("title", entry_id))
+		if title.is_empty() or titles.has(title):
+			continue
+		titles.append(title)
+	return titles
+
+func _resolve_encyclopedia_unlock_titles(raw_value) -> Array[String]:
+	var titles: Array[String] = []
+	for entry_id in _extract_reward_entry_ids(raw_value):
+		var entry := DataRepository.get_encyclopedia_entry(entry_id)
+		var title := String(entry.get("title", entry_id))
+		if title.is_empty() or titles.has(title):
+			continue
+		titles.append(title)
+	return titles
+
+func _append_unlock_title_lines(lines: Array[String], label: String, titles: Array[String]) -> void:
+	if titles.is_empty():
+		return
+	lines.append("- %s：%s" % [label, " / ".join(titles)])
+
+func _apply_codex_and_encyclopedia_unlocks(payload: Dictionary) -> void:
+	for entry_id in _extract_reward_entry_ids(payload.get("codex_unlocks", [])):
+		GameState.unlock_codex_entry(entry_id)
+	for entry_id in _extract_reward_entry_ids(payload.get("encyclopedia_unlocks", [])):
+		GameState.unlock_encyclopedia_entry(entry_id)
+
 func _show_shop_npc_result(payload: Dictionary) -> void:
 	if not bool(payload.get("ok", false)):
 		var reason := String(payload.get("reason", "service_failed"))
@@ -3953,6 +4002,7 @@ func _apply_board_event_package(event_package: Dictionary) -> void:
 	for dialogue_id in event_package.get("unlocked_dialogues", []):
 		if not String(dialogue_id).is_empty():
 			GameState.unlock_dialogue(String(dialogue_id))
+	_apply_codex_and_encyclopedia_unlocks(event_package)
 	for raw_flag in event_package.get("story_flags", []):
 		var flag_id := String(raw_flag)
 		if not flag_id.is_empty():
@@ -3998,6 +4048,8 @@ func _build_board_event_reward_lines(event_package: Dictionary) -> Array[String]
 		var dialogue := DataRepository.get_dialogue(String(dialogue_id))
 		var topic := String(dialogue.get("topic", "新话题"))
 		lines.append("- 解锁后续话题：%s" % _talk_topic_label(topic))
+	_append_unlock_title_lines(lines, "图鉴补完", _resolve_codex_unlock_titles(event_package.get("codex_unlocks", [])))
+	_append_unlock_title_lines(lines, "百科收录", _resolve_encyclopedia_unlock_titles(event_package.get("encyclopedia_unlocks", [])))
 	for raw_delta in event_package.get("relation_deltas", []):
 		var relation_line := _format_relation_delta_line(Dictionary(raw_delta).duplicate(true))
 		if not relation_line.is_empty():
@@ -4782,6 +4834,7 @@ func _apply_talk_side_effects(active_npc_id: String, talk_package: Dictionary) -
 	for dialogue_id in talk_package.get("unlocked_dialogues", []):
 		if not String(dialogue_id).is_empty():
 			GameState.unlock_dialogue(String(dialogue_id))
+	_apply_codex_and_encyclopedia_unlocks(talk_package)
 	for raw_flag in talk_package.get("story_flags", []):
 		var flag_id := String(raw_flag)
 		if not flag_id.is_empty():
@@ -4821,7 +4874,7 @@ func _build_talk_reward_lines(active_npc_id: String, talk_package: Dictionary) -
 			lines.append("- %s 信赖 +%d" % [npc_name, amount])
 	var items: Dictionary = talk_package.get("items", {})
 	for item_id in items.keys():
-		lines.append("- 获得 %s ×%d" % [String(item_id), int(items[item_id])])
+		lines.append("- 获得 %s ×%d" % [_item_name(String(item_id)), int(items[item_id])])
 	for entry in talk_package.get("journal_entries", []):
 		var text := String(entry)
 		if not text.is_empty():
@@ -4830,6 +4883,8 @@ func _build_talk_reward_lines(active_npc_id: String, talk_package: Dictionary) -
 		var dialogue := DataRepository.get_dialogue(String(dialogue_id))
 		var topic := String(dialogue.get("topic", "新话题"))
 		lines.append("- 解锁后续话题：%s" % _talk_topic_label(topic))
+	_append_unlock_title_lines(lines, "图鉴补完", _resolve_codex_unlock_titles(talk_package.get("codex_unlocks", [])))
+	_append_unlock_title_lines(lines, "百科收录", _resolve_encyclopedia_unlock_titles(talk_package.get("encyclopedia_unlocks", [])))
 	for raw_delta in talk_package.get("relation_deltas", []):
 		var relation_line := _format_relation_delta_line(Dictionary(raw_delta).duplicate(true))
 		if not relation_line.is_empty():
@@ -6072,7 +6127,11 @@ func _build_backpack_section_lines() -> Array[String]:
 		_count_fully_unlocked_codex_entries(),
 		DataRepository.codex_entries.size(),
 	])
-	lines.append("图鉴入口已经收进背包 / 小本；想看同行和编成，就去宠物栏那一页。切到 [b]生物图鉴[/b] 就能翻。")
+	lines.append("[b]雾野百科[/b] 已收录 %d / %d" % [
+		_count_unlocked_encyclopedia_entries(),
+		DataRepository.encyclopedia_entries.size(),
+	])
+	lines.append("图鉴入口已经收进背包 / 小本；想看同行和编成，就去宠物栏那一页。切到 [b]生物图鉴[/b] 或 [b]雾野百科[/b] 就能翻。")
 	lines.append("")
 	lines.append("平时缺什么、手上还剩多少，都来这一页翻一眼就行。")
 	return lines
@@ -6217,6 +6276,104 @@ func _build_codex_section_lines() -> Array[String]:
 			for tag in tags:
 				tag_lines.append(String(tag))
 			lines.append("标签：%s" % " / ".join(tag_lines))
+
+	return lines
+
+func _count_unlocked_encyclopedia_entries() -> int:
+	var count := 0
+	for raw_entry in DataRepository.encyclopedia_entries.values():
+		var entry: Dictionary = Dictionary(raw_entry).duplicate(true)
+		if GameState.is_encyclopedia_entry_unlocked(entry):
+			count += 1
+	return count
+
+func _encyclopedia_category_label(category: String) -> String:
+	match category:
+		"location": return "地点"
+		"system": return "机制"
+		"facility": return "设施"
+		"culture": return "风土"
+		_:
+			return category
+
+func _encyclopedia_unlock_hint(rule: Dictionary) -> String:
+	match String(rule.get("type", "")):
+		"visit_habitat":
+			return "到过对应地点后收录"
+		"unlock_habitat":
+			return "开放对应地点后收录"
+		"talk_to_npc":
+			return "与对应居民交谈后收录"
+		"encounter_species":
+			return "遭遇对应生物后收录"
+		"build":
+			return "把相关设施建起来后收录"
+		_:
+			return "推进相关内容后收录"
+
+func _build_encyclopedia_section_lines() -> Array[String]:
+	var lines: Array[String] = []
+	var total := DataRepository.encyclopedia_entries.size()
+	var unlocked := _count_unlocked_encyclopedia_entries()
+
+	lines.append("[b]百科进度[/b] 收录 %d / %d" % [unlocked, total])
+	lines.append("地点、设施与生活规则会慢慢写进这本小册子；偶遇事件也会直接补条目。")
+
+	if total <= 0:
+		lines.append("")
+		lines.append("当前没有可用的百科数据。")
+		return lines
+
+	var entries: Array[Dictionary] = []
+	for raw_entry in DataRepository.encyclopedia_entries.values():
+		entries.append(Dictionary(raw_entry).duplicate(true))
+
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var unlocked_a := GameState.is_encyclopedia_entry_unlocked(a)
+		var unlocked_b := GameState.is_encyclopedia_entry_unlocked(b)
+		if unlocked_a != unlocked_b:
+			return unlocked_a and not unlocked_b
+		return String(a.get("title", a.get("id", ""))) < String(b.get("title", b.get("id", "")))
+	)
+
+	for index in range(entries.size()):
+		var entry := entries[index]
+		var is_unlocked := GameState.is_encyclopedia_entry_unlocked(entry)
+		lines.append("")
+
+		if not is_unlocked:
+			lines.append("[b]%02d. ???[/b] ｜ %s" % [index + 1, _encyclopedia_unlock_hint(Dictionary(entry.get("unlock_rule", {})).duplicate(true))])
+			continue
+
+		var category_label := _encyclopedia_category_label(String(entry.get("category", "topic")))
+		lines.append("[b]%02d. %s[/b] ｜ %s" % [
+			index + 1,
+			String(entry.get("title", "未命名条目")),
+			category_label,
+		])
+		var summary := String(entry.get("summary", "")).strip_edges()
+		if not summary.is_empty():
+			lines.append(summary)
+		for raw_section in Array(entry.get("sections", [])).duplicate(true):
+			var section: Dictionary = Dictionary(raw_section).duplicate(true)
+			var heading := String(section.get("heading", "")).strip_edges()
+			var body := String(section.get("body", "")).strip_edges()
+			if heading.is_empty() and body.is_empty():
+				continue
+			if heading.is_empty():
+				lines.append(body)
+			else:
+				lines.append("%s：%s" % [heading, body])
+		var keywords: Array = Array(entry.get("keywords", [])).duplicate(true)
+		if not keywords.is_empty():
+			var words: Array[String] = []
+			for keyword in keywords:
+				var text := String(keyword).strip_edges()
+				if text.is_empty():
+					continue
+				words.append(text)
+			if not words.is_empty():
+				lines.append("关键词：%s" % " / ".join(words))
 
 	return lines
 
@@ -6488,6 +6645,7 @@ func _build_system_sections() -> Array:
 
 	var backpack_lines := _build_backpack_section_lines()
 	var codex_lines := _build_codex_section_lines()
+	var encyclopedia_lines := _build_encyclopedia_section_lines()
 
 	var completed_count := 0
 	for tutorial_id in TUTORIAL_ORDER:
@@ -6528,6 +6686,12 @@ func _build_system_sections() -> Array:
 			"label": "生物图鉴",
 			"summary": "[b]看过的那些生灵[/b]\n一路记下来的观察，都慢慢收在这里。",
 			"body": "\n".join(codex_lines),
+		},
+		{
+			"id": "encyclopedia",
+			"label": "雾野百科",
+			"summary": "[b]一路慢慢看懂的地方[/b]\n栖地、设施和生活里的门道，都收在这里。",
+			"body": "\n".join(encyclopedia_lines),
 		},
 		{
 			"id": "tutorial",
@@ -6793,6 +6957,12 @@ func _check_active_quests() -> void:
 		_push_log(line)
 		if not String(result.get("journal_entry", "")).is_empty():
 			_push_log("记录新增：%s。" % String(result.get("journal_entry", "")))
+		var codex_titles := _resolve_codex_unlock_titles(result.get("codex_unlocks", []))
+		if not codex_titles.is_empty():
+			_push_log("图鉴补完：%s。" % " / ".join(codex_titles))
+		var encyclopedia_titles := _resolve_encyclopedia_unlock_titles(result.get("encyclopedia_unlocks", []))
+		if not encyclopedia_titles.is_empty():
+			_push_log("百科收录：%s。" % " / ".join(encyclopedia_titles))
 		var pending_story: Dictionary = Dictionary(result.get("pending_story", {})).duplicate(true)
 		if not pending_story.is_empty():
 			story_director.queue_quest_story_beat(pending_story)

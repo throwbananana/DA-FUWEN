@@ -430,10 +430,10 @@ func get_fishing_events_for_habitat(habitat_id: String) -> Array:
 	return result
 
 func get_codex_entry(entry_id: String) -> Dictionary:
-	return codex_entries.get(entry_id, {})
+	return Dictionary(codex_entries.get(entry_id, {})).duplicate(true)
 
 func get_encyclopedia_entry(entry_id: String) -> Dictionary:
-	return encyclopedia_entries.get(entry_id, {})
+	return Dictionary(encyclopedia_entries.get(entry_id, {})).duplicate(true)
 
 func get_npc_routes_for_season(season_id: String) -> Array:
 	return npc_routes_by_season.get(season_id, []).duplicate(true)

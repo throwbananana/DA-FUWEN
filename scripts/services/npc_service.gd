@@ -165,6 +165,13 @@ func finish_quest(quest_id: String) -> Dictionary:
 			continue
 		GameState.set_story_flag(flag_id)
 
+	var codex_unlocks: Array = _coerce_reward_string_list(rewards.get("unlock_codex", []))
+	for entry_id in codex_unlocks:
+		GameState.unlock_codex_entry(String(entry_id))
+	var encyclopedia_unlocks: Array = _coerce_reward_string_list(rewards.get("unlock_encyclopedia", []))
+	for entry_id in encyclopedia_unlocks:
+		GameState.unlock_encyclopedia_entry(String(entry_id))
+
 	var pending_story := {}
 	if bool(rewards.get("try_story_from_giver", false)) and not giver_id.is_empty() and not target_habitat_id.is_empty():
 		pending_story = story_service.preview_story_dialogue(giver_id, target_habitat_id)
@@ -175,8 +182,24 @@ func finish_quest(quest_id: String) -> Dictionary:
 		"trust_result": trust_result,
 		"items": items,
 		"journal_entry": rewards.get("journal_entry", ""),
+		"codex_unlocks": codex_unlocks,
+		"encyclopedia_unlocks": encyclopedia_unlocks,
 		"pending_story": pending_story
 	}
+
+func _coerce_reward_string_list(raw_value) -> Array:
+	var values: Array = []
+	if raw_value is Array:
+		values = Array(raw_value).duplicate(true)
+	elif not String(raw_value).is_empty():
+		values = [String(raw_value)]
+	var result: Array = []
+	for raw_value_item in values:
+		var value := String(raw_value_item)
+		if value.is_empty() or result.has(value):
+			continue
+		result.append(value)
+	return result
 
 func _collect_unlocked_rewards(npc: Dictionary, trust_now: int) -> Array:
 	var unlocked: Array = []

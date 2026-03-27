@@ -45,6 +45,8 @@ func build_talk_package(npc_id: String, habitat_id: String, context: Dictionary 
 		"journal_entries": Array(event_result.get("journal_entries", [])).duplicate(true),
 		"completed_events": Array(event_result.get("completed_events", [])).duplicate(true),
 		"unlocked_dialogues": Array(event_result.get("unlocked_dialogues", [])).duplicate(true),
+		"codex_unlocks": Array(event_result.get("codex_unlocks", [])).duplicate(true),
+		"encyclopedia_unlocks": Array(event_result.get("encyclopedia_unlocks", [])).duplicate(true),
 		"story_flags": Array(event_result.get("story_flags", [])).duplicate(true),
 		"relation_deltas": Array(event_result.get("relation_deltas", [])).duplicate(true),
 	}
@@ -344,13 +346,9 @@ func _materialize_event(event_row: Dictionary, npc_id: String) -> Dictionary:
 	var journal_entry := String(effects.get("journal_entry", ""))
 	if not journal_entry.is_empty():
 		journal_entries.append(journal_entry)
-	var unlocked_dialogues: Array = []
-	var unlock_dialogue = effects.get("unlock_dialogue", "")
-	if unlock_dialogue is Array:
-		for dialogue_id in unlock_dialogue:
-			unlocked_dialogues.append(String(dialogue_id))
-	elif not String(unlock_dialogue).is_empty():
-		unlocked_dialogues.append(String(unlock_dialogue))
+	var unlocked_dialogues: Array = _coerce_string_list(effects.get("unlock_dialogue", []))
+	var codex_unlocks: Array = _coerce_string_list(effects.get("unlock_codex", []))
+	var encyclopedia_unlocks: Array = _coerce_string_list(effects.get("unlock_encyclopedia", []))
 	return {
 		"id": String(event_row.get("id", "")),
 		"title": String(event_row.get("title", "")),
@@ -363,10 +361,26 @@ func _materialize_event(event_row: Dictionary, npc_id: String) -> Dictionary:
 		"journal_entries": journal_entries,
 		"completed_events": [String(event_row.get("id", ""))],
 		"unlocked_dialogues": unlocked_dialogues,
+		"codex_unlocks": codex_unlocks,
+		"encyclopedia_unlocks": encyclopedia_unlocks,
 		"story_flags": Array(effects.get("set_story_flags", [])).duplicate(true),
 		"relation_deltas": Array(effects.get("relation_delta", [])).duplicate(true),
 		"tags": Array(event_row.get("tags", [])).duplicate(true),
 	}
+
+func _coerce_string_list(raw_value) -> Array:
+	var values: Array = []
+	if raw_value is Array:
+		values = Array(raw_value).duplicate(true)
+	elif not String(raw_value).is_empty():
+		values = [String(raw_value)]
+	var result: Array = []
+	for raw_item in values:
+		var value := String(raw_item)
+		if value.is_empty() or result.has(value):
+			continue
+		result.append(value)
+	return result
 
 func _build_transcript(dialogue: Dictionary) -> Array:
 	var lines: Array = []

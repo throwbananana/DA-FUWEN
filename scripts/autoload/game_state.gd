@@ -97,6 +97,7 @@ var completed_quests: Array[String] = []
 var discovered_species: Array[String] = []
 var revealed_codex_entries: Array[String] = []
 var manual_codex_unlocks: Array[String] = []
+var unlocked_encyclopedia_entries: Array[String] = []
 var bonded_species: Array[String] = []
 var observed_species: Array[String] = []
 var journal_entries: Array[String] = []
@@ -186,6 +187,7 @@ func reset_for_new_season() -> void:
 	discovered_species.clear()
 	revealed_codex_entries.clear()
 	manual_codex_unlocks.clear()
+	unlocked_encyclopedia_entries.clear()
 	bonded_species.clear()
 	observed_species.clear()
 	journal_entries.clear()
@@ -804,6 +806,7 @@ func build_runtime_snapshot() -> Dictionary:
 		"discovered_species": discovered_species.duplicate(),
 		"revealed_codex_entries": revealed_codex_entries.duplicate(),
 		"manual_codex_unlocks": manual_codex_unlocks.duplicate(),
+		"unlocked_encyclopedia_entries": unlocked_encyclopedia_entries.duplicate(),
 		"bonded_species": bonded_species.duplicate(),
 		"observed_species": observed_species.duplicate(),
 		"journal_entries": journal_entries.duplicate(),
@@ -878,6 +881,7 @@ func apply_runtime_snapshot(snapshot: Dictionary) -> void:
 	discovered_species = _coerce_string_array(snapshot.get("discovered_species", []))
 	revealed_codex_entries = _coerce_string_array(snapshot.get("revealed_codex_entries", []))
 	manual_codex_unlocks = _coerce_string_array(snapshot.get("manual_codex_unlocks", []))
+	unlocked_encyclopedia_entries = _coerce_string_array(snapshot.get("unlocked_encyclopedia_entries", []))
 	bonded_species = _coerce_string_array(snapshot.get("bonded_species", []))
 	observed_species = _coerce_string_array(snapshot.get("observed_species", []))
 	journal_entries = _coerce_string_array(snapshot.get("journal_entries", []))
@@ -3073,6 +3077,56 @@ func unlock_next_locked_codex_entries(count: int) -> Array[Dictionary]:
 			continue
 		unlocked.append(entry)
 		remaining -= 1
+	return unlocked
+
+func is_encyclopedia_unlock_rule_met(rule: Dictionary) -> bool:
+	match String(rule.get("type", "")):
+		"visit_habitat":
+			return int(quest_memory["visited_habitats"].get(String(rule.get("habitat_id", "")), 0)) > 0
+		"unlock_habitat":
+			return is_habitat_unlocked(String(rule.get("habitat_id", "")))
+		"talk_to_npc":
+			return bool(quest_memory["talked_npcs"].get(String(rule.get("npc", "")), false))
+		"encounter_species":
+			return bool(quest_memory["encounter_species"].get(String(rule.get("species_id", "")), false))
+		"build":
+			var building_id := String(rule.get("building_id", ""))
+			var required_level := maxi(1, int(rule.get("level", 1)))
+			return int(quest_memory["built_levels"].get(building_id, 0)) >= required_level
+		_:
+			return false
+
+func is_encyclopedia_entry_unlocked(entry: Dictionary) -> bool:
+	var entry_id := String(entry.get("id", ""))
+	if entry_id.is_empty():
+		return false
+	if unlocked_encyclopedia_entries.has(entry_id):
+		return true
+	return is_encyclopedia_unlock_rule_met(Dictionary(entry.get("unlock_rule", {})).duplicate(true))
+
+func is_encyclopedia_entry_id_unlocked(entry_id: String) -> bool:
+	var entry := DataRepository.get_encyclopedia_entry(entry_id)
+	if entry.is_empty():
+		return false
+	return is_encyclopedia_entry_unlocked(entry)
+
+func unlock_encyclopedia_entry(entry_id: String) -> bool:
+	if entry_id.is_empty():
+		return false
+	var entry := DataRepository.get_encyclopedia_entry(entry_id)
+	if entry.is_empty() or unlocked_encyclopedia_entries.has(entry_id):
+		return false
+	unlocked_encyclopedia_entries.append(entry_id)
+	unlocked_encyclopedia_entries.sort()
+	return true
+
+func unlock_encyclopedia_entries(entry_ids: Array) -> Array[Dictionary]:
+	var unlocked: Array[Dictionary] = []
+	for raw_entry_id in entry_ids:
+		var entry_id := String(raw_entry_id)
+		if entry_id.is_empty() or not unlock_encyclopedia_entry(entry_id):
+			continue
+		unlocked.append(DataRepository.get_encyclopedia_entry(entry_id))
 	return unlocked
 
 func add_journal_entry(entry: String) -> void:

@@ -220,20 +220,72 @@ var pending_battle_source := ""
 var pending_environment_battle := {}
 var last_encounter_action_id := ""
 var pending_context := {}
-var pending_roll := {}
-var reachable_paths := {}
+var pending_roll: Dictionary:
+	get:
+		return turn_flow_controller.pending_roll
+	set(value):
+		turn_flow_controller.pending_roll = value
+var reachable_paths: Dictionary:
+	get:
+		return turn_flow_controller.reachable_paths
+	set(value):
+		turn_flow_controller.reachable_paths = value
 var board_anim_locked := false
-var pending_travel_path: Array[int] = []
-var pending_travel_target := -1
-var _queued_auto_travel_target := -1
-var branch_choice_pending := false
-var _queued_roll_start := false
-var pending_route_steps_remaining := 0
-var pending_route_history: Array[int] = []
-var pending_route_options: Array[int] = []
-var pending_route_forced_path: Array[int] = []
-var pending_route_forced_index := -1
-var anchor_override_active := false
+var pending_travel_path: Array[int]:
+	get:
+		return turn_flow_controller.pending_travel_path
+	set(value):
+		turn_flow_controller.pending_travel_path = value
+var pending_travel_target:
+	get:
+		return turn_flow_controller.pending_travel_target
+	set(value):
+		turn_flow_controller.pending_travel_target = value
+var _queued_auto_travel_target:
+	get:
+		return turn_flow_controller.queued_auto_travel_target
+	set(value):
+		turn_flow_controller.queued_auto_travel_target = value
+var branch_choice_pending:
+	get:
+		return turn_flow_controller.branch_choice_pending
+	set(value):
+		turn_flow_controller.branch_choice_pending = value
+var _queued_roll_start:
+	get:
+		return turn_flow_controller.queued_roll_start
+	set(value):
+		turn_flow_controller.queued_roll_start = value
+var pending_route_steps_remaining:
+	get:
+		return turn_flow_controller.pending_route_steps_remaining
+	set(value):
+		turn_flow_controller.pending_route_steps_remaining = value
+var pending_route_history: Array[int]:
+	get:
+		return turn_flow_controller.pending_route_history
+	set(value):
+		turn_flow_controller.pending_route_history = value
+var pending_route_options: Array[int]:
+	get:
+		return turn_flow_controller.pending_route_options
+	set(value):
+		turn_flow_controller.pending_route_options = value
+var pending_route_forced_path: Array[int]:
+	get:
+		return turn_flow_controller.pending_route_forced_path
+	set(value):
+		turn_flow_controller.pending_route_forced_path = value
+var pending_route_forced_index:
+	get:
+		return turn_flow_controller.pending_route_forced_index
+	set(value):
+		turn_flow_controller.pending_route_forced_index = value
+var anchor_override_active:
+	get:
+		return turn_flow_controller.anchor_override_active
+	set(value):
+		turn_flow_controller.anchor_override_active = value
 var camp_panel_requires_finish := false
 var starter_choice_pending := false
 var starter_choice_done := false
@@ -2388,9 +2440,7 @@ func _on_start_day_pressed() -> void:
 		return
 	if awaiting_destination or branch_choice_pending:
 		return
-	pending_roll = dice_service.roll()
-	_queued_auto_travel_target = -1
-	_queued_roll_start = false
+	turn_flow_controller.begin_roll(dice_service.roll())
 	_apply_current_roll_routes()
 	_update_ui()
 	if DisplayServer.get_name() != "headless":
@@ -2471,13 +2521,14 @@ func _build_dice_roll_panel_state() -> Dictionary:
 	}
 
 func _on_dice_roll_confirmed() -> void:
-	_queued_roll_start = true
+	turn_flow_controller.queue_roll_start()
 
 func _on_dice_roll_panel_closed() -> void:
 	_update_ui()
-	if not _queued_roll_start or _is_modal_open():
+	if _is_modal_open():
 		return
-	_queued_roll_start = false
+	if not turn_flow_controller.consume_queued_roll_start():
+		return
 	_start_roll_travel()
 
 func _on_dice_roll_plus_requested() -> void:
@@ -2490,14 +2541,7 @@ func _on_dice_roll_reroll_requested() -> void:
 	_on_reroll_pressed()
 
 func _apply_current_roll_routes() -> void:
-	_queued_auto_travel_target = -1
-	_queued_roll_start = false
-	branch_choice_pending = false
-	pending_route_steps_remaining = 0
-	pending_route_history.clear()
-	pending_route_options.clear()
-	pending_route_forced_path.clear()
-	pending_route_forced_index = -1
+	turn_flow_controller.clear_route_state(false)
 	reachable_paths = board_progression_service.get_reachable_paths(current_node_id, int(pending_roll.get("value", 0)))
 	anchor_override_active = false
 	var blocked_before_anchor := _get_blocked_reachable_nodes()
@@ -2516,6 +2560,7 @@ func _apply_current_roll_routes() -> void:
 			else:
 				_push_log("这次落不到安全点，顺手花掉 1 个锚定点，改走最近的安全落点。")
 	awaiting_destination = not selectable.is_empty()
+	turn_flow_controller.set_route_preview(reachable_paths, awaiting_destination, anchor_override_active)
 	if not awaiting_destination:
 		if not _get_blocked_reachable_nodes().is_empty():
 			_push_log("这次掷骰的可达节点都被敌对群占住了，先改路线或等待下一回合。")
@@ -2563,21 +2608,18 @@ func _start_roll_travel() -> void:
 	if pending_roll.is_empty() or not awaiting_destination:
 		return
 
-	branch_choice_pending = false
-	pending_route_history = [current_node_id]
-	pending_route_options.clear()
-	pending_route_forced_path.clear()
-	pending_route_forced_index = -1
+	var forced_path: Array[int] = []
+	var forced_index := -1
+	var steps_remaining := int(pending_roll.get("value", 0))
 
 	if anchor_override_active and reachable_paths.size() == 1:
 		var only_target := int(reachable_paths.keys()[0])
 		for path_node_id in reachable_paths.get(only_target, []):
-			pending_route_forced_path.append(int(path_node_id))
-		pending_route_forced_index = 0
-		pending_route_steps_remaining = maxi(0, pending_route_forced_path.size() - 1)
-	else:
-		pending_route_steps_remaining = int(pending_roll.get("value", 0))
+			forced_path.append(int(path_node_id))
+		forced_index = 0
+		steps_remaining = maxi(0, forced_path.size() - 1)
 
+	turn_flow_controller.begin_travel([current_node_id], steps_remaining, forced_path, forced_index)
 	awaiting_destination = false
 	_continue_roll_travel()
 
@@ -2612,22 +2654,19 @@ func _continue_roll_travel() -> void:
 		_travel_one_step_to(int(options[0]))
 		return
 
-	pending_route_options = options.duplicate()
-	branch_choice_pending = true
+	turn_flow_controller.set_branch_options(options)
 	_update_ui()
 
 func _travel_one_step_to(node_id: int) -> void:
 	if season_finished or board_anim_locked:
 		return
-	branch_choice_pending = false
-	pending_route_options.clear()
-	pending_travel_target = node_id
-	pending_travel_path = [current_node_id, node_id]
+	turn_flow_controller.begin_travel_step([current_node_id, node_id], node_id)
 	board_anim_locked = true
 	_update_ui()
 	board_view.play_travel(pending_travel_path)
 
 func _finalize_roll_arrival() -> void:
+	turn_flow_controller.mark_arrival_resolve()
 	var final_node_id := current_node_id
 	var node: Dictionary = board_lookup[final_node_id]
 
@@ -2693,20 +2732,7 @@ func _finalize_roll_arrival() -> void:
 
 func _clear_pending_route_state(clear_roll := true) -> void:
 	awaiting_destination = false
-	branch_choice_pending = false
-	_queued_auto_travel_target = -1
-	_queued_roll_start = false
-	pending_route_steps_remaining = 0
-	pending_route_history.clear()
-	pending_route_options.clear()
-	pending_route_forced_path.clear()
-	pending_route_forced_index = -1
-	reachable_paths.clear()
-	pending_travel_path.clear()
-	pending_travel_target = -1
-	anchor_override_active = false
-	if clear_roll:
-		pending_roll.clear()
+	turn_flow_controller.clear_route_state(clear_roll)
 
 func _reachable_selectable_nodes() -> Array[int]:
 	var selectable: Array[int] = []
@@ -4249,6 +4275,7 @@ func _advance_after_travel_stop() -> void:
 	if _post_travel_resolution_in_progress:
 		return
 	_post_travel_resolution_in_progress = true
+	turn_flow_controller.enter_post_travel_resolve()
 	_resolve_season_boss_reward()
 	_resolve_board_threat_turn()
 	if season_finished:

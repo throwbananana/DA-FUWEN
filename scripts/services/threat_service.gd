@@ -84,7 +84,7 @@ func build_node_markers() -> Dictionary:
 		markers[node_id].append(String(state.get("name", "敌对群")))
 	return markers
 
-func build_status_lines(node_lookup: Dictionary, max_lines: int = 3) -> Array[String]:
+func build_status_lines(node_lookup: Dictionary, max_lines: int = 3, include_forecast: bool = true) -> Array[String]:
 	var lines: Array[String] = []
 	for state in GameState.get_active_board_threats():
 		if not bool(state.get("active", false)):
@@ -98,15 +98,145 @@ func build_status_lines(node_lookup: Dictionary, max_lines: int = 3) -> Array[St
 			break
 	if lines.is_empty():
 		lines.append("暂未发现游走敌群。")
+	if include_forecast and lines.size() < max_lines:
+		lines.append_array(build_forecast(node_lookup, 2, max_lines - lines.size()))
 	return lines
 
+func build_forecast(node_lookup: Dictionary, turns_ahead: int = 2, max_lines: int = 3) -> Array[String]:
+	var lines: Array[String] = []
+	if turns_ahead <= 0 or max_lines <= 0:
+		return lines
+	for state in GameState.get_active_board_threats():
+		var entry := _build_forecast_entry(Dictionary(state).duplicate(true), node_lookup, turns_ahead)
+		if entry.is_empty():
+			continue
+		lines.append(entry)
+		if lines.size() >= max_lines:
+			break
+	return lines
+
+func get_projected_blocked_node_ids(turns_ahead: int = 1) -> Array[int]:
+	var blocked: Array[int] = []
+	if turns_ahead <= 0:
+		return blocked
+	for state in GameState.get_active_board_threats():
+		if not bool(Dictionary(state).get("block_node", false)):
+			continue
+		var node_id := _project_state_node_id(Dictionary(state).duplicate(true), turns_ahead)
+		if node_id < 0 or blocked.has(node_id):
+			continue
+		blocked.append(node_id)
+	return blocked
+
+func get_high_risk_node_ids(turns_ahead: int = 2) -> Array[int]:
+	var risk_nodes: Array[int] = []
+	if turns_ahead <= 0:
+		return risk_nodes
+	for state in GameState.get_active_board_threats():
+		for step in range(1, turns_ahead + 1):
+			var node_id := _project_state_node_id(Dictionary(state).duplicate(true), step)
+			if node_id < 0 or risk_nodes.has(node_id):
+				continue
+			risk_nodes.append(node_id)
+	return risk_nodes
+
+func build_forecast_snapshot(season_turn: int, node_lookup: Dictionary, steps: int = 2) -> Dictionary:
+	var future_states: Array = Array(GameState.get_active_board_threats()).duplicate(true)
+	var reports: Array[Dictionary] = []
+	var safe_steps := maxi(1, steps)
+	for offset in range(1, safe_steps + 1):
+		var target_turn := season_turn + offset
+		var blocked_nodes: Array[int] = []
+		var pressured_nodes: Array[int] = []
+		var lines: Array[String] = []
+		for index in range(future_states.size()):
+			var state: Dictionary = Dictionary(future_states[index]).duplicate(true)
+			var route: Array = Array(state.get("route", [])).duplicate(true)
+			if route.is_empty():
+				future_states[index] = state
+				continue
+			var spawn_turn := int(state.get("spawn_turn", 1))
+			if target_turn < spawn_turn:
+				future_states[index] = state
+				continue
+			var was_active := bool(state.get("active", false))
+			var previous_node_id := int(state.get("current_node_id", -1))
+			state["active"] = true
+			state["route_index"] = _next_route_index(state, route.size())
+			var current_node_id := int(route[int(state.get("route_index", 0))])
+			state["current_node_id"] = current_node_id
+			if bool(state.get("block_node", false)):
+				_append_unique_node_id(blocked_nodes, current_node_id)
+			_append_unique_node_id(pressured_nodes, current_node_id)
+			var spillover := int(state.get("spillover_danger", 0))
+			if spillover > 0:
+				for neighbor_id in _neighbors(current_node_id, node_lookup):
+					_append_unique_node_id(pressured_nodes, neighbor_id)
+			var line := _movement_line(state, node_lookup, was_active, previous_node_id, current_node_id)
+			if not line.is_empty():
+				lines.append(line)
+			future_states[index] = state
+		reports.append({
+			"offset": offset,
+			"season_turn": target_turn,
+			"blocked_nodes": blocked_nodes,
+			"pressured_nodes": pressured_nodes,
+			"lines": lines,
+		})
+	return {"steps": reports}
+
+func build_forecast_lines(season_turn: int, node_lookup: Dictionary, max_lines: int = 3, steps: int = 2) -> Array[String]:
+	var snapshot := build_forecast_snapshot(season_turn, node_lookup, steps)
+	var lines: Array[String] = []
+	for raw_step in Array(snapshot.get("steps", [])).duplicate(true):
+		var step: Dictionary = Dictionary(raw_step).duplicate(true)
+		var offset := int(step.get("offset", 1))
+		var blocked_names := _node_names(Array(step.get("blocked_nodes", [])).duplicate(true), node_lookup)
+		if not blocked_names.is_empty():
+			lines.append("T+%d 封锁：%s" % [offset, " / ".join(blocked_names.slice(0, 2))])
+			if lines.size() >= max_lines:
+				break
+		var pressured_names := _node_names(Array(step.get("pressured_nodes", [])).duplicate(true), node_lookup)
+		if pressured_names.size() > blocked_names.size():
+			lines.append("T+%d 高压：%s" % [offset, " / ".join(pressured_names.slice(0, 3))])
+			if lines.size() >= max_lines:
+				break
+		if blocked_names.is_empty() and pressured_names.is_empty():
+			continue
+	if lines.is_empty():
+		lines.append("未来两拍暂未看到新的路线封锁。")
+	return lines
+
+func _build_forecast_entry(state: Dictionary, node_lookup: Dictionary, turns_ahead: int) -> String:
+	var node_id := _project_state_node_id(state, turns_ahead)
+	if node_id < 0:
+		return ""
+	return "%s：预计 %d 回合后压到 %s" % [
+		String(state.get("name", "敌对群")),
+		turns_ahead,
+		_node_name(node_id, node_lookup),
+	]
+
+func _project_state_node_id(state: Dictionary, turns_ahead: int) -> int:
+	var route: Array = state.get("route", [])
+	if route.is_empty() or turns_ahead <= 0:
+		return -1
+	var route_index := int(state.get("route_index", -1))
+	for _step in range(turns_ahead):
+		route_index = _advance_index(route_index, route.size(), bool(state.get("loop_route", true)))
+	if route_index < 0 or route_index >= route.size():
+		return -1
+	return int(route[route_index])
+
 func _next_route_index(state: Dictionary, route_size: int) -> int:
+	return _advance_index(int(state.get("route_index", -1)), route_size, bool(state.get("loop_route", true)))
+
+func _advance_index(current_index: int, route_size: int, loop_route: bool) -> int:
 	if route_size <= 0:
 		return -1
-	var current_index := int(state.get("route_index", -1))
 	if current_index < 0:
 		return 0
-	if bool(state.get("loop_route", true)):
+	if loop_route:
 		return (current_index + 1) % route_size
 	return mini(route_size - 1, current_index + 1)
 
@@ -135,6 +265,21 @@ func _neighbors(node_id: int, node_lookup: Dictionary) -> Array[int]:
 		if not neighbors.has(next_id):
 			neighbors.append(next_id)
 	return neighbors
+
+func _append_unique_node_id(target: Array[int], node_id: int) -> void:
+	if node_id < 0 or target.has(node_id):
+		return
+	target.append(node_id)
+
+func _node_names(node_ids: Array, node_lookup: Dictionary) -> Array[String]:
+	var names: Array[String] = []
+	for raw_node_id in node_ids:
+		var node_id := int(raw_node_id)
+		var node_name := _node_name(node_id, node_lookup)
+		if names.has(node_name):
+			continue
+		names.append(node_name)
+	return names
 
 func _node_name(node_id: int, node_lookup: Dictionary) -> String:
 	return String(node_lookup.get(node_id, {}).get("name", "未知节点"))

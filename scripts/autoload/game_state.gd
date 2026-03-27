@@ -3620,6 +3620,24 @@ func register_meta_track(track_id: String, unlock: Dictionary) -> void:
 			modules.append(module_id)
 			meta_unlocks["dice_modules"] = modules
 
+func register_meta_tracks(tracks: Array) -> Array[String]:
+	var unlocked_ids: Array[String] = []
+	for raw_track in tracks:
+		var track: Dictionary = Dictionary(raw_track).duplicate(true)
+		var track_id := String(track.get("id", ""))
+		if track_id.is_empty() or has_meta_track(track_id):
+			continue
+		register_meta_track(track_id, Dictionary(track.get("unlock", {})).duplicate(true))
+		unlocked_ids.append(track_id)
+	return unlocked_ids
+
+func add_meta_progression_total(amount: int) -> int:
+	var delta := maxi(0, amount)
+	if delta <= 0:
+		return exploration_points_total
+	exploration_points_total += delta
+	return exploration_points_total
+
 func add_exploration_points(amount: int) -> void:
 	exploration_points += amount
 	exploration_points_total += amount

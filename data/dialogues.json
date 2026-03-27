@@ -69,14 +69,14 @@
         {
           "id": "start",
           "speaker": "anomaly_researcher",
-          "text": "在塔区做记录，先量的不是光，是自己还能不能把呼吸放慢。",
+          "text": "在塔区做记录，我先看仪表有没有乱跳，再看自己手稳不稳。",
           "choices": [
             {
-              "text": "人先稳住，表才读得准。",
+              "text": "先看数，再看感觉。",
               "next": "reply_a"
             },
             {
-              "text": "难怪你每次都先站着不说话。",
+              "text": "难怪你每次都先站定再下笔。",
               "next": "reply_b"
             }
           ]
@@ -84,13 +84,13 @@
         {
           "id": "reply_a",
           "speaker": "anomaly_researcher",
-          "text": "没错。手一抖，最先被放大的就是误判。",
+          "text": "对。手一抖，读数最先失真。",
           "end": true
         },
         {
           "id": "reply_b",
           "speaker": "anomaly_researcher",
-          "text": "因为这地方会把慌张放得比回声还大。",
+          "text": "不站定，记录就会把慌张一起写进去。",
           "end": true
         }
       ]
@@ -203,14 +203,14 @@
         {
           "id": "start",
           "speaker": "boarder_liu",
-          "text": "临时托管中心里最先准备的从来不是碗，是带着旧味道的布。",
+          "text": "临时托管中心先备的不是碗，是熟悉味道的布和垫子。",
           "choices": [
             {
-              "text": "先让它闻到熟悉感。",
+              "text": "先让它闻到安心的味道。",
               "next": "reply_a"
             },
             {
-              "text": "那布料要多久换一次？",
+              "text": "那布料脏了也不能立刻全换吧？",
               "next": "reply_b"
             }
           ]
@@ -218,13 +218,13 @@
         {
           "id": "reply_a",
           "speaker": "boarder_liu",
-          "text": "对，心一松，胃口和睡意才会回来。",
+          "text": "对，先认出这里不危险，胃口才会回来。",
           "end": true
         },
         {
           "id": "reply_b",
           "speaker": "boarder_liu",
-          "text": "脏了就洗，味道散了就补，不能只图干净。",
+          "text": "能洗的洗，能留的留，不能把熟悉感一并洗掉。",
           "end": true
         }
       ]
@@ -296,14 +296,14 @@
         {
           "id": "start",
           "speaker": "field_recorder",
-          "text": "监测站有时候不是在响，是在等人把同一句话听第二遍。",
+          "text": "监测站最怕的不是没声音，是把顺序听乱。",
           "choices": [
             {
-              "text": "第二遍和第一遍有什么不同？",
+              "text": "所以你总让我先听完一轮再记。",
               "next": "reply_a"
             },
             {
-              "text": "所以你总要我先站着别记。",
+              "text": "第二遍才听得出方向？",
               "next": "reply_b"
             }
           ]
@@ -311,13 +311,13 @@
         {
           "id": "reply_a",
           "speaker": "field_recorder",
-          "text": "第一遍是新奇，第二遍才会开始分辨方向。",
+          "text": "对，耳朵先记住顺序，笔才不会写错重点。",
           "end": true
         },
         {
           "id": "reply_b",
           "speaker": "field_recorder",
-          "text": "耳朵先记住，笔才不会把回声写扁。",
+          "text": "第一遍是动静，第二遍才是结构。",
           "end": true
         }
       ]
@@ -432,14 +432,14 @@
         {
           "id": "start",
           "speaker": "innkeeper_yun",
-          "text": "转运站最安静的时候，不是没人来，是每张社区信息屏都摆在该摆的位置上。",
+          "text": "转运站安不安稳，先看消息摆得齐不齐，再看茶热不热。",
           "choices": [
             {
-              "text": "所以你看板子的速度比看人的速度还快。",
+              "text": "先把方向理顺，人心才稳。",
               "next": "reply_a"
             },
             {
-              "text": "我还以为转运站最重要的是热茶。",
+              "text": "原来热茶排在第二位。",
               "next": "reply_b"
             }
           ]
@@ -447,13 +447,13 @@
         {
           "id": "reply_a",
           "speaker": "innkeeper_yun",
-          "text": "先把消息安顿好，人自然知道该往哪去。",
+          "text": "对。路找对了，脚步自然不乱。",
           "end": true
         },
         {
           "id": "reply_b",
           "speaker": "innkeeper_yun",
-          "text": "热茶管腿脚，消息管方向，两样都不能少。",
+          "text": "腿脚要热，方向也要热，两样少一样都不行。",
           "end": true
         }
       ]
@@ -663,7 +663,7 @@
         {
           "id": "start",
           "speaker": "moss_keeper",
-          "text": "白天摸窝边，晚上摸窝心。热不是越多越好，是得让幼体愿意自己靠过去。",
+          "text": "白天摸窝边，晚上摸窝心。热不是越多越好，是要让幼体愿意自己靠过去。",
           "choices": [
             {
               "text": "那我以后先看它往哪边拱。",
@@ -684,7 +684,7 @@
         {
           "id": "reply_b",
           "speaker": "moss_keeper",
-          "text": "手太冷，连安慰都会像打扰。",
+          "text": "手太冷，连安慰都会变成打扰。",
           "end": true
         }
       ]
@@ -802,14 +802,14 @@
         {
           "id": "start",
           "speaker": "ruin_restorer",
-          "text": "修旧站区最费的不是零件，是把“先别动”忍住。",
+          "text": "修旧站区先别急着动手，先看断口和划痕。",
           "choices": [
             {
-              "text": "因为先动了，痕迹就没了。",
+              "text": "因为线索往往留在坏掉的地方。",
               "next": "reply_a"
             },
             {
-              "text": "那你什么时候才算肯下手？",
+              "text": "那你什么时候才算能拆？",
               "next": "reply_b"
             }
           ]
@@ -823,7 +823,7 @@
         {
           "id": "reply_b",
           "speaker": "ruin_restorer",
-          "text": "当我知道拆掉这一片，不会顺手把昨天也拆掉。",
+          "text": "当我知道拆掉这一片，不会顺手把证据也拆掉。",
           "end": true
         }
       ]
@@ -991,14 +991,14 @@
         {
           "id": "start",
           "speaker": "tinker_bo",
-          "text": "有人看零件只看缺口，我更爱看它还剩下哪点倔劲。",
+          "text": "我看零件，先分能马上装的、得慢慢配的、还有最好别乱碰的。",
           "choices": [
             {
-              "text": "旧东西也有“脾气”？",
+              "text": "原来你先分的是用途，不是新旧。",
               "next": "reply_a"
             },
             {
-              "text": "所以你修东西像在认人。",
+              "text": "所以你修东西前总先把料排开。",
               "next": "reply_b"
             }
           ]
@@ -1006,13 +1006,13 @@
         {
           "id": "reply_a",
           "speaker": "tinker_bo",
-          "text": "当然，有的怎么敲都闷，有的一装上就肯亮。",
+          "text": "先分用途，手上才不会越修越乱。",
           "end": true
         },
         {
           "id": "reply_b",
           "speaker": "tinker_bo",
-          "text": "修久了都一样，先认脾气，再谈办法。",
+          "text": "对，东西一摆顺，办法就出来一半了。",
           "end": true
         }
       ]
@@ -1263,7 +1263,7 @@
         {
           "id": "start",
           "speaker": "grove_patrol",
-          "text": "栎果排出来的路只管今天，明天泥一翻，它就不是原来那条了。",
+          "text": "栎果排出来的路只管今天。明天泥一翻，就不是昨天那条了。",
           "choices": [
             {
               "text": "所以你才让我只记最近三步。",
@@ -1278,13 +1278,13 @@
         {
           "id": "reply_a",
           "speaker": "grove_patrol",
-          "text": "近路从来不是更长远，是更少踩错今天这一脚。",
+          "text": "近路不是走得多远，是今天少踩错一步。",
           "end": true
         },
         {
           "id": "reply_b",
           "speaker": "grove_patrol",
-          "text": "当然，林子先用味道说话，脚印只是后来补上的字。",
+          "text": "当然。林子先用味道说话，脚印只是后补的记号。",
           "end": true
         }
       ]
@@ -1564,7 +1564,7 @@
         {
           "id": "start",
           "speaker": "ruin_diviner",
-          "text": "第一道回响只会学你，第二道才开始说井自己想说的话。",
+          "text": "第一道回响多半只是学你，第二道才像井自己的话。",
           "choices": [
             {
               "text": "所以你总让我慢半拍再回答。",
@@ -1585,7 +1585,7 @@
         {
           "id": "reply_b",
           "speaker": "ruin_diviner",
-          "text": "在这种地方，最先贴上来的答案通常最想把你领偏。",
+          "text": "在这种地方，最先贴上来的答案，往往最想把你领偏。",
           "end": true
         }
       ]
@@ -2547,7 +2547,7 @@
         {
           "id": "reply_b",
           "speaker": "field_recorder",
-          "text": "做记录的人，总得给自己留条回头路。不然资料再多，也只是把慌张存起来。",
+          "text": "做记录的人，总得给自己留条回头路。不然资料再多，也只是把慌张存下来。",
           "end": true
         }
       ]

@@ -235,6 +235,19 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "节点详情"
 
+[node name="NodeDetailPreviewRect" type="TextureRect" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(0, 108)
+size_flags_horizontal = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NodeDetailPreviewCaptionLabel" type="Label" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+horizontal_alignment = 1
+
 [node name="MapHintLabel" type="RichTextLabel" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
@@ -717,6 +730,19 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "选择"
 
+[node name="PreviewRect" type="TextureRect" parent="Overlay/DecisionPanel/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(0, 180)
+size_flags_horizontal = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PreviewCaptionLabel" type="Label" parent="Overlay/DecisionPanel/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+horizontal_alignment = 1
+
 [node name="BodyLabel" type="RichTextLabel" parent="Overlay/DecisionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 96)
@@ -977,6 +1003,19 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 84)
 bbcode_enabled = true
 scroll_active = true
+
+[node name="PreviewRect" type="TextureRect" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+custom_minimum_size = Vector2(0, 180)
+size_flags_horizontal = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PreviewCaptionLabel" type="Label" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+horizontal_alignment = 1
 
 [node name="DetailLabel" type="RichTextLabel" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2

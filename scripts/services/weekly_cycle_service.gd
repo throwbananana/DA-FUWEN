@@ -1,8 +1,18 @@
 class_name WeeklyCycleService
 extends RefCounted
 
+const GUIDED_INTRO_METRICS := {
+	"visit_count": true,
+	"build_count": true,
+	"encounter_count": true,
+}
+
 func pick_objective(season_id: String, week_index: int) -> Dictionary:
 	var pool: Array = DataRepository.get_weekly_objectives_for_season(season_id)
+	if GameState.is_guided_intro_active():
+		var guided_pool := _filter_guided_intro_objectives(pool)
+		if not guided_pool.is_empty():
+			pool = guided_pool
 	if pool.is_empty():
 		return {}
 	var safe_index := maxi(0, week_index - 1) % pool.size()
@@ -38,3 +48,15 @@ func build_summary(objective: Dictionary, progress: Dictionary) -> String:
 
 func get_reward_bundle_id(objective: Dictionary) -> String:
 	return String(objective.get("reward_bundle_id", ""))
+
+func _filter_guided_intro_objectives(pool: Array) -> Array:
+	var filtered: Array = []
+	for raw_objective in pool:
+		var objective: Dictionary = Dictionary(raw_objective).duplicate(true)
+		var requirements: Array = objective.get("requirements", [])
+		if requirements.size() != 1:
+			continue
+		var metric := String(requirements[0].get("metric", ""))
+		if GUIDED_INTRO_METRICS.has(metric):
+			filtered.append(objective)
+	return filtered

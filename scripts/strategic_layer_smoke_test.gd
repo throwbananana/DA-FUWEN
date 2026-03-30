@@ -11,8 +11,7 @@ func _run_checks(scene: Node) -> void:
 
 	scene.current_node_id = 5
 	scene.current_visit_habitat_id = "ancient_platform"
-	var arrival_payload: Dictionary = scene.habitat_service.get_visit_summary("ancient_platform")
-	scene._show_arrival_menu(arrival_payload)
+	scene.visit_flow.start_visit("ancient_platform", scene.board_lookup.get(5, {}))
 	await process_frame
 	if scene.decision_panel.current_choices.is_empty():
 		_fail("Strategic layer smoke test failed: arrival menu should still expose a primary node action.")
@@ -26,6 +25,26 @@ func _run_checks(scene: Node) -> void:
 	scene._show_build_result({"ok": false, "reason": "max_level"})
 	if String(scene.pending_context.get("on_close", "")) != "finish_visit":
 		_fail("Strategic layer smoke test failed: finishing a node action should end the visit instead of reopening the node menu.")
+		return
+	scene.visit_flow.open_resident_picker()
+	await process_frame
+	if String(scene.pending_context.get("kind", "")) != "resident_select":
+		_fail("Strategic layer smoke test failed: resident picker should be routed through visit flow state changes.")
+		return
+	if scene.decision_panel.current_choices.is_empty():
+		_fail("Strategic layer smoke test failed: resident picker should expose assignable caretaker choices.")
+		return
+	scene.current_visit_habitat_id = "mist_moss_cave"
+	scene.visit_flow.choose_npc_action("duel:moss_keeper")
+	await process_frame
+	var duel_routed := String(scene.pending_context.get("kind", "")) == "npc_duel_result" or String(scene.pending_battle_source) == "npc_intro_duel"
+	if not duel_routed:
+		_fail("Strategic layer smoke test failed: NPC duel selection should be routed through visit flow state changes.")
+		return
+	scene.visit_flow.choose_npc_action("quest:build_warm_nest")
+	await process_frame
+	if String(scene.pending_context.get("kind", "")) != "quest_result":
+		_fail("Strategic layer smoke test failed: quest acceptance should be routed through visit flow state changes.")
 		return
 
 	scene.current_node_id = 1
@@ -51,6 +70,23 @@ func _run_checks(scene: Node) -> void:
 		return
 	if scene.base_button.visible:
 		_fail("Strategic layer smoke test failed: the camp panel should no longer be exposed as a permanent side button.")
+		return
+	scene.camp_flow.open_team_manage_menu()
+	await process_frame
+	if String(scene.pending_context.get("kind", "")) != "team_manage":
+		_fail("Strategic layer smoke test failed: camp team management should be routed through camp flow state changes.")
+		return
+	scene.camp_flow.choose_team_manage_action("battle_0")
+	await process_frame
+	if String(scene.pending_context.get("kind", "")) != "team_battle_slot":
+		_fail("Strategic layer smoke test failed: battle slot picker should be routed through camp flow state changes.")
+		return
+	scene.camp_flow.open_team_manage_menu()
+	await process_frame
+	scene.camp_flow.choose_team_manage_action("resident_sites")
+	await process_frame
+	if String(scene.pending_context.get("kind", "")) != "camp_resident_site":
+		_fail("Strategic layer smoke test failed: camp resident site picker should be routed through camp flow state changes.")
 		return
 
 	await create_timer(0.05).timeout

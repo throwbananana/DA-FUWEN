@@ -166,6 +166,7 @@ func sync_external_library() -> Dictionary:
 		removed += 1
 	manifest["assets"] = assets
 	_apply_external_bindings(Dictionary(scan.get("bindings", {})).duplicate(true), assets)
+	_apply_external_data_links(Dictionary(scan.get("data_links", {})).duplicate(true), assets)
 	_save_manifest()
 	return {
 		"imported": imported,
@@ -265,6 +266,34 @@ func get_asset_bindings(asset_id: String) -> Array[String]:
 	slot_ids.sort()
 	return slot_ids
 
+func bind_data_target(target_key: String, asset_id: String) -> void:
+	if target_key.is_empty():
+		return
+	var asset := get_asset(asset_id)
+	if asset.is_empty():
+		return
+	var data_links: Dictionary = Dictionary(manifest.get("data_links", {})).duplicate(true)
+	data_links[target_key] = asset_id
+	manifest["data_links"] = data_links
+	_save_manifest()
+
+func clear_data_target(target_key: String) -> void:
+	if target_key.is_empty():
+		return
+	var data_links: Dictionary = Dictionary(manifest.get("data_links", {})).duplicate(true)
+	data_links.erase(target_key)
+	manifest["data_links"] = data_links
+	_save_manifest()
+
+func get_data_target_binding(target_key: String) -> String:
+	return String(manifest.get("data_links", {}).get(target_key, ""))
+
+func get_data_bound_asset(target_key: String) -> Dictionary:
+	var asset_id := get_data_target_binding(target_key)
+	if asset_id.is_empty():
+		return {}
+	return get_asset(asset_id)
+
 func get_supported_import_extensions() -> Array[String]:
 	var extensions: Array[String] = []
 	for kind in _ordered_kinds():
@@ -338,11 +367,38 @@ func get_bound_file_text(slot_id: String) -> String:
 		return ""
 	return get_file_text(asset_id)
 
+func get_data_bound_texture(target_key: String) -> Texture2D:
+	var asset_id := get_data_target_binding(target_key)
+	if asset_id.is_empty():
+		return null
+	return get_texture(asset_id)
+
+func get_data_bound_audio_stream(target_key: String) -> AudioStream:
+	var asset_id := get_data_target_binding(target_key)
+	if asset_id.is_empty():
+		return null
+	return get_audio_stream(asset_id)
+
+func get_data_bound_font(target_key: String) -> FontFile:
+	var asset_id := get_data_target_binding(target_key)
+	if asset_id.is_empty():
+		return null
+	return get_font_file(asset_id)
+
+func get_data_bound_file_text(target_key: String) -> String:
+	var asset_id := get_data_target_binding(target_key)
+	if asset_id.is_empty():
+		return ""
+	return get_file_text(asset_id)
+
 func get_texture(asset_id: String) -> Texture2D:
 	var image_info := get_image(asset_id)
 	if image_info.is_empty():
 		return null
-	var image := Image.load_from_file(String(image_info.get("path", "")))
+	var absolute_path := get_asset_absolute_path(asset_id)
+	if absolute_path.is_empty() or not FileAccess.file_exists(absolute_path):
+		return null
+	var image := Image.load_from_file(absolute_path)
 	if image.is_empty():
 		return null
 	return ImageTexture.create_from_image(image)
@@ -352,7 +408,7 @@ func get_audio_stream(asset_id: String) -> AudioStream:
 	if String(asset.get("kind", "")) != "audio":
 		return null
 	var absolute_path := get_asset_absolute_path(asset_id)
-	if absolute_path.is_empty():
+	if absolute_path.is_empty() or not FileAccess.file_exists(absolute_path):
 		return null
 	var path_lower := absolute_path.to_lower()
 	if path_lower.ends_with(".ogg"):
@@ -377,7 +433,7 @@ func get_font_file(asset_id: String) -> FontFile:
 	if String(asset.get("kind", "")) != "font":
 		return null
 	var absolute_path := get_asset_absolute_path(asset_id)
-	if absolute_path.is_empty():
+	if absolute_path.is_empty() or not FileAccess.file_exists(absolute_path):
 		return null
 	var path_lower := absolute_path.to_lower()
 	var font_file := FontFile.new()
@@ -394,7 +450,7 @@ func get_file_text(asset_id: String) -> String:
 	if String(asset.get("kind", "")) != "file":
 		return ""
 	var absolute_path := get_asset_absolute_path(asset_id)
-	if absolute_path.is_empty():
+	if absolute_path.is_empty() or not FileAccess.file_exists(absolute_path):
 		return ""
 	var file := FileAccess.open(absolute_path, FileAccess.READ)
 	if file == null:
@@ -411,6 +467,7 @@ func _default_manifest() -> Dictionary:
 	return {
 		"assets": {},
 		"bindings": {},
+		"data_links": {},
 	}
 
 func _ensure_dirs() -> void:
@@ -455,6 +512,8 @@ func _normalize_manifest(data: Dictionary) -> Dictionary:
 	normalized["assets"] = assets
 	if typeof(data.get("bindings", {})) == TYPE_DICTIONARY:
 		normalized["bindings"] = Dictionary(data.get("bindings", {})).duplicate(true)
+	if typeof(data.get("data_links", {})) == TYPE_DICTIONARY:
+		normalized["data_links"] = Dictionary(data.get("data_links", {})).duplicate(true)
 	return normalized
 
 func _normalize_asset_record(entry_key: String, raw_info: Dictionary, fallback_kind: String) -> Dictionary:
@@ -621,10 +680,12 @@ func _scan_external_library() -> Dictionary:
 	var result := {
 		"assets": asset_rows,
 		"bindings": {},
+		"data_links": {},
 	}
 	var manifest_info := _read_external_manifest()
 	var declared_assets: Dictionary = Dictionary(manifest_info.get("assets", {})).duplicate(true)
 	result["bindings"] = Dictionary(manifest_info.get("bindings", {})).duplicate(true)
+	result["data_links"] = Dictionary(manifest_info.get("data_links", {})).duplicate(true)
 	var declared_by_key := {}
 	for key in declared_assets.keys():
 		var declared := Dictionary(declared_assets.get(key, {})).duplicate(true)
@@ -704,6 +765,21 @@ func _apply_external_bindings(external_bindings: Dictionary, assets: Dictionary)
 		bindings[slot_name] = asset_id
 	manifest["bindings"] = bindings
 
+func _apply_external_data_links(external_data_links: Dictionary, assets: Dictionary) -> void:
+	var data_links: Dictionary = Dictionary(manifest.get("data_links", {})).duplicate(true)
+	for target_key in external_data_links.keys():
+		var normalized_key := String(target_key)
+		if normalized_key.is_empty():
+			continue
+		var asset_id := String(external_data_links.get(target_key, ""))
+		if asset_id.is_empty():
+			data_links.erase(normalized_key)
+			continue
+		if not assets.has(asset_id):
+			continue
+		data_links[normalized_key] = asset_id
+	manifest["data_links"] = data_links
+
 func _clear_bindings_for_asset(asset_id: String) -> void:
 	var bindings: Dictionary = Dictionary(manifest.get("bindings", {})).duplicate(true)
 	var stale_slots: Array[String] = []
@@ -713,6 +789,14 @@ func _clear_bindings_for_asset(asset_id: String) -> void:
 	for slot_id in stale_slots:
 		bindings.erase(slot_id)
 	manifest["bindings"] = bindings
+	var data_links: Dictionary = Dictionary(manifest.get("data_links", {})).duplicate(true)
+	var stale_targets: Array[String] = []
+	for target_key in data_links.keys():
+		if String(data_links.get(target_key, "")) == asset_id:
+			stale_targets.append(String(target_key))
+	for target_key in stale_targets:
+		data_links.erase(target_key)
+	manifest["data_links"] = data_links
 
 func _remove_cached_asset(asset_info: Dictionary) -> void:
 	var cached_path := String(asset_info.get("path", ""))

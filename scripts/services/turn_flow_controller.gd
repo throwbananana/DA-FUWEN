@@ -18,6 +18,7 @@ var phase: TurnPhase = TurnPhase.DAY_READY
 
 var pending_roll: Dictionary = {}
 var reachable_paths: Dictionary = {}
+var awaiting_destination := false
 var pending_travel_path: Array[int] = []
 var pending_travel_target := -1
 var queued_auto_travel_target := -1
@@ -35,6 +36,7 @@ func reset() -> void:
 	clear_route_state()
 
 func clear_route_state(clear_roll: bool = true) -> void:
+	awaiting_destination = false
 	branch_choice_pending = false
 	queued_auto_travel_target = -1
 	queued_roll_start = false
@@ -57,6 +59,7 @@ func begin_roll(roll_result: Dictionary) -> void:
 
 func set_route_preview(paths: Dictionary, has_destinations: bool, anchor_used: bool) -> void:
 	reachable_paths = paths.duplicate(true)
+	awaiting_destination = has_destinations
 	anchor_override_active = anchor_used
 	phase = TurnPhase.ROUTE_PREVIEW if has_destinations else TurnPhase.DAY_READY
 
@@ -69,6 +72,7 @@ func consume_queued_roll_start() -> bool:
 	return queued
 
 func begin_travel(route_history: Array[int], steps_remaining: int, forced_path: Array[int] = [], forced_index: int = -1) -> void:
+	awaiting_destination = false
 	pending_route_history = route_history.duplicate()
 	pending_route_steps_remaining = steps_remaining
 	pending_route_forced_path = forced_path.duplicate()
@@ -138,6 +142,7 @@ func is_input_locked() -> bool:
 	]
 
 func begin_new_day() -> void:
+	awaiting_destination = false
 	set_phase(TurnPhase.DAY_READY)
 
 func mark_route_preview() -> void:

@@ -1,13 +1,20 @@
 {
-	"bindings": {
-		"main_menu_bg": "ext_smoke_asset_sync"
-	},
-	"assets": {
-		"ext_smoke_asset_sync": {
-			"filename": "ext_smoke_asset_sync.png",
-			"id": "ext_smoke_asset_sync",
-			"kind": "image",
-			"label": "smoke_asset"
-		}
-	}
+  "assets": {
+    "ext_unnamed": {
+      "id": "ext_unnamed",
+      "kind": "image",
+      "label": "unnamed",
+      "filename": "ext_unnamed.png",
+      "folder": "images",
+      "width": 848,
+      "height": 1024,
+      "file_size": 1284006,
+      "adapted": false,
+      "original_file": "unnamed.png",
+      "original_ext": ".png",
+      "updated_at": 1774852232
+    }
+  },
+  "bindings": {},
+  "data_links": {}
 }

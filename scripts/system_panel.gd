@@ -6,6 +6,8 @@ signal closed
 @onready var header_label: Label = $MarginContainer/VBoxContainer/HeaderRow/HeaderLabel
 @onready var section_row: BoxContainer = $MarginContainer/VBoxContainer/SectionRow
 @onready var summary_label: RichTextLabel = $MarginContainer/VBoxContainer/SummaryLabel
+@onready var preview_rect: TextureRect = $MarginContainer/VBoxContainer/PreviewRect
+@onready var preview_caption_label: Label = $MarginContainer/VBoxContainer/PreviewCaptionLabel
 @onready var detail_label: RichTextLabel = $MarginContainer/VBoxContainer/DetailLabel
 @onready var close_button: Button = $MarginContainer/VBoxContainer/HeaderRow/CloseButton
 
@@ -33,6 +35,10 @@ func open_panel(title_text: String, sections: Array, initial_section_id: String 
 	if current_sections.is_empty():
 		current_section_id = ""
 		summary_label.text = ""
+		preview_rect.texture = null
+		preview_rect.hide()
+		preview_caption_label.text = ""
+		preview_caption_label.hide()
 		detail_label.text = ""
 		return
 	var target_id := initial_section_id
@@ -116,6 +122,7 @@ func _select_section(section_id: String) -> void:
 		return
 	current_section_id = section_id
 	summary_label.text = String(section.get("summary", ""))
+	_apply_section_preview(section)
 	detail_label.text = String(section.get("body", ""))
 	summary_label.scroll_to_line(0)
 	detail_label.scroll_to_line(0)
@@ -132,6 +139,8 @@ func _select_section(section_id: String) -> void:
 func _apply_responsive_layout() -> void:
 	if not is_node_ready():
 		return
+	if not is_instance_valid(header_label) or not is_instance_valid(section_row) or not is_instance_valid(summary_label) or not is_instance_valid(preview_rect) or not is_instance_valid(preview_caption_label):
+		return
 	var compact_width := size.x < 760.0
 	var short_height := size.y < 560.0
 	header_label.add_theme_font_size_override("font_size", 20 if short_height else 24)
@@ -139,6 +148,8 @@ func _apply_responsive_layout() -> void:
 	section_row.add_theme_constant_override("separation", 6 if compact_width else 8)
 	summary_label.custom_minimum_size = Vector2(0, 64 if short_height else 84)
 	summary_label.scroll_active = true
+	preview_rect.custom_minimum_size = Vector2(0, 120 if short_height else 180)
+	preview_caption_label.add_theme_font_size_override("font_size", 13 if short_height else 14)
 	for child in section_row.get_children():
 		var button := child as Button
 		if button == null:
@@ -167,12 +178,24 @@ func _play_section_transition() -> void:
 	detail_label.modulate = Color(1, 1, 1, 0)
 	summary_label.scale = Vector2(0.99, 0.99)
 	detail_label.scale = Vector2(0.99, 0.99)
+	if preview_rect.visible:
+		preview_rect.modulate = Color(1, 1, 1, 0)
+		preview_rect.scale = Vector2(0.99, 0.99)
+	if preview_caption_label.visible:
+		preview_caption_label.modulate = Color(1, 1, 1, 0)
+		preview_caption_label.scale = Vector2(0.99, 0.99)
 	_section_tween = create_tween()
 	_section_tween.set_parallel(true)
 	_section_tween.tween_property(summary_label, "modulate:a", 1.0, 0.12)
 	_section_tween.tween_property(summary_label, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_section_tween.parallel().tween_property(detail_label, "modulate:a", 1.0, 0.14)
 	_section_tween.parallel().tween_property(detail_label, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if preview_rect.visible:
+		_section_tween.parallel().tween_property(preview_rect, "modulate:a", 1.0, 0.14)
+		_section_tween.parallel().tween_property(preview_rect, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	if preview_caption_label.visible:
+		_section_tween.parallel().tween_property(preview_caption_label, "modulate:a", 1.0, 0.12)
+		_section_tween.parallel().tween_property(preview_caption_label, "scale", Vector2.ONE, 0.14).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _stop_tweens() -> void:
 	if _panel_tween != null:
@@ -187,6 +210,14 @@ func _find_section(section_id: String) -> Dictionary:
 		if String(section.get("id", "")) == section_id:
 			return Dictionary(section).duplicate(true)
 	return {}
+
+func _apply_section_preview(section: Dictionary) -> void:
+	var texture: Texture2D = section.get("preview_texture", null) as Texture2D
+	preview_rect.texture = texture
+	preview_rect.visible = texture != null
+	var caption := String(section.get("preview_caption", "")).strip_edges()
+	preview_caption_label.text = caption
+	preview_caption_label.visible = not caption.is_empty()
 
 func _wire_focus_neighbors() -> void:
 	for index in range(_section_buttons.size()):

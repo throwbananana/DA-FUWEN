@@ -26,6 +26,7 @@ const NpcRouteService = preload("res://scripts/services/npc_route_service.gd")
 const ThreatService = preload("res://scripts/services/threat_service.gd")
 const RouteRiskService = preload("res://scripts/services/route_risk_service.gd")
 const TurnFlowController = preload("res://scripts/services/turn_flow_controller.gd")
+const CampFlowController = preload("res://scripts/services/camp_flow_controller.gd")
 const AIPlayerService = preload("res://scripts/services/ai_player_service.gd")
 const DialogueService = preload("res://scripts/services/dialogue_service.gd")
 const StoryService = preload("res://scripts/services/story_service.gd")
@@ -166,6 +167,8 @@ var input_settings_panel: InputSettingsPanel
 @onready var board_top_strip: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip
 @onready var board_stage_panel: PanelContainer = %BoardStagePanel
 @onready var node_detail_card: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard
+@onready var node_detail_preview_rect: TextureRect = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer/NodeDetailPreviewRect
+@onready var node_detail_preview_caption_label: Label = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer/NodeDetailPreviewCaptionLabel
 @onready var top_strip_row: BoxContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow
 @onready var board_meta_column: VBoxContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow/BoardMetaColumn
 @onready var side_column: VBoxContainer = $RootMargin/MainVBox/ContentRow/SideColumn
@@ -184,6 +187,7 @@ var world_nodes: Array = []
 var board_lookup := {}
 
 var visit_flow: VisitFlowController
+var camp_flow: CampFlowController
 var habitat_service := HabitatService.new()
 var npc_service := NpcService.new()
 var encounter_service := EncounterService.new()
@@ -215,11 +219,28 @@ var cutscene_service := CutsceneService.new()
 var cutscene_panel: CutscenePanel
 
 var season_finished := false
-var awaiting_destination := false
 var current_node_id := 0
-var current_visit_habitat_id := ""
-var current_encounter := {}
-var pending_npc_duel_id := ""
+var awaiting_destination: bool:
+	get:
+		return turn_flow_controller.awaiting_destination
+	set(value):
+		turn_flow_controller.awaiting_destination = value
+var current_visit_habitat_id: String:
+	get:
+		if not is_instance_valid(visit_flow):
+			return ""
+		return visit_flow.current_habitat_id
+	set(value):
+		if is_instance_valid(visit_flow):
+			visit_flow.current_habitat_id = value
+var current_encounter: Dictionary:
+	get:
+		if not is_instance_valid(visit_flow):
+			return {}
+		return visit_flow.current_encounter
+	set(value):
+		if is_instance_valid(visit_flow):
+			visit_flow.current_encounter = Dictionary(value).duplicate(true)
 var pending_battle_source := ""
 var pending_environment_battle := {}
 var last_encounter_action_id := ""
@@ -368,6 +389,7 @@ func _ready() -> void:
 	_queue_responsive_layout()
 	_refresh_custom_asset_bindings()
 	install_visit_flow()
+	install_camp_flow()
 	GameState.ensure_save_index()
 	GameState.migrate_legacy_run_save()
 	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
@@ -430,6 +452,11 @@ func install_visit_flow() -> void:
 	add_child(visit_flow)
 	visit_flow.state_changed.connect(_on_visit_state_changed)
 	visit_flow.visit_finished.connect(_on_visit_finished)
+
+func install_camp_flow() -> void:
+	camp_flow = CampFlowController.new()
+	add_child(camp_flow)
+	camp_flow.state_changed.connect(_on_camp_flow_state_changed)
 
 func _ensure_cutscene_panel() -> void:
 	if is_instance_valid(cutscene_panel):
@@ -1061,6 +1088,8 @@ func _apply_responsive_layout() -> void:
 		board_height = 380 if tight_height else (440 if short_height else 500)
 	board_view.custom_minimum_size = Vector2(0, board_height)
 	node_detail_card.custom_minimum_size = Vector2(0, 108 if tight_height else (132 if short_height else 172))
+	node_detail_preview_rect.custom_minimum_size = Vector2(0, 88 if tight_height else (96 if short_height else 108))
+	node_detail_preview_caption_label.add_theme_font_size_override("font_size", 12 if tight_height else 13)
 	map_hint_label.scroll_active = true
 	side_column.custom_minimum_size = Vector2(0, 0) if content_row.vertical else Vector2(280 if tight_height else (320 if compact_width else 360), 0)
 
@@ -2188,11 +2217,7 @@ func start_new_game() -> void:
 	_refresh_board_region(true)
 	runtime_session_started = true
 	season_finished = false
-	awaiting_destination = false
 	current_node_id = GameState.current_board_node_id
-	current_visit_habitat_id = ""
-	current_encounter.clear()
-	pending_npc_duel_id = ""
 	pending_battle_source = ""
 	pending_environment_battle.clear()
 	last_encounter_action_id = ""
@@ -2218,6 +2243,7 @@ func start_new_game() -> void:
 	pending_tutorial_battle_log = ""
 	_last_ai_turn_report.clear()
 	turn_flow_controller.reset()
+	visit_flow.reset()
 	story_director.reset()
 	decision_panel.hide()
 	base_panel.hide()
@@ -2265,10 +2291,6 @@ func _apply_run_payload(payload: Dictionary) -> bool:
 
 func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
 	season_finished = bool(scene_state.get("season_finished", false))
-	awaiting_destination = bool(scene_state.get("awaiting_destination", false))
-	current_visit_habitat_id = String(scene_state.get("current_visit_habitat_id", ""))
-	current_encounter = {}
-	pending_npc_duel_id = ""
 	pending_battle_source = ""
 	pending_environment_battle.clear()
 	last_encounter_action_id = ""
@@ -2296,6 +2318,9 @@ func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
 	pending_tutorial_battle_log = ""
 	_last_ai_turn_report.clear()
 	turn_flow_controller.reset()
+	visit_flow.reset()
+	awaiting_destination = bool(scene_state.get("awaiting_destination", false))
+	current_visit_habitat_id = String(scene_state.get("current_visit_habitat_id", ""))
 	story_director.reset()
 	decision_panel.hide()
 	base_panel.hide()
@@ -2445,7 +2470,6 @@ func _begin_next_day() -> void:
 	current_node_id = GameState.current_board_node_id
 	current_visit_habitat_id = ""
 	current_encounter.clear()
-	pending_npc_duel_id = ""
 	pending_battle_source = ""
 	pending_environment_battle.clear()
 	last_encounter_action_id = ""
@@ -3078,7 +3102,7 @@ func _continue_board_stop_flow(node: Dictionary) -> void:
 		_push_log("%s 附近残留着躁动痕迹，本次需要先处理袭扰。" % String(node.get("name", "未知地点")))
 		visit_flow.start_observation_for_habitat(current_visit_habitat_id, "ambush")
 	else:
-		visit_flow.start_visit(current_visit_habitat_id)
+		visit_flow.start_visit(current_visit_habitat_id, node)
 	_update_ui()
 
 func _try_open_board_map_effect(node: Dictionary) -> bool:
@@ -3211,6 +3235,20 @@ func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
 			_show_shop_npc_result(payload)
 		"npc_menu":
 			_show_npc_menu(payload)
+		"npc_duel_battle":
+			_start_npc_duel_battle(payload)
+		"npc_duel_result":
+			_show_npc_duel_result(payload)
+		"npc_talk_request":
+			_handle_talk_to_npc(String(payload.get("npc_id", "")))
+		"talk_result":
+			_show_talk_result(payload)
+		"quest_result":
+			_show_quest_result(payload)
+		"resident_select":
+			_show_resident_picker(payload)
+		"resident_result":
+			_show_resident_result(payload)
 		"dojo_menu":
 			_show_dojo_menu(payload)
 		"dojo_battle":
@@ -3221,6 +3259,43 @@ func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
 			_show_encounter_preview(payload)
 		"encounter_result":
 			_show_encounter_result(payload)
+		"mail_menu":
+			_show_mail_menu(payload)
+		"mail_result":
+			_show_mail_result(payload, "finish_visit")
+		"fishing_menu":
+			_show_fishing_menu(payload)
+		"fishing_result":
+			_show_fishing_result(payload)
+		"nursery_menu":
+			_show_nursery_menu(payload)
+		"nursery_species_select":
+			_show_nursery_species_picker(payload)
+		"nursery_care_select":
+			_show_nursery_care_picker(payload)
+		"nursery_result":
+			_show_nursery_result(payload)
+
+func _on_camp_flow_state_changed(step_id: String, payload: Dictionary) -> void:
+	match step_id:
+		"team_manage":
+			_show_team_manage_menu(payload)
+		"team_battle_slot":
+			_show_team_battle_slot_picker(payload)
+		"team_reserve_slot":
+			_show_team_reserve_picker(payload)
+		"team_result":
+			_show_team_result(payload)
+		"camp_resident_site":
+			_show_camp_resident_site_picker(payload)
+		"camp_resident_select":
+			_show_camp_resident_picker(payload)
+		"camp_resident_result":
+			_show_camp_resident_result(payload)
+		"camp_mail_menu":
+			_show_camp_mail_menu(payload)
+		"camp_mail_result":
+			_show_mail_result(payload, "reopen_base")
 
 func _show_arrival_menu(payload: Dictionary) -> void:
 	var habitat: Dictionary = payload.get("habitat", {})
@@ -3230,22 +3305,27 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 	var npc_presence: Dictionary = payload.get("npc_presence", {})
 	var buildings: Array = payload.get("buildings", [])
 	var node: Dictionary = board_lookup.get(current_node_id, {})
-	var primary_action := _primary_content_action(node, habitat, buildings, npcs)
+	var primary_action := String(payload.get("primary_action", ""))
+	var primary_action_label := String(payload.get("primary_action_label", ""))
+	var guided_intro := bool(payload.get("guided_intro", GameState.is_guided_intro_active()))
 	var lines: Array[String] = []
 	lines.append("[b]地点气氛[/b] %s" % "、".join(habitat.get("mood_tags", [])))
 	lines.append("[b]今日适合[/b] %s" % _seasonal_hook_text(habitat))
 	lines.append("[b]当前看守[/b] %s" % String(resident.get("display_name", "暂无")))
 	lines.append("[b]据点等级[/b] %d" % int(state.get("rank", 0)))
 	lines.append("[b]常见人物[/b] %s" % (" / ".join(_npc_names(npcs)) if not npcs.is_empty() else "今天没有遇见谁"))
+	if guided_intro:
+		lines.append("[b]这阵子先顾主线[/b] 先把探路、观察和建设摸熟，其他玩法会慢慢露出来。")
 	if not npc_presence.get("window_lines", []).is_empty():
 		lines.append("[b]来访窗口[/b] %s" % " / ".join(npc_presence.get("window_lines", []).slice(0, 2)))
 	lines.append("[b]建设进度[/b] %s" % _format_building_levels(current_visit_habitat_id, buildings))
-	var apartment_line := _apartment_visit_line(current_visit_habitat_id)
-	if not apartment_line.is_empty():
-		lines.append("[b]公寓近况[/b] %s" % apartment_line)
-	lines.append_array(nursery_service.build_arrival_lines(current_visit_habitat_id))
+	if not guided_intro:
+		var apartment_line := _apartment_visit_line(current_visit_habitat_id)
+		if not apartment_line.is_empty():
+			lines.append("[b]公寓近况[/b] %s" % apartment_line)
+		lines.append_array(nursery_service.build_arrival_lines(current_visit_habitat_id))
 	if not primary_action.is_empty():
-		lines.append("[b]推荐先做[/b] %s" % _primary_content_label(primary_action))
+		lines.append("[b]推荐先做[/b] %s" % primary_action_label)
 	var effect_title := board_map_effect_service.preview_title(node)
 	if not effect_title.is_empty():
 		var effect_state := "待触发" if board_map_effect_service.has_pending_effect(node, current_node_id, GameState.board_region_id) else "已触发"
@@ -3257,99 +3337,15 @@ func _show_arrival_menu(payload: Dictionary) -> void:
 		lines.append("[b]袭扰预警[/b] 这里留下了潜伏痕迹。")
 	if int(habitat.get("recommended_rank", 0)) > 0:
 		lines.append("[b]什么时候来更合适[/b] %d 级左右会更轻松" % int(habitat.get("recommended_rank", 0)))
-	if not String(habitat.get("dojo_id", "")).is_empty():
+	if not guided_intro and not String(habitat.get("dojo_id", "")).is_empty():
 		lines.append("[b]试炼状态[/b] %s" % _dojo_status_text(String(habitat.get("dojo_id", ""))))
 
-	var choices := []
-	if not primary_action.is_empty():
-		choices.append({
-			"id": primary_action,
-			"label": _primary_content_label(primary_action),
-			"summary": "%s\n这就是你到这儿后最值得先顾上的那件事。" % _primary_content_summary(primary_action),
-		})
-	elif nursery_service.supports_nursery(current_visit_habitat_id):
-		choices.append({
-			"id": "nursery_menu",
-			"label": "照料孵育",
-			"summary": "查看这里的孵育位，安排孵化或继续照看幼体。",
-		})
-	elif String(habitat.get("type", "")) == "habitat":
-		choices.append({
-			"id": "assign_resident",
-			"label": "安排看守",
-			"summary": "把这里交给更合适的人或伙伴看着。",
-		})
+	var choices: Array = Array(payload.get("choices", [])).duplicate(true)
 	pending_context = {"kind": "visit_arrival", "on_close": "finish_visit"}
 	decision_panel.open_panel(String(habitat.get("name", "地点")), "\n".join(lines), choices, "继续前进")
 
 func _should_trigger_prearrival_ambush(node_id: int) -> bool:
 	return GameState.consume_node_ambush(node_id)
-
-func _primary_content_action(node: Dictionary, habitat: Dictionary, buildings: Array, npcs: Array) -> String:
-	var requested := String(node.get("primary_content", ""))
-	if requested.is_empty():
-		for fallback_action in ["fishing_menu", "dojo_menu", "build_menu", "npc_menu", "observe", "mail_menu"]:
-			if _is_primary_action_available(fallback_action, habitat, buildings, npcs):
-				return fallback_action
-		return ""
-	return requested if _is_primary_action_available(requested, habitat, buildings, npcs) else ""
-
-func _is_primary_action_available(action_id: String, habitat: Dictionary, buildings: Array, npcs: Array) -> bool:
-	match action_id:
-		"build_menu":
-			return not buildings.is_empty()
-		"shop_menu":
-			return not DataRepository.get_shop(String(habitat.get("id", ""))).is_empty()
-		"npc_menu":
-			return not npcs.is_empty()
-		"observe":
-			return not habitat.get("wild_pool", []).is_empty()
-		"fishing_menu":
-			return fishing_service.has_fishing_spot(String(habitat.get("id", "")))
-		"dojo_menu":
-			return not String(habitat.get("dojo_id", "")).is_empty()
-		"mail_menu":
-			return String(habitat.get("type", "")) == "settlement"
-		_:
-			return false
-
-func _primary_content_label(action_id: String) -> String:
-	match action_id:
-		"build_menu":
-			return "推进建设"
-		"shop_menu":
-			return "补给采购"
-		"npc_menu":
-			return "和人聊聊"
-		"observe":
-			return "观察环境"
-		"fishing_menu":
-			return "去钓鱼"
-		"dojo_menu":
-			return "进行试炼"
-		"mail_menu":
-			return "处理留信"
-		_:
-			return "先做这件事"
-
-func _primary_content_summary(action_id: String) -> String:
-	match action_id:
-		"build_menu":
-			return "这里最值得先做的是推进建设，能直接改善后续收益和驻守效果。"
-		"shop_menu":
-			return "这里更适合先补给、买材料，顺手把本周短缺补齐。"
-		"npc_menu":
-			return "这里先和人聊聊更划算，通常能推进关系、委托或后续事件。"
-		"observe":
-			return "先观察环境，能更稳地拿到记录、线索或后续互动机会。"
-		"fishing_menu":
-			return "这里可以直接钓鱼，常用于补资源、做记录或推进相关事件。"
-		"dojo_menu":
-			return "这里适合检验当前队伍配置，也可能推进阶段目标。"
-		"mail_menu":
-			return "这里适合先处理跨点消息，顺手推进委托和地点近况。"
-		_:
-			return "先做当前收益最高的一步。"
 
 func _show_build_menu(payload: Dictionary) -> void:
 	var choices := []
@@ -3601,35 +3597,119 @@ func _show_shop_npc_result(payload: Dictionary) -> void:
 	decision_panel.open_panel(String(service.get("label", "熟人服务完成")), "\n".join(lines), [], "继续逛摊")
 
 func _show_npc_menu(payload: Dictionary) -> void:
-	var choices := []
-	for npc in payload.get("npcs", []):
-		var npc_id := String(npc.get("id", ""))
-		var intro_pending := npc_service.needs_intro_duel(npc_id)
-		var duel_status := npc_service.get_intro_duel_status(npc_id)
-		choices.append({
-			"id": "duel:%s" % npc_id if intro_pending else "talk:%s" % npc_id,
-			"label": "%s（先决斗）" % String(npc.get("name", "未命名 NPC")) if intro_pending else String(npc.get("name", "未命名 NPC")),
-			"summary": "第一次见面先切磋一场；赢了更容易聊开，输了也还能慢慢熟起来。" if intro_pending else "今天可以好好聊聊。当前信赖 %d ｜ %s" % [npc_service.get_npc_trust(npc_id), "首战赢过" if bool(duel_status.get("won", false)) else "还在慢慢熟"],
-		})
-	for quest in payload.get("quests", []):
-		var quest_id := String(quest.get("id", ""))
-		if GameState.active_quests.has(quest_id) or GameState.completed_quests.has(quest_id):
-			continue
-		var giver_id := String(quest.get("giver", ""))
-		var giver := DataRepository.get_npc(giver_id)
-		var duel_locked := npc_service.needs_intro_duel(giver_id)
-		var quest_description := String(quest.get("description", ""))
-		var quest_summary := "得先和 %s 过过招，聊熟之后才能接这份委托。" % String(giver.get("name", "委托人")) if duel_locked else "先记在这季安排里，之后回来时会顺手看看进展。"
-		if not duel_locked and not quest_description.is_empty():
-			quest_summary = quest_description
-		choices.append({
-			"id": "quest:%s" % quest_id,
-			"label": "接委托：%s" % String(quest.get("title", "")),
-			"summary": quest_summary,
-			"disabled": duel_locked,
-		})
 	pending_context = {"kind": "npc_menu", "on_close": "arrival"}
-	decision_panel.open_panel("你在这里遇到的人", "第一次见面先过过招，熟了之后再慢慢聊。", choices, "返回地点")
+	decision_panel.open_panel(
+		String(payload.get("title", "你在这里遇到的人")),
+		String(payload.get("body", "第一次见面先过过招，熟了之后再慢慢聊。")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"返回地点"
+	)
+
+func _start_npc_duel_battle(payload: Dictionary) -> void:
+	var battle_config: Dictionary = payload.get("battle_config", {})
+	if battle_config.is_empty():
+		_show_npc_duel_result({"ok": false, "reason": "battle_config_missing"})
+		return
+	_start_battle_with_tutorial(
+		battle_config,
+		"npc_intro_duel",
+		"第一次偶遇 %s，先以切磋定彼此态度。" % String(payload.get("npc", {}).get("name", "某人"))
+	)
+
+func _show_npc_duel_result(payload: Dictionary) -> void:
+	if not bool(payload.get("ok", false)):
+		var reason := String(payload.get("reason", "unknown"))
+		var body := "这场初见决斗暂时无法开始。"
+		match reason:
+			"battle_slots_missing":
+				body = "先去总览安排好 2 个出战位，第一次见面才能切磋。"
+			"already_resolved":
+				body = "这场初见切磋已经打过了，现在可以好好聊聊了。"
+			"enemy_pool_missing":
+				body = "暂时找不到可用的切磋对手。"
+			"npc_missing":
+				body = "这个偶遇对象暂时不在记录里。"
+			_:
+				body = "这场初见决斗还没准备好。"
+		pending_context = {"kind": "npc_duel_result", "on_close": "finish_visit"}
+		decision_panel.open_panel("初见决斗", body, [], "结束偶遇")
+		return
+	var npc: Dictionary = payload.get("npc", {})
+	var npc_name := String(npc.get("name", "某人"))
+	var body_lines: Array[String] = []
+	if bool(payload.get("won", false)):
+		body_lines.append("[b]%s[/b] 认可了你的实力，愿意坐下来和你好好聊。" % npc_name)
+		body_lines.append("基础信赖提高到 %d。" % int(payload.get("base_trust", 0)))
+		_push_log("你赢下了与 %s 的初见切磋，对方明显更愿意配合。" % npc_name)
+	else:
+		body_lines.append("[b]%s[/b] 记住了这场败局，但仍允许你之后再来偶遇。" % npc_name)
+		body_lines.append("基础信赖落在 %d。" % int(payload.get("base_trust", 0)))
+		_push_log("第一次切磋没能赢过 %s，后续关系需要慢慢补。" % npc_name)
+		var infirmary_report: Dictionary = _apply_forced_infirmary_transfer(board_lookup.get(current_node_id, {}).duplicate(true))
+		body_lines.append("")
+		body_lines.append(String(infirmary_report.get("body", "")))
+	body_lines.append("当前信赖：%d" % int(payload.get("trust", 0)))
+	var unlocked_lines: Array[String] = []
+	for entry in payload.get("unlocked", []):
+		unlocked_lines.append("- 信赖 %d：%s" % [int(entry.get("threshold", 0)), String(entry.get("reward", ""))])
+	if not unlocked_lines.is_empty():
+		body_lines.append("")
+		body_lines.append("[b]已达成的信赖反馈[/b]")
+		body_lines.append("\n".join(unlocked_lines))
+	pending_context = {"kind": "npc_duel_result", "on_close": "finish_visit"}
+	decision_panel.open_panel(
+		"初见决斗",
+		"\n".join(body_lines),
+		[],
+		"结束偶遇",
+		_npc_portrait_texture(String(npc.get("id", ""))),
+		_npc_portrait_caption(String(npc.get("id", "")))
+	)
+
+func _show_talk_result(payload: Dictionary) -> void:
+	pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
+	decision_panel.open_panel(
+		String(payload.get("title", "交谈结果")),
+		String(payload.get("body", "")),
+		[],
+		"结束偶遇"
+	)
+
+func _show_quest_result(payload: Dictionary) -> void:
+	if bool(payload.get("accepted", false)) and not String(payload.get("log_line", "")).is_empty():
+		_push_log(String(payload.get("log_line", "")))
+		_check_active_quests()
+	pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
+	decision_panel.open_panel(
+		String(payload.get("title", "委托记录")),
+		String(payload.get("body", "")),
+		[],
+		"结束偶遇"
+	)
+
+func _show_resident_picker(payload: Dictionary) -> void:
+	pending_context = {"kind": "resident_select", "on_close": "arrival"}
+	decision_panel.open_panel(
+		String(payload.get("title", "安排看守")),
+		String(payload.get("body", "挑一个更适合看着这里的人或伙伴。")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"返回地点"
+	)
+
+func _show_resident_result(payload: Dictionary) -> void:
+	var body := ""
+	if bool(payload.get("ok", false)):
+		var pet_uid := String(payload.get("pet_uid", ""))
+		var habitat_id := String(payload.get("habitat_id", current_visit_habitat_id))
+		var pet_name := GameState.get_actor_display_name(pet_uid)
+		var fit_text := "它对这里很有亲近感。" if bool(payload.get("preference_match", false)) else "它还需要时间适应这里。"
+		body = "%s 被安排去看守 %s。\n%s" % [pet_name, _habitat_name(habitat_id), fit_text]
+		_push_log(body.replace("\n", " "))
+		_check_active_quests()
+	else:
+		body = _build_fail_reason(String(payload.get("reason", "unknown")))
+	pending_context = {"kind": "resident_result", "on_close": "finish_visit"}
+	decision_panel.open_panel("看守安排", body, [], "结束偶遇")
 
 func _show_dojo_menu(payload: Dictionary) -> void:
 	var dojo: Dictionary = payload.get("dojo", {})
@@ -3740,19 +3820,52 @@ func _show_encounter_preview(payload: Dictionary) -> void:
 	body_lines.append("[b]当前情绪[/b] %s" % String(payload.get("mood_id", "curious")))
 	body_lines.append("[b]结缘窗口[/b] %s" % String(payload.get("bond_window", "medium")))
 	body_lines.append("[b]偏好动作[/b] %s" % " / ".join(species.get("care_actions", [])))
+	var selection_reasons: Array = Array(payload.get("selection_reasons", [])).duplicate(true)
+	if not selection_reasons.is_empty():
+		body_lines.append("[b]这次为什么会遇见[/b]")
+		body_lines.append("\n".join(selection_reasons.slice(0, 3)))
 	var choices := []
-	for action_id in encounter_service.get_available_actions(payload):
-		choices.append({"id": action_id, "label": _action_name(action_id), "summary": "按当前情绪做一次温和尝试。"})
+	var action_ids: Array = encounter_service.get_available_actions(payload)
+	if GameState.is_guided_intro_active() and action_ids.size() > 3:
+		action_ids = action_ids.slice(0, 3)
+	for action_id in action_ids:
+		choices.append({
+			"id": action_id,
+			"label": _action_name(action_id),
+			"summary": encounter_service.describe_action(payload, action_id),
+		})
 	pending_context = {"kind": "encounter_preview", "on_close": "arrival"}
-	decision_panel.open_panel("突发袭扰" if source == "ambush" else "路遇野群", "\n".join(body_lines), choices, "返回地点")
+	decision_panel.open_panel(
+		"突发袭扰" if source == "ambush" else "路遇野群",
+		"\n".join(body_lines),
+		choices,
+		"返回地点",
+		_species_portrait_texture(species_id),
+		_species_portrait_caption(species_id)
+	)
 
 func _show_encounter_result(payload: Dictionary) -> void:
 	var outcome_text := _handle_encounter_result_effects(payload)
 	pending_context = {"kind": "encounter_result", "on_close": "finish_visit"}
 	decision_panel.open_panel("路遇结果", outcome_text, [], "继续前进")
 
-func _show_fishing_menu() -> void:
-	var payload := fishing_service.build_fishing_menu(current_visit_habitat_id)
+func _show_mail_menu(payload: Dictionary) -> void:
+	pending_context = {"kind": "mail_menu", "on_close": "arrival"}
+	decision_panel.open_panel(
+		String(payload.get("title", "寄送留信")),
+		String(payload.get("body", "目前没有需要寄送的跨点消息。")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"返回地点"
+	)
+
+func _show_mail_result(payload: Dictionary, on_close: String) -> void:
+	if not String(payload.get("log_line", "")).is_empty():
+		_push_log(String(payload.get("log_line", "")))
+	_check_active_quests()
+	pending_context = {"kind": "mail_result", "on_close": on_close}
+	decision_panel.open_panel("寄送完成", String(payload.get("body", "今天处理了一封消息。")), [], "结束偶遇" if on_close == "finish_visit" else "返回营地")
+
+func _show_fishing_menu(payload: Dictionary) -> void:
 	if not bool(payload.get("ok", false)):
 		pending_context = {"kind": "fishing_menu", "on_close": "arrival"}
 		decision_panel.open_panel("水边垂钓", "这里今天不适合展开钓鱼。", [], "返回地点")
@@ -3777,18 +3890,15 @@ func _show_fishing_result(payload: Dictionary) -> void:
 	pending_context = {"kind": "fishing_result", "on_close": "finish_visit"}
 	decision_panel.open_panel(String(payload.get("title", "垂钓结果")), "\n".join(body_lines), [], "结束偶遇")
 
-func _show_nursery_menu() -> void:
-	var payload := nursery_service.get_menu(current_visit_habitat_id)
+func _show_nursery_menu(payload: Dictionary) -> void:
 	pending_context = {"kind": "nursery_menu", "on_close": "arrival"}
 	decision_panel.open_panel(String(payload.get("title", "照料孵育")), String(payload.get("body", "")), payload.get("choices", []), "返回地点")
 
-func _show_nursery_species_picker() -> void:
-	var payload := nursery_service.get_candidate_picker(current_visit_habitat_id)
+func _show_nursery_species_picker(payload: Dictionary) -> void:
 	pending_context = {"kind": "nursery_species_select", "on_close": "nursery_menu"}
 	decision_panel.open_panel(String(payload.get("title", "选择孵育样本")), String(payload.get("body", "")), payload.get("choices", []), "返回孵育位")
 
-func _show_nursery_care_picker() -> void:
-	var payload := nursery_service.get_care_picker(current_visit_habitat_id)
+func _show_nursery_care_picker(payload: Dictionary) -> void:
 	pending_context = {"kind": "nursery_care_select", "on_close": "nursery_menu"}
 	decision_panel.open_panel(String(payload.get("title", "今天怎么照看")), String(payload.get("body", "")), payload.get("choices", []), "返回孵育位")
 
@@ -3851,29 +3961,11 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 		return
 	var context := pending_context.duplicate(true)
 	pending_context.clear()
+	if _try_handle_visit_decision_choice(context, choice_id):
+		return
 	match String(context.get("kind", "")):
 		"starter_select":
 			_apply_starter_choice(choice_id)
-		"visit_arrival":
-			match choice_id:
-				"assign_resident":
-					_open_resident_picker()
-				"nursery_menu":
-					_show_nursery_menu()
-				"build_menu":
-					visit_flow.open_build_menu()
-				"shop_menu":
-					visit_flow.open_shop_menu()
-				"npc_menu":
-					visit_flow.open_npc_menu()
-				"dojo_menu":
-					visit_flow.open_dojo_menu()
-				"observe":
-					visit_flow.start_observation()
-				"fishing_menu":
-					_show_fishing_menu()
-				"mail_menu":
-					_show_mail_menu()
 		"minigame_menu":
 			var node: Dictionary = board_lookup.get(int(context.get("node_id", -1)), {})
 			if not node.is_empty():
@@ -3884,69 +3976,18 @@ func _on_decision_choice_selected(choice_id: String) -> void:
 				var result: Dictionary = infirmary_service.resolve_voluntary_rest(infirmary_node)
 				_push_log("在 %s 主动做了一轮疗养，没有花钱。" % String(infirmary_node.get("name", "疗养所")))
 				_show_infirmary_result(result, "finish_transit_stop")
-		"resident_select":
-			_assign_resident(choice_id)
-		"build_select":
-			visit_flow.build_selected(choice_id)
-		"shop_menu":
-			if choice_id.begins_with("buy:"):
-				visit_flow.buy_shop_offer(choice_id.trim_prefix("buy:"))
-			elif choice_id.begins_with("service:"):
-				visit_flow.use_shop_npc_service(choice_id.trim_prefix("service:"))
-		"npc_menu":
-			if choice_id.begins_with("duel:"):
-				_start_npc_intro_duel(choice_id.trim_prefix("duel:"))
-			if choice_id.begins_with("talk:"):
-				_handle_talk_to_npc(choice_id.trim_prefix("talk:"))
-			elif choice_id.begins_with("quest:"):
-				_try_accept_quest(choice_id.trim_prefix("quest:"))
-		"dojo_menu":
-			visit_flow.choose_dojo_tier(choice_id)
-		"fishing_menu":
-			_show_fishing_result(fishing_service.resolve_fishing_choice(current_visit_habitat_id, choice_id))
-		"nursery_menu":
-			match choice_id:
-				"start_incubation":
-					_show_nursery_species_picker()
-				"care_incubation":
-					_show_nursery_care_picker()
-				"hatch_incubation":
-					_show_nursery_result(GameState.hatch_nursery_project(current_visit_habitat_id))
-		"nursery_species_select":
-			_show_nursery_result(GameState.start_nursery_project(current_visit_habitat_id, choice_id))
-		"nursery_care_select":
-			_show_nursery_result(GameState.care_nursery_project(current_visit_habitat_id, choice_id))
 		"team_manage":
-			match choice_id:
-				"battle_0":
-					_open_battle_slot_picker(0)
-				"battle_1":
-					_open_battle_slot_picker(1)
-				"backpack":
-					_open_pet_roster_picker()
-				"resident_sites":
-					_open_camp_resident_site_picker()
-				"mail_menu":
-					_show_camp_mail_menu()
+			camp_flow.choose_team_manage_action(choice_id)
 		"team_battle_slot":
-			GameState.set_party_slot(int(context.get("slot_index", 0)), choice_id)
-			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
-			decision_panel.open_panel("队伍已更新", "%s 已被放到出战位 %d。" % [GameState.get_pet_display_name(choice_id), int(context.get("slot_index", 0)) + 1], [], "返回营地")
+			camp_flow.assign_team_battle_slot(int(context.get("slot_index", 0)), choice_id)
 		"team_reserve_slot":
-			GameState.toggle_reserve_slot(choice_id)
-			pending_context = {"kind": "team_result", "on_close": "reopen_base"}
-			decision_panel.open_panel("宠物栏已更新", "已切换 %s 的待命状态。" % GameState.get_pet_display_name(choice_id), [], "返回营地")
+			camp_flow.toggle_team_reserve_slot(choice_id)
 		"camp_resident_site":
-			_open_camp_resident_picker(choice_id)
+			camp_flow.open_camp_resident_picker(choice_id)
 		"camp_resident_select":
-			_assign_resident_to_habitat(String(context.get("habitat_id", "")), choice_id)
-		"encounter_preview":
-			last_encounter_action_id = choice_id
-			visit_flow.choose_encounter_action(choice_id)
-		"mail_menu":
-			_handle_mail_selection(choice_id)
+			camp_flow.assign_resident_to_habitat(String(context.get("habitat_id", "")), choice_id)
 		"camp_mail_menu":
-			_handle_camp_mail_selection(choice_id)
+			camp_flow.send_camp_mail(choice_id)
 		"menu_settings":
 			_apply_menu_setting(choice_id)
 		"custom_asset_bind_menu":
@@ -3957,6 +3998,9 @@ func _on_decision_closed() -> void:
 		return
 	var context := pending_context.duplicate(true)
 	pending_context.clear()
+	if _try_handle_visit_close_action(String(context.get("on_close", "none"))):
+		story_director.try_flush_pending_quest_story_beats()
+		return
 	match String(context.get("on_close", "none")):
 		"starter_random":
 			var starter_pool := STARTER_SPECIES_IDS.duplicate()
@@ -3986,15 +4030,6 @@ func _on_decision_closed() -> void:
 			if main_menu_panel.visible:
 				_refresh_main_menu()
 				_open_settings_menu()
-		"arrival":
-			if not current_visit_habitat_id.is_empty():
-				visit_flow.start_visit(current_visit_habitat_id)
-		"nursery_menu":
-			if not current_visit_habitat_id.is_empty():
-				_show_nursery_menu()
-		"shop_menu":
-			if not current_visit_habitat_id.is_empty():
-				visit_flow.open_shop_menu()
 		"team_manage":
 			_open_team_manage_menu()
 		"reopen_base":
@@ -4002,6 +4037,104 @@ func _on_decision_closed() -> void:
 		_:
 			pass
 	story_director.try_flush_pending_quest_story_beats()
+
+func _try_handle_visit_decision_choice(context: Dictionary, choice_id: String) -> bool:
+	match String(context.get("kind", "")):
+		"visit_arrival":
+			return _handle_visit_arrival_choice(choice_id)
+		"resident_select":
+			visit_flow.assign_resident(choice_id)
+			return true
+		"build_select":
+			visit_flow.build_selected(choice_id)
+			return true
+		"shop_menu":
+			if choice_id.begins_with("buy:"):
+				visit_flow.buy_shop_offer(choice_id.trim_prefix("buy:"))
+			elif choice_id.begins_with("service:"):
+				visit_flow.use_shop_npc_service(choice_id.trim_prefix("service:"))
+			return true
+		"npc_menu":
+			visit_flow.choose_npc_action(choice_id)
+			return true
+		"dojo_menu":
+			visit_flow.choose_dojo_tier(choice_id)
+			return true
+		"fishing_menu":
+			visit_flow.choose_fishing_action(choice_id)
+			return true
+		"nursery_menu":
+			match choice_id:
+				"start_incubation":
+					visit_flow.open_nursery_species_picker()
+				"care_incubation":
+					visit_flow.open_nursery_care_picker()
+				"hatch_incubation":
+					visit_flow.hatch_nursery_project()
+			return true
+		"nursery_species_select":
+			visit_flow.start_nursery_project(choice_id)
+			return true
+		"nursery_care_select":
+			visit_flow.care_nursery_project(choice_id)
+			return true
+		"encounter_preview":
+			last_encounter_action_id = choice_id
+			visit_flow.choose_encounter_action(choice_id)
+			return true
+		"mail_menu":
+			visit_flow.send_mail(choice_id)
+			return true
+		_:
+			return false
+
+func _handle_visit_arrival_choice(choice_id: String) -> bool:
+	match choice_id:
+		"assign_resident":
+			visit_flow.open_resident_picker()
+		"nursery_menu":
+			visit_flow.open_nursery_menu()
+		"build_menu":
+			visit_flow.open_build_menu()
+		"shop_menu":
+			visit_flow.open_shop_menu()
+		"npc_menu":
+			visit_flow.open_npc_menu()
+		"dojo_menu":
+			visit_flow.open_dojo_menu()
+		"observe":
+			visit_flow.start_observation()
+		"fishing_menu":
+			visit_flow.open_fishing_menu()
+		"mail_menu":
+			visit_flow.open_mail_menu()
+		_:
+			return false
+	return true
+
+func _try_handle_visit_close_action(on_close: String) -> bool:
+	match on_close:
+		"finish_visit":
+			_finish_current_visit()
+			return true
+		"arrival":
+			_reopen_current_visit_arrival()
+			return true
+		"nursery_menu":
+			if not current_visit_habitat_id.is_empty():
+				visit_flow.open_nursery_menu()
+			return true
+		"shop_menu":
+			if not current_visit_habitat_id.is_empty():
+				visit_flow.open_shop_menu()
+			return true
+		_:
+			return false
+
+func _reopen_current_visit_arrival() -> void:
+	if current_visit_habitat_id.is_empty():
+		return
+	visit_flow.start_visit(current_visit_habitat_id, board_lookup.get(current_node_id, {}))
 
 func _on_visit_finished(_report: Dictionary) -> void:
 	_resolve_visit_yield(current_visit_habitat_id)
@@ -4565,238 +4698,107 @@ func _on_system_panel_closed() -> void:
 	story_director.try_flush_pending_quest_story_beats()
 
 func _on_base_manage_requested() -> void:
-	_open_team_manage_menu()
+	camp_flow.open_team_manage_menu()
 
 func _on_battle_finished(result: Dictionary) -> void:
 	if is_instance_valid(_battle_bgm_player):
 		_battle_bgm_player.stop()
 		_battle_bgm_player.stream = null
 	if pending_battle_source == "npc_intro_duel":
-		_resolve_npc_intro_duel(result)
+		visit_flow.resolve_npc_intro_duel(result)
 	elif pending_battle_source == "environment_wild":
 		_resolve_environment_battle(result)
 	else:
 		visit_flow.resolve_dojo_battle(result)
 	pending_battle_source = ""
-	pending_npc_duel_id = ""
 	_sync_menu_bgm()
 	_update_ui()
 
 func _open_team_manage_menu() -> void:
-	var choices := [
-		{"id": "battle_0", "label": "出战位 1", "summary": "当前：%s" % _battle_slot_name_at(0)},
-		{"id": "battle_1", "label": "出战位 2", "summary": "当前：%s" % _battle_slot_name_at(1)},
-		{"id": "backpack", "label": "调整宠物栏", "summary": "当前：%d / %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity]},
-		{"id": "resident_sites", "label": "安排看守", "summary": "在营地统一调整各据点的主看守。"},
-		{"id": "mail_menu", "label": "处理留信", "summary": "当前待处理：%d 处" % _pending_mail_targets().size(), "disabled": _pending_mail_targets().is_empty()},
-	]
+	camp_flow.open_team_manage_menu()
+
+func _show_team_manage_menu(payload: Dictionary) -> void:
 	pending_context = {"kind": "team_manage", "on_close": "reopen_base"}
-	decision_panel.open_panel("营地整备", "营地只在路过时弹出；队伍、看守和留信都改到这里统一处理。", choices, "返回营地")
+	decision_panel.open_panel(
+		String(payload.get("title", "营地整备")),
+		String(payload.get("body", "营地只在路过时弹出；队伍、看守和留信都改到这里统一处理。")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"返回营地"
+	)
 
-func _open_battle_slot_picker(slot_index: int) -> void:
-	var choices := []
-	for companion in GameState.get_companions():
-		var pet_uid := String(companion.get("uid", ""))
-		choices.append({
-			"id": pet_uid,
-			"label": "%s ★%d" % [String(companion.get("display_name", "未命名伙伴")), int(companion.get("star_level", 1))],
-			"summary": "%s ｜ 当前：%s" % [String(companion.get("species_id", "")), _companion_slot_label(pet_uid)],
-		})
-	pending_context = {"kind": "team_battle_slot", "slot_index": slot_index, "on_close": "team_manage"}
-	decision_panel.open_panel("选择出战位 %d" % (slot_index + 1), "挑一只本场直接上阵的伙伴。", choices, "返回整备")
+func _show_team_battle_slot_picker(payload: Dictionary) -> void:
+	pending_context = {"kind": "team_battle_slot", "slot_index": int(payload.get("slot_index", 0)), "on_close": "team_manage"}
+	decision_panel.open_panel(
+		String(payload.get("title", "选择出战位")),
+		String(payload.get("body", "挑一只本场直接上阵的伙伴。")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"返回整备"
+	)
 
-func _open_pet_roster_picker() -> void:
-	var choices := []
-	for companion in GameState.get_companions():
-		var pet_uid := String(companion.get("uid", ""))
-		var in_reserve := GameState.get_reserve_uids().has(pet_uid)
-		choices.append({
-			"id": pet_uid,
-			"label": "%s ★%d" % [String(companion.get("display_name", "未命名伙伴")), int(companion.get("star_level", 1))],
-			"summary": "%s ｜ 人口 %d ｜ %s" % [String(companion.get("species_id", "")), GameState.get_pet_population_cost(pet_uid), "当前已在休息位" if in_reserve else "当前未在休息位"],
-			"disabled": GameState.get_party_uids().has(pet_uid),
-		})
+func _show_team_reserve_picker(payload: Dictionary) -> void:
 	pending_context = {"kind": "team_reserve_slot", "on_close": "team_manage"}
-	decision_panel.open_panel("调整宠物栏", "留在后头的伙伴这回合不上场，但也会给羁绊；每只占的照看份额不一样。元素、生态和职能按独特物种计数，特性羁绊按实际单位计数。", choices, "返回整备")
+	decision_panel.open_panel(
+		String(payload.get("title", "调整宠物栏")),
+		String(payload.get("body", "")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"返回整备"
+	)
 
-func _open_camp_resident_site_picker() -> void:
-	var choices := []
-	for habitat_id in GameState.habitats.keys():
-		var habitat := DataRepository.get_habitat(String(habitat_id))
-		if habitat.is_empty() or String(habitat.get("type", "")) != "habitat":
-			continue
-		if not GameState.is_habitat_unlocked(String(habitat_id)):
-			continue
-		var state: Dictionary = GameState.habitats.get(String(habitat_id), {})
-		var resident_actor_id := String(state.get("resident_actor_id", state.get("resident_uid", "")))
-		choices.append({
-			"id": String(habitat_id),
-			"label": String(habitat.get("name", habitat_id)),
-			"summary": "当前看守：%s ｜ 据点等级 %d" % [
-				GameState.get_actor_display_name(resident_actor_id) if not resident_actor_id.is_empty() else "暂无",
-				int(state.get("rank", 0)),
-			],
-		})
+func _show_team_result(payload: Dictionary) -> void:
+	pending_context = {"kind": "team_result", "on_close": "reopen_base"}
+	decision_panel.open_panel(
+		String(payload.get("title", "营地整备已更新")),
+		String(payload.get("body", "")),
+		[],
+		"返回营地"
+	)
+
+func _show_camp_resident_site_picker(payload: Dictionary) -> void:
 	pending_context = {"kind": "camp_resident_site", "on_close": "team_manage"}
-	decision_panel.open_panel("选择看守地点", "先挑一个要在营地里统一调整的据点。", choices, "返回整备")
+	decision_panel.open_panel(
+		String(payload.get("title", "选择看守地点")),
+		String(payload.get("body", "先挑一个要在营地里统一调整的据点。")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"返回整备"
+	)
 
-func _open_camp_resident_picker(habitat_id: String) -> void:
-	var choices := []
-	choices.append({"id": GameState.PLAYER_ACTOR_ID, "label": "玩家", "summary": "由玩家本人临时看守这里；更适合先顶上空缺。"})
-	for companion in GameState.get_companions():
-		var pet_uid := String(companion.get("uid", ""))
-		var home_id := String(companion.get("residence_habitat_id", ""))
-		choices.append({
-			"id": pet_uid,
-			"label": String(companion.get("display_name", "未命名伙伴")),
-			"summary": "当前安居：%s ｜ 偏好：%s" % [
-				_habitat_name(home_id) if not home_id.is_empty() else "暂未安居",
-				", ".join(companion.get("resident_tags", [])),
-			],
-		})
-	pending_context = {"kind": "camp_resident_select", "habitat_id": habitat_id, "on_close": "team_manage"}
-	decision_panel.open_panel("安排看守", "为 %s 挑一个更合适的看守者。" % _habitat_name(habitat_id), choices, "返回整备")
+func _show_camp_resident_picker(payload: Dictionary) -> void:
+	pending_context = {
+		"kind": "camp_resident_select",
+		"habitat_id": String(payload.get("habitat_id", "")),
+		"on_close": "team_manage",
+	}
+	decision_panel.open_panel(
+		String(payload.get("title", "安排看守")),
+		String(payload.get("body", "")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"返回整备"
+	)
 
-func _assign_resident_to_habitat(habitat_id: String, pet_uid: String) -> void:
-	var result := habitat_service.assign_resident(habitat_id, pet_uid)
+func _show_camp_resident_result(payload: Dictionary) -> void:
 	var body := ""
-	if bool(result.get("ok", false)):
+	if bool(payload.get("ok", false)):
+		var pet_uid := String(payload.get("pet_uid", ""))
+		var habitat_id := String(payload.get("habitat_id", ""))
 		var pet_name := GameState.get_actor_display_name(pet_uid)
-		var fit_text := "它对这里很有亲近感。" if bool(result.get("preference_match", false)) else "它还需要时间适应这里。"
+		var fit_text := "它对这里很有亲近感。" if bool(payload.get("preference_match", false)) else "它还需要时间适应这里。"
 		body = "%s 被安排去看守 %s。\n%s" % [pet_name, _habitat_name(habitat_id), fit_text]
 		_push_log(body.replace("\n", " "))
 		_check_active_quests()
 	else:
-		body = _build_fail_reason(String(result.get("reason", "unknown")))
+		body = _build_fail_reason(String(payload.get("reason", "unknown")))
 	pending_context = {"kind": "resident_result", "on_close": "reopen_base"}
 	decision_panel.open_panel("看守安排", body, [], "返回营地")
 
-func _show_camp_mail_menu() -> void:
-	var targets := _pending_mail_targets()
-	if targets.is_empty():
-		pending_context = {"kind": "camp_mail_menu", "on_close": "reopen_base"}
-		decision_panel.open_panel("处理留信", "目前没有需要寄出的跨点消息。", [], "返回营地")
-		return
-	var choices := []
-	for destination in targets:
-		choices.append({
-			"id": destination,
-			"label": _habitat_name(destination),
-			"summary": "把今天要转交的留信送往这里。",
-		})
-	pending_context = {"kind": "camp_mail_menu", "on_close": "team_manage"}
-	decision_panel.open_panel("处理留信", "在营地统一处理今天的跨点消息。", choices, "返回整备")
-
-func _handle_camp_mail_selection(destination: String) -> void:
-	GameState.note_mail(destination)
-	_push_log("你在营地寄出了送往 %s 的留信。" % _habitat_name(destination))
-	_check_active_quests()
-	pending_context = {"kind": "mail_result", "on_close": "reopen_base"}
-	decision_panel.open_panel("留信已寄出", "今天处理了一封送往 %s 的消息。" % _habitat_name(destination), [], "返回营地")
-
-func _open_resident_picker() -> void:
-	var choices := []
-	choices.append({"id": GameState.PLAYER_ACTOR_ID, "label": "玩家", "summary": "由玩家本人临时看守这里；适合先补上空缺。"})
-	for companion in GameState.get_companions():
-		var pet_uid := String(companion.get("uid", ""))
-		var home_id := String(companion.get("residence_habitat_id", ""))
-		choices.append({
-			"id": pet_uid,
-			"label": String(companion.get("display_name", "未命名伙伴")),
-			"summary": "当前安居：%s ｜ 偏好：%s" % [
-				_habitat_name(home_id) if not home_id.is_empty() else "暂未安居",
-				", ".join(companion.get("resident_tags", [])),
-			],
-		})
-	pending_context = {"kind": "resident_select", "on_close": "arrival"}
-	decision_panel.open_panel("安排看守", "挑一个更适合看着这里的人或伙伴。", choices, "返回地点")
-
-func _show_mail_menu() -> void:
-	var targets := _pending_mail_targets()
-	if targets.is_empty():
-		pending_context = {"kind": "mail_menu", "on_close": "arrival"}
-		decision_panel.open_panel("寄送留信", "目前没有需要寄送的跨点消息。", [], "返回地点")
-		return
-	var choices := []
-	for destination in targets:
-		choices.append({
-			"id": destination,
-			"label": _habitat_name(destination),
-			"summary": "把今天的信件和托付送过去。",
-		})
-	pending_context = {"kind": "mail_menu", "on_close": "arrival"}
-	decision_panel.open_panel("寄送留信", "挑一个今天要处理的目标地点。", choices, "返回地点")
-
-func _assign_resident(pet_uid: String) -> void:
-	var result := habitat_service.assign_resident(current_visit_habitat_id, pet_uid)
-	var body := ""
-	if bool(result.get("ok", false)):
-		var pet_name := GameState.get_actor_display_name(pet_uid)
-		var fit_text := "它对这里很有亲近感。" if bool(result.get("preference_match", false)) else "它还需要时间适应这里。"
-		body = "%s 被安排去看守 %s。\n%s" % [pet_name, _habitat_name(current_visit_habitat_id), fit_text]
-		_push_log(body.replace("\n", " "))
-		_check_active_quests()
-	else:
-		body = _build_fail_reason(String(result.get("reason", "unknown")))
-	pending_context = {"kind": "resident_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("看守安排", body, [], "结束偶遇")
-
-func _start_npc_intro_duel(npc_id: String) -> void:
-	var result := npc_service.prepare_intro_duel(npc_id, current_visit_habitat_id)
-	if not bool(result.get("ok", false)):
-		var reason := String(result.get("reason", "unknown"))
-		var body := "这场初见决斗暂时无法开始。"
-		match reason:
-			"battle_slots_missing":
-				body = "先去总览安排好 2 个出战位，第一次见面才能切磋。"
-			"already_resolved":
-				body = "这场初见切磋已经打过了，现在可以好好聊聊了。"
-			"enemy_pool_missing":
-				body = "暂时找不到可用的切磋对手。"
-			"npc_missing":
-				body = "这个偶遇对象暂时不在记录里。"
-			_:
-				body = "这场初见决斗还没准备好。"
-		pending_context = {"kind": "npc_duel_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("初见决斗", body, [], "结束偶遇")
-		return
-
-	pending_npc_duel_id = npc_id
-	_start_battle_with_tutorial(
-		result.get("battle_config", {}),
-		"npc_intro_duel",
-		"第一次偶遇 %s，先以切磋定彼此态度。" % String(result.get("npc", {}).get("name", "某人"))
+func _show_camp_mail_menu(payload: Dictionary) -> void:
+	var on_close := "reopen_base" if bool(payload.get("empty", false)) else "team_manage"
+	pending_context = {"kind": "camp_mail_menu", "on_close": on_close}
+	decision_panel.open_panel(
+		String(payload.get("title", "处理留信")),
+		String(payload.get("body", "目前没有需要寄出的跨点消息。")),
+		Array(payload.get("choices", [])).duplicate(true),
+		"返回营地" if on_close == "reopen_base" else "返回整备"
 	)
-
-func _resolve_npc_intro_duel(battle_result: Dictionary) -> void:
-	if pending_npc_duel_id.is_empty():
-		return
-
-	var result := npc_service.resolve_intro_duel(pending_npc_duel_id, battle_result)
-	var npc: Dictionary = result.get("npc", {})
-	var npc_name := String(npc.get("name", "某人"))
-	var body_lines: Array[String] = []
-	if bool(result.get("won", false)):
-		body_lines.append("[b]%s[/b] 认可了你的实力，愿意坐下来和你好好聊。" % npc_name)
-		body_lines.append("基础信赖提高到 %d。" % int(result.get("base_trust", 0)))
-		_push_log("你赢下了与 %s 的初见切磋，对方明显更愿意配合。" % npc_name)
-	else:
-		body_lines.append("[b]%s[/b] 记住了这场败局，但仍允许你之后再来偶遇。" % npc_name)
-		body_lines.append("基础信赖落在 %d。" % int(result.get("base_trust", 0)))
-		_push_log("第一次切磋没能赢过 %s，后续关系需要慢慢补。" % npc_name)
-		var infirmary_report: Dictionary = _apply_forced_infirmary_transfer(board_lookup.get(current_node_id, {}).duplicate(true))
-		body_lines.append("")
-		body_lines.append(String(infirmary_report.get("body", "")))
-	body_lines.append("当前信赖：%d" % int(result.get("trust", 0)))
-	var unlocked_lines: Array[String] = []
-	for entry in result.get("unlocked", []):
-		unlocked_lines.append("- 信赖 %d：%s" % [int(entry.get("threshold", 0)), String(entry.get("reward", ""))])
-	if not unlocked_lines.is_empty():
-		body_lines.append("")
-		body_lines.append("[b]已达成的信赖反馈[/b]")
-		body_lines.append("\n".join(unlocked_lines))
-	pending_context = {"kind": "npc_duel_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("初见决斗", "\n".join(body_lines), [], "结束偶遇")
 
 func _handle_talk_to_npc(npc_id: String) -> void:
 	if npc_service.needs_intro_duel(npc_id):
@@ -4857,7 +4859,14 @@ func _handle_talk_to_npc(npc_id: String) -> void:
 	_push_log("和 %s 聊了聊，这次谈到了%s。" % [String(npc.get("name", "某人")), _talk_topic_label(topic)])
 	_check_active_quests()
 	pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("交谈结果", "\n".join(body_lines), [], "结束偶遇")
+	decision_panel.open_panel(
+		"交谈结果",
+		"\n".join(body_lines),
+		[],
+		"结束偶遇",
+		_npc_portrait_texture(npc_id),
+		_npc_portrait_caption(npc_id)
+	)
 
 func _should_skip_cutscene_runtime() -> bool:
 	return DisplayServer.get_name() == "headless" or not is_instance_valid(cutscene_panel)
@@ -5031,55 +5040,11 @@ func _talk_topic_label(topic: String) -> String:
 		return "日常"
 	return topic.replace("_", " / ")
 
-func _try_accept_quest(quest_id: String) -> void:
-	var quest := DataRepository.get_quest(quest_id)
-	if quest.is_empty():
-		return
-	var giver_id := String(quest.get("giver", ""))
-	if npc_service.needs_intro_duel(giver_id):
-		var giver := DataRepository.get_npc(giver_id)
-		pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("现在还接不了委托", "第一次见面要先和 %s 切磋一下，熟了之后才能接这份委托。" % String(giver.get("name", "委托人")), [], "结束偶遇")
-		return
-	var cost := _accept_cost_for_quest(quest)
-	if not cost.is_empty() and not GameState.can_pay(cost):
-		pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("暂时接不下", "还缺少交付物资：%s" % _format_item_cost(cost), [], "结束偶遇")
-		return
-	if not cost.is_empty():
-		GameState.pay_cost(cost)
-		for item_id in cost.keys():
-			GameState.note_delivery(String(item_id), int(cost[item_id]))
-	GameState.accept_quest(quest_id)
-	_push_log("接下委托：%s。" % String(quest.get("title", "")))
-	_check_active_quests()
-	pending_context = {"kind": "quest_result", "on_close": "finish_visit"}
-	var quest_lines: Array[String] = ["已记下这件事：%s" % String(quest.get("title", ""))]
-	var quest_description := String(quest.get("description", ""))
-	if not quest_description.is_empty():
-		quest_lines.append("")
-		quest_lines.append(quest_description)
-	decision_panel.open_panel("委托记录", "\n".join(quest_lines), [], "结束偶遇")
-
-func _accept_cost_for_quest(quest: Dictionary) -> Dictionary:
-	var cost := {}
-	for step in quest.get("steps", []):
-		if String(step.get("type", "")) != "deliver":
-			continue
-		cost[String(step.get("item", ""))] = int(step.get("count", 0))
-	return cost
-
-func _handle_mail_selection(destination: String) -> void:
-	GameState.note_mail(destination)
-	_push_log("寄出了送往 %s 的留信。" % _habitat_name(destination))
-	_check_active_quests()
-	pending_context = {"kind": "mail_result", "on_close": "finish_visit"}
-	decision_panel.open_panel("寄送完成", "今天处理了一封送往 %s 的消息。" % _habitat_name(destination), [], "结束偶遇")
-
 func _handle_encounter_result_effects(payload: Dictionary) -> String:
 	var outcome := String(payload.get("outcome", "unknown"))
 	var species_id := String(current_encounter.get("species_id", ""))
 	var species_name := String(current_encounter.get("species", {}).get("name", species_id))
+	var reason_block := _encounter_reason_block(payload)
 	if last_encounter_action_id == "observe":
 		GameState.note_observe(species_id)
 		if current_visit_habitat_id == "mist_moss_cave" and not bool(GameState.quest_memory["observed_markers"].get("note_cache", false)) and rng.randf() <= 0.55:
@@ -5093,7 +5058,7 @@ func _handle_encounter_result_effects(payload: Dictionary) -> String:
 		var acquisition := _acquire_companion(species_id)
 		_push_log("%s 愿意靠近，并把这里当成了新的联系点。" % species_name)
 		_check_active_quests()
-		return "[b]%s[/b]\n%s" % [_encounter_outcome_text(outcome), String(acquisition.get("body", "%s 愿意靠近。" % species_name))]
+		return "[b]%s[/b]\n%s%s" % [_encounter_outcome_text(outcome), String(acquisition.get("body", "%s 愿意靠近。" % species_name)), reason_block]
 	elif outcome == "bond_progress":
 		GameState.reduce_node_danger(current_node_id, 1)
 		_push_log("%s 对你的存在不再那么戒备了。" % species_name)
@@ -5104,13 +5069,20 @@ func _handle_encounter_result_effects(payload: Dictionary) -> String:
 		var consequence := _apply_alert_rise_consequence(int(payload.get("combat_risk", 1)))
 		_push_log("%s 还是更警惕了一些，你决定改天再来。" % species_name)
 		_check_active_quests()
-		return "[b]%s[/b]\n%s\n%s" % [
+		return "[b]%s[/b]\n%s\n%s%s" % [
 			_encounter_outcome_text(outcome),
 			species_name,
 			String(consequence.get("summary", "这里变得更危险了。")),
+			reason_block,
 		]
 	_check_active_quests()
-	return "[b]%s[/b]\n%s" % [_encounter_outcome_text(outcome), species_name]
+	return "[b]%s[/b]\n%s%s" % [_encounter_outcome_text(outcome), species_name, reason_block]
+
+func _encounter_reason_block(payload: Dictionary) -> String:
+	var reason_lines: Array = Array(payload.get("reason_lines", [])).duplicate(true)
+	if reason_lines.is_empty():
+		return ""
+	return "\n[b]为什么会这样[/b]\n%s" % "\n".join(reason_lines)
 
 func _apply_alert_rise_consequence(combat_risk: int) -> Dictionary:
 	var danger_gain := maxi(1, combat_risk)
@@ -5661,6 +5633,7 @@ func _update_log() -> void:
 	_event_log_typewriter_tween.finished.connect(_on_event_log_typewriter_finished)
 
 func _update_map_hint() -> void:
+	_update_node_detail_preview()
 	var npc_markers := npc_route_service.build_node_markers()
 	var threat_markers := threat_service.build_node_markers()
 	var ai_markers := ai_player_service.build_node_markers()
@@ -6292,6 +6265,126 @@ func _species_display_name(species_id: String) -> String:
 		return String(aquatic_species.get("name", species_id))
 	return String(species.get("name", species_id))
 
+func _species_portrait_target_key(species_id: String) -> String:
+	if species_id.is_empty():
+		return ""
+	return "species_portrait:%s" % species_id
+
+func _npc_portrait_target_key(npc_id: String) -> String:
+	if npc_id.is_empty():
+		return ""
+	return "npc_portrait:%s" % npc_id
+
+func _habitat_background_target_key(habitat_id: String) -> String:
+	if habitat_id.is_empty():
+		return ""
+	return "habitat_background:%s" % habitat_id
+
+func _codex_illustration_target_key(entry_id: String) -> String:
+	if entry_id.is_empty():
+		return ""
+	return "codex_illustration:%s" % entry_id
+
+func _data_asset_caption_from_target(target_key: String, fallback_label: String, prefix: String) -> String:
+	if target_key.is_empty():
+		return ""
+	var asset: Dictionary = CustomAssetRepository.get_data_bound_asset(target_key)
+	if asset.is_empty():
+		return ""
+	var asset_label := String(asset.get("label", fallback_label)).strip_edges()
+	if asset_label.is_empty():
+		return ""
+	return "%s：%s" % [prefix, asset_label]
+
+func _portrait_caption_from_target(target_key: String, fallback_label: String) -> String:
+	return _data_asset_caption_from_target(target_key, fallback_label, "已绑定立绘")
+
+func _species_portrait_texture(species_id: String) -> Texture2D:
+	var target_key := _species_portrait_target_key(species_id)
+	if target_key.is_empty():
+		return null
+	return CustomAssetRepository.get_data_bound_texture(target_key)
+
+func _species_portrait_caption(species_id: String) -> String:
+	var target_key := _species_portrait_target_key(species_id)
+	return _portrait_caption_from_target(target_key, _species_display_name(species_id))
+
+func _npc_portrait_texture(npc_id: String) -> Texture2D:
+	var target_key := _npc_portrait_target_key(npc_id)
+	if target_key.is_empty():
+		return null
+	return CustomAssetRepository.get_data_bound_texture(target_key)
+
+func _npc_portrait_caption(npc_id: String) -> String:
+	var target_key := _npc_portrait_target_key(npc_id)
+	var npc_name := String(DataRepository.get_npc(npc_id).get("name", npc_id))
+	return _portrait_caption_from_target(target_key, npc_name)
+
+func _habitat_background_texture(habitat_id: String) -> Texture2D:
+	var target_key := _habitat_background_target_key(habitat_id)
+	if target_key.is_empty():
+		return null
+	return CustomAssetRepository.get_data_bound_texture(target_key)
+
+func _habitat_background_caption(habitat_id: String) -> String:
+	var target_key := _habitat_background_target_key(habitat_id)
+	return _data_asset_caption_from_target(target_key, _habitat_name(habitat_id), "已绑定地点背景")
+
+func _codex_illustration_texture(entry_id: String) -> Texture2D:
+	var target_key := _codex_illustration_target_key(entry_id)
+	if target_key.is_empty():
+		return null
+	return CustomAssetRepository.get_data_bound_texture(target_key)
+
+func _codex_illustration_caption(entry_id: String) -> String:
+	var entry := DataRepository.get_codex_entry(entry_id)
+	var fallback_label := String(entry.get("title", entry_id))
+	var target_key := _codex_illustration_target_key(entry_id)
+	return _data_asset_caption_from_target(target_key, fallback_label, "已绑定图鉴插图")
+
+func _sorted_codex_entries() -> Array[Dictionary]:
+	var entries: Array[Dictionary] = []
+	for raw_entry in DataRepository.codex_entries.values():
+		entries.append(Dictionary(raw_entry).duplicate(true))
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var reveal_a := GameState.get_codex_entry_reveal_level(a)
+		var reveal_b := GameState.get_codex_entry_reveal_level(b)
+		if reveal_a != reveal_b:
+			return reveal_a > reveal_b
+		return String(a.get("title", a.get("id", ""))) < String(b.get("title", b.get("id", "")))
+	)
+	return entries
+
+func _pick_codex_preview_entry() -> Dictionary:
+	var entries := _sorted_codex_entries()
+	for required_reveal in [GameState.CODEX_REVEAL_FULL, GameState.CODEX_REVEAL_BASIC]:
+		for entry in entries:
+			if GameState.get_codex_entry_reveal_level(entry) < required_reveal:
+				continue
+			var entry_id := String(entry.get("id", ""))
+			var texture := _codex_illustration_texture(entry_id)
+			if texture == null:
+				continue
+			return {
+				"entry": entry,
+				"texture": texture,
+			}
+	return {}
+
+func _update_node_detail_preview() -> void:
+	var node: Dictionary = board_lookup.get(current_node_id, {})
+	var habitat_id := String(node.get("habitat_id", ""))
+	if habitat_id.is_empty():
+		habitat_id = current_visit_habitat_id
+	var texture := _habitat_background_texture(habitat_id)
+	node_detail_preview_rect.texture = texture
+	node_detail_preview_rect.visible = texture != null
+	var caption := _habitat_background_caption(habitat_id)
+	if caption.is_empty() and texture != null:
+		caption = "地点背景：%s" % _habitat_name(habitat_id)
+	node_detail_preview_caption_label.text = caption
+	node_detail_preview_caption_label.visible = not caption.is_empty()
+
 func _codex_unlock_hint(rule: Dictionary) -> String:
 	match String(rule.get("type", "")):
 		"observe_species":
@@ -6767,6 +6860,15 @@ func _build_system_sections() -> Array:
 	var backpack_lines := _build_backpack_section_lines()
 	var codex_lines := _build_codex_section_lines()
 	var encyclopedia_lines := _build_encyclopedia_section_lines()
+	var codex_preview := _pick_codex_preview_entry()
+	var codex_preview_texture: Texture2D = codex_preview.get("texture", null) as Texture2D
+	var codex_preview_caption := ""
+	if not codex_preview.is_empty():
+		var codex_entry: Dictionary = Dictionary(codex_preview.get("entry", {})).duplicate(true)
+		var codex_entry_id := String(codex_entry.get("id", ""))
+		codex_preview_caption = _codex_illustration_caption(codex_entry_id)
+		if codex_preview_caption.is_empty():
+			codex_preview_caption = String(codex_entry.get("title", "图鉴插图"))
 
 	var completed_count := 0
 	for tutorial_id in TUTORIAL_ORDER:
@@ -6807,6 +6909,8 @@ func _build_system_sections() -> Array:
 			"label": "生物图鉴",
 			"summary": "[b]看过的那些生灵[/b]\n一路记下来的观察，都慢慢收在这里。",
 			"body": "\n".join(codex_lines),
+			"preview_texture": codex_preview_texture,
+			"preview_caption": codex_preview_caption,
 		},
 		{
 			"id": "encyclopedia",

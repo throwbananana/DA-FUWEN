@@ -11,6 +11,8 @@ const PANEL_FADE_IN_DURATION := 0.20
 const PANEL_FADE_OUT_DURATION := 0.16
 
 @onready var title_label: Label = $MarginContainer/VBoxContainer/TitleLabel
+@onready var preview_rect: TextureRect = $MarginContainer/VBoxContainer/PreviewRect
+@onready var preview_caption_label: Label = $MarginContainer/VBoxContainer/PreviewCaptionLabel
 @onready var body_label: RichTextLabel = $MarginContainer/VBoxContainer/BodyLabel
 @onready var button_container: VBoxContainer = $MarginContainer/VBoxContainer/ButtonContainer
 @onready var cancel_button: Button = $MarginContainer/VBoxContainer/CancelButton
@@ -27,18 +29,24 @@ var _choice_buttons: Array[Button] = []
 func _ready() -> void:
 	hide()
 	modulate.a = 1.0
+	preview_rect.visible = false
+	preview_caption_label.visible = false
 	_apply_responsive_layout()
 	cancel_button.focus_mode = Control.FOCUS_ALL
 	cancel_button.pressed.connect(_on_cancel_pressed)
 	body_label.gui_input.connect(_on_body_label_gui_input)
 
-func open_panel(title_text: String, body_text: String, choices: Array, cancel_text: String = "取消") -> void:
+func open_panel(title_text: String, body_text: String, choices: Array, cancel_text: String = "取消", preview_texture: Texture2D = null, preview_caption: String = "") -> void:
 	_stop_close_animation(false)
 	_stop_typewriter(false)
 	show()
 	move_to_front()
 	current_choices = choices.duplicate(true)
 	title_label.text = title_text
+	preview_rect.texture = preview_texture
+	preview_rect.visible = preview_texture != null
+	preview_caption_label.text = preview_caption
+	preview_caption_label.visible = preview_rect.visible and not preview_caption.is_empty()
 	body_label.text = body_text
 	body_label.scroll_to_line(0)
 	_pending_cancel_text = cancel_text
@@ -197,6 +205,8 @@ func _apply_responsive_layout() -> void:
 		return
 	var short_height := size.y < 360.0
 	title_label.add_theme_font_size_override("font_size", 20 if short_height else 24)
+	preview_rect.custom_minimum_size = Vector2(0, 120 if short_height else 180)
+	preview_caption_label.add_theme_font_size_override("font_size", 12 if short_height else 14)
 	body_label.custom_minimum_size = Vector2(0, 72 if short_height else 96)
 	cancel_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	cancel_button.custom_minimum_size = Vector2(0, 42 if short_height else 46)

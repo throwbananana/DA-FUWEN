@@ -24,6 +24,7 @@ except ImportError:
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EXTERNAL_ROOT = PROJECT_ROOT / "external_assets"
+DATA_ROOT = PROJECT_ROOT / "data"
 MANIFEST_PATH = EXTERNAL_ROOT / "manifest.json"
 ASSET_METADATA_SUFFIX = ".asset.json"
 SLOT_MAIN_MENU_BG = "main_menu_bg"
@@ -56,14 +57,85 @@ SUPPORTED_EXTENSIONS = {
     for ext in extensions
 }
 SLOT_DEFINITIONS = {
+    "app_icon": {"label": "窗口图标（运行时）", "kind": "image"},
     SLOT_MAIN_MENU_BG: {"label": "主菜单背景", "kind": "image"},
     "main_menu_logo": {"label": "主菜单 Logo", "kind": "image"},
     "main_menu_bgm": {"label": "主菜单音乐", "kind": "audio", "runtime_exts": {".ogg", ".wav", ".mp3"}},
     "battle_bgm": {"label": "战斗音乐", "kind": "audio", "runtime_exts": {".ogg", ".wav", ".mp3"}},
     "ui_confirm_sfx": {"label": "界面确认音效", "kind": "audio", "runtime_exts": {".ogg", ".wav", ".mp3"}},
     "ui_font": {"label": "界面字体", "kind": "font"},
+    "ui_style_config": {"label": "界面样式配置", "kind": "file", "runtime_exts": {".json"}},
 }
 VALID_SLOT_IDS = set(SLOT_DEFINITIONS.keys())
+DATA_TARGET_DEFINITIONS = [
+    {
+        "id": "species_portrait",
+        "label": "物种立绘",
+        "kind": "image",
+        "file": DATA_ROOT / "species_mda120.json",
+        "list_key": "species",
+        "entry_id_key": "id",
+        "entry_label_key": "name",
+    },
+    {
+        "id": "npc_portrait",
+        "label": "NPC 立绘",
+        "kind": "image",
+        "file": DATA_ROOT / "npc_profiles.json",
+        "list_key": "npcs",
+        "entry_id_key": "id",
+        "entry_label_key": "name",
+    },
+    {
+        "id": "event_illustration",
+        "label": "事件插图",
+        "kind": "image",
+        "file": DATA_ROOT / "events.json",
+        "list_key": "events",
+        "entry_id_key": "id",
+        "entry_label_key": "title",
+    },
+    {
+        "id": "habitat_background",
+        "label": "地区背景",
+        "kind": "image",
+        "file": DATA_ROOT / "habitats.json",
+        "list_key": "habitats",
+        "entry_id_key": "id",
+        "entry_label_key": "name",
+    },
+    {
+        "id": "building_illustration",
+        "label": "建筑插图",
+        "kind": "image",
+        "file": DATA_ROOT / "building_blueprints.json",
+        "list_key": "buildings",
+        "entry_id_key": "id",
+        "entry_label_key": "name",
+    },
+    {
+        "id": "dojo_illustration",
+        "label": "道馆插图",
+        "kind": "image",
+        "file": DATA_ROOT / "dojo_definitions.json",
+        "list_key": "dojos",
+        "entry_id_key": "id",
+        "entry_label_key": "name",
+    },
+    {
+        "id": "codex_illustration",
+        "label": "图鉴插图",
+        "kind": "image",
+        "file": DATA_ROOT / "codex_entries.json",
+        "list_key": "codex_entries",
+        "entry_id_key": "id",
+        "entry_label_key": "title",
+    },
+]
+DATA_TARGET_GROUP_OPTIONS = {
+    "全部数据": "",
+    **{definition["label"]: definition["id"] for definition in DATA_TARGET_DEFINITIONS},
+}
 
 
 def ordered_kinds() -> list[str]:
@@ -107,6 +179,18 @@ def binding_options_for_asset(info: dict) -> dict[str, str]:
 
 def binding_labels_for_asset(asset_id: str, bindings: dict) -> list[str]:
     labels = [slot_label(slot_id) for slot_id, bound_id in bindings.items() if str(bound_id) == asset_id]
+    return sorted(labels)
+
+
+def data_link_labels_for_asset(asset_id: str, data_links: dict, data_targets: dict[str, dict]) -> list[str]:
+    labels: list[str] = []
+    for target_key, bound_id in data_links.items():
+        if str(bound_id) != asset_id:
+            continue
+        target = data_targets.get(str(target_key), {})
+        group_label = str(target.get("group_label", "数据"))
+        entry_label = str(target.get("entry_label", target_key))
+        labels.append(f"{group_label} / {entry_label}")
     return sorted(labels)
 
 
@@ -156,7 +240,7 @@ def ensure_layout() -> None:
 
 
 def default_manifest() -> dict:
-    return {"assets": {}, "bindings": {}}
+    return {"assets": {}, "bindings": {}, "data_links": {}}
 
 
 def sanitize_name(value: str) -> str:
@@ -286,6 +370,12 @@ def migrate_manifest(data: dict) -> dict:
     normalized["assets"] = assets
     if isinstance(data.get("bindings"), dict):
         normalized["bindings"] = dict(data["bindings"])
+    if isinstance(data.get("data_links"), dict):
+        normalized["data_links"] = {
+            str(target_key).strip(): str(asset_id).strip()
+            for target_key, asset_id in data["data_links"].items()
+            if str(target_key).strip() and str(asset_id).strip()
+        }
     return normalized
 
 
@@ -304,7 +394,47 @@ def save_manifest(data: dict) -> None:
     normalized = migrate_manifest(data)
     normalized["assets"] = dict(sorted(normalized["assets"].items(), key=lambda item: item[0]))
     normalized["bindings"] = dict(sorted(normalized["bindings"].items(), key=lambda item: item[0]))
+    normalized["data_links"] = dict(sorted(normalized["data_links"].items(), key=lambda item: item[0]))
     MANIFEST_PATH.write_text(json.dumps(normalized, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def make_data_target_key(group_id: str, entry_id: str) -> str:
+    return f"{group_id}:{entry_id}"
+
+
+def load_data_targets() -> dict[str, dict]:
+    targets: dict[str, dict] = {}
+    for definition in DATA_TARGET_DEFINITIONS:
+        path = Path(definition["file"])
+        if not path.exists() or not path.is_file():
+            continue
+        try:
+            raw_data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if not isinstance(raw_data, dict):
+            continue
+        rows = raw_data.get(definition["list_key"], [])
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            entry_id = str(row.get(definition["entry_id_key"], "")).strip()
+            if not entry_id:
+                continue
+            label = str(row.get(definition["entry_label_key"], entry_id)).strip() or entry_id
+            key = make_data_target_key(str(definition["id"]), entry_id)
+            targets[key] = {
+                "key": key,
+                "group_id": str(definition["id"]),
+                "group_label": str(definition["label"]),
+                "asset_kind": str(definition["kind"]),
+                "entry_id": entry_id,
+                "entry_label": label,
+                "source_file": str(path.relative_to(PROJECT_ROOT)),
+            }
+    return targets
 
 
 def make_asset_id(stem: str, used_ids: set[str]) -> str:
@@ -337,6 +467,7 @@ def reconcile_manifest(data: dict) -> dict:
     normalized = migrate_manifest(data)
     original_assets = normalized.setdefault("assets", {})
     original_bindings = normalized.setdefault("bindings", {})
+    original_data_links = normalized.setdefault("data_links", {})
     existing_files: dict[str, dict[str, str]] = {}
     for kind in ordered_kinds():
         directory = ASSET_KIND_DIRS[kind]
@@ -403,6 +534,11 @@ def reconcile_manifest(data: dict) -> dict:
             bindings[slot_id] = asset_id
     normalized["assets"] = assets
     normalized["bindings"] = bindings
+    normalized["data_links"] = {
+        str(target_key): str(asset_id)
+        for target_key, asset_id in original_data_links.items()
+        if str(target_key) and str(asset_id) in assets
+    }
     return normalized
 
 
@@ -676,8 +812,11 @@ class AssetEditor(Tk):
 
         self.manifest = reconcile_manifest(load_manifest())
         save_manifest(self.manifest)
+        self.data_targets = load_data_targets()
         self.selected_asset_id: str | None = None
         self.asset_ids: list[str] = []
+        self.selected_data_target_key: str | None = None
+        self.data_target_keys: list[str] = []
 
         self.asset_label_var = StringVar()
         self.asset_id_var = StringVar()
@@ -690,6 +829,9 @@ class AssetEditor(Tk):
         self.asset_original_var = StringVar()
         self.asset_updated_var = StringVar()
         self.binding_var = StringVar(value="不绑定")
+        self.data_target_filter_var = StringVar()
+        self.data_target_group_var = StringVar(value="全部数据")
+        self.data_target_summary_var = StringVar(value="先选择左侧素材，再绑定到已有数据条目。")
         self.filter_text_var = StringVar()
         self.kind_filter_var = StringVar(value="全部类型")
         self.status_var = StringVar(value="外置素材目录已就绪。")
@@ -698,8 +840,11 @@ class AssetEditor(Tk):
         self._build_ui()
         self.filter_text_var.trace_add("write", lambda *_args: self.refresh_asset_list())
         self.kind_filter_var.trace_add("write", lambda *_args: self.refresh_asset_list())
+        self.data_target_filter_var.trace_add("write", lambda *_args: self.refresh_data_target_list())
+        self.data_target_group_var.trace_add("write", lambda *_args: self.refresh_data_target_list())
         self.bind("<Control-f>", self.focus_search)
         self.refresh_asset_list()
+        self.refresh_data_target_list()
 
     def _build_ui(self) -> None:
         self.columnconfigure(0, weight=1)
@@ -781,6 +926,7 @@ class AssetEditor(Tk):
 
         right = ttk.Frame(body, padding=12)
         right.columnconfigure(1, weight=1)
+        right.rowconfigure(13, weight=1)
         body.add(right, weight=2)
 
         ttk.Label(right, text="素材详情").grid(row=0, column=0, columnspan=2, sticky=W)
@@ -831,22 +977,85 @@ class AssetEditor(Tk):
         )
         self.binding_combo.grid(row=12, column=1, sticky="ew", pady=(12, 0))
 
+        data_frame = ttk.LabelFrame(right, text="数据条目绑定", padding=10)
+        data_frame.grid(row=13, column=0, columnspan=2, sticky="nsew", pady=(16, 0))
+        data_frame.columnconfigure(1, weight=1)
+        data_frame.rowconfigure(2, weight=1)
+
+        ttk.Label(data_frame, text="目标搜索").grid(row=0, column=0, sticky=W)
+        self.data_target_search_entry = ttk.Entry(data_frame, textvariable=self.data_target_filter_var)
+        self.data_target_search_entry.grid(row=0, column=1, sticky="ew", padx=(8, 8))
+        self.data_target_group_combo = ttk.Combobox(
+            data_frame,
+            textvariable=self.data_target_group_var,
+            state="readonly",
+            width=12,
+            values=list(DATA_TARGET_GROUP_OPTIONS.keys()),
+        )
+        self.data_target_group_combo.grid(row=0, column=2, sticky="e")
+
+        ttk.Label(data_frame, textvariable=self.data_target_summary_var, foreground="#4b5563").grid(
+            row=1, column=0, columnspan=3, sticky="ew", pady=(8, 0)
+        )
+
+        data_list_frame = ttk.Frame(data_frame)
+        data_list_frame.grid(row=2, column=0, columnspan=3, sticky="nsew", pady=(8, 0))
+        data_list_frame.columnconfigure(0, weight=1)
+        data_list_frame.rowconfigure(0, weight=1)
+
+        self.data_target_listbox = ttk.Treeview(
+            data_list_frame,
+            columns=("group", "label", "entry_id", "binding"),
+            show="headings",
+            selectmode="browse",
+            height=8,
+        )
+        self.data_target_listbox.heading("group", text="类型")
+        self.data_target_listbox.heading("label", text="数据条目")
+        self.data_target_listbox.heading("entry_id", text="ID")
+        self.data_target_listbox.heading("binding", text="当前素材")
+        self.data_target_listbox.column("group", width=84, anchor="center")
+        self.data_target_listbox.column("label", width=180, anchor="w")
+        self.data_target_listbox.column("entry_id", width=140, anchor="w")
+        self.data_target_listbox.column("binding", width=140, anchor="w")
+        self.data_target_listbox.grid(row=0, column=0, sticky="nsew")
+        self.data_target_listbox.bind("<<TreeviewSelect>>", self.on_data_target_selected)
+
+        data_scrollbar = ttk.Scrollbar(data_list_frame, orient=VERTICAL, command=self.data_target_listbox.yview)
+        data_scrollbar.grid(row=0, column=1, sticky="ns")
+        self.data_target_listbox.configure(yscrollcommand=data_scrollbar.set)
+
+        data_action_row = ttk.Frame(data_frame)
+        data_action_row.grid(row=3, column=0, columnspan=3, sticky=W, pady=(10, 0))
+        self.bind_data_target_button = ttk.Button(
+            data_action_row,
+            text="把当前素材绑定到选中条目",
+            command=self.bind_selected_asset_to_data_target,
+        )
+        self.bind_data_target_button.pack(side=LEFT, padx=(0, 8))
+        self.clear_data_target_button = ttk.Button(
+            data_action_row,
+            text="清除选中条目绑定",
+            command=self.clear_selected_data_target_binding,
+        )
+        self.clear_data_target_button.pack(side=LEFT)
+
         help_text = (
             "说明:\n"
             f"1. 编辑器可导入 {supported_extension_labels()}。\n"
             "2. 图片会按需要适配成游戏稳定可读取的格式，其它素材会按原格式归档。\n"
             "3. 每个素材都可以有一个同目录的 .asset.json 对应配置文件，例如 hero.png.asset.json。\n"
-            "4. 快捷绑定会按素材类型显示可用槽位，例如主菜单背景 / 主菜单音乐 / 界面字体。\n"
+            "4. 快捷绑定用于全局槽位；下方“数据条目绑定”用于把已有游戏数据条目关联到素材。\n"
             "5. 选择文件夹时会递归扫描里面的可用素材并按类型归档到 external_assets。\n"
-            "6. 选中素材后可替换原文件，保留当前素材 ID 和已有绑定关系。\n"
+            "6. 选中素材后可替换原文件，保留当前素材 ID、全局槽位和数据条目绑定关系。\n"
             "7. 游戏启动时会自动同步该目录；如果游戏已开着，重新打开设置页即可触发一次同步。"
         )
         ttk.Label(right, text=help_text, justify=LEFT, foreground="#4b5563").grid(
-            row=13, column=0, columnspan=2, sticky="ew", pady=(18, 0)
+            row=14, column=0, columnspan=2, sticky="ew", pady=(18, 0)
         )
 
         action_row = ttk.Frame(right)
-        action_row.grid(row=14, column=0, columnspan=2, sticky=W, pady=(18, 0))
+        action_row.grid(row=15, column=0, columnspan=2, sticky=W, pady=(18, 0))
         self.save_button = ttk.Button(action_row, text="保存修改", command=self.save_selected_asset)
         self.save_button.pack(side=LEFT, padx=(0, 8))
         self.open_file_button = ttk.Button(action_row, text="打开当前素材文件", command=self.open_selected_asset_file)
@@ -864,6 +1073,44 @@ class AssetEditor(Tk):
         labels = binding_labels_for_asset(asset_id, dict(self.manifest.get("bindings", {})))
         return " / ".join(labels)
 
+    def _data_binding_label_for_target(self, target_key: str) -> str:
+        asset_id = str(self.manifest.get("data_links", {}).get(target_key, "")).strip()
+        if not asset_id:
+            return ""
+        asset_info = dict(self.manifest.get("assets", {}).get(asset_id, {}))
+        return str(asset_info.get("label", asset_id))
+
+    def _update_data_target_actions(self) -> None:
+        target_info = self.data_targets.get(self.selected_data_target_key or "", {})
+        asset_info = dict(self.manifest.get("assets", {}).get(self.selected_asset_id or "", {}))
+        can_bind = bool(target_info) and bool(asset_info) and str(target_info.get("asset_kind", "")) == str(asset_info.get("kind", ""))
+        self.bind_data_target_button.configure(state="normal" if can_bind else "disabled")
+        has_binding = bool(target_info) and bool(str(self.manifest.get("data_links", {}).get(self.selected_data_target_key or "", "")).strip())
+        self.clear_data_target_button.configure(state="normal" if has_binding else "disabled")
+
+    def _refresh_data_target_summary(self) -> None:
+        total_count = len(self.data_targets)
+        visible_count = len(self.data_target_keys)
+        if self.selected_asset_id:
+            labels = data_link_labels_for_asset(
+                self.selected_asset_id,
+                dict(self.manifest.get("data_links", {})),
+                self.data_targets,
+            )
+            if labels:
+                summary = "当前素材已关联 %d 个数据条目：%s" % (len(labels), "；".join(labels[:3]))
+                if len(labels) > 3:
+                    summary += "……"
+            else:
+                summary = "当前素材还没有绑定到任何数据条目。"
+        else:
+            summary = "先选择左侧素材，再绑定到已有数据条目。"
+        if visible_count != total_count:
+            summary += " 当前显示 %d/%d 个数据条目。" % (visible_count, total_count)
+        else:
+            summary += " 当前共有 %d 个数据条目。" % total_count
+        self.data_target_summary_var.set(summary)
+
     def _status_summary(self, visible_count: int | None = None) -> str:
         assets = self.manifest.get("assets", {})
         counts = []
@@ -875,6 +1122,28 @@ class AssetEditor(Tk):
         if visible_count is not None and visible_count != len(assets):
             return f"当前显示 {visible_count}/{len(assets)} 个外置素材。{detail}"
         return f"当前共 {len(assets)} 个外置素材。{detail}"
+
+    def _filtered_data_target_keys(self) -> list[str]:
+        keyword = self.data_target_filter_var.get().strip().lower()
+        group_filter = DATA_TARGET_GROUP_OPTIONS.get(self.data_target_group_var.get(), "")
+        filtered: list[tuple[str, dict]] = []
+        for target_key, info in self.data_targets.items():
+            if group_filter and str(info.get("group_id", "")) != group_filter:
+                continue
+            haystack = " ".join(
+                [
+                    target_key,
+                    str(info.get("group_label", "")),
+                    str(info.get("entry_label", "")),
+                    str(info.get("entry_id", "")),
+                    str(info.get("source_file", "")),
+                ]
+            ).lower()
+            if keyword and keyword not in haystack:
+                continue
+            filtered.append((target_key, info))
+        filtered.sort(key=lambda item: (str(item[1].get("group_label", "")), str(item[1].get("entry_label", "")), str(item[1].get("entry_id", ""))))
+        return [target_key for target_key, _info in filtered]
 
     def _filtered_asset_ids(self) -> list[str]:
         assets = self.manifest.get("assets", {})
@@ -993,6 +1262,7 @@ class AssetEditor(Tk):
             self.selected_asset_id = None
             self.populate_editor(None)
         self.status_var.set(self._status_summary(len(self.asset_ids)))
+        self.refresh_data_target_list()
 
     def populate_editor(self, asset_id: str | None) -> None:
         if asset_id is None:
@@ -1011,6 +1281,8 @@ class AssetEditor(Tk):
             self.binding_combo.configure(state="disabled")
             self._set_selected_actions_enabled(False)
             self._clear_preview("选中素材后，这里会显示图片预览或文件摘要。")
+            self._refresh_data_target_summary()
+            self._update_data_target_actions()
             return
         info = self.manifest.get("assets", {}).get(asset_id, {})
         kind = str(info.get("kind", "file"))
@@ -1039,17 +1311,52 @@ class AssetEditor(Tk):
             self.binding_combo.configure(state="disabled")
         self._set_selected_actions_enabled(True)
         self._update_preview(file_path, kind)
+        self._refresh_data_target_summary()
+        self._update_data_target_actions()
 
     def on_asset_selected(self, _event=None) -> None:
         selection = self.asset_listbox.selection()
         self.selected_asset_id = selection[0] if selection else None
         self.populate_editor(self.selected_asset_id)
 
+    def refresh_data_target_list(self) -> None:
+        for item in self.data_target_listbox.get_children():
+            self.data_target_listbox.delete(item)
+        self.data_target_keys = self._filtered_data_target_keys()
+        for target_key in self.data_target_keys:
+            info = self.data_targets[target_key]
+            self.data_target_listbox.insert(
+                "",
+                END,
+                iid=target_key,
+                values=(
+                    str(info.get("group_label", "")),
+                    str(info.get("entry_label", "")),
+                    str(info.get("entry_id", "")),
+                    self._data_binding_label_for_target(target_key),
+                ),
+            )
+        if self.selected_data_target_key in self.data_target_keys:
+            self.data_target_listbox.selection_set(self.selected_data_target_key)
+            self.data_target_listbox.focus(self.selected_data_target_key)
+        else:
+            self.selected_data_target_key = None
+        self._refresh_data_target_summary()
+        self._update_data_target_actions()
+
+    def on_data_target_selected(self, _event=None) -> None:
+        selection = self.data_target_listbox.selection()
+        self.selected_data_target_key = selection[0] if selection else None
+        self._refresh_data_target_summary()
+        self._update_data_target_actions()
+
     def reload_manifest(self) -> None:
         self.manifest = reconcile_manifest(load_manifest())
         save_manifest(self.manifest)
         self.refresh_asset_list()
-        self.status_var.set("已重新扫描 external_assets 下的素材目录。")
+        self.data_targets = load_data_targets()
+        self.refresh_data_target_list()
+        self.status_var.set("已重新扫描 external_assets 素材目录并刷新数据条目索引。")
 
     def add_assets(self) -> None:
         paths = filedialog.askopenfilenames(
@@ -1135,6 +1442,38 @@ class AssetEditor(Tk):
         self.refresh_asset_list()
         self.status_var.set(f"已保存 {self.selected_asset_id} 的修改。")
 
+    def bind_selected_asset_to_data_target(self) -> None:
+        if not self.selected_asset_id:
+            messagebox.showinfo("未选择素材", "先在左侧列表中选择 1 个素材。")
+            return
+        if not self.selected_data_target_key:
+            messagebox.showinfo("未选择数据条目", "先在下方列表中选择 1 个数据条目。")
+            return
+        target_info = self.data_targets.get(self.selected_data_target_key, {})
+        asset_info = dict(self.manifest.get("assets", {}).get(self.selected_asset_id, {}))
+        if not target_info or not asset_info:
+            return
+        if str(target_info.get("asset_kind", "")) != str(asset_info.get("kind", "")):
+            messagebox.showerror("类型不匹配", "当前素材类型与数据条目需要的素材类型不一致。")
+            return
+        data_links = self.manifest.setdefault("data_links", {})
+        data_links[self.selected_data_target_key] = self.selected_asset_id
+        save_manifest(self.manifest)
+        self.refresh_data_target_list()
+        self.status_var.set("已把 %s 绑定到 %s。" % (self.selected_asset_id, str(target_info.get("entry_label", self.selected_data_target_key))))
+
+    def clear_selected_data_target_binding(self) -> None:
+        if not self.selected_data_target_key:
+            messagebox.showinfo("未选择数据条目", "先在下方列表中选择 1 个数据条目。")
+            return
+        data_links = self.manifest.setdefault("data_links", {})
+        if self.selected_data_target_key not in data_links:
+            return
+        data_links.pop(self.selected_data_target_key, None)
+        save_manifest(self.manifest)
+        self.refresh_data_target_list()
+        self.status_var.set("已清除数据条目的素材绑定。")
+
     def open_selected_kind_folder(self) -> None:
         if not self.selected_asset_id:
             messagebox.showinfo("未选择素材", "先在左侧列表中选择 1 个素材。")
@@ -1177,6 +1516,10 @@ class AssetEditor(Tk):
         for slot_id, bound_id in list(bindings.items()):
             if bound_id == self.selected_asset_id:
                 bindings.pop(slot_id, None)
+        data_links = self.manifest.setdefault("data_links", {})
+        for target_key, bound_id in list(data_links.items()):
+            if bound_id == self.selected_asset_id:
+                data_links.pop(target_key, None)
         removed_id = self.selected_asset_id
         self.selected_asset_id = None
         save_manifest(self.manifest)

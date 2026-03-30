@@ -13,6 +13,7 @@ const SAVE_SLOT_COUNT := 6
 const SETTINGS_SAVE_PATH := "user://settings.save"
 const BASE_VIEWPORT_SIZE := Vector2i(1280, 720)
 const MIN_WINDOW_SIZE := Vector2i(1280, 720)
+const GUIDED_INTRO_SEASON_ID := DEFAULT_SEASON_ID
 const WINDOWED_RESOLUTION_PRESETS := [
 	{"id": "1280x720", "size": Vector2i(1280, 720), "label": "720p (1280 x 720)"},
 	{"id": "1366x768", "size": Vector2i(1366, 768), "label": "WXGA (1366 x 768)"},
@@ -397,6 +398,13 @@ func prefers_reduced_motion() -> bool:
 func tutorials_enabled() -> bool:
 	_ensure_settings_defaults()
 	return bool(settings.get("tutorials_enabled", true))
+
+func is_guided_intro_active() -> bool:
+	if not tutorials_enabled():
+		return false
+	if completed_seasons > 0:
+		return false
+	return season_id == GUIDED_INTRO_SEASON_ID
 
 func current_language() -> String:
 	_ensure_settings_defaults()

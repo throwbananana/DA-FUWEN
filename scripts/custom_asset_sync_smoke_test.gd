@@ -4,6 +4,9 @@ const TEST_ASSET_ID := "ext_smoke_asset_sync"
 const TEST_AUDIO_ASSET_ID := "ext_smoke_audio_sync"
 const TEST_IMAGE_FILE_NAME := "smoke_sidecar_image.png"
 const TEST_AUDIO_FILE_NAME := "smoke_sidecar_audio.wav"
+const TEST_DATA_TARGET_KEY := "species_portrait:embercat_1"
+const TEST_HABITAT_TARGET_KEY := "habitat_background:mist_moss_cave"
+const TEST_CODEX_TARGET_KEY := "codex_illustration:codex_moss_puff"
 
 var _original_manifest := ""
 var _manifest_existed := false
@@ -13,10 +16,11 @@ var _test_image_sidecar_path := ""
 var _test_audio_sidecar_path := ""
 
 func _initialize() -> void:
-	if not _run():
-		quit(1)
-		return
-	quit(0)
+	_run_async.call_deferred()
+
+func _run_async() -> void:
+	var ok := await _run()
+	quit(0 if ok else 1)
 
 func _run() -> bool:
 	var repo = _repo()
@@ -88,6 +92,11 @@ func _run() -> bool:
 	var manifest := {
 		"assets": {},
 		"bindings": {},
+		"data_links": {
+			TEST_DATA_TARGET_KEY: TEST_ASSET_ID,
+			TEST_HABITAT_TARGET_KEY: TEST_ASSET_ID,
+			TEST_CODEX_TARGET_KEY: TEST_ASSET_ID,
+		},
 	}
 	var file := FileAccess.open(manifest_path, FileAccess.WRITE)
 	if file == null:
@@ -120,9 +129,25 @@ func _run() -> bool:
 		push_error("custom_asset_sync_smoke_test: main_menu_logo binding did not update")
 		_cleanup()
 		return false
+	if String(repo.get_data_target_binding(TEST_DATA_TARGET_KEY)) != TEST_ASSET_ID:
+		push_error("custom_asset_sync_smoke_test: data target binding did not update")
+		_cleanup()
+		return false
 	var texture: Texture2D = repo.get_bound_texture("main_menu_bg")
 	if texture == null:
 		push_error("custom_asset_sync_smoke_test: bound texture could not be created")
+		_cleanup()
+		return false
+	if repo.get_data_bound_texture(TEST_DATA_TARGET_KEY) == null:
+		push_error("custom_asset_sync_smoke_test: data-bound texture could not be created")
+		_cleanup()
+		return false
+	if repo.get_data_bound_texture(TEST_HABITAT_TARGET_KEY) == null:
+		push_error("custom_asset_sync_smoke_test: habitat background texture could not be created")
+		_cleanup()
+		return false
+	if repo.get_data_bound_texture(TEST_CODEX_TARGET_KEY) == null:
+		push_error("custom_asset_sync_smoke_test: codex illustration texture could not be created")
 		_cleanup()
 		return false
 	var audio_info: Dictionary = repo.get_asset(TEST_AUDIO_ASSET_ID)
@@ -163,6 +188,42 @@ func _run() -> bool:
 		push_error("custom_asset_sync_smoke_test: audio asset file missing after sync")
 		_cleanup()
 		return false
+	var packed: PackedScene = load("res://scenes/main.tscn")
+	var scene = packed.instantiate()
+	root.add_child(scene)
+	await process_frame
+	var game_state = root.get_node_or_null("GameState")
+	if game_state == null:
+		push_error("custom_asset_sync_smoke_test: GameState autoload missing")
+		scene.queue_free()
+		_cleanup()
+		return false
+	if not game_state.revealed_codex_entries.has("codex_moss_puff"):
+		game_state.revealed_codex_entries.append("codex_moss_puff")
+		game_state.revealed_codex_entries.sort()
+	scene.current_node_id = 1
+	scene.current_visit_habitat_id = "mist_moss_cave"
+	scene._update_map_hint()
+	var node_preview: TextureRect = scene.get_node("RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer/NodeDetailPreviewRect")
+	if node_preview.texture == null:
+		push_error("custom_asset_sync_smoke_test: node detail preview did not pick up habitat background binding")
+		scene.queue_free()
+		_cleanup()
+		return false
+	var sections: Array = scene._build_system_sections()
+	var found_codex_preview := false
+	for raw_section in sections:
+		var section: Dictionary = Dictionary(raw_section).duplicate(true)
+		if String(section.get("id", "")) != "codex":
+			continue
+		found_codex_preview = section.get("preview_texture", null) != null
+		break
+	if not found_codex_preview:
+		push_error("custom_asset_sync_smoke_test: codex system section did not expose a bound illustration preview")
+		scene.queue_free()
+		_cleanup()
+		return false
+	scene.queue_free()
 	_cleanup()
 	return true
 

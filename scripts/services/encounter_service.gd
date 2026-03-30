@@ -24,6 +24,7 @@ func _roll_from_entries(valid_entries: Array, source: String) -> Dictionary:
 		"mood_id": mood_id,
 		"bond_window": _estimate_bond_window(mood_id),
 		"source": source,
+		"selection_reasons": _build_selection_reasons(chosen, source),
 	}
 
 func build_weighted_entries(habitat_id: String, source: String = "observe") -> Array:
@@ -71,11 +72,28 @@ func _apply_shop_odds(entries: Array) -> Array:
 			continue
 		var adjusted_entry: Dictionary = entry.duplicate(true)
 		adjusted_entry["effective_weight"] = effective_weight
+		adjusted_entry["weight_breakdown"] = {
+			"base_weight": int(entry.get("weight", 0)),
+			"rarity": rarity,
+			"rarity_factor": rarity_factor,
+			"after_rarity_weight": effective_weight,
+			"source_factor": 1.0,
+			"final_weight": effective_weight,
+		}
 		adjusted.append(adjusted_entry)
 	if adjusted.is_empty():
 		for entry in entries:
 			var fallback_entry: Dictionary = entry.duplicate(true)
-			fallback_entry["effective_weight"] = int(entry.get("weight", 0))
+			var fallback_weight := int(entry.get("weight", 0))
+			fallback_entry["effective_weight"] = fallback_weight
+			fallback_entry["weight_breakdown"] = {
+				"base_weight": fallback_weight,
+				"rarity": "",
+				"rarity_factor": 1.0,
+				"after_rarity_weight": fallback_weight,
+				"source_factor": 1.0,
+				"final_weight": fallback_weight,
+			}
 			adjusted.append(fallback_entry)
 	return adjusted
 
@@ -92,7 +110,14 @@ func _apply_source_biases(entries: Array, source: String) -> Array:
 			continue
 		var factor := _source_bias_factor(species, source)
 		var base_weight := int(adjusted_entry.get("effective_weight", adjusted_entry.get("weight", 0)))
-		adjusted_entry["effective_weight"] = maxi(1, int(round(float(base_weight) * factor)))
+		var final_weight := maxi(1, int(round(float(base_weight) * factor)))
+		var breakdown: Dictionary = Dictionary(adjusted_entry.get("weight_breakdown", {})).duplicate(true)
+		breakdown["source"] = source
+		breakdown["source_factor"] = factor
+		breakdown["final_weight"] = final_weight
+		adjusted_entry["weight_breakdown"] = breakdown
+		adjusted_entry["source_bias_reason"] = _source_bias_reason(species, source, factor)
+		adjusted_entry["effective_weight"] = final_weight
 		adjusted.append(adjusted_entry)
 	return adjusted
 
@@ -120,35 +145,200 @@ func get_available_actions(encounter: Dictionary) -> Array:
 		_:
 			return ["observe", "feed", "calm", "guide"]
 
+func describe_action(encounter: Dictionary, action_id: String) -> String:
+	var evaluation := _evaluate_action(encounter, action_id)
+	if evaluation.is_empty():
+		return "先按当前气氛做一次温和尝试。"
+	if String(evaluation.get("outcome", "")) == "safe_leave":
+		return "先拉开距离，稳稳结束这次相遇。"
+	var parts: Array[String] = []
+	if bool(evaluation.get("mood_match", false)):
+		parts.append("这一步比较顺着它现在的情绪。")
+	else:
+		parts.append("这一步偏试探，成不成更看窗口。")
+	match int(evaluation.get("window_adjustment", 0)):
+		1:
+			parts.append("它现在愿意多停一会。")
+		-1:
+			parts.append("它现在很警惕，别太冒进。")
+		_:
+			parts.append("窗口普通，先求稳。")
+	match String(evaluation.get("outcome", "")):
+		"bond_success":
+			parts.append("顺的话能直接建立联系。")
+		"bond_progress":
+			parts.append("更常见的是先把关系往前推一步。")
+		"alert_rise":
+			parts.append("踩偏了就会让它更警惕。")
+	return " ".join(parts)
+
 func resolve_action(encounter: Dictionary, action_id: String) -> Dictionary:
+	var evaluation := _evaluate_action(encounter, action_id)
+	if evaluation.is_empty():
+		return {"ok": false, "reason": "encounter_missing"}
+	var result := {
+		"ok": true,
+		"outcome": String(evaluation.get("outcome", "safe_leave")),
+		"bond_delta": int(evaluation.get("bond_delta", 0)),
+		"reason_lines": _build_result_reason_lines(evaluation),
+	}
+	if evaluation.has("combat_risk"):
+		result["combat_risk"] = int(evaluation.get("combat_risk", 0))
+	return result
+
+func _evaluate_action(encounter: Dictionary, action_id: String) -> Dictionary:
 	var mood_id := String(encounter.get("mood_id", "curious"))
 	var bond_window := String(encounter.get("bond_window", "medium"))
-	var score := 0
+	var base_score := 0
+	var mood_match := false
 	match action_id:
 		"feed":
-			score += 2 if mood_id in ["hungry", "fearful", "curious", "gentle", "placid", "steady"] else 0
+			mood_match = mood_id in ["hungry", "fearful", "curious", "gentle", "placid", "steady"]
+			base_score += 2 if mood_match else 0
 		"calm":
-			score += 2 if mood_id in ["fearful", "alert", "wild", "guarded", "protective", "stubborn", "patient", "calm"] else 1
+			mood_match = mood_id in ["fearful", "alert", "wild", "guarded", "protective", "stubborn", "patient", "calm"]
+			base_score += 2 if mood_match else 1
 		"observe":
-			score += 2 if mood_id in ["kind", "steady", "patient", "slow", "sly"] else 1
+			mood_match = mood_id in ["kind", "steady", "patient", "slow", "sly"]
+			base_score += 2 if mood_match else 1
 		"hum":
-			score += 2 if mood_id in ["fragile", "cold"] else 0
+			mood_match = mood_id in ["fragile", "cold"]
+			base_score += 2 if mood_match else 0
 		"shelter":
-			score += 2 if mood_id in ["fearful", "cold", "steady", "patient"] else 0
+			mood_match = mood_id in ["fearful", "cold", "steady", "patient"]
+			base_score += 2 if mood_match else 0
 		"guide":
-			score += 2 if mood_id in ["curious", "hungry", "lively", "playful", "smooth"] else 0
+			mood_match = mood_id in ["curious", "hungry", "lively", "playful", "smooth"]
+			base_score += 2 if mood_match else 0
 		"retreat":
-			return {"ok": true, "outcome": "safe_leave", "bond_delta": 0}
+			return {
+				"outcome": "safe_leave",
+				"bond_delta": 0,
+				"action_id": action_id,
+				"mood_id": mood_id,
+				"bond_window": bond_window,
+				"mood_match": true,
+				"base_score": 0,
+				"window_adjustment": 0,
+			}
+		_:
+			return {}
+	var window_adjustment := 0
 	if bond_window == "high":
-		score += 1
+		window_adjustment = 1
 	elif bond_window == "low":
-		score -= 1
+		window_adjustment = -1
+	var score := base_score + window_adjustment
+	var result := {
+		"outcome": "alert_rise",
+		"bond_delta": 0,
+		"action_id": action_id,
+		"mood_id": mood_id,
+		"bond_window": bond_window,
+		"mood_match": mood_match,
+		"base_score": base_score,
+		"window_adjustment": window_adjustment,
+		"score": score,
+	}
 	if score >= 3:
-		return {"ok": true, "outcome": "bond_success", "bond_delta": 2}
+		result["outcome"] = "bond_success"
+		result["bond_delta"] = 2
 	elif score == 2:
-		return {"ok": true, "outcome": "bond_progress", "bond_delta": 1}
+		result["outcome"] = "bond_progress"
+		result["bond_delta"] = 1
 	else:
-		return {"ok": true, "outcome": "alert_rise", "bond_delta": 0, "combat_risk": 1}
+		result["combat_risk"] = 1
+	return result
+
+func _build_result_reason_lines(evaluation: Dictionary) -> Array[String]:
+	var outcome := String(evaluation.get("outcome", ""))
+	if outcome == "safe_leave":
+		return ["你主动收了一步，没有继续刺激它。"]
+	var lines: Array[String] = []
+	if bool(evaluation.get("mood_match", false)):
+		lines.append("这一步顺着它现在的情绪。")
+	else:
+		lines.append("这一步没有完全踩中它现在的情绪。")
+	match int(evaluation.get("window_adjustment", 0)):
+		1:
+			lines.append("这会儿它愿意多停一会，所以结果更顺。")
+		-1:
+			lines.append("它这会儿很警惕，所以容错更低。")
+		_:
+			lines.append("这次结缘窗口普通，成败主要看动作是否合拍。")
+	match outcome:
+		"bond_success":
+			lines.append("你把节奏踩准了，它愿意继续靠近。")
+		"bond_progress":
+			lines.append("虽然还没完全放下戒备，但关系已经往前推进了一步。")
+		"alert_rise":
+			lines.append("它还是更紧张了一些，这里也会因此变得更危险。")
+	return lines
+
+func _build_selection_reasons(entry: Dictionary, source: String) -> Array[String]:
+	var lines: Array[String] = []
+	var breakdown: Dictionary = Dictionary(entry.get("weight_breakdown", {})).duplicate(true)
+	var base_weight := int(breakdown.get("base_weight", entry.get("weight", 0)))
+	var rarity := String(breakdown.get("rarity", ""))
+	var rarity_factor := float(breakdown.get("rarity_factor", 1.0))
+	var source_factor := float(breakdown.get("source_factor", 1.0))
+	var final_weight := int(breakdown.get("final_weight", entry.get("effective_weight", base_weight)))
+	lines.append("基础生态权重 %d，当前实际权重 %d。" % [base_weight, final_weight])
+	if not rarity.is_empty() and absf(rarity_factor - 1.0) > 0.01:
+		lines.append("按你当前推进阶段，%s个体会吃到 %.2f 倍稀有度修正。" % [_rarity_label(rarity), rarity_factor])
+	if source.is_empty() or source == "observe":
+		lines.append("这次按地点本身的观察池来抽取。")
+	elif absf(source_factor - 1.0) > 0.01:
+		lines.append(_source_bias_reason(Dictionary(entry.get("species", {})), source, source_factor))
+	return lines
+
+func _source_bias_reason(species: Dictionary, source: String, factor: float) -> String:
+	if absf(factor - 1.0) <= 0.01:
+		return "这次来源没有明显偏压。"
+	var species_name := String(species.get("name", "这类个体"))
+	return "%s 与“%s”这条线索更贴，所以额外吃到 %.2f 倍来源修正。" % [species_name, _source_label(source), factor]
+
+func _source_label(source: String) -> String:
+	match source:
+		"observe":
+			return "基础观察"
+		"ambush":
+			return "潜伏袭扰"
+		"nursery_watch":
+			return "孵育观察"
+		"nursery_rare_watch":
+			return "稀有孵育观察"
+		"waterside_lure":
+			return "水边诱引"
+		"waterside_rare":
+			return "稀有水边诱引"
+		"route_tip":
+			return "路线线索"
+		"anomaly_watch":
+			return "异常观测"
+		"anomaly_rare_watch":
+			return "稀有异常观测"
+		"echo_watch":
+			return "回响观察"
+		"echo_rare_watch":
+			return "稀有回响观察"
+		_:
+			return source
+
+func _rarity_label(rarity: String) -> String:
+	match rarity:
+		"common":
+			return "常见"
+		"uncommon":
+			return "少见"
+		"rare":
+			return "稀有"
+		"epic":
+			return "史诗"
+		"legendary":
+			return "传说"
+		_:
+			return rarity
 
 func _matches_condition(condition: Dictionary) -> bool:
 	for key in condition.keys():

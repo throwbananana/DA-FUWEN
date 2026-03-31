@@ -42,6 +42,9 @@ const InfirmaryService = preload("res://scripts/services/infirmary_service.gd")
 const AnnualCompetitionService = preload("res://scripts/services/annual_competition_service.gd")
 const BattleRosterServiceScript = preload("res://scripts/services/battle_roster_service.gd")
 const JrpgTheme = preload("res://scripts/jrpg_theme.gd")
+const GameConstants = preload("res://scripts/game_constants.gd")
+const OnboardingFlowService = preload("res://scripts/services/onboarding_flow_service.gd")
+const TurnRoutePlanningService = preload("res://scripts/services/turn_route_planning_service.gd")
 const CUSTOM_ASSET_SLOT_ORDER := ["app_icon", "main_menu_bg", "main_menu_logo", "main_menu_bgm", "battle_bgm", "ui_confirm_sfx", "ui_font", "ui_style_config"]
 
 const GAME_TITLE := "雾野市"
@@ -62,29 +65,10 @@ const CODEX_RARITY_COLORS := {
 	"legendary": "#fb7185",
 }
 
-const WEATHER_ORDER := ["clear", "fog", "rain", "storm"]
-const WEATHER_NAMES := {
-	"clear": "晴日",
-	"fog": "薄雾",
-	"mist": "雾息",
-	"rain": "细雨",
-	"storm": "风暴",
-	"drizzle": "微雨",
-	"humid": "闷热",
-	"windy": "劲风",
-	"dry": "燥风",
-	"snow": "雪幕",
-}
-
-const TIME_ORDER := ["day", "evening", "night"]
-const TIME_NAMES := {
-	"day": "白昼",
-	"evening": "黄昏",
-	"night": "夜晚",
-}
-
-const STARTER_SPECIES_IDS := ["steam_otter_1", "moss_deer_1", "spark_mouse_1"]
-const TUTORIAL_ORDER := ["run_intro", "management_intro", "battle_intro"]
+const WEATHER_ORDER := GameConstants.WEATHER_ORDER
+const WEATHER_NAMES := GameConstants.WEATHER_NAMES
+const TIME_ORDER := GameConstants.TIME_ORDER
+const TIME_NAMES := GameConstants.TIME_NAMES
 const EVENT_LOG_TYPEWRITER_SPEED := 0.016
 const EVENT_LOG_TYPEWRITER_MIN_DURATION := 0.18
 const EVENT_LOG_TYPEWRITER_MAX_DURATION := 0.82
@@ -93,26 +77,6 @@ const AI_OBSERVE_LANDING_DELAY := 0.24
 const AI_OBSERVE_TURN_FINISH_DELAY := 0.18
 const CASUAL_INTRO_MAX_GLOBAL_TURN := 5
 const CASUAL_INTRO_VISIBLE_LOG_ENTRIES := 3
-
-const NODE_TEMPLATES := [
-	{"id": 0, "name": "营地", "type": "camp", "description": "整理队伍、补给和留信的地方。路过时适合先收拾今天的安排。", "position": Vector2(80, 280), "edges": [1, 2, 3], "travel_cost": 0, "habitat_id": ""},
-	{"id": 1, "name": "雾苔窟", "type": "habitat", "description": "适合观察、照料与推进孵育的栖居点。节奏慢，适合补记录。", "position": Vector2(280, 130), "edges": [4], "travel_cost": 1, "habitat_id": "mist_moss_cave"},
-	{"id": 2, "name": "晶溪滩", "type": "habitat", "description": "适合采集、照护与垂钓。路过时能顺手补一些基础资源。", "position": Vector2(470, 320), "edges": [5], "travel_cost": 1, "habitat_id": "crystal_creek"},
-	{"id": 3, "name": "云升驿", "type": "settlement", "description": "补消息、寄留信和接委托更方便。适合先打听近况。", "position": Vector2(530, 90), "edges": [4, 5], "travel_cost": 1, "habitat_id": "sky_post"},
-	{"id": 4, "name": "古械平台", "type": "habitat", "description": "适合修复、建设和收集零件。越早补建设，后面越省心。", "position": Vector2(830, 140), "edges": [6], "travel_cost": 2, "habitat_id": "ancient_platform"},
-	{"id": 5, "name": "铜锤集", "type": "settlement", "description": "买材料、找摊位熟人、补工具更方便。", "position": Vector2(840, 330), "edges": [6, 7], "travel_cost": 1, "habitat_id": "copper_hammer_bazaar"},
-	{"id": 6, "name": "裂辉尖塔", "type": "anomaly", "description": "高风险区域。建议先补队伍和据点等级，再往里走。", "position": Vector2(1150, 220), "edges": [9, 11], "travel_cost": 3, "habitat_id": "radiant_spire"},
-	{"id": 7, "name": "鸣雷草场", "type": "habitat", "description": "适合训练和处理高机动遭遇。天气变化时更活跃。", "position": Vector2(1040, 430), "edges": [8, 10], "travel_cost": 2, "habitat_id": "thunder_meadow"},
-	{"id": 8, "name": "赤叶演武场", "type": "dojo", "description": "秋季开放的试炼点，适合检验当前双打配置。", "position": Vector2(1250, 430), "edges": [10], "travel_cost": 2, "habitat_id": "autumn_leaf_dojo"},
-	{"id": 9, "name": "霜镜湖", "type": "habitat", "description": "冬季收益更高，适合观察与收集季节资源。", "position": Vector2(1290, 70), "edges": [11], "travel_cost": 2, "habitat_id": "frost_mirror_lake"},
-	{"id": 10, "name": "回声断桥", "type": "settlement", "description": "前路节点。解锁后能接上更外侧路线。", "position": Vector2(1110, 320), "edges": [11], "travel_cost": 2, "habitat_id": "echo_broken_bridge"},
-	{"id": 11, "name": "裂辉观测台", "type": "anomaly", "description": "更深处的高阶区域，建议准备充分后再推进。", "position": Vector2(1440, 220), "edges": [], "travel_cost": 3, "habitat_id": "radiant_observatory"},
-	{"id": 12, "name": "青栎林", "type": "habitat", "description": "适合稳步探索和补足林地素材。", "position": Vector2(1480, 470), "edges": [10, 13], "travel_cost": 1, "habitat_id": "greenbark_grove"},
-	{"id": 13, "name": "烬火盆地", "type": "habitat", "description": "适合挑战高压战斗并收集高温素材。", "position": Vector2(1710, 470), "edges": [16], "travel_cost": 2, "habitat_id": "ember_crater"},
-	{"id": 14, "name": "芦泽沼", "type": "habitat", "description": "路线更绕，但能补到湿地素材和特殊事件。", "position": Vector2(1670, 330), "edges": [15, 16], "travel_cost": 2, "habitat_id": "reed_mire"},
-	{"id": 15, "name": "盐镜海岸", "type": "habitat", "description": "适合收集海岸素材，也会触发潮汐相关事件。", "position": Vector2(1690, 110), "edges": [16], "travel_cost": 2, "habitat_id": "saltglass_coast"},
-	{"id": 16, "name": "月沼遗迹", "type": "anomaly", "description": "终局前沿区域。建议确认状态、资源和路线后再进入。", "position": Vector2(1880, 230), "edges": [], "travel_cost": 3, "habitat_id": "moonfen_ruins"},
-]
 
 @onready var title_label: Label = %TitleLabel
 @onready var meta_label: Label = %MetaLabel
@@ -213,6 +177,7 @@ var minigame_service := MinigameService.new()
 var infirmary_service := InfirmaryService.new()
 var annual_competition_service := AnnualCompetitionService.new()
 var battle_roster_service := BattleRosterServiceScript.new()
+var onboarding_flow_service := OnboardingFlowService.new()
 var story_service := StoryService.new()
 var story_director = StoryDirector.new()
 var cutscene_service := CutsceneService.new()
@@ -2082,20 +2047,7 @@ func _resume_onboarding_flow() -> void:
 		_show_tutorial_popup("run_intro")
 
 func _open_starter_selection() -> void:
-	var choices := []
-	for species_id in STARTER_SPECIES_IDS:
-		var species := DataRepository.get_species(species_id)
-		if species.is_empty():
-			continue
-		var profile := GameData.get_species_synergy_profile(species_id)
-		choices.append({
-			"id": species_id,
-			"label": String(species.get("name", species_id)),
-			"summary": "%s ｜ %s ｜ 会直接放进 1 号出战位" % [
-				_format_type_tags(profile.get("elements", [])),
-				_format_role_tags(profile.get("job_tags", [])),
-			],
-		})
+	var choices := onboarding_flow_service.build_starter_choices()
 	pending_context = {"kind": "starter_select", "on_close": "starter_random"}
 	decision_panel.open_panel("起始伙伴选择", "新远征开始前，从后备里再挑 1 只起始伙伴。被选中的伙伴会直接放入 1 号出战位，帮你决定这轮前期节奏。", choices, "随机分配")
 
@@ -2109,20 +2061,11 @@ func _apply_starter_choice(species_id: String, random_choice := false) -> void:
 	starter_choice_done = true
 	starter_companion_uid = GameState.add_companion(species_id)
 	GameState.set_party_slot(0, starter_companion_uid)
-	var profile := GameData.get_species_synergy_profile(species_id)
-	var mode_text := "随机分配" if random_choice else "已选择"
-	var body_lines: Array[String] = [
-		"[b]%s[/b] %s" % [mode_text, String(species.get("name", species_id))],
-		"属性：%s ｜ 职能：%s" % [
-			_format_type_tags(profile.get("elements", [])),
-			_format_role_tags(profile.get("job_tags", [])),
-		],
-		"它已经进入 1 号出战位，前期路线和第一场战斗会围绕它展开。",
-	]
+	var body_text := onboarding_flow_service.build_starter_result_body(species_id, random_choice)
 	_push_log("起始伙伴确定为 %s，本轮开局会更偏向它的战斗与经营节奏。" % String(species.get("name", species_id)))
 	_save_run_state()
 	pending_context = {"kind": "starter_result", "on_close": "show_run_intro"}
-	decision_panel.open_panel("起始伙伴已定", "\n".join(body_lines), [], "开始远征")
+	decision_panel.open_panel("起始伙伴已定", body_text, [], "开始远征")
 
 func _show_tutorial_popup(tutorial_id: String, on_close: String = "none") -> void:
 	var tutorial := _tutorial_entry(tutorial_id)
@@ -2138,27 +2081,7 @@ func _show_tutorial_popup(tutorial_id: String, on_close: String = "none") -> voi
 	)
 
 func _tutorial_entry(tutorial_id: String) -> Dictionary:
-	match tutorial_id:
-		"run_intro":
-			return {
-				"title": "初来雾野市",
-				"close_text": "出门走走",
-				"body": "[b]第一回合怎么开始[/b]\n先点 [b]掷骰[/b] 开始前进。只有真的走到分叉口，才需要你选方向。\n\n[b]平时先看什么[/b]\n物资、任务和伙伴近况，都在 [b]背包[/b] 里；想知道这回合该做什么，先看右侧提示。\n\n[b]第一天建议[/b]\n先去一个压力不高的地点，熟悉移动、停留和地点事件；路过营地时，再顺手整理队伍和补给。"
-			}
-		"management_intro":
-			return {
-				"title": "先把日子安顿下来",
-				"close_text": "接着收拾",
-				"body": "[b]营地能做什么[/b]\n路过营地时，可以整理队伍、调整驻守、处理留信，也能顺手补一点状态。\n\n[b]这时候优先什么[/b]\n先把出战位和驻守安排稳，再看今天缺什么资源、要推进哪件事。\n\n[b]东西去哪看[/b]\n饥饿、物资、金钱、伙伴和任务，都放在 [b]背包[/b] 里。"
-			}
-		"battle_intro":
-			return {
-				"title": "真闹起来时怎么办",
-				"close_text": "去应付一下",
-				"body": "[b]战斗怎么开始[/b]\n轮到你时，先选动作，再选目标；看清谁先动、谁更危险，再决定这一手。\n\n[b]最先看哪三样[/b]\n行动顺序、剩余状态、危险单位。先看这三样，通常就够了。\n\n[b]打前还能做什么[/b]\n想换同行、补状态或重新安排，就先回营地整理，再来接这场战斗。"
-			}
-		_:
-			return {}
+	return onboarding_flow_service.tutorial_entry(tutorial_id)
 
 func _open_pending_tutorial_battle() -> void:
 	if pending_tutorial_battle_config.is_empty():
@@ -2413,25 +2336,10 @@ func _blocked_node_ids() -> Array[int]:
 	return threat_service.get_blocked_node_ids()
 
 func _filter_blocked_selectable_nodes(candidate_nodes: Array[int]) -> Array[int]:
-	var blocked := _blocked_node_ids()
-	if blocked.is_empty():
-		return candidate_nodes.duplicate()
-	var filtered: Array[int] = []
-	for node_id in candidate_nodes:
-		if blocked.has(node_id):
-			continue
-		filtered.append(node_id)
-	return filtered
+	return TurnRoutePlanningService.filter_blocked_selectable_nodes(candidate_nodes, _blocked_node_ids())
 
 func _get_blocked_reachable_nodes() -> Array[int]:
-	var blocked := _blocked_node_ids()
-	if blocked.is_empty():
-		return []
-	var blocked_reachable: Array[int] = []
-	for node_id in _reachable_selectable_nodes():
-		if blocked.has(node_id):
-			blocked_reachable.append(node_id)
-	return blocked_reachable
+	return TurnRoutePlanningService.blocked_reachable_nodes(reachable_paths, board_lookup, board_progression_service, _blocked_node_ids())
 
 func _assign_weekly_objective() -> void:
 	var objective := weekly_cycle_service.pick_objective(GameState.season_id, GameState.week_index)
@@ -2651,23 +2559,27 @@ func _on_dice_roll_reroll_requested() -> void:
 
 func _apply_current_roll_routes() -> void:
 	turn_flow_controller.clear_route_state(false)
-	reachable_paths = board_progression_service.get_reachable_paths(current_node_id, int(pending_roll.get("value", 0)))
+	var preview := TurnRoutePlanningService.build_roll_route_preview(
+		current_node_id,
+		int(pending_roll.get("value", 0)),
+		board_progression_service,
+		board_lookup,
+		_blocked_node_ids(),
+		Array(GameState.revealed_board_nodes).duplicate(true),
+		GameState.anchor_points > 0,
+		Callable(GameState, "is_habitat_unlocked")
+	)
+	reachable_paths = Dictionary(preview.get("reachable_paths", {})).duplicate(true)
 	anchor_override_active = false
-	var blocked_before_anchor := _get_blocked_reachable_nodes()
-	var selectable := _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
-	var anchor_target := -1
-	if selectable.is_empty() and GameState.anchor_points > 0:
-		anchor_target = _pick_anchor_override_target()
+	var blocked_before_anchor: Array = Array(preview.get("blocked_reachable_nodes", [])).duplicate()
+	var selectable: Array = Array(preview.get("selectable_nodes", [])).duplicate()
+	var anchor_target := int(preview.get("anchor_target", -1))
 	if anchor_target >= 0 and GameState.consume_anchor_point():
-		anchor_override_active = true
-		reachable_paths.clear()
-		reachable_paths[anchor_target] = board_progression_service.get_shortest_path(current_node_id, anchor_target)
-		selectable = _filter_blocked_selectable_nodes(_reachable_selectable_nodes())
-		if not reachable_paths.is_empty():
-			if not blocked_before_anchor.is_empty():
-				_push_log("原来的路被敌对群堵住了，顺手花掉 1 个锚定点，改走最近的安全落点。")
-			else:
-				_push_log("这次落不到安全点，顺手花掉 1 个锚定点，改走最近的安全落点。")
+		anchor_override_active = bool(preview.get("anchor_override_active", false))
+		if not blocked_before_anchor.is_empty():
+			_push_log("原来的路被敌对群堵住了，顺手花掉 1 个锚定点，改走最近的安全落点。")
+		else:
+			_push_log("这次落不到安全点，顺手花掉 1 个锚定点，改走最近的安全落点。")
 	awaiting_destination = not selectable.is_empty()
 	turn_flow_controller.set_route_preview(reachable_paths, awaiting_destination, anchor_override_active)
 	if not awaiting_destination:
@@ -2677,58 +2589,31 @@ func _apply_current_roll_routes() -> void:
 			_push_log("这次掷骰没有形成可用路线，先调整队伍或等待下一回合。")
 
 func _pick_anchor_override_target() -> int:
-	var blocked := _blocked_node_ids()
-	var candidates: Array = []
-	for raw_node_id in GameState.revealed_board_nodes:
-		var node_id := int(raw_node_id)
-		if node_id == current_node_id or blocked.has(node_id) or board_progression_service.is_node_locked(node_id):
-			continue
-		var node: Dictionary = board_lookup.get(node_id, {})
-		if String(node.get("type", "")) == "camp":
-			var camp_path := board_progression_service.get_shortest_path(current_node_id, node_id)
-			if camp_path.size() >= 2:
-				candidates.append({
-					"node_id": node_id,
-					"path": camp_path,
-				})
-			continue
-		var habitat_id := String(node.get("habitat_id", ""))
-		if habitat_id.is_empty() or not GameState.is_habitat_unlocked(habitat_id):
-			continue
-		var path := board_progression_service.get_shortest_path(current_node_id, node_id)
-		if path.size() < 2:
-			continue
-		candidates.append({
-			"node_id": node_id,
-			"path": path,
-		})
-	if candidates.is_empty():
-		return -1
-	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var a_path: Array = a.get("path", [])
-		var b_path: Array = b.get("path", [])
-		if a_path.size() != b_path.size():
-			return a_path.size() < b_path.size()
-		return int(a.get("node_id", -1)) < int(b.get("node_id", -1))
+	return TurnRoutePlanningService.pick_anchor_override_target(
+		current_node_id,
+		Array(GameState.revealed_board_nodes).duplicate(true),
+		_blocked_node_ids(),
+		board_lookup,
+		board_progression_service,
+		Callable(GameState, "is_habitat_unlocked")
 	)
-	return int(candidates[0].get("node_id", -1))
 
 func _start_roll_travel() -> void:
 	if pending_roll.is_empty() or not awaiting_destination:
 		return
-
+	var travel_seed := TurnRoutePlanningService.build_travel_seed(current_node_id, pending_roll, reachable_paths, anchor_override_active)
+	var route_history: Array[int] = []
+	for raw_node_id in Array(travel_seed.get("route_history", [current_node_id])).duplicate(true):
+		route_history.append(int(raw_node_id))
 	var forced_path: Array[int] = []
-	var forced_index := -1
-	var steps_remaining := int(pending_roll.get("value", 0))
-
-	if anchor_override_active and reachable_paths.size() == 1:
-		var only_target := int(reachable_paths.keys()[0])
-		for path_node_id in reachable_paths.get(only_target, []):
-			forced_path.append(int(path_node_id))
-		forced_index = 0
-		steps_remaining = maxi(0, forced_path.size() - 1)
-
-	turn_flow_controller.begin_travel([current_node_id], steps_remaining, forced_path, forced_index)
+	for raw_node_id in Array(travel_seed.get("forced_path", [])).duplicate(true):
+		forced_path.append(int(raw_node_id))
+	turn_flow_controller.begin_travel(
+		route_history,
+		int(travel_seed.get("steps_remaining", 0)),
+		forced_path,
+		int(travel_seed.get("forced_index", -1))
+	)
 	awaiting_destination = false
 	_continue_roll_travel()
 
@@ -2844,12 +2729,7 @@ func _clear_pending_route_state(clear_roll := true) -> void:
 	turn_flow_controller.clear_route_state(clear_roll)
 
 func _reachable_selectable_nodes() -> Array[int]:
-	var selectable: Array[int] = []
-	for node_id in reachable_paths.keys():
-		var target_id := int(node_id)
-		if board_lookup.has(target_id) and not board_progression_service.is_node_locked(target_id):
-			selectable.append(target_id)
-	return selectable
+	return TurnRoutePlanningService.reachable_selectable_nodes(reachable_paths, board_lookup, board_progression_service)
 
 func _on_support_pressed() -> void:
 	var sections := _build_support_sections()
@@ -4003,10 +3883,10 @@ func _on_decision_closed() -> void:
 		return
 	match String(context.get("on_close", "none")):
 		"starter_random":
-			var starter_pool := STARTER_SPECIES_IDS.duplicate()
-			if starter_pool.is_empty():
+			var species_id := onboarding_flow_service.pick_random_starter_species(rng)
+			if species_id.is_empty():
 				return
-			_apply_starter_choice(String(starter_pool[rng.randi_range(0, starter_pool.size() - 1)]), true)
+			_apply_starter_choice(species_id, true)
 		"show_run_intro":
 			if not GameState.has_completed_tutorial("run_intro"):
 				_show_tutorial_popup("run_intro")
@@ -6870,20 +6750,7 @@ func _build_system_sections() -> Array:
 		if codex_preview_caption.is_empty():
 			codex_preview_caption = String(codex_entry.get("title", "图鉴插图"))
 
-	var completed_count := 0
-	for tutorial_id in TUTORIAL_ORDER:
-		if GameState.has_completed_tutorial(tutorial_id):
-			completed_count += 1
-	var tutorial_lines: Array[String] = [
-		"[b]已读教程[/b] %d / %d" % [completed_count, TUTORIAL_ORDER.size()],
-	]
-	for tutorial_id in TUTORIAL_ORDER:
-		var entry := _tutorial_entry(tutorial_id)
-		var status := "已读" if GameState.has_completed_tutorial(tutorial_id) else "未读"
-		tutorial_lines.append("[b]%s[/b] %s" % [status, String(entry.get("title", tutorial_id))])
-		tutorial_lines.append(String(entry.get("body", "")))
-		tutorial_lines.append("")
-	tutorial_lines.append("如果刚开新局，起始伙伴选择会在进入远征时自动触发。")
+	var tutorial_lines: Array[String] = onboarding_flow_service.build_tutorial_review_lines(Callable(GameState, "has_completed_tutorial"))
 
 	return [
 		{

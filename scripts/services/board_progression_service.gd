@@ -1,6 +1,8 @@
 class_name BoardProgressionService
 extends RefCounted
 
+const GameConstants = preload("res://scripts/game_constants.gd")
+
 const REGION_NAME_SUFFIX := "外圈漫游图"
 const MAX_GENERATED_RINGS := 8
 const PREVIEW_RING_AHEAD := 1
@@ -175,12 +177,6 @@ const SPECIAL_LOOP_INFIRMARY_VARIANTS := {
 		"name": "海潮泊位疗养舱",
 		"description": "涨潮线旁常备干燥布和热盐水，专门接应从外海路上退下来的队伍。",
 	},
-}
-
-const TIME_NAMES := {
-	"day": "白昼",
-	"evening": "傍晚",
-	"night": "夜晚",
 }
 
 const SPECIAL_RING_DEFS := {
@@ -1156,7 +1152,7 @@ func _format_time_window_list(time_windows: Array) -> String:
 		var time_id := String(raw_time)
 		if time_id.is_empty():
 			continue
-		var label := String(TIME_NAMES.get(time_id, time_id))
+		var label := String(GameConstants.TIME_NAMES.get(time_id, time_id))
 		if not parts.has(label):
 			parts.append(label)
 	return " / ".join(parts)

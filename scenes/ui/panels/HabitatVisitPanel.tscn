@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/habitat_visit_panel.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/world/HabitatActor.tscn" id="2"]
 
 [node name="HabitatVisitPanel" type="PanelContainer"]
 visible = false
@@ -24,6 +25,8 @@ theme_override_constants/separation = 10
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "地点"
+
+[node name="HabitatActor" parent="Margin/VBox" instance=ExtResource("2")]
 
 [node name="SubtitleLabel" type="RichTextLabel" parent="Margin/VBox"]
 layout_mode = 2

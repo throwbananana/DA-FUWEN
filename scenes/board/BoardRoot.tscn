@@ -1,0 +1,61 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/board_view.gd" id="1"]
+[ext_resource type="PackedScene" path="res://scenes/board/BoardTraveler.tscn" id="2"]
+
+[node name="BoardRoot" type="Control"]
+custom_minimum_size = Vector2(0, 520)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+clip_contents = true
+script = ExtResource("1")
+
+[node name="EdgeLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="NodeLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TravelerLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Traveler" parent="TravelerLayer" instance=ExtResource("2")]
+
+[node name="ObserverTraveler" parent="TravelerLayer" instance=ExtResource("2")]
+
+[node name="NpcLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="FxLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

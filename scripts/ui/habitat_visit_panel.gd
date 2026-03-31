@@ -7,6 +7,7 @@ extends PanelContainer
 const VisitActionButtonScene := preload("res://scenes/ui/common/VisitActionButton.tscn")
 
 @onready var title_label: Label = $Margin/VBox/TitleLabel
+@onready var habitat_actor: PanelContainer = $Margin/VBox/HabitatActor
 @onready var subtitle_label: RichTextLabel = $Margin/VBox/SubtitleLabel
 @onready var actions_box: VBoxContainer = $Margin/VBox/ActionsBox
 
@@ -38,6 +39,13 @@ func _render_arrival(payload: Dictionary) -> void:
 	var habitat: Dictionary = payload.get("habitat", {})
 	var state: Dictionary = payload.get("state", {})
 	title_label.text = String(habitat.get("name", "未知地点"))
+	_apply_habitat_actor(habitat, {
+		"status_text": "据点等级 %d" % int(state.get("rank", 0)),
+		"meta_text": "驻守 %d / 支援 %d" % [int(habitat.get("resident_slots", 0)), int(habitat.get("support_slots", 0))],
+		"hook_text": _hook_text(habitat),
+		"current": true,
+		"unlocked": true,
+	})
 	subtitle_label.text = "[b]到点可做的事[/b]\n建设、照料、交谈、观察。\n\n[b]当前据点等级[/b] %d" % int(state.get("rank", 0))
 
 	_add_action("查看建造", controller.open_build_menu)
@@ -47,6 +55,12 @@ func _render_arrival(payload: Dictionary) -> void:
 
 func _render_build_select(payload: Dictionary) -> void:
 	title_label.text = "选择要推进的建设"
+	_apply_habitat_actor(DataRepository.get_habitat(controller.current_habitat_id), {
+		"status_text": "建设中",
+		"hook_text": _hook_text(DataRepository.get_habitat(controller.current_habitat_id)),
+		"current": true,
+		"unlocked": true,
+	})
 	subtitle_label.text = "只有抵达地点后才允许升级；这能把“远程经营”改成“到点生活”。"
 
 	for building in payload.get("buildings", []):
@@ -61,6 +75,12 @@ func _render_build_select(payload: Dictionary) -> void:
 
 func _render_build_result(payload: Dictionary) -> void:
 	title_label.text = "建设结果"
+	_apply_habitat_actor(DataRepository.get_habitat(controller.current_habitat_id), {
+		"status_text": "建设完成" if bool(payload.get("ok", false)) else "建设失败",
+		"hook_text": _hook_text(DataRepository.get_habitat(controller.current_habitat_id)),
+		"current": true,
+		"unlocked": true,
+	})
 	if bool(payload.get("ok", false)):
 		subtitle_label.text = "[b]建设成功[/b]\n%s 升到 Lv.%d\n%s" % [
 			String(payload.get("building_id", "")),
@@ -73,6 +93,13 @@ func _render_build_result(payload: Dictionary) -> void:
 
 func _render_npc_menu(payload: Dictionary) -> void:
 	title_label.text = "与地点上的人交谈"
+	_apply_habitat_actor(DataRepository.get_habitat(controller.current_habitat_id), {
+		"status_text": "访客列表",
+		"meta_text": "可见 NPC %d 名" % Array(payload.get("npcs", [])).size(),
+		"hook_text": _hook_text(DataRepository.get_habitat(controller.current_habitat_id)),
+		"current": true,
+		"unlocked": true,
+	})
 	var lines: Array[String] = []
 	for npc in payload.get("npcs", []):
 		lines.append("- %s" % String(npc.get("name", "")))
@@ -81,6 +108,12 @@ func _render_npc_menu(payload: Dictionary) -> void:
 
 func _render_encounter_preview(payload: Dictionary) -> void:
 	title_label.text = "野外相遇"
+	_apply_habitat_actor(DataRepository.get_habitat(controller.current_habitat_id), {
+		"status_text": "观察中",
+		"hook_text": _hook_text(DataRepository.get_habitat(controller.current_habitat_id)),
+		"current": true,
+		"unlocked": true,
+	})
 	if not bool(payload.get("ok", false)):
 		subtitle_label.text = "今天没有遇到特别的个体。"
 		_add_action("返回", controller.start_visit.bind(controller.current_habitat_id))
@@ -98,6 +131,12 @@ func _render_encounter_preview(payload: Dictionary) -> void:
 
 func _render_encounter_result(payload: Dictionary) -> void:
 	title_label.text = "相遇结果"
+	_apply_habitat_actor(DataRepository.get_habitat(controller.current_habitat_id), {
+		"status_text": "结果结算",
+		"hook_text": _hook_text(DataRepository.get_habitat(controller.current_habitat_id)),
+		"current": true,
+		"unlocked": true,
+	})
 	subtitle_label.text = "[b]结果[/b] %s" % String(payload.get("outcome", "unknown"))
 	_add_action("返回", controller.start_visit.bind(controller.current_habitat_id))
 
@@ -119,3 +158,18 @@ func _add_action(label: String, callable: Callable) -> void:
 	button.text = label
 	button.pressed.connect(callable)
 	actions_box.add_child(button)
+
+func _apply_habitat_actor(habitat: Dictionary, runtime_state: Dictionary) -> void:
+	if habitat.is_empty():
+		habitat_actor.call("clear_actor")
+		return
+	habitat_actor.call("apply_definition", habitat)
+	habitat_actor.call("apply_runtime", runtime_state)
+
+func _hook_text(habitat: Dictionary) -> String:
+	var hooks: Dictionary = Dictionary(habitat.get("seasonal_hooks", {}))
+	if hooks.has(GameState.season_id):
+		var values := Array(hooks[GameState.season_id])
+		if not values.is_empty():
+			return String(values[0])
+	return ""

@@ -1,0 +1,107 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/npc_actor.gd" id="1"]
+
+[node name="NpcActor" type="Control"]
+custom_minimum_size = Vector2(112, 42)
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="Background" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ContentMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 6
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 6
+theme_override_constants/margin_bottom = 4
+
+[node name="ContentVBox" type="VBoxContainer" parent="ContentMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="HeaderRow" type="HBoxContainer" parent="ContentMargin/ContentVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="Portrait" type="Label" parent="ContentMargin/ContentVBox/HeaderRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(16, 16)
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 12
+text = "访"
+
+[node name="NameLabel" type="Label" parent="ContentMargin/ContentVBox/HeaderRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+vertical_alignment = 1
+clip_text = true
+theme_override_font_sizes/font_size = 11
+text = "访客"
+
+[node name="RoleIcon" type="Label" parent="ContentMargin/ContentVBox/HeaderRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(16, 16)
+mouse_filter = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+theme_override_font_sizes/font_size = 11
+text = "旅"
+
+[node name="MetaRow" type="HBoxContainer" parent="ContentMargin/ContentVBox"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="IntentBubble" type="Label" parent="ContentMargin/ContentVBox/MetaRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+clip_text = true
+theme_override_font_sizes/font_size = 10
+text = "来访中"
+
+[node name="Badges" type="HBoxContainer" parent="ContentMargin/ContentVBox/MetaRow"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="QuestBadge" type="Label" parent="ContentMargin/ContentVBox/MetaRow/Badges"]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
+text = "委"
+
+[node name="ShopBadge" type="Label" parent="ContentMargin/ContentVBox/MetaRow/Badges"]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
+text = "商"
+
+[node name="TalkBadge" type="Label" parent="ContentMargin/ContentVBox/MetaRow/Badges"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 10
+text = "谈"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/board_view.gd" id="2"]
@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/panels/BasePanel.tscn" id="18"]
 [ext_resource type="PackedScene" path="res://scenes/ui/board/BoardView.tscn" id="19"]
 [ext_resource type="PackedScene" path="res://scenes/ui/panels/BattlePanel.tscn" id="20"]
+[ext_resource type="PackedScene" path="res://scenes/world/HabitatActor.tscn" id="21"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -241,6 +242,8 @@ theme_override_constants/separation = 6
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "节点详情"
+
+[node name="NodeDetailHabitatActor" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer" instance=ExtResource("21")]
 
 [node name="NodeDetailPreviewRect" type="TextureRect" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer"]
 visible = false

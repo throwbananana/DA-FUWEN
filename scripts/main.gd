@@ -10,6 +10,12 @@ const BasePanel = preload("res://scripts/base_panel.gd")
 const SystemPanel = preload("res://scripts/system_panel.gd")
 const SaveSlotPanel = preload("res://scripts/save_slot_panel.gd")
 const InputSettingsPanel = preload("res://scripts/input_settings_panel.gd")
+const MainControllerScript = preload("res://scripts/app/main_controller.gd")
+const InteractionFlowControllerScript = preload("res://scripts/app/interaction_flow_controller.gd")
+const RuntimeFlowControllerScript = preload("res://scripts/app/runtime_flow_controller.gd")
+const MenuControllerScript = preload("res://scripts/app/menu_controller.gd")
+const GameSessionControllerScript = preload("res://scripts/app/game_session_controller.gd")
+const UIShellControllerScript = preload("res://scripts/app/ui_shell_controller.gd")
 const VisitFlowController = preload("res://scripts/services/visit_flow_controller.gd")
 const HabitatService = preload("res://scripts/services/habitat_service.gd")
 const NpcService = preload("res://scripts/services/npc_service.gd")
@@ -146,6 +152,7 @@ const CASUAL_INTRO_VISIBLE_LOG_ENTRIES := 3
 @onready var board_top_strip: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip
 @onready var board_stage_panel: PanelContainer = %BoardStagePanel
 @onready var node_detail_card: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard
+@onready var node_detail_habitat_actor: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer/NodeDetailHabitatActor
 @onready var node_detail_preview_rect: TextureRect = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer/NodeDetailPreviewRect
 @onready var node_detail_preview_caption_label: Label = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/NodeDetailCard/MarginContainer/VBoxContainer/NodeDetailPreviewCaptionLabel
 @onready var top_strip_row: BoxContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip/MarginContainer/TopStripRow
@@ -166,6 +173,12 @@ var world_nodes: Array = []
 var board_lookup := {}
 
 var visit_flow: VisitFlowController
+var main_controller := MainControllerScript.new()
+var interaction_flow_controller := InteractionFlowControllerScript.new()
+var runtime_flow_controller := RuntimeFlowControllerScript.new()
+var menu_controller := MenuControllerScript.new()
+var game_session_controller := GameSessionControllerScript.new()
+var ui_shell_controller := UIShellControllerScript.new()
 var camp_flow: CampFlowController
 var habitat_service := HabitatService.new()
 var npc_service := NpcService.new()
@@ -317,288 +330,70 @@ var _menu_selected_slot_id := "slot_01"
 var _save_slot_panel_mode := "boot"
 
 func _ready() -> void:
-	rng.randomize()
-	var window := get_window()
-	window.min_size = GameState.minimum_window_size()
-	window.size_changed.connect(_on_window_size_changed)
-	title_label.text = GAME_TITLE
-	base_button.hide()
-	plus_button.hide()
-	minus_button.hide()
-	reroll_button.hide()
-	story_director.configure(
-		story_service,
-		cutscene_service,
-		cutscene_panel,
-		Callable(self, "_play_dialogue_cutscene"),
-		Callable(self, "_is_modal_open"),
-		Callable(self, "_should_skip_cutscene_runtime"),
-		Callable(self, "_push_log")
-	)
-	_connect_signals()
-	_configure_static_ui_nodes()
-	theme = JrpgTheme.build(CustomAssetRepository.get_bound_font("ui_font"))
-	_apply_basic_styles()
-	_prepare_overlay_panels()
-	_configure_safe_ui_bounds()
-	_configure_text_overflow_guards()
-	_queue_responsive_layout()
-	_ensure_menu_bgm_player()
-	_ensure_battle_bgm_player()
-	_ensure_ui_sfx_player()
-	_configure_asset_import_dialog()
-	_queue_responsive_layout()
-	_refresh_custom_asset_bindings()
-	install_visit_flow()
-	install_camp_flow()
-	GameState.ensure_save_index()
-	GameState.migrate_legacy_run_save()
-	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
-	if _should_show_boot_menu():
-		_show_main_menu()
-	else:
-		_start_new_game_in_slot(_menu_selected_slot_id)
+	main_controller.ready(self)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if is_instance_valid(input_settings_panel) and input_settings_panel.visible:
-		return
-	if main_menu_panel.visible and not decision_panel.visible and not (is_instance_valid(save_slot_panel) and save_slot_panel.visible):
-		if runtime_session_started and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("game_menu")):
-			_hide_main_menu()
-			get_viewport().set_input_as_handled()
-		return
-	if _is_modal_open():
-		return
-	if _handle_board_controller_input(event):
-		get_viewport().set_input_as_handled()
-		return
-	if _handle_global_shortcut_input(event):
-		get_viewport().set_input_as_handled()
+	main_controller.unhandled_input(self, event)
 
 func _handle_board_controller_input(event: InputEvent) -> bool:
-	if not branch_choice_pending or board_anim_locked:
-		return false
-	if event.is_action_pressed("ui_up"):
-		return board_view.move_controller_cursor(Vector2i.UP)
-	if event.is_action_pressed("ui_down"):
-		return board_view.move_controller_cursor(Vector2i.DOWN)
-	if event.is_action_pressed("ui_left"):
-		return board_view.move_controller_cursor(Vector2i.LEFT)
-	if event.is_action_pressed("ui_right"):
-		return board_view.move_controller_cursor(Vector2i.RIGHT)
-	if event.is_action_pressed("ui_accept"):
-		board_view.activate_controller_cursor()
-		return true
-	return false
+	return main_controller.handle_board_controller_input(self, event)
 
 func _handle_global_shortcut_input(event: InputEvent) -> bool:
-	if board_anim_locked or awaiting_destination or branch_choice_pending:
-		return false
-	if event.is_action_pressed("game_roll") and not roll_button.disabled:
-		_on_start_day_pressed()
-		return true
-	if event.is_action_pressed("game_support") and not support_button.disabled:
-		_on_support_pressed()
-		return true
-	if event.is_action_pressed("game_base") and not base_button.disabled:
-		_on_base_pressed()
-		return true
-	if (event.is_action_pressed("game_menu") or event.is_action_pressed("ui_cancel")) and not new_game_button.disabled:
-		_on_main_menu_requested()
-		return true
-	return false
+	return main_controller.handle_global_shortcut_input(self, event)
 
 func install_visit_flow() -> void:
-	visit_flow = VisitFlowController.new()
-	add_child(visit_flow)
-	visit_flow.state_changed.connect(_on_visit_state_changed)
-	visit_flow.visit_finished.connect(_on_visit_finished)
+	main_controller.install_visit_flow(self)
 
 func install_camp_flow() -> void:
-	camp_flow = CampFlowController.new()
-	add_child(camp_flow)
-	camp_flow.state_changed.connect(_on_camp_flow_state_changed)
+	main_controller.install_camp_flow(self)
 
 func _connect_signals() -> void:
-	roll_button.pressed.connect(_on_start_day_pressed)
-	roll_button.pressed.connect(_play_ui_confirm_sfx)
-	plus_button.pressed.connect(_on_plus_pressed)
-	plus_button.pressed.connect(_play_ui_confirm_sfx)
-	minus_button.pressed.connect(_on_minus_pressed)
-	minus_button.pressed.connect(_play_ui_confirm_sfx)
-	reroll_button.pressed.connect(_on_reroll_pressed)
-	reroll_button.pressed.connect(_play_ui_confirm_sfx)
-	support_button.pressed.connect(_on_support_pressed)
-	support_button.pressed.connect(_play_ui_confirm_sfx)
-	base_button.pressed.connect(_on_base_pressed)
-	base_button.pressed.connect(_play_ui_confirm_sfx)
-	new_game_button.pressed.connect(_on_main_menu_requested)
-	new_game_button.pressed.connect(_play_ui_confirm_sfx)
-	continue_button.pressed.connect(_on_continue_pressed)
-	continue_button.pressed.connect(_play_ui_confirm_sfx)
-	menu_new_game_button.pressed.connect(_on_menu_new_game_pressed)
-	menu_new_game_button.pressed.connect(_play_ui_confirm_sfx)
-	settings_button.pressed.connect(_on_settings_pressed)
-	settings_button.pressed.connect(_play_ui_confirm_sfx)
-	dice_roll_panel.confirmed.connect(_on_dice_roll_confirmed)
-	dice_roll_panel.confirmed.connect(_play_ui_confirm_sfx)
-	dice_roll_panel.closed.connect(_on_dice_roll_panel_closed)
-	dice_roll_panel.plus_requested.connect(_on_dice_roll_plus_requested)
-	dice_roll_panel.minus_requested.connect(_on_dice_roll_minus_requested)
-	dice_roll_panel.reroll_requested.connect(_on_dice_roll_reroll_requested)
-	board_view.node_chosen.connect(_on_board_node_chosen)
-	board_view.travel_finished.connect(_on_board_travel_finished)
-	decision_panel.choice_selected.connect(_on_decision_choice_selected)
-	decision_panel.choice_selected.connect(func(_choice_id: String) -> void: _play_ui_confirm_sfx())
-	decision_panel.closed.connect(_on_decision_closed)
-	base_panel.manage_requested.connect(_on_base_manage_requested)
-	base_panel.closed.connect(_on_base_closed)
-	system_panel.closed.connect(_on_system_panel_closed)
-	battle_panel.battle_finished.connect(_on_battle_finished)
-	save_slot_panel.slot_selected.connect(_on_save_slot_selected)
-	save_slot_panel.load_requested.connect(_on_save_slot_load_requested)
-	save_slot_panel.new_requested.connect(_on_save_slot_new_requested)
-	save_slot_panel.save_requested.connect(_on_save_slot_save_requested)
-	save_slot_panel.delete_requested.connect(_on_save_slot_delete_requested)
-	save_slot_panel.close_requested.connect(_on_save_slot_closed)
-	input_settings_panel.closed.connect(_on_input_settings_panel_closed)
-	_asset_file_dialog.files_selected.connect(_on_asset_files_selected)
-	_asset_file_dialog.canceled.connect(_on_asset_import_canceled)
+	main_controller.connect_signals(self)
 
 func _configure_static_ui_nodes() -> void:
-	cutscene_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	save_slot_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	input_settings_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	_menu_custom_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_menu_custom_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_menu_custom_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_menu_logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_menu_logo_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-	_menu_logo_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	main_controller.configure_static_ui_nodes(self)
 
 func _ensure_menu_bgm_player() -> void:
-	if is_instance_valid(_menu_bgm_player):
-		return
-	_menu_bgm_player = AudioStreamPlayer.new()
-	_menu_bgm_player.name = "MenuBgmPlayer"
-	_menu_bgm_player.bus = "Master"
-	add_child(_menu_bgm_player)
+	main_controller.ensure_menu_bgm_player(self)
 
 func _ensure_battle_bgm_player() -> void:
-	if is_instance_valid(_battle_bgm_player):
-		return
-	_battle_bgm_player = AudioStreamPlayer.new()
-	_battle_bgm_player.name = "BattleBgmPlayer"
-	_battle_bgm_player.bus = "Master"
-	add_child(_battle_bgm_player)
+	main_controller.ensure_battle_bgm_player(self)
 
 func _ensure_ui_sfx_player() -> void:
-	if is_instance_valid(_ui_sfx_player):
-		return
-	_ui_sfx_player = AudioStreamPlayer.new()
-	_ui_sfx_player.name = "UiSfxPlayer"
-	_ui_sfx_player.bus = "Master"
-	add_child(_ui_sfx_player)
+	main_controller.ensure_ui_sfx_player(self)
 
 func _refresh_custom_asset_bindings() -> void:
-	_apply_custom_app_icon()
-	_apply_custom_ui_font()
-	_refresh_main_menu_logo()
-	_refresh_main_menu_visuals()
-	_refresh_background_audio()
-	_refresh_ui_audio()
+	main_controller.refresh_custom_asset_bindings(self)
 
 func _apply_custom_app_icon() -> void:
-	if not DisplayServer.has_feature(DisplayServer.FEATURE_ICON):
-		return
-	var custom_texture := CustomAssetRepository.get_bound_texture("app_icon")
-	if custom_texture != null:
-		var custom_image := custom_texture.get_image()
-		if custom_image != null and not custom_image.is_empty():
-			DisplayServer.set_icon(custom_image)
-			return
-	var default_icon_path := String(ProjectSettings.get_setting("application/config/icon", ""))
-	if default_icon_path.is_empty():
-		return
-	var default_icon_resource := load(default_icon_path)
-	if default_icon_resource is Texture2D:
-		var default_image := (default_icon_resource as Texture2D).get_image()
-		if default_image != null and not default_image.is_empty():
-			DisplayServer.set_icon(default_image)
+	main_controller.apply_custom_app_icon(self)
 
 func _apply_custom_ui_font() -> void:
-	var custom_font := CustomAssetRepository.get_bound_font("ui_font")
-	theme = JrpgTheme.build(custom_font)
-	_apply_basic_styles()
-	queue_redraw()
+	main_controller.apply_custom_ui_font(self)
 
 func _refresh_main_menu_logo() -> void:
-	if not is_instance_valid(_menu_logo_rect):
-		return
-	var texture := CustomAssetRepository.get_bound_texture("main_menu_logo")
-	_menu_logo_rect.texture = texture
-	_menu_logo_rect.visible = texture != null and main_menu_panel.visible
+	main_controller.refresh_main_menu_logo(self)
 
 func _refresh_background_audio() -> void:
-	_sync_menu_bgm()
-	_sync_battle_bgm()
+	main_controller.refresh_background_audio(self)
 
 func _sync_menu_bgm() -> void:
-	if not is_instance_valid(_menu_bgm_player):
-		return
-	var stream := CustomAssetRepository.get_bound_audio_stream("main_menu_bgm")
-	if battle_panel.visible:
-		_menu_bgm_player.stop()
-		return
-	if stream == null or not main_menu_panel.visible:
-		_menu_bgm_player.stop()
-		_menu_bgm_player.stream = null
-		return
-	if _menu_bgm_player.stream != stream:
-		_menu_bgm_player.stop()
-		_menu_bgm_player.stream = stream
-	if not _menu_bgm_player.playing:
-		_menu_bgm_player.play()
+	main_controller.sync_menu_bgm(self)
 
 func _sync_battle_bgm() -> void:
-	if not is_instance_valid(_battle_bgm_player):
-		return
-	var stream := CustomAssetRepository.get_bound_audio_stream("battle_bgm")
-	if stream == null or not battle_panel.visible:
-		_battle_bgm_player.stop()
-		_battle_bgm_player.stream = null
-		return
-	if _battle_bgm_player.stream != stream:
-		_battle_bgm_player.stop()
-		_battle_bgm_player.stream = stream
-	if not _battle_bgm_player.playing:
-		_battle_bgm_player.play()
+	main_controller.sync_battle_bgm(self)
 
 func _refresh_ui_audio() -> void:
-	if not is_instance_valid(_ui_sfx_player):
-		return
-	var stream := CustomAssetRepository.get_bound_audio_stream("ui_confirm_sfx")
-	_ui_sfx_player.stream = stream
+	main_controller.refresh_ui_audio(self)
 
 func _play_ui_confirm_sfx() -> void:
-	if not is_instance_valid(_ui_sfx_player):
-		return
-	if _ui_sfx_player.stream == null:
-		return
-	_ui_sfx_player.stop()
-	_ui_sfx_player.play()
+	main_controller.play_ui_confirm_sfx(self)
 
 func _start_battle_panel(battle_config: Dictionary) -> void:
-	_sync_menu_bgm()
-	battle_panel.start_battle(battle_config)
-	_sync_battle_bgm()
+	main_controller.start_battle_panel(self, battle_config)
 
 func _configure_asset_import_dialog() -> void:
-	_asset_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
-	_asset_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILES
-	_asset_file_dialog.use_native_dialog = not OS.has_feature("web")
-	_asset_file_dialog.title = "导入自定义素材文件"
-	_asset_file_dialog.filters = CustomAssetRepository.get_import_dialog_filters()
+	main_controller.configure_asset_import_dialog(self)
 
 func _load_custom_ui_style_config() -> Dictionary:
 	var config_text := CustomAssetRepository.get_bound_file_text("ui_style_config")
@@ -1163,561 +958,94 @@ func _should_skip_runtime_tutorials() -> bool:
 	return DisplayServer.get_name() == "headless" or not GameState.tutorials_enabled()
 
 func _show_main_menu() -> void:
-	CustomAssetRepository.sync_external_library()
-	_refresh_custom_asset_bindings()
-	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
-	_refresh_main_menu()
-	root_margin.hide()
-	if is_instance_valid(_menu_custom_background):
-		_menu_custom_background.visible = _menu_custom_background.texture != null
-	if is_instance_valid(_menu_logo_rect):
-		_menu_logo_rect.visible = _menu_logo_rect.texture != null
-	if is_instance_valid(save_slot_panel):
-		save_slot_panel.close_panel()
-	menu_backdrop.show()
-	menu_backdrop.move_to_front()
-	main_menu_panel.show()
-	main_menu_panel.move_to_front()
-	_sync_menu_bgm()
-	_focus_main_menu_primary_button()
+	menu_controller.show_main_menu(self)
 
 func _hide_main_menu() -> void:
-	if is_instance_valid(_menu_custom_background):
-		_menu_custom_background.hide()
-	if is_instance_valid(_menu_logo_rect):
-		_menu_logo_rect.hide()
-	if is_instance_valid(_menu_bgm_player):
-		_menu_bgm_player.stop()
-	if is_instance_valid(save_slot_panel):
-		save_slot_panel.close_panel()
-	if is_instance_valid(input_settings_panel):
-		input_settings_panel.hide()
-	menu_backdrop.hide()
-	main_menu_panel.hide()
-	root_margin.show()
-	_update_ui()
-	_resume_onboarding_flow()
-	story_director.try_flush_pending_quest_story_beats()
+	menu_controller.hide_main_menu(self)
 
 func _refresh_main_menu() -> void:
-	var slot_meta := GameState.get_run_slot_meta(_menu_selected_slot_id)
-	var slot_has_save := bool(slot_meta.get("exists", false))
-	var meta_hint := _current_meta_bonus_compact_hint()
-	menu_title_label.text = localization_service.text("menu.title")
-	if runtime_session_started:
-		menu_subtitle_label.text = localization_service.text("menu.subtitle.runtime")
-		continue_button.text = localization_service.text("menu.continue.season_end") if season_finished else localization_service.text("menu.continue.run")
-		menu_new_game_button.text = "存档槽位"
-		menu_new_game_button.disabled = false
-		menu_action_hint_label.text = "当前槽位：%s\n继续当前旅程，或切换到别的存档槽位。" % _slot_title(slot_meta)
-		if not meta_hint.is_empty():
-			menu_action_hint_label.text += "\n" + meta_hint
-		menu_run_summary_label.text = _build_main_menu_run_summary()
-	else:
-		menu_subtitle_label.text = localization_service.text("menu.subtitle.start")
-		continue_button.text = "继续这格存档" if slot_has_save else localization_service.text("menu.start_game")
-		menu_new_game_button.text = "存档槽位"
-		menu_new_game_button.disabled = false
-		menu_action_hint_label.text = "当前槽位：%s\n点“继续”会读取这格存档；如果还是空的，就会直接从这里开始新远征。" % _slot_title(slot_meta)
-		if not meta_hint.is_empty():
-			menu_action_hint_label.text += "\n" + meta_hint
-		menu_run_summary_label.text = _build_saved_run_summary()
-	settings_button.text = localization_service.text("menu.settings")
-	menu_meta_summary_label.text = "%s\n\n%s" % [_build_main_menu_meta_summary(), _build_settings_summary()]
-	_refresh_main_menu_visuals()
+	menu_controller.refresh_main_menu(self)
 
 func _focus_main_menu_primary_button() -> void:
-	if not main_menu_panel.visible:
-		return
-	for button in [continue_button, menu_new_game_button, settings_button]:
-		button.focus_mode = Control.FOCUS_ALL
-	continue_button.focus_neighbor_bottom = menu_new_game_button.get_path()
-	menu_new_game_button.focus_neighbor_top = continue_button.get_path()
-	menu_new_game_button.focus_neighbor_bottom = settings_button.get_path()
-	settings_button.focus_neighbor_top = menu_new_game_button.get_path()
-	if not continue_button.disabled:
-		continue_button.grab_focus()
-	elif not menu_new_game_button.disabled:
-		menu_new_game_button.grab_focus()
-	else:
-		settings_button.grab_focus()
+	menu_controller.focus_main_menu_primary_button(self)
 
 func _build_saved_run_summary() -> String:
-	var slot_meta := GameState.get_run_slot_meta(_menu_selected_slot_id)
-	if slot_meta.is_empty() or not bool(slot_meta.get("exists", false)):
-		return "[b]%s[/b]\n这个槽位还没有存档。按“继续”会直接在这里开始一局新的远征。" % _slot_title(slot_meta)
-	var summary: Dictionary = slot_meta.get("summary", {})
-	if summary.is_empty():
-		return "[b]%s[/b]\n这个槽位里有旧版本存档，但还没有可展示的摘要。" % _slot_title(slot_meta)
-	var battle_slots: Array[String] = []
-	for entry in summary.get("battle_slots", []):
-		battle_slots.append(String(entry))
-	if battle_slots.is_empty():
-		battle_slots.append(localization_service.text("menu.summary.unassigned"))
-	var lines: Array[String] = [
-		"[b]%s[/b]" % _slot_title(slot_meta),
-		"%s · 第 %d / %d 回合 · 第 %d 周 · 总回合 %d / 100" % [
-			String(summary.get("season_name", "未知季节")),
-			int(summary.get("season_turn", 1)),
-			int(summary.get("season_length", 1)),
-			int(summary.get("week_index", 1)),
-			int(summary.get("global_turn", 1)),
-		],
-		localization_service.text("menu.summary.position", {"node": String(summary.get("node_name", localization_service.text("menu.summary.camp")))}),
-		localization_service.text("menu.summary.battle_slots", {"value": " / ".join(battle_slots)}),
-		localization_service.text("menu.summary.weekly_objective", {"value": String(summary.get("objective_summary", localization_service.text("menu.summary.no_objective")))}),
-	]
-	return "\n".join(lines)
+	return menu_controller.build_saved_run_summary(self)
 
 func _slot_title(slot_meta: Dictionary) -> String:
-	if slot_meta.is_empty():
-		return "存档 1"
-	return String(slot_meta.get("title", slot_meta.get("id", "存档")))
+	return menu_controller.slot_title(slot_meta)
 
 func _build_settings_summary() -> String:
-	var window_mode := localization_service.text("settings.window.fullscreen") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.windowed")
-	var resolution_label := GameState.current_window_resolution_label()
-	var motion_mode := localization_service.text("settings.motion.reduced") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.standard")
-	var tutorial_mode := localization_service.text("settings.tutorials.on") if GameState.tutorials_enabled() else localization_service.text("settings.tutorials.off")
-	var language_name := localization_service.language_name(GameState.current_language())
-	var accept_binding := _settings_binding_label("ui_accept")
-	var cancel_binding := _settings_binding_label("ui_cancel")
-	var roll_binding := _settings_binding_label("game_roll")
-	var menu_binding := _settings_binding_label("game_menu")
-	return "\n".join([
-		localization_service.text("settings.summary.title"),
-		localization_service.text("settings.summary.window", {"value": window_mode}),
-		localization_service.text("settings.summary.resolution", {"value": resolution_label}),
-		localization_service.text("settings.summary.motion", {"value": motion_mode}),
-		localization_service.text("settings.summary.tutorials", {"value": tutorial_mode}),
-		localization_service.text("settings.summary.language", {"value": language_name}),
-		localization_service.text("settings.summary.controls", {
-			"accept": accept_binding,
-			"cancel": cancel_binding,
-			"roll": roll_binding,
-			"menu": menu_binding,
-		}),
-		"自己收进来的素材：%d 项 ｜ 图片 %d 张" % [CustomAssetRepository.get_asset_count(), CustomAssetRepository.get_image_count()],
-		"窗口图标：%s" % _custom_asset_slot_label("app_icon"),
-		"主菜单背景：%s" % _custom_asset_slot_label("main_menu_bg"),
-		"主菜单 Logo：%s" % _custom_asset_slot_label("main_menu_logo"),
-		"主菜单音乐：%s" % _custom_asset_slot_label("main_menu_bgm"),
-		"战斗音乐：%s" % _custom_asset_slot_label("battle_bgm"),
-		"确认音效：%s" % _custom_asset_slot_label("ui_confirm_sfx"),
-		"界面字体：%s" % _custom_asset_slot_label("ui_font"),
-		"界面样式配置：%s" % _custom_asset_slot_label("ui_style_config"),
-	])
+	return menu_controller.build_settings_summary(self)
 
 func _settings_binding_label(action_name: String) -> String:
-	var labels: Array[String] = []
-	for slot_index in range(2):
-		var label := InputManager.describe_binding_slot(action_name, slot_index)
-		if label.is_empty():
-			continue
-		labels.append(label)
-	if labels.is_empty():
-		return localization_service.text("settings.input.empty")
-	return " / ".join(labels)
+	return menu_controller.settings_binding_label(self, action_name)
 
 func _custom_asset_slot_label(slot_id: String) -> String:
-	var asset_id := CustomAssetRepository.get_slot_binding(slot_id)
-	if asset_id.is_empty():
-		return "默认"
-	var asset_info := CustomAssetRepository.get_asset(asset_id)
-	if asset_info.is_empty():
-		return "默认"
-	return String(asset_info.get("label", asset_id))
+	return menu_controller.custom_asset_slot_label(slot_id)
 
 func _open_save_slot_panel(mode: String) -> void:
-	if not is_instance_valid(save_slot_panel):
-		return
-	_save_slot_panel_mode = mode
-	_refresh_save_slot_panel()
-	save_slot_panel.show()
-	save_slot_panel.move_to_front()
+	menu_controller.open_save_slot_panel(self, mode)
 
 func _refresh_save_slot_panel(mode: String = "") -> void:
-	if not is_instance_valid(save_slot_panel):
-		return
-	if not mode.is_empty():
-		_save_slot_panel_mode = mode
-	_menu_selected_slot_id = GameState.get_selected_run_slot_id() if _menu_selected_slot_id.is_empty() else _menu_selected_slot_id
-	save_slot_panel.open_panel(GameState.list_run_slots(), _menu_selected_slot_id, _save_slot_panel_mode)
+	menu_controller.refresh_save_slot_panel(self, mode)
 
 func _on_save_slot_selected(slot_id: String) -> void:
-	_menu_selected_slot_id = slot_id
-	GameState.set_selected_run_slot_id(slot_id)
-	if main_menu_panel.visible:
-		_refresh_main_menu()
-	if is_instance_valid(save_slot_panel) and save_slot_panel.visible:
-		_refresh_save_slot_panel()
+	menu_controller.on_save_slot_selected(self, slot_id)
 
 func _on_save_slot_load_requested(slot_id: String) -> void:
-	_load_run_state_from_save(slot_id)
+	menu_controller.on_save_slot_load_requested(self, slot_id)
 
 func _on_save_slot_new_requested(slot_id: String) -> void:
-	_start_new_game_in_slot(slot_id)
+	menu_controller.on_save_slot_new_requested(self, slot_id)
 
 func _on_save_slot_save_requested(slot_id: String) -> void:
-	if not runtime_session_started:
-		return
-	GameState.set_selected_run_slot_id(slot_id)
-	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
-	GameState.save_run_payload(_build_run_save_payload(), _menu_selected_slot_id)
-	if is_instance_valid(save_slot_panel):
-		save_slot_panel.close_panel()
-	if main_menu_panel.visible:
-		_refresh_main_menu()
-	_push_log("已保存到 %s。" % _slot_title(GameState.get_run_slot_meta(_menu_selected_slot_id)))
+	menu_controller.on_save_slot_save_requested(self, slot_id)
 
 func _on_save_slot_delete_requested(slot_id: String) -> void:
-	if runtime_session_started and not season_finished and slot_id == GameState.get_selected_run_slot_id():
-		decision_panel.open_panel("无法删除当前运行槽位", "当前这局正在使用这个槽位。请先另存到别的槽位，或回到标题后再删。", [], "知道了")
-		return
-	GameState.clear_run_save(slot_id)
-	if main_menu_panel.visible:
-		_refresh_main_menu()
-	if is_instance_valid(save_slot_panel) and save_slot_panel.visible:
-		_refresh_save_slot_panel()
+	menu_controller.on_save_slot_delete_requested(self, slot_id)
 
 func _on_save_slot_closed() -> void:
-	if is_instance_valid(save_slot_panel):
-		save_slot_panel.close_panel()
-	if main_menu_panel.visible:
-		_refresh_main_menu()
-		_focus_main_menu_primary_button()
-	else:
-		_update_ui()
-	story_director.try_flush_pending_quest_story_beats()
+	menu_controller.on_save_slot_closed(self)
 
 func _start_new_game_in_slot(slot_id: String) -> void:
-	GameState.set_selected_run_slot_id(slot_id)
-	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
-	start_new_game()
-	_save_run_state()
-	_hide_main_menu()
+	menu_controller.start_new_game_in_slot(self, slot_id)
 
 func _open_settings_menu() -> void:
-	CustomAssetRepository.sync_external_library()
-	_refresh_custom_asset_bindings()
-	var window_label := localization_service.text("settings.window.to_windowed") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.to_fullscreen")
-	var motion_label := localization_service.text("settings.motion.to_standard") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.to_reduced")
-	var tutorial_label := localization_service.text("settings.tutorials.enable") if not GameState.tutorials_enabled() else localization_service.text("settings.tutorials.disable")
-	var imported_count := CustomAssetRepository.get_image_count()
-	var imported_audio_count := CustomAssetRepository.get_asset_count("audio")
-	var imported_font_count := CustomAssetRepository.get_asset_count("font")
-	var imported_file_count := CustomAssetRepository.get_asset_count("file")
-	var resolution_choices: Array = []
-	for preset in GameState.get_available_window_resolution_presets():
-		var resolution_id := String(preset.get("id", ""))
-		var resolution_label := String(preset.get("label", resolution_id))
-		resolution_choices.append({
-			"id": "set_window_resolution:%s" % resolution_id,
-			"label": localization_service.text("settings.resolution.set", {"value": resolution_label}),
-			"summary": localization_service.text("settings.current", {"value": resolution_label}),
-			"disabled": resolution_id == GameState.current_window_resolution_id(),
-		})
-	var choices := [
-		{
-			"id": "toggle_fullscreen",
-			"label": window_label,
-			"summary": localization_service.text("settings.current", {"value": localization_service.text("settings.window.fullscreen") if bool(GameState.settings.get("fullscreen", false)) else localization_service.text("settings.window.windowed")}),
-		},
-	] + resolution_choices + [
-		{
-			"id": "toggle_motion",
-			"label": motion_label,
-			"summary": localization_service.text("settings.current", {"value": localization_service.text("settings.motion.reduced") if GameState.prefers_reduced_motion() else localization_service.text("settings.motion.standard")}),
-		},
-		{
-			"id": "toggle_tutorials",
-			"label": tutorial_label,
-			"summary": localization_service.text("settings.current", {"value": localization_service.text("settings.tutorials.on") if GameState.tutorials_enabled() else localization_service.text("settings.tutorials.off")}),
-		},
-		{
-			"id": "set_language_zh_cn",
-			"label": localization_service.text("settings.language.zh_cn"),
-			"summary": localization_service.text("settings.current", {"value": localization_service.language_name("zh_cn")}),
-		},
-		{
-			"id": "set_language_ja_jp",
-			"label": localization_service.text("settings.language.ja_jp"),
-			"summary": localization_service.text("settings.current", {"value": localization_service.language_name("ja_jp")}),
-		},
-		{
-			"id": "set_language_en_us",
-			"label": localization_service.text("settings.language.en_us"),
-			"summary": localization_service.text("settings.current", {"value": localization_service.language_name("en_us")}),
-		},
-		{
-			"id": "open_input_settings",
-			"label": localization_service.text("settings.input.open"),
-			"summary": localization_service.text("settings.input.summary"),
-		},
-		{
-			"id": "open_custom_asset_import",
-			"label": "导入自定义素材",
-			"summary": "把本地的图片、声音、字体这些收进来，慢慢换成你想要的样子。",
-		},
-		{
-			"id": "select_app_icon",
-			"label": "选择窗口图标",
-			"summary": "当前：%s ｜ 已导入 %d 张" % [_custom_asset_slot_label("app_icon"), imported_count],
-			"disabled": imported_count <= 0,
-		},
-		{
-			"id": "clear_app_icon",
-			"label": "恢复默认窗口图标",
-			"summary": "把窗口图标换回原来的样子。",
-			"disabled": CustomAssetRepository.get_slot_binding("app_icon").is_empty(),
-		},
-		{
-			"id": "select_main_menu_bg",
-			"label": "选择主菜单背景",
-			"summary": "当前：%s ｜ 已导入 %d 张" % [_custom_asset_slot_label("main_menu_bg"), imported_count],
-			"disabled": imported_count <= 0,
-		},
-		{
-			"id": "clear_main_menu_bg",
-			"label": "恢复默认背景",
-			"summary": "把主菜单背景换回原来的样子。",
-			"disabled": CustomAssetRepository.get_slot_binding("main_menu_bg").is_empty(),
-		},
-		{
-			"id": "select_main_menu_logo",
-			"label": "选择主菜单 Logo",
-			"summary": "当前：%s ｜ 已导入 %d 张" % [_custom_asset_slot_label("main_menu_logo"), imported_count],
-			"disabled": imported_count <= 0,
-		},
-		{
-			"id": "clear_main_menu_logo",
-			"label": "恢复默认 Logo",
-			"summary": "把主菜单名字换回原来的字样。",
-			"disabled": CustomAssetRepository.get_slot_binding("main_menu_logo").is_empty(),
-		},
-		{
-			"id": "select_main_menu_bgm",
-			"label": "选择主菜单音乐",
-			"summary": "当前：%s ｜ 已导入 %d 条音频" % [_custom_asset_slot_label("main_menu_bgm"), imported_audio_count],
-			"disabled": imported_audio_count <= 0,
-		},
-		{
-			"id": "clear_main_menu_bgm",
-			"label": "恢复默认音乐",
-			"summary": "把主菜单的声音换回原来的样子。",
-			"disabled": CustomAssetRepository.get_slot_binding("main_menu_bgm").is_empty(),
-		},
-		{
-			"id": "select_battle_bgm",
-			"label": "选择战斗音乐",
-			"summary": "当前：%s ｜ 已导入 %d 条音频" % [_custom_asset_slot_label("battle_bgm"), imported_audio_count],
-			"disabled": imported_audio_count <= 0,
-		},
-		{
-			"id": "clear_battle_bgm",
-			"label": "恢复默认战斗音乐",
-			"summary": "把战斗时听见的声音换回原来的样子。",
-			"disabled": CustomAssetRepository.get_slot_binding("battle_bgm").is_empty(),
-		},
-		{
-			"id": "select_ui_confirm_sfx",
-			"label": "选择确认音效",
-			"summary": "当前：%s ｜ 已导入 %d 条音频" % [_custom_asset_slot_label("ui_confirm_sfx"), imported_audio_count],
-			"disabled": imported_audio_count <= 0,
-		},
-		{
-			"id": "clear_ui_confirm_sfx",
-			"label": "恢复默认确认音效",
-			"summary": "把确认时的声音换回原来的样子。",
-			"disabled": CustomAssetRepository.get_slot_binding("ui_confirm_sfx").is_empty(),
-		},
-		{
-			"id": "select_ui_font",
-			"label": "选择界面字体",
-			"summary": "当前：%s ｜ 已导入 %d 个字体" % [_custom_asset_slot_label("ui_font"), imported_font_count],
-			"disabled": imported_font_count <= 0,
-		},
-		{
-			"id": "clear_ui_font",
-			"label": "恢复默认字体",
-			"summary": "把字换回原来的样子。",
-			"disabled": CustomAssetRepository.get_slot_binding("ui_font").is_empty(),
-		},
-		{
-			"id": "select_ui_style_config",
-			"label": "选择界面样式配置",
-			"summary": "当前：%s ｜ 已导入 %d 个 JSON 文件" % [_custom_asset_slot_label("ui_style_config"), imported_file_count],
-			"disabled": imported_file_count <= 0,
-		},
-		{
-			"id": "clear_ui_style_config",
-			"label": "恢复默认界面样式",
-			"summary": "把界面换回原本的样子。",
-			"disabled": CustomAssetRepository.get_slot_binding("ui_style_config").is_empty(),
-		},
-	]
-	pending_context = {"kind": "menu_settings"}
-	decision_panel.open_panel(localization_service.text("settings.title"), localization_service.text("settings.body"), choices, localization_service.text("settings.back"))
+	menu_controller.open_settings_menu(self)
 
 func _apply_menu_setting(choice_id: String) -> void:
-	var reopen_settings := true
-	match choice_id:
-		"toggle_fullscreen":
-			GameState.set_setting("fullscreen", not bool(GameState.settings.get("fullscreen", false)))
-		"toggle_motion":
-			GameState.set_setting("reduced_motion", not GameState.prefers_reduced_motion())
-		"toggle_tutorials":
-			GameState.set_setting("tutorials_enabled", not GameState.tutorials_enabled())
-		"set_language_zh_cn":
-			GameState.set_setting("language", "zh_cn")
-		"set_language_ja_jp":
-			GameState.set_setting("language", "ja_jp")
-		"set_language_en_us":
-			GameState.set_setting("language", "en_us")
-		"open_input_settings":
-			reopen_settings = false
-			_open_input_settings_panel()
-		"open_custom_asset_import":
-			reopen_settings = false
-			_open_asset_import_dialog()
-		"select_app_icon":
-			reopen_settings = false
-			_open_custom_asset_slot_picker("app_icon")
-		"clear_app_icon":
-			reopen_settings = false
-			_clear_custom_asset_slot("app_icon")
-		"select_main_menu_bg":
-			reopen_settings = false
-			_open_custom_asset_slot_picker("main_menu_bg")
-		"clear_main_menu_bg":
-			reopen_settings = false
-			_clear_custom_asset_slot("main_menu_bg")
-		"select_main_menu_logo":
-			reopen_settings = false
-			_open_custom_asset_slot_picker("main_menu_logo")
-		"clear_main_menu_logo":
-			reopen_settings = false
-			_clear_custom_asset_slot("main_menu_logo")
-		"select_main_menu_bgm":
-			reopen_settings = false
-			_open_custom_asset_slot_picker("main_menu_bgm")
-		"clear_main_menu_bgm":
-			reopen_settings = false
-			_clear_custom_asset_slot("main_menu_bgm")
-		"select_battle_bgm":
-			reopen_settings = false
-			_open_custom_asset_slot_picker("battle_bgm")
-		"clear_battle_bgm":
-			reopen_settings = false
-			_clear_custom_asset_slot("battle_bgm")
-		"select_ui_confirm_sfx":
-			reopen_settings = false
-			_open_custom_asset_slot_picker("ui_confirm_sfx")
-		"clear_ui_confirm_sfx":
-			reopen_settings = false
-			_clear_custom_asset_slot("ui_confirm_sfx")
-		"select_ui_font":
-			reopen_settings = false
-			_open_custom_asset_slot_picker("ui_font")
-		"clear_ui_font":
-			reopen_settings = false
-			_clear_custom_asset_slot("ui_font")
-		"select_ui_style_config":
-			reopen_settings = false
-			_open_custom_asset_slot_picker("ui_style_config")
-		"clear_ui_style_config":
-			reopen_settings = false
-			_clear_custom_asset_slot("ui_style_config")
-		_:
-			if choice_id.begins_with("set_window_resolution:"):
-				var resolution_id := choice_id.substr("set_window_resolution:".length())
-				if GameState.is_valid_window_resolution_id(resolution_id):
-					GameState.set_setting("window_resolution", resolution_id)
-			else:
-				return
-	_refresh_main_menu()
-	if reopen_settings:
-		_open_settings_menu()
+	menu_controller.apply_menu_setting(self, choice_id)
 
 func _open_input_settings_panel() -> void:
-	if not is_instance_valid(input_settings_panel):
-		return
-	input_settings_panel.open_panel()
+	menu_controller.open_input_settings_panel(self)
 
 func _on_input_settings_panel_closed() -> void:
-	if main_menu_panel.visible:
-		_refresh_main_menu()
-		_open_settings_menu()
+	menu_controller.on_input_settings_panel_closed(self)
 
 func _custom_main_menu_background_label() -> String:
-	return _custom_asset_slot_label("main_menu_bg")
+	return menu_controller.custom_main_menu_background_label()
 
 func _refresh_main_menu_visuals() -> void:
-	if not is_instance_valid(_menu_custom_background):
-		return
-	var texture := CustomAssetRepository.get_bound_texture("main_menu_bg")
-	_menu_custom_background.texture = texture
-	var style_config := _resolve_custom_ui_style_config()
-	var background_config := Dictionary(style_config.get("menu_custom_background", {}))
-	_menu_custom_background.modulate = Color(1, 1, 1, clamp(_config_float(background_config, "alpha", 0.78), 0.0, 1.0))
-	_menu_custom_background.visible = texture != null and main_menu_panel.visible
+	menu_controller.refresh_main_menu_visuals(self)
 
 func _open_asset_import_dialog() -> void:
-	if not is_instance_valid(_asset_file_dialog):
-		return
-	_asset_file_dialog.popup_centered_ratio(0.82)
+	menu_controller.open_asset_import_dialog(self)
 
 func _on_asset_import_canceled() -> void:
-	if main_menu_panel.visible:
-		_open_settings_menu()
+	menu_controller.on_asset_import_canceled(self)
 
 func _custom_asset_kind_label(kind: String) -> String:
-	return CustomAssetRepository.get_asset_kind_label(kind)
+	return menu_controller.custom_asset_kind_label(kind)
 
 func _custom_asset_slot_title(slot_id: String) -> String:
-	return CustomAssetRepository.get_slot_label(slot_id)
+	return menu_controller.custom_asset_slot_title(slot_id)
 
 func _custom_asset_slot_picker_empty_text(slot_id: String) -> String:
-	match slot_id:
-		"app_icon":
-			return "先放进来一张图，之后才能把它换成窗口图标。"
-		"main_menu_bg":
-			return "先放进来一张图，之后才能把它换成主菜单背景。"
-		"main_menu_logo":
-			return "先放进来一张图，之后才能把它换成主菜单 Logo。"
-		"main_menu_bgm":
-			return "先放进来一段能播的声音，之后才能换成主菜单音乐。"
-		"battle_bgm":
-			return "先放进来一段能播的声音，之后才能换成战斗音乐。"
-		"ui_confirm_sfx":
-			return "先放进来一段能播的声音，之后才能换成确认音效。"
-		"ui_font":
-			return "先放进来一个字体，之后才能换掉现在这套字。"
-		"ui_style_config":
-			return "先放进来一份样式文件，之后才能把界面换成新的样子。"
-		_:
-			return "眼下还没有能用在这里的素材。"
+	return menu_controller.custom_asset_slot_picker_empty_text(slot_id)
 
 func _custom_asset_slot_picker_summary(slot_id: String, assets: Array) -> String:
-	match slot_id:
-		"app_icon":
-			return "已经收进来 %d 张图片。\n现在用的是：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
-		"main_menu_bg":
-			return "已经收进来 %d 张图片。\n现在用的是：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
-		"main_menu_logo":
-			return "已经收进来 %d 张图片。\n现在用的是：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
-		"main_menu_bgm":
-			return "已经收进来 %d 段声音。\n现在用的是：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
-		"battle_bgm":
-			return "已经收进来 %d 段声音。\n现在用的是：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
-		"ui_confirm_sfx":
-			return "已经收进来 %d 段声音。\n现在用的是：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
-		"ui_font":
-			return "已经收进来 %d 套字。\n现在用的是：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
-		"ui_style_config":
-			return "已经收进来 %d 份样式文件。\n现在用的是：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
-		_:
-			return "已经收进来 %d 个素材。\n现在用的是：%s" % [assets.size(), _custom_asset_slot_label(slot_id)]
+	return menu_controller.custom_asset_slot_picker_summary(slot_id, assets)
 
 func _build_custom_asset_choices(slot_id: String, asset_rows: Array) -> Array:
 	var choices: Array = []
@@ -1954,196 +1282,31 @@ func _on_settings_pressed() -> void:
 	_open_settings_menu()
 
 func start_new_game() -> void:
-	DataRepository.load_all()
-	GameState.reset_for_new_season()
-	GameState.set_run_modifiers(run_modifier_service.choose_run_modifiers(1))
-	GameState.apply_system_rewards(run_modifier_service.apply_starting_bonus(GameState.run_modifiers))
-	_refresh_board_region(true)
-	runtime_session_started = true
-	season_finished = false
-	current_node_id = GameState.current_board_node_id
-	pending_battle_source = ""
-	pending_environment_battle.clear()
-	last_encounter_action_id = ""
-	pending_context.clear()
-	pending_roll.clear()
-	reachable_paths.clear()
-	_queued_auto_travel_target = -1
-	branch_choice_pending = false
-	_queued_roll_start = false
-	pending_route_steps_remaining = 0
-	pending_route_history.clear()
-	pending_route_options.clear()
-	pending_route_forced_path.clear()
-	pending_route_forced_index = -1
-	pending_travel_path.clear()
-	pending_travel_target = -1
-	anchor_override_active = false
-	starter_choice_pending = not _should_skip_runtime_tutorials()
-	starter_choice_done = false
-	starter_companion_uid = ""
-	pending_tutorial_battle_config.clear()
-	pending_tutorial_battle_source = ""
-	pending_tutorial_battle_log = ""
-	_last_ai_turn_report.clear()
-	turn_flow_controller.reset()
-	visit_flow.reset()
-	story_director.reset()
-	decision_panel.hide()
-	base_panel.hide()
-	system_panel.hide()
-	_active_synergy_snapshot.clear()
-	_synergy_fx_ready = false
-	if _synergy_unit_glow_host != null:
-		_synergy_unit_glow_host.visible = false
-	if _stage_transition_layer != null:
-		_stage_transition_layer.visible = false
-	_assign_weekly_objective()
-	_maybe_notify_annual_competition_reminder()
-	_push_log("%s的日子开始了。先慢慢在城里走走，认识人，也给自己找个落脚的节奏。" % _season_name())
-	for modifier_line in run_modifier_service.format_lines(GameState.run_modifiers):
-		_push_log("本局词缀：%s" % modifier_line)
-	for line in ai_player_service.build_status_lines(board_lookup, 3):
-		_push_log("其他远征队：%s" % line)
-	_begin_next_day()
+	game_session_controller.start_new_game(self)
 
 func _load_run_state_from_save(slot_id: String = "") -> void:
-	var resolved_slot_id := slot_id if not slot_id.is_empty() else _menu_selected_slot_id
-	GameState.set_selected_run_slot_id(resolved_slot_id)
-	_menu_selected_slot_id = GameState.get_selected_run_slot_id()
-	var payload := GameState.load_run_payload(_menu_selected_slot_id)
-	if payload.is_empty():
-		pending_context.clear()
-		decision_panel.open_panel("没有存档", "这格还没有旅程记录。点“继续”就会直接从这里开始新远征。", [], "返回开始界面")
-		return
-	_apply_run_payload(payload)
-	_hide_main_menu()
-	_push_log("已从 %s 接上这段旅程。" % _slot_title(GameState.get_run_slot_meta(_menu_selected_slot_id)))
+	game_session_controller.load_run_state_from_save(self, slot_id)
 
 func _apply_run_payload(payload: Dictionary) -> bool:
-	if payload.is_empty():
-		return false
-	DataRepository.load_all()
-	GameState.apply_runtime_snapshot(payload.get("game_state", {}))
-	_restore_scene_runtime_state(payload.get("scene_state", {}))
-	runtime_session_started = true
-	_refresh_board_region(true)
-	_maybe_notify_annual_competition_reminder()
-	current_node_id = GameState.current_board_node_id
-	_update_ui()
-	return true
+	return game_session_controller.apply_run_payload(self, payload)
 
 func _restore_scene_runtime_state(scene_state: Dictionary) -> void:
-	season_finished = bool(scene_state.get("season_finished", false))
-	pending_battle_source = ""
-	pending_environment_battle.clear()
-	last_encounter_action_id = ""
-	pending_context.clear()
-	pending_roll.clear()
-	reachable_paths.clear()
-	board_anim_locked = false
-	pending_travel_path.clear()
-	pending_travel_target = -1
-	_queued_auto_travel_target = -1
-	branch_choice_pending = false
-	_queued_roll_start = false
-	pending_route_steps_remaining = 0
-	pending_route_history.clear()
-	pending_route_options.clear()
-	pending_route_forced_path.clear()
-	pending_route_forced_index = -1
-	anchor_override_active = false
-	camp_panel_requires_finish = false
-	starter_choice_pending = bool(scene_state.get("starter_choice_pending", false))
-	starter_choice_done = bool(scene_state.get("starter_choice_done", false))
-	starter_companion_uid = String(scene_state.get("starter_companion_uid", ""))
-	pending_tutorial_battle_config.clear()
-	pending_tutorial_battle_source = ""
-	pending_tutorial_battle_log = ""
-	_last_ai_turn_report.clear()
-	turn_flow_controller.reset()
-	visit_flow.reset()
-	awaiting_destination = bool(scene_state.get("awaiting_destination", false))
-	current_visit_habitat_id = String(scene_state.get("current_visit_habitat_id", ""))
-	story_director.reset()
-	decision_panel.hide()
-	base_panel.hide()
-	system_panel.hide()
-	_active_synergy_snapshot.clear()
-	_synergy_fx_ready = false
-	if _synergy_unit_glow_host != null:
-		_synergy_unit_glow_host.visible = false
-	if _stage_transition_layer != null:
-		_stage_transition_layer.visible = false
+	game_session_controller.restore_scene_runtime_state(self, scene_state)
 
 func _save_run_state() -> void:
-	if DisplayServer.get_name() == "headless" or not runtime_session_started or season_finished:
-		return
-	GameState.save_run_payload(_build_run_save_payload(), GameState.get_selected_run_slot_id())
+	game_session_controller.save_run_state(self)
 
 func _build_run_save_payload() -> Dictionary:
-	return {
-		"version": 1,
-		"summary": _build_run_save_summary(),
-		"scene_state": {
-			"season_finished": season_finished,
-			"awaiting_destination": awaiting_destination,
-			"current_visit_habitat_id": current_visit_habitat_id,
-			"starter_choice_pending": starter_choice_pending,
-			"starter_choice_done": starter_choice_done,
-			"starter_companion_uid": starter_companion_uid,
-		},
-		"game_state": GameState.build_runtime_snapshot(),
-	}
+	return game_session_controller.build_run_save_payload(self)
 
 func _build_run_save_summary() -> Dictionary:
-	var node: Dictionary = board_lookup.get(current_node_id, {})
-	return {
-		"season_name": _season_name(),
-		"season_turn": GameState.season_turn,
-		"season_length": GameState.season_length,
-		"week_index": GameState.week_index,
-		"global_turn": GameState.global_turn,
-		"node_name": String(node.get("name", "营地")),
-		"battle_slots": _battle_slot_names(),
-		"objective_summary": weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress),
-	}
+	return game_session_controller.build_run_save_summary(self)
 
 func _build_world_nodes() -> Array:
-	var nodes := board_progression_service.get_nodes()
-	for index in range(nodes.size()):
-		var node: Dictionary = nodes[index]
-		var habitat_id := String(node.get("habitat_id", ""))
-		if not habitat_id.is_empty():
-			var habitat := DataRepository.get_habitat(habitat_id)
-			if habitat.is_empty():
-				continue
-			if String(node.get("name", "")).is_empty():
-				node["name"] = habitat.get("name", node.get("name", ""))
-			if String(node.get("type", "")).is_empty():
-				node["type"] = habitat.get("type", node.get("type", ""))
-			if String(node.get("description", "")).is_empty():
-				node["description"] = _description_for_habitat(habitat)
-			if not node.has("travel_cost"):
-				node["travel_cost"] = int(habitat.get("travel_cost", 1))
-		nodes[index] = node
-	return nodes
+	return game_session_controller.build_world_nodes(self)
 
 func _refresh_board_region(reset_position: bool) -> void:
-	board_progression_service.set_region_for_season(GameState.season_id)
-	world_nodes = _build_world_nodes()
-	board_lookup = _build_board_lookup()
-	board_view.setup(world_nodes)
-	var region := board_progression_service.get_region()
-	var start_node_id := board_progression_service.get_start_node_id()
-	if reset_position:
-		GameState.set_board_region(String(region.get("id", "")), start_node_id)
-		GameState.reveal_board_nodes(region.get("revealed_nodes", []))
-		GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(start_node_id))
-	current_node_id = GameState.current_board_node_id
-	board_view.set_current_node(current_node_id, true)
-	board_view.hide_observer()
-	_initialize_board_threats()
+	game_session_controller.refresh_board_region(self, reset_position)
 
 func _initialize_board_threats() -> void:
 	threat_service.setup_for_season(GameState.season_id)
@@ -2185,61 +1348,10 @@ func _description_for_habitat(habitat: Dictionary) -> String:
 	return "%s\n可做的事：%s" % [head, " / ".join(actions)]
 
 func _begin_next_day() -> void:
-	if GameState.day_index > GameState.season_length:
-		if GameState.advance_to_next_season():
-			_refresh_board_region(true)
-			_assign_weekly_objective()
-			_maybe_notify_annual_competition_reminder()
-			_play_stage_transition("%s来临" % _season_name(), "区域棋盘、周目标与路线分叉已经刷新。", _season_fx_color(GameState.season_id))
-			_push_log("%s来临，区域棋盘、周目标与路线分叉已刷新。" % _season_name())
-		else:
-			_finish_season()
-			return
-	awaiting_destination = false
-	current_node_id = GameState.current_board_node_id
-	current_visit_habitat_id = ""
-	current_encounter.clear()
-	pending_battle_source = ""
-	pending_environment_battle.clear()
-	last_encounter_action_id = ""
-	pending_roll.clear()
-	reachable_paths.clear()
-	_queued_auto_travel_target = -1
-	branch_choice_pending = false
-	_queued_roll_start = false
-	pending_route_steps_remaining = 0
-	pending_route_history.clear()
-	pending_route_options.clear()
-	pending_route_forced_path.clear()
-	pending_route_forced_index = -1
-	pending_travel_path.clear()
-	pending_travel_target = -1
-	anchor_override_active = false
-	var weather_pool: Array = GameState.get_current_season_rule().get("weather_pool", WEATHER_ORDER)
-	var next_weather: String = String(weather_pool[rng.randi_range(0, weather_pool.size() - 1)]) if not weather_pool.is_empty() else "clear"
-	var next_time: String = String(TIME_ORDER[rng.randi_range(0, TIME_ORDER.size() - 1)])
-	if GameState.day_index == 1:
-		next_weather = String(weather_pool[0]) if not weather_pool.is_empty() else "clear"
-		next_time = "day"
-	GameState.set_daily_conditions(next_weather, next_time)
-	if GameState.weekly_objective.is_empty():
-		_assign_weekly_objective()
-	_sync_npc_routes_for_day()
-	_push_log("[%s 第 %d / %d 回合 ｜ 第 %d 周] 天气：%s，时段：%s。" % [
-		_season_name(),
-		GameState.season_turn,
-		GameState.season_length,
-		GameState.week_index,
-		_weather_name(GameState.weather_id),
-		_time_name(GameState.time_of_day),
-	])
-	_update_ui()
-	_save_run_state()
+	game_session_controller.begin_next_day(self)
 
 func _sync_npc_routes_for_day() -> void:
-	var report := npc_route_service.sync_daily_positions()
-	for line in report.get("lines", []):
-		_push_log("访客动向：%s" % String(line))
+	game_session_controller.sync_npc_routes_for_day(self)
 
 func _on_start_day_pressed() -> void:
 	if season_finished or _is_modal_open():
@@ -2798,205 +1910,34 @@ func _on_board_travel_finished(node_id: int) -> void:
 	_finalize_roll_arrival()
 
 func _continue_board_stop_flow(node: Dictionary) -> void:
-	_check_active_quests()
-	if _should_trigger_prearrival_ambush(current_node_id):
-		_push_log("%s 附近残留着躁动痕迹，本次需要先处理袭扰。" % String(node.get("name", "未知地点")))
-		visit_flow.start_observation_for_habitat(current_visit_habitat_id, "ambush")
-	else:
-		visit_flow.start_visit(current_visit_habitat_id, node)
-	_update_ui()
+	runtime_flow_controller.continue_board_stop_flow(self, node)
 
 func _try_open_board_map_effect(node: Dictionary) -> bool:
-	var report := board_map_effect_service.apply_on_arrival(
-		node,
-		current_node_id,
-		GameState.board_region_id,
-		_current_boss_node_id(),
-		board_lookup
-	)
-	if report.is_empty():
-		return false
-	var body_lines: Array[String] = []
-	var description := String(report.get("description", ""))
-	if not description.is_empty():
-		body_lines.append(description)
-	for line in report.get("lines", []):
-		body_lines.append("- %s" % String(line))
-		_push_log("地图效果：%s。" % String(line))
-	pending_context = {"kind": "board_map_effect", "on_close": "resume_board_stop"}
-	decision_panel.open_panel(String(report.get("title", "地图效果")), "\n".join(body_lines), [], "继续前进")
-	return true
+	return runtime_flow_controller.try_open_board_map_effect(self, node)
 
 func _show_bulletin_board(node: Dictionary) -> void:
-	var report: Dictionary = bulletin_service.build_board_bulletin(node)
-	_push_log("在 %s 看了一眼公告板，把本周的野群和折扣消息记下了。" % String(report.get("title", "公告板")))
-	pending_context = {"kind": "bulletin_board", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel(
-		String(report.get("title", "公告板")),
-		String(report.get("body", "")),
-		[],
-		"继续前进"
-	)
+	runtime_flow_controller.show_bulletin_board(self, node)
 
 func _show_minigame_stop(node: Dictionary) -> void:
-	var payload: Dictionary = minigame_service.build_board_minigame(node)
-	_push_log("路过 %s，旁边正好摆着一处能带伙伴热身的小游戏摊位。" % String(payload.get("title", "小游戏地块")))
-	pending_context = {
-		"kind": "minigame_menu",
-		"node_id": int(node.get("id", -1)),
-		"on_close": "finish_transit_stop",
-	}
-	decision_panel.open_panel(
-		String(payload.get("title", "小游戏地块")),
-		String(payload.get("body", "")),
-		Array(payload.get("choices", [])).duplicate(true),
-		"继续前进"
-	)
+	runtime_flow_controller.show_minigame_stop(self, node)
 
 func _show_minigame_result(result: Dictionary) -> void:
-	var body_lines: Array[String] = [
-		String(result.get("text", "伙伴们稍微活动开了。")),
-		"",
-		"[b]下次战斗前[/b] %s" % String(result.get("reward_text", "会带一点小幅属性加成。")),
-	]
-	var combined_text := String(result.get("combined_text", ""))
-	if not combined_text.is_empty():
-		body_lines.append("[b]当前累计[/b] %s" % combined_text)
-	_push_log("%s：下次战斗前 %s。" % [
-		String(result.get("title", "小游戏地块")),
-		String(result.get("reward_text", "状态稍微被提起来了")),
-	])
-	pending_context = {"kind": "minigame_result", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel(
-		"小游戏收尾",
-		"\n".join(body_lines),
-		[],
-		"继续前进"
-	)
+	runtime_flow_controller.show_minigame_result(self, result)
 
 func _show_infirmary_stop(node: Dictionary) -> void:
-	var payload: Dictionary = infirmary_service.build_stop_menu(node)
-	_push_log("路过 %s，这里可以免费做一轮主动疗养。" % String(payload.get("title", "疗养所")))
-	pending_context = {
-		"kind": "infirmary_menu",
-		"node_id": int(node.get("id", -1)),
-		"on_close": "finish_transit_stop",
-	}
-	decision_panel.open_panel(
-		String(payload.get("title", "疗养所")),
-		String(payload.get("body", "")),
-		Array(payload.get("choices", [])).duplicate(true),
-		"先不休息"
-	)
+	runtime_flow_controller.show_infirmary_stop(self, node)
 
 func _show_infirmary_result(payload: Dictionary, on_close: String) -> void:
-	pending_context = {"kind": "infirmary_result", "on_close": on_close}
-	decision_panel.open_panel(
-		String(payload.get("title", "疗养所")),
-		String(payload.get("body", "")),
-		[],
-		"继续前进"
-	)
+	runtime_flow_controller.show_infirmary_result(self, payload, on_close)
 
 func _apply_forced_infirmary_transfer(defeated_node: Dictionary) -> Dictionary:
-	var infirmary_node := board_progression_service.find_best_infirmary_node(current_node_id)
-	if infirmary_node.is_empty():
-		var fallback: Dictionary = infirmary_service.resolve_forced_recovery({
-			"name": "临时医疗点",
-			"type": "infirmary",
-		}, defeated_node)
-		_push_log("战败后临时做了一轮紧急疗养，扣除了 %d 金。" % int(fallback.get("paid_gold", 0)))
-		return fallback
-
-	current_node_id = int(infirmary_node.get("id", current_node_id))
-	GameState.move_to_board_node(current_node_id)
-	GameState.reveal_board_nodes(board_progression_service.expand_reveal_from(current_node_id))
-	board_view.set_current_node(current_node_id, true)
-
-	var report: Dictionary = infirmary_service.resolve_forced_recovery(infirmary_node, defeated_node)
-	_push_log("战败后被送往 %s 休整，疗养费扣除了 %d 金。" % [
-		String(infirmary_node.get("name", "疗养所")),
-		int(report.get("paid_gold", 0)),
-	])
-	return report
+	return runtime_flow_controller.apply_forced_infirmary_transfer(self, defeated_node)
 
 func _on_visit_state_changed(step_id: String, payload: Dictionary) -> void:
-	match step_id:
-		"arrival":
-			_show_arrival_menu(payload)
-		"build_select":
-			_show_build_menu(payload)
-		"build_result":
-			_show_build_result(payload)
-		"shop_menu":
-			_show_shop_menu(payload)
-		"shop_result":
-			_show_shop_result(payload)
-		"shop_npc_result":
-			_show_shop_npc_result(payload)
-		"npc_menu":
-			_show_npc_menu(payload)
-		"npc_duel_battle":
-			_start_npc_duel_battle(payload)
-		"npc_duel_result":
-			_show_npc_duel_result(payload)
-		"npc_talk_request":
-			_handle_talk_to_npc(String(payload.get("npc_id", "")))
-		"talk_result":
-			_show_talk_result(payload)
-		"quest_result":
-			_show_quest_result(payload)
-		"resident_select":
-			_show_resident_picker(payload)
-		"resident_result":
-			_show_resident_result(payload)
-		"dojo_menu":
-			_show_dojo_menu(payload)
-		"dojo_battle":
-			_start_dojo_battle(payload)
-		"dojo_result":
-			_show_dojo_result(payload)
-		"encounter_preview":
-			_show_encounter_preview(payload)
-		"encounter_result":
-			_show_encounter_result(payload)
-		"mail_menu":
-			_show_mail_menu(payload)
-		"mail_result":
-			_show_mail_result(payload, "finish_visit")
-		"fishing_menu":
-			_show_fishing_menu(payload)
-		"fishing_result":
-			_show_fishing_result(payload)
-		"nursery_menu":
-			_show_nursery_menu(payload)
-		"nursery_species_select":
-			_show_nursery_species_picker(payload)
-		"nursery_care_select":
-			_show_nursery_care_picker(payload)
-		"nursery_result":
-			_show_nursery_result(payload)
+	interaction_flow_controller.on_visit_state_changed(self, step_id, payload)
 
 func _on_camp_flow_state_changed(step_id: String, payload: Dictionary) -> void:
-	match step_id:
-		"team_manage":
-			_show_team_manage_menu(payload)
-		"team_battle_slot":
-			_show_team_battle_slot_picker(payload)
-		"team_reserve_slot":
-			_show_team_reserve_picker(payload)
-		"team_result":
-			_show_team_result(payload)
-		"camp_resident_site":
-			_show_camp_resident_site_picker(payload)
-		"camp_resident_select":
-			_show_camp_resident_picker(payload)
-		"camp_resident_result":
-			_show_camp_resident_result(payload)
-		"camp_mail_menu":
-			_show_camp_mail_menu(payload)
-		"camp_mail_result":
-			_show_mail_result(payload, "reopen_base")
+	interaction_flow_controller.on_camp_flow_state_changed(self, step_id, payload)
 
 func _show_arrival_menu(payload: Dictionary) -> void:
 	var habitat: Dictionary = payload.get("habitat", {})
@@ -3658,189 +2599,25 @@ func _apply_fishing_side_effects(payload: Dictionary) -> void:
 	_check_active_quests()
 
 func _on_decision_choice_selected(choice_id: String) -> void:
-	if pending_context.is_empty():
-		return
-	var context := pending_context.duplicate(true)
-	pending_context.clear()
-	if _try_handle_visit_decision_choice(context, choice_id):
-		return
-	match String(context.get("kind", "")):
-		"starter_select":
-			_apply_starter_choice(choice_id)
-		"minigame_menu":
-			var node: Dictionary = board_lookup.get(int(context.get("node_id", -1)), {})
-			if not node.is_empty():
-				_show_minigame_result(minigame_service.resolve_board_minigame(node, choice_id))
-		"infirmary_menu":
-			var infirmary_node: Dictionary = board_lookup.get(int(context.get("node_id", -1)), {})
-			if not infirmary_node.is_empty() and choice_id == "rest":
-				var result: Dictionary = infirmary_service.resolve_voluntary_rest(infirmary_node)
-				_push_log("在 %s 主动做了一轮疗养，没有花钱。" % String(infirmary_node.get("name", "疗养所")))
-				_show_infirmary_result(result, "finish_transit_stop")
-		"team_manage":
-			camp_flow.choose_team_manage_action(choice_id)
-		"team_battle_slot":
-			camp_flow.assign_team_battle_slot(int(context.get("slot_index", 0)), choice_id)
-		"team_reserve_slot":
-			camp_flow.toggle_team_reserve_slot(choice_id)
-		"camp_resident_site":
-			camp_flow.open_camp_resident_picker(choice_id)
-		"camp_resident_select":
-			camp_flow.assign_resident_to_habitat(String(context.get("habitat_id", "")), choice_id)
-		"camp_mail_menu":
-			camp_flow.send_camp_mail(choice_id)
-		"menu_settings":
-			_apply_menu_setting(choice_id)
-		"custom_asset_bind_menu":
-			_bind_custom_asset_slot(String(context.get("slot_id", "main_menu_bg")), choice_id)
+	interaction_flow_controller.on_decision_choice_selected(self, choice_id)
 
 func _on_decision_closed() -> void:
-	if pending_context.is_empty():
-		return
-	var context := pending_context.duplicate(true)
-	pending_context.clear()
-	if _try_handle_visit_close_action(String(context.get("on_close", "none"))):
-		story_director.try_flush_pending_quest_story_beats()
-		return
-	match String(context.get("on_close", "none")):
-		"starter_random":
-			var species_id := onboarding_flow_service.pick_random_starter_species(rng)
-			if species_id.is_empty():
-				return
-			_apply_starter_choice(species_id, true)
-		"show_run_intro":
-			if not GameState.has_completed_tutorial("run_intro"):
-				_show_tutorial_popup("run_intro")
-			else:
-				_update_ui()
-		"start_pending_battle":
-			_open_pending_tutorial_battle()
-		"start_environment_battle":
-			_open_pending_environment_battle()
-		"finish_visit":
-			_finish_current_visit()
-		"finish_board_event":
-			_finish_board_event_visit()
-		"finish_transit_stop":
-			_finish_transit_stop()
-		"resume_board_stop":
-			var node: Dictionary = board_lookup.get(current_node_id, {})
-			if not node.is_empty():
-				_continue_board_stop_flow(node)
-		"reopen_settings":
-			if main_menu_panel.visible:
-				_refresh_main_menu()
-				_open_settings_menu()
-		"team_manage":
-			_open_team_manage_menu()
-		"reopen_base":
-			_on_base_pressed()
-		_:
-			pass
-	story_director.try_flush_pending_quest_story_beats()
+	interaction_flow_controller.on_decision_closed(self)
 
 func _try_handle_visit_decision_choice(context: Dictionary, choice_id: String) -> bool:
-	match String(context.get("kind", "")):
-		"visit_arrival":
-			return _handle_visit_arrival_choice(choice_id)
-		"resident_select":
-			visit_flow.assign_resident(choice_id)
-			return true
-		"build_select":
-			visit_flow.build_selected(choice_id)
-			return true
-		"shop_menu":
-			if choice_id.begins_with("buy:"):
-				visit_flow.buy_shop_offer(choice_id.trim_prefix("buy:"))
-			elif choice_id.begins_with("service:"):
-				visit_flow.use_shop_npc_service(choice_id.trim_prefix("service:"))
-			return true
-		"npc_menu":
-			visit_flow.choose_npc_action(choice_id)
-			return true
-		"dojo_menu":
-			visit_flow.choose_dojo_tier(choice_id)
-			return true
-		"fishing_menu":
-			visit_flow.choose_fishing_action(choice_id)
-			return true
-		"nursery_menu":
-			match choice_id:
-				"start_incubation":
-					visit_flow.open_nursery_species_picker()
-				"care_incubation":
-					visit_flow.open_nursery_care_picker()
-				"hatch_incubation":
-					visit_flow.hatch_nursery_project()
-			return true
-		"nursery_species_select":
-			visit_flow.start_nursery_project(choice_id)
-			return true
-		"nursery_care_select":
-			visit_flow.care_nursery_project(choice_id)
-			return true
-		"encounter_preview":
-			last_encounter_action_id = choice_id
-			visit_flow.choose_encounter_action(choice_id)
-			return true
-		"mail_menu":
-			visit_flow.send_mail(choice_id)
-			return true
-		_:
-			return false
+	return interaction_flow_controller.try_handle_visit_decision_choice(self, context, choice_id)
 
 func _handle_visit_arrival_choice(choice_id: String) -> bool:
-	match choice_id:
-		"assign_resident":
-			visit_flow.open_resident_picker()
-		"nursery_menu":
-			visit_flow.open_nursery_menu()
-		"build_menu":
-			visit_flow.open_build_menu()
-		"shop_menu":
-			visit_flow.open_shop_menu()
-		"npc_menu":
-			visit_flow.open_npc_menu()
-		"dojo_menu":
-			visit_flow.open_dojo_menu()
-		"observe":
-			visit_flow.start_observation()
-		"fishing_menu":
-			visit_flow.open_fishing_menu()
-		"mail_menu":
-			visit_flow.open_mail_menu()
-		_:
-			return false
-	return true
+	return interaction_flow_controller.handle_visit_arrival_choice(self, choice_id)
 
 func _try_handle_visit_close_action(on_close: String) -> bool:
-	match on_close:
-		"finish_visit":
-			_finish_current_visit()
-			return true
-		"arrival":
-			_reopen_current_visit_arrival()
-			return true
-		"nursery_menu":
-			if not current_visit_habitat_id.is_empty():
-				visit_flow.open_nursery_menu()
-			return true
-		"shop_menu":
-			if not current_visit_habitat_id.is_empty():
-				visit_flow.open_shop_menu()
-			return true
-		_:
-			return false
+	return interaction_flow_controller.try_handle_visit_close_action(self, on_close)
 
 func _reopen_current_visit_arrival() -> void:
-	if current_visit_habitat_id.is_empty():
-		return
-	visit_flow.start_visit(current_visit_habitat_id, board_lookup.get(current_node_id, {}))
+	interaction_flow_controller.reopen_current_visit_arrival(self)
 
 func _on_visit_finished(_report: Dictionary) -> void:
-	_resolve_visit_yield(current_visit_habitat_id)
-	current_visit_habitat_id = ""
-	_advance_after_travel_stop()
+	interaction_flow_controller.on_visit_finished(self, _report)
 
 func _sync_turn_phase_from_flags() -> void:
 	if season_finished:
@@ -3979,148 +2756,25 @@ func _build_board_event_reward_lines(event_package: Dictionary) -> Array[String]
 	return lines
 
 func _resolve_environment_node(node: Dictionary) -> void:
-	match String(node.get("environment_kind", "forage")):
-		"wild_battle":
-			_prepare_environment_battle(node)
-		"scout":
-			_show_environment_scout_stop(node)
-		_:
-			_show_environment_forage_stop(node)
+	runtime_flow_controller.resolve_environment_node(self, node)
 
 func _show_empty_board_stop(node: Dictionary) -> void:
-	_show_environment_forage_stop(node)
+	runtime_flow_controller.show_empty_board_stop(self, node)
 
 func _show_environment_forage_stop(node: Dictionary) -> void:
-	var reward := _environment_travel_reward(node)
-	var body_lines: Array[String] = [
-		"[b]%s[/b]" % String(node.get("name", "沿途环境")),
-		String(node.get("description", "这是一段会产生沿途内容的环境路段。")),
-		"",
-		"这里没有固定据点，但能顺手收一波路上的资源。",
-	]
-	if not reward.is_empty():
-		GameState.grant_items(reward)
-		body_lines.append("[b]沿途收获[/b] %s" % _format_item_cost(reward))
-		_push_log("穿过 %s，顺手带回了 %s。" % [String(node.get("name", "沿途环境")), _format_item_cost(reward)])
-	else:
-		_push_log("穿过 %s，主要是在调整队伍行进节奏。" % String(node.get("name", "沿途环境")))
-	pending_context = {"kind": "transit_stop", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel("环境路段", "\n".join(body_lines), [], "继续前进")
+	runtime_flow_controller.show_environment_forage_stop(self, node)
 
 func _show_environment_scout_stop(node: Dictionary) -> void:
-	GameState.reveal_board_nodes(board_progression_service.build_scout_reveal(current_node_id, 4))
-	var reward := _environment_travel_reward(node)
-	var body_lines: Array[String] = [
-		"[b]%s[/b]" % String(node.get("name", "侦察路段")),
-		String(node.get("description", "这是一段适合先看清地形的环境。")),
-		"",
-		"你在这里多停了一会儿，把前方几格的路况先看清了。",
-	]
-	if not reward.is_empty():
-		GameState.grant_items(reward)
-		body_lines.append("[b]沿途收获[/b] %s" % _format_item_cost(reward))
-	body_lines.append("[b]额外侦察[/b] 前方路线显露得更远了。")
-	_push_log("在 %s 提前看清了后续路况。" % String(node.get("name", "侦察路段")))
-	pending_context = {"kind": "transit_stop", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel("环境侦察", "\n".join(body_lines), [], "继续前进")
+	runtime_flow_controller.show_environment_scout_stop(self, node)
 
 func _prepare_environment_battle(node: Dictionary) -> void:
-	var battle_config := _build_environment_battle_config(node)
-	if battle_config.is_empty():
-		_show_environment_forage_stop(node)
-		return
-	var enemy_names: Array[String] = []
-	for enemy in battle_config.get("enemies", []):
-		enemy_names.append(String(enemy.display_name))
-	pending_environment_battle = {
-		"node_id": int(node.get("id", current_node_id)),
-		"node_name": String(node.get("name", "沿途环境")),
-		"battle_config": battle_config,
-		"reward": _environment_travel_reward(node),
-	}
-	var body_lines: Array[String] = [
-		"[b]%s[/b]" % String(node.get("name", "野外遭遇")),
-		String(node.get("description", "这里潜伏着躁动的野生个体。")),
-		"",
-		"你刚靠近这里，就把附近游荡的个体惊了出来。",
-	]
-	var special_encounter_hint := String(node.get("special_encounter_hint", ""))
-	if not special_encounter_hint.is_empty():
-		body_lines.append("[b]这一圈常见个体[/b] %s" % special_encounter_hint)
-	if not enemy_names.is_empty():
-		body_lines.append("[b]出现个体[/b] %s" % " / ".join(enemy_names))
-	body_lines.append("这次会直接进入遭遇战，胜利后还能尝试捕缚。")
-	_push_log("%s 出现了近距离野外遭遇。" % String(node.get("name", "野外遭遇")))
-	pending_context = {"kind": "environment_battle_intro", "on_close": "start_environment_battle"}
-	decision_panel.open_panel("环境遭遇", "\n".join(body_lines), [], "迎战")
+	runtime_flow_controller.prepare_environment_battle(self, node)
 
 func _open_pending_environment_battle() -> void:
-	if pending_environment_battle.is_empty():
-		_finish_transit_stop()
-		return
-	var battle_config: Dictionary = pending_environment_battle.get("battle_config", {})
-	if battle_config.is_empty():
-		pending_environment_battle.clear()
-		_finish_transit_stop()
-		return
-	decision_panel.hide()
-	_start_battle_with_tutorial(
-		battle_config,
-		"environment_wild",
-		"穿过 %s 时惊动了附近的野生个体。" % String(pending_environment_battle.get("node_name", "沿途环境"))
-	)
+	await runtime_flow_controller.open_pending_environment_battle(self)
 
 func _build_environment_battle_config(node: Dictionary) -> Dictionary:
-	var habitat_id := String(node.get("source_habitat_id", ""))
-	if habitat_id.is_empty() or GameState.get_party_uids().size() < 2:
-		return {}
-	var special_pool: Array = Array(node.get("special_encounter_pool", [])).duplicate(true)
-	var using_special_pool := not special_pool.is_empty()
-	var first_encounter := encounter_service.roll_custom_entries(special_pool, "environment") if using_special_pool else encounter_service.roll_encounter(habitat_id, "environment")
-	if not bool(first_encounter.get("ok", false)):
-		return {}
-	var second_encounter := encounter_service.roll_custom_entries(special_pool, "environment") if using_special_pool else encounter_service.roll_encounter(habitat_id, "environment")
-	var enemy_level := clampi(GameState.get_progression_rank() + 1, 1, 6)
-	var first_species_id := String(first_encounter.get("species_id", ""))
-	var second_species_id := String(second_encounter.get("species_id", first_species_id))
-	var pending_bonus: Dictionary = GameState.peek_pending_minigame_bonus()
-	var pending_bonus_text := minigame_service.pending_bonus_summary()
-	var subtitle_lines: Array[String] = [
-		"环境：%s" % String(node.get("focus", "行进 / 缓冲")),
-		"情绪：%s" % String(first_encounter.get("mood_id", "wild")),
-	]
-	var special_loop_name := String(node.get("special_loop_name", ""))
-	if not special_loop_name.is_empty():
-		subtitle_lines.append("环带：%s" % special_loop_name)
-	var special_encounter_hint := String(node.get("special_encounter_hint", ""))
-	if not special_encounter_hint.is_empty():
-		subtitle_lines.append("群落：%s" % special_encounter_hint)
-	if not pending_bonus_text.is_empty():
-		subtitle_lines.append(pending_bonus_text)
-	return {
-		"title": "%s · 野外遭遇" % String(node.get("name", "沿途环境")),
-		"subtitle": "\n".join(subtitle_lines),
-		"kind": "wild",
-		"allow_capture": true,
-		"allow_escape": true,
-		"ally_first_round_attack_bonus": false,
-		"ally_attack_bonus": int(pending_bonus.get("ally_attack_bonus", 0)),
-		"ally_speed_bonus": int(pending_bonus.get("ally_speed_bonus", 0)),
-		"ally_hp_bonus": int(pending_bonus.get("ally_hp_bonus", 0)),
-		"ally_heal_bonus": 0,
-		"ally_guard_bonus": 0.0,
-		"enemy_attack_penalty": 0,
-		"consume_minigame_bonus": minigame_service.has_pending_bonus(),
-		"encounter_origin": "special_loop" if using_special_pool else "habitat",
-		"special_loop_id": String(node.get("special_loop_id", "")),
-		"round_limit": 6,
-		"allies": _build_player_battle_team(),
-		"ally_reserve": _build_player_battle_reserve(),
-		"enemies": [
-			MonsterInstance.new(first_species_id, enemy_level, 1),
-			MonsterInstance.new(second_species_id, enemy_level, 1),
-		],
-	}
+	return runtime_flow_controller.build_environment_battle_config(self, node)
 
 func _build_player_battle_team() -> Array:
 	return battle_roster_service.build_active_allies()
@@ -4129,48 +2783,7 @@ func _build_player_battle_reserve() -> Array:
 	return battle_roster_service.build_reserve_allies()
 
 func _resolve_environment_battle(result: Dictionary) -> void:
-	var payload := pending_environment_battle.duplicate(true)
-	pending_environment_battle.clear()
-	var node_name := String(payload.get("node_name", "沿途环境"))
-	var body_lines: Array[String] = []
-	var escaped := bool(result.get("escaped", false))
-	var codex_reveals := _reveal_codex_for_battle_payload(payload)
-	if bool(result.get("player_won", false)):
-		body_lines.append("[b]%s[/b] 已经被稳定下来。" % node_name)
-		var captured_species := String(result.get("captured_species", ""))
-		if not captured_species.is_empty():
-			var acquisition := _acquire_companion(captured_species)
-			body_lines.append(String(acquisition.get("body", "%s 愿意靠近。" % captured_species)))
-			_check_active_quests()
-		var reward: Dictionary = payload.get("reward", {}).duplicate(true)
-		if not reward.is_empty():
-			GameState.grant_items(reward)
-			body_lines.append("[b]沿途收获[/b] %s" % _format_item_cost(reward))
-			_push_log("处理完 %s 的遭遇后，顺手带回了 %s。" % [node_name, _format_item_cost(reward)])
-		else:
-			_push_log("%s 的野外遭遇已经处理完毕。" % node_name)
-	elif escaped:
-		GameState.add_node_danger(current_node_id, 1)
-		body_lines.append("[b]%s[/b] 还没稳住，你先带队撤开了。" % node_name)
-		body_lines.append("这里的危险度上升到 %d / 3。" % GameState.get_node_danger(current_node_id))
-		_push_log("%s 的野外遭遇还没处理完，队伍先撤开了，危险度继续上升。" % node_name)
-	else:
-		GameState.add_node_danger(current_node_id, 1)
-		body_lines.append("[b]%s[/b] 把你逼退了。" % node_name)
-		body_lines.append("这里的危险度上升到 %d / 3。" % GameState.get_node_danger(current_node_id))
-		_push_log("%s 的野外遭遇把队伍逼退了，危险度继续上升。" % node_name)
-		var defeated_node: Dictionary = board_lookup.get(int(payload.get("node_id", current_node_id)), {}).duplicate(true)
-		var infirmary_report: Dictionary = _apply_forced_infirmary_transfer(defeated_node if not defeated_node.is_empty() else {"ring_index": 0})
-		body_lines.append("")
-		body_lines.append(String(infirmary_report.get("body", "")))
-	if not codex_reveals.is_empty():
-		var unlocked_titles: Array[String] = []
-		for entry in codex_reveals:
-			unlocked_titles.append(String(Dictionary(entry).get("title", Dictionary(entry).get("id", "新条目"))))
-		body_lines.append("")
-		body_lines.append("[b]图鉴识别[/b] %s" % " / ".join(unlocked_titles))
-	pending_context = {"kind": "environment_battle_result", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel("环境遭遇结果", "\n".join(body_lines), [], "继续前进")
+	runtime_flow_controller.resolve_environment_battle(self, result)
 
 func _reveal_codex_for_battle_payload(payload: Dictionary) -> Array[Dictionary]:
 	var unlocked: Array[Dictionary] = []
@@ -4203,142 +2816,28 @@ func _environment_travel_reward(node: Dictionary) -> Dictionary:
 	return {chosen_id: maxi(1, int(base_reward[chosen_id]))}
 
 func _show_locked_board_stop(node: Dictionary) -> void:
-	var habitat_id := String(node.get("habitat_id", ""))
-	var body_lines: Array[String] = [
-		"[b]%s[/b]" % String(node.get("name", "未开放据点")),
-		String(node.get("description", "这里现在还不适合久留。")),
-		"",
-		"%s" % _unlock_marker_text(habitat_id),
-		"这次先从这里路过，等时机到了再回来好好看看。",
-	]
-	_push_log("路过 %s，这里现在还只能先看看。" % String(node.get("name", "未开放据点")))
-	pending_context = {"kind": "locked_stop", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel("暂时只能路过", "\n".join(body_lines), [], "继续前进")
+	runtime_flow_controller.show_locked_board_stop(self, node)
 
 func _show_ring_gate_blocked(node: Dictionary, message: String) -> void:
-	var body_lines: Array[String] = [
-		"[b]%s[/b]" % String(node.get("name", "外环路口")),
-		String(node.get("description", "这里通往更外侧的环路。")),
-		"",
-		message,
-	]
-	_push_log("抵达 %s，但前面的路现在还没完全打开。" % String(node.get("name", "外环路口")))
-	pending_context = {"kind": "ring_gate_locked", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel("前路还没打开", "\n".join(body_lines), [], "继续前进")
+	runtime_flow_controller.show_ring_gate_blocked(self, node, message)
 
 func _apply_ring_unlock_result(result: Dictionary, open_panel: bool = true) -> void:
-	if result.is_empty() or not bool(result.get("ok", false)):
-		return
-	GameState.reveal_board_nodes(result.get("revealed_nodes", []))
-	_refresh_board_region(false)
-	_push_log(String(result.get("message", "更远的路已经露出来了。")))
-	if not open_panel:
-		return
-	pending_context = {"kind": "ring_unlock", "on_close": "finish_transit_stop"}
-	decision_panel.open_panel("前路打开了", String(result.get("message", "更远的路已经露出来了。")), [], "继续前进")
+	runtime_flow_controller.apply_ring_unlock_result(self, result, open_panel)
 
 func _finish_board_event_visit() -> void:
-	current_visit_habitat_id = ""
-	_advance_after_travel_stop()
+	await runtime_flow_controller.finish_board_event_visit(self)
 
 func _finish_transit_stop() -> void:
-	current_visit_habitat_id = ""
-	_advance_after_travel_stop()
+	await runtime_flow_controller.finish_transit_stop(self)
 
 func _advance_after_travel_stop() -> void:
-	if _post_travel_resolution_in_progress:
-		return
-	_post_travel_resolution_in_progress = true
-	turn_flow_controller.enter_post_travel_resolve()
-	_resolve_season_boss_reward()
-	_resolve_board_threat_turn()
-	if season_finished:
-		_post_travel_resolution_in_progress = false
-		return
-	var is_week_end := GameState.weekly_turn >= 5
-	if is_week_end:
-		_resolve_weekly_settlement()
-	await _run_ai_turns()
-	var day_report := GameState.advance_day()
-	for line in day_report.get("lines", []):
-		_push_log(line)
-	_begin_next_day()
-	_post_travel_resolution_in_progress = false
+	await runtime_flow_controller.advance_after_travel_stop(self)
 
 func _run_ai_turns() -> void:
-	if not runtime_session_started:
-		return
-	var ai_result: Dictionary = ai_player_service.simulate_turns(board_lookup, false)
-	var reports: Array = ai_result.get("reports", [])
-	if reports.is_empty():
-		return
-	var staged_players: Array = GameState.get_ai_players().duplicate(true)
-	ai_turn_in_progress = true
-	_active_ai_observation_line = "你腾出片刻观察其他远征队的推进。"
-	_update_ui()
-	if not GameState.should_skip_animations():
-		_play_stage_transition("对手回合", "你空出手来观察其他远征队的推进、抢点和遭遇。", Color(0.95, 0.74, 0.38, 1.0))
-		await get_tree().create_timer(0.28).timeout
-	for raw_report in reports:
-		var report: Dictionary = Dictionary(raw_report).duplicate(true)
-		await _play_single_ai_observed_turn(report, staged_players)
-	GameState.set_ai_players(staged_players.duplicate(true))
-	ai_turn_in_progress = false
-	_active_ai_observation_line = ""
-	board_view.hide_observer()
-	_update_ui()
-	_show_ai_turn_report(ai_result)
+	await runtime_flow_controller.run_ai_turns(self)
 
 func _play_single_ai_observed_turn(report: Dictionary, staged_players: Array) -> void:
-	var player_index := int(report.get("index", -1))
-	var line := String(report.get("line", "")).strip_edges()
-	if player_index < 0 or player_index >= staged_players.size():
-		if not line.is_empty():
-			_active_ai_observation_line = line
-			_push_log("对手回合：%s" % line)
-			_update_ui()
-		return
-
-	var before_player: Dictionary = Dictionary(staged_players[player_index]).duplicate(true)
-	var after_player: Dictionary = Dictionary(report.get("player", before_player)).duplicate(true)
-	var move: Dictionary = Dictionary(report.get("move", {})).duplicate(true)
-	var landing: Dictionary = Dictionary(report.get("landing", {})).duplicate(true)
-	var display_name := String(after_player.get("display_name", before_player.get("display_name", "对手")))
-	var start_node_id := int(before_player.get("current_node_id", -1))
-	var path: Array[int] = []
-	for raw_node_id in Array(move.get("path", [])):
-		path.append(int(raw_node_id))
-	if path.is_empty() and start_node_id >= 0:
-		path.append(start_node_id)
-
-	board_view.set_observer_node(start_node_id, true)
-	_active_ai_observation_line = _build_ai_observation_move_line(display_name, move, landing, after_player)
-	_update_ui()
-	if not GameState.should_skip_animations():
-		await get_tree().create_timer(AI_OBSERVE_PREPARE_DELAY).timeout
-
-	if path.size() >= 2:
-		await board_view.play_observer_travel(path)
-	elif start_node_id >= 0:
-		board_view.set_observer_node(start_node_id, true)
-
-	staged_players[player_index] = after_player
-	GameState.set_ai_players(staged_players.duplicate(true))
-	_active_ai_observation_line = _build_ai_observation_landing_line(display_name, landing, report)
-	_update_ui()
-	if not GameState.should_skip_animations():
-		await get_tree().create_timer(AI_OBSERVE_LANDING_DELAY).timeout
-
-	if line.is_empty():
-		line = _build_ai_observation_landing_line(display_name, landing, report)
-	_push_log("对手回合：%s" % line)
-	_active_ai_observation_line = "%s 的下一拍意图：%s" % [
-		display_name,
-		String(report.get("intent", "继续观察")),
-	]
-	_update_ui()
-	if not GameState.should_skip_animations():
-		await get_tree().create_timer(AI_OBSERVE_TURN_FINISH_DELAY).timeout
+	await runtime_flow_controller.play_single_ai_observed_turn(self, report, staged_players)
 
 func _build_ai_observation_move_line(display_name: String, move: Dictionary, landing: Dictionary, rival: Dictionary) -> String:
 	var destination_name := String(move.get("destination_name", landing.get("node_name", "")))
@@ -4380,11 +2879,7 @@ func _build_ai_observation_landing_line(display_name: String, landing: Dictionar
 	]
 
 func _show_ai_turn_report(ai_result: Dictionary) -> void:
-	_last_ai_turn_report = Dictionary(ai_result).duplicate(true)
-	var sections := _build_ai_report_sections(_last_ai_turn_report)
-	if sections.is_empty():
-		return
-	system_panel.open_panel("外头动静", sections, String(sections[0].get("id", "ai_0")))
+	runtime_flow_controller.show_ai_turn_report(self, ai_result)
 
 func _on_base_closed() -> void:
 	if camp_panel_requires_finish:
@@ -4402,18 +2897,7 @@ func _on_base_manage_requested() -> void:
 	camp_flow.open_team_manage_menu()
 
 func _on_battle_finished(result: Dictionary) -> void:
-	if is_instance_valid(_battle_bgm_player):
-		_battle_bgm_player.stop()
-		_battle_bgm_player.stream = null
-	if pending_battle_source == "npc_intro_duel":
-		visit_flow.resolve_npc_intro_duel(result)
-	elif pending_battle_source == "environment_wild":
-		_resolve_environment_battle(result)
-	else:
-		visit_flow.resolve_dojo_battle(result)
-	pending_battle_source = ""
-	_sync_menu_bgm()
-	_update_ui()
+	runtime_flow_controller.on_battle_finished(self, result)
 
 func _open_team_manage_menu() -> void:
 	camp_flow.open_team_manage_menu()
@@ -4502,102 +2986,16 @@ func _show_camp_mail_menu(payload: Dictionary) -> void:
 	)
 
 func _handle_talk_to_npc(npc_id: String) -> void:
-	if npc_service.needs_intro_duel(npc_id):
-		pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
-		decision_panel.open_panel("现在还聊不开", "第一次见面要先切磋一下，熟了之后再慢慢聊。", [], "结束偶遇")
-		return
-
-	GameState.note_talk(npc_id)
-	GameState.add_weekly_progress("talk_count", 1)
-	if _can_mark_return(npc_id):
-		GameState.note_return(npc_id)
-	var npc := DataRepository.get_npc(npc_id)
-	var talk_package := dialogue_service.build_talk_package(npc_id, current_visit_habitat_id)
-	var trust_rewards: Dictionary = talk_package.get("trust_rewards", {})
-	var active_npc_bonus := int(trust_rewards.get(npc_id, 0))
-	var trust_result := npc_service.complete_trust_reward(npc_id, 1 + active_npc_bonus)
-	var cutscene_played := await _play_talk_cutscene(npc_id, npc, talk_package)
-	_apply_talk_side_effects(npc_id, talk_package)
-	var unlocked_lines: Array[String] = []
-	for entry in trust_result.get("unlocked", []):
-		unlocked_lines.append("- 信赖 %d：%s" % [int(entry.get("threshold", 0)), String(entry.get("reward", ""))])
-	var body_lines: Array[String] = []
-	body_lines.append("[b]%s[/b] 今天愿意多和你聊一点。" % String(npc.get("name", "某人")))
-	var event_result: Dictionary = talk_package.get("event", {})
-	if not cutscene_played:
-		if not event_result.is_empty():
-			body_lines.append("[b]今日小事：%s[/b]" % String(event_result.get("title", "临时插曲")))
-			for line in event_result.get("stage_lines", []):
-				body_lines.append(String(line))
-			var outcome := String(event_result.get("outcome", ""))
-			if not outcome.is_empty():
-				body_lines.append("结果：%s" % outcome)
-			body_lines.append("")
-		for line in talk_package.get("transcript_lines", []):
-			body_lines.append(String(line))
-		body_lines.append("")
-	elif not event_result.is_empty():
-		body_lines.append("刚才那段插曲已经演完了，变化如下。")
-		body_lines.append("")
-	body_lines.append("当前信赖：%d" % int(trust_result.get("trust", 0)))
-	var reward_lines := _build_talk_reward_lines(npc_id, talk_package)
-	if not reward_lines.is_empty():
-		body_lines.append("")
-		body_lines.append("[b]这次交谈带来的变化[/b]")
-		body_lines.append("\n".join(reward_lines))
-	var tags: Array = talk_package.get("tags", [])
-	if not tags.is_empty():
-		body_lines.append("")
-		body_lines.append("[b]话题标签[/b] %s" % " / ".join(tags))
-	if not unlocked_lines.is_empty():
-		body_lines.append("")
-		body_lines.append("[b]已达成的信赖反馈[/b]")
-		body_lines.append("\n".join(unlocked_lines))
-	var dialogue_id := String(talk_package.get("dialogue_id", ""))
-	var topic := String(talk_package.get("topic", "daily"))
-	if not dialogue_id.is_empty():
-		GameState.note_dialogue_seen(npc_id, dialogue_id, topic)
-	_push_log("和 %s 聊了聊，这次谈到了%s。" % [String(npc.get("name", "某人")), _talk_topic_label(topic)])
-	_check_active_quests()
-	pending_context = {"kind": "talk_result", "on_close": "finish_visit"}
-	decision_panel.open_panel(
-		"交谈结果",
-		"\n".join(body_lines),
-		[],
-		"结束偶遇",
-		_npc_portrait_texture(npc_id),
-		_npc_portrait_caption(npc_id)
-	)
+	await runtime_flow_controller.handle_talk_to_npc(self, npc_id)
 
 func _should_skip_cutscene_runtime() -> bool:
 	return DisplayServer.get_name() == "headless" or not is_instance_valid(cutscene_panel)
 
 func _play_talk_cutscene(npc_id: String, npc: Dictionary, talk_package: Dictionary) -> bool:
-	if _should_skip_cutscene_runtime():
-		return false
-	var cutscene_payload := cutscene_service.build_talk_cutscene(npc_id, npc, talk_package)
-	var steps: Array = Array(cutscene_payload.get("steps", [])).duplicate(true)
-	var dialogue_runtime: Dictionary = Dictionary(cutscene_payload.get("dialogue_runtime", {})).duplicate(true)
-	if steps.is_empty() and dialogue_runtime.is_empty():
-		return false
-	for raw_step in steps:
-		await _present_cutscene_step(Dictionary(raw_step).duplicate(true))
-	if not dialogue_runtime.is_empty():
-		await _play_dialogue_cutscene(dialogue_runtime)
-	cutscene_panel.hide()
-	cutscene_panel.modulate.a = 1.0
-	return true
+	return await runtime_flow_controller.play_talk_cutscene(self, npc_id, npc, talk_package)
 
 func _present_cutscene_step(step: Dictionary) -> String:
-	if _should_skip_cutscene_runtime():
-		return ""
-	cutscene_panel.open_step(step)
-	var choices: Array = Array(step.get("choices", [])).duplicate(true)
-	if choices.is_empty():
-		await cutscene_panel.continued
-		return ""
-	await cutscene_panel.choice_selected
-	return cutscene_panel.last_choice_id
+	return await runtime_flow_controller.present_cutscene_step(self, step)
 
 func _play_dialogue_cutscene(dialogue_runtime: Dictionary) -> void:
 	var current_id := String(dialogue_runtime.get("start_node_id", "start"))
@@ -4615,48 +3013,7 @@ func _play_dialogue_cutscene(dialogue_runtime: Dictionary) -> void:
 			break
 
 func _apply_talk_side_effects(active_npc_id: String, talk_package: Dictionary) -> void:
-	var story_beat: Dictionary = Dictionary(talk_package.get("story_beat", {})).duplicate(true)
-	if not story_beat.is_empty():
-		story_service.commit_story_beat(story_beat)
-	var ambient_event: Dictionary = Dictionary(talk_package.get("event", {})).duplicate(true)
-	var ambient_event_id := String(ambient_event.get("id", ""))
-	if not ambient_event_id.is_empty():
-		GameState.note_ambient_event_seen(
-			ambient_event_id,
-			Array(ambient_event.get("tags", [])).duplicate(true),
-			current_visit_habitat_id
-		)
-	for event_id in talk_package.get("completed_events", []):
-		if not String(event_id).is_empty():
-			GameState.mark_event_completed(String(event_id))
-	for dialogue_id in talk_package.get("unlocked_dialogues", []):
-		if not String(dialogue_id).is_empty():
-			GameState.unlock_dialogue(String(dialogue_id))
-	_apply_codex_and_encyclopedia_unlocks(talk_package)
-	for raw_flag in talk_package.get("story_flags", []):
-		var flag_id := String(raw_flag)
-		if not flag_id.is_empty():
-			GameState.set_story_flag(flag_id)
-	for raw_delta in talk_package.get("relation_deltas", []):
-		var relation_delta: Dictionary = Dictionary(raw_delta).duplicate(true)
-		var actor_a := String(relation_delta.get("actor_a", ""))
-		var actor_b := String(relation_delta.get("actor_b", ""))
-		if actor_a.is_empty() or actor_b.is_empty():
-			continue
-		GameState.apply_social_relation_delta(actor_a, actor_b, relation_delta)
-	var items: Dictionary = talk_package.get("items", {})
-	if not items.is_empty():
-		GameState.grant_items(items)
-	for entry in talk_package.get("journal_entries", []):
-		var text := String(entry)
-		if not text.is_empty():
-			GameState.add_journal_entry(text)
-	var trust_rewards: Dictionary = talk_package.get("trust_rewards", {})
-	for npc_id in trust_rewards.keys():
-		var target_id := String(npc_id)
-		if target_id.is_empty() or target_id == active_npc_id:
-			continue
-		GameState.add_trust(target_id, int(trust_rewards[npc_id]))
+	runtime_flow_controller.apply_talk_side_effects(self, active_npc_id, talk_package)
 
 func _build_talk_reward_lines(active_npc_id: String, talk_package: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
@@ -4875,76 +3232,26 @@ func _pending_mail_targets() -> Array[String]:
 	return targets
 
 func _finish_current_visit() -> void:
-	if current_visit_habitat_id.is_empty():
-		return
-	visit_flow.finish_visit()
+	runtime_flow_controller.finish_current_visit(self)
 
 func _finish_camp_visit() -> void:
-	current_visit_habitat_id = ""
-	_advance_after_travel_stop()
+	await runtime_flow_controller.finish_camp_visit(self)
 
 func _resolve_visit_yield(habitat_id: String) -> void:
-	var reward := _base_visit_reward(habitat_id)
-	var resonance: Dictionary = synergy_service.build_visit_resonance(habitat_id)
-	var base_reward := _base_visit_reward(habitat_id)
-	for _roll in range(int(resonance.get("economy_rolls", 0))):
-		_merge_reward_items(reward, base_reward)
-	_merge_reward_items(reward, _seasonal_visit_reward(habitat_id))
-	reward = run_modifier_service.apply_visit_reward_modifiers(reward, GameState.run_modifiers)
-	if not reward.is_empty():
-		GameState.grant_items(reward)
-		_push_log("回营时顺手带回：%s。" % _format_item_cost(reward))
-	var growth_lines := _apply_visit_growth_resonance(resonance.get("bond_gains", {}))
-	for line in resonance.get("lines", []):
-		_push_log("建筑共鸣：%s" % String(line))
-	for line in growth_lines:
-		_push_log(line)
+	runtime_flow_controller.resolve_visit_yield(self, habitat_id)
 
 func _resolve_weekly_settlement() -> void:
-	if GameState.weekly_objective.is_empty():
-		return
-	var objective := GameState.weekly_objective.duplicate(true)
-	var progress := GameState.weekly_progress.duplicate(true)
-	var hunger_after_week := GameState.consume_hunger(GameState.hunger_cost_per_week)
-	var completed := weekly_cycle_service.is_complete(objective, progress)
-	var summary_lines := weekly_cycle_service.build_progress_lines(objective, progress)
-	_push_log("第 %d 周结算：%s。" % [GameState.week_index, String(objective.get("title", "本周目标"))])
-	for line in summary_lines:
-		_push_log("周进度：%s。" % line)
-	_push_log("周结算额外消耗饥饿 %d，当前 %d / %d。" % [GameState.hunger_cost_per_week, hunger_after_week, GameState.max_hunger])
-	if completed:
-		var reward_bundle := DataRepository.get_reward_bundle(weekly_cycle_service.get_reward_bundle_id(objective))
-		var reward_text := _apply_reward_bundle(reward_bundle)
-		if not reward_text.is_empty():
-			_push_log("周目标完成，获得 %s。" % reward_text)
-	else:
-		GameState.grant_items({"soft_moss": 1})
-		_push_log("周目标未完成，仍获得休整补给：%s。" % _format_item_cost({"soft_moss": 1}))
-	var modifier_bonus := run_modifier_service.apply_weekly_bonus(GameState.run_modifiers)
-	if not modifier_bonus.is_empty():
-		GameState.apply_system_rewards(modifier_bonus)
-		_push_log("词缀追加：%s。" % _format_reward_bundle({"systems": modifier_bonus}))
-	GameState.weekly_objective.clear()
-	GameState.weekly_progress.clear()
+	runtime_flow_controller.resolve_weekly_settlement(self)
 
 func _annual_competition_status_text() -> String:
 	var status := annual_competition_service.build_status_snapshot()
 	return String(status.get("summary", ""))
 
 func _maybe_notify_annual_competition_reminder() -> void:
-	var reminder := annual_competition_service.maybe_issue_month_reminder()
-	if reminder.is_empty() or not bool(reminder.get("ok", false)):
-		return
-	_push_log(String(reminder.get("log_line", "")))
+	runtime_flow_controller.maybe_notify_annual_competition_reminder(self)
 
 func _resolve_annual_competition_if_needed() -> Dictionary:
-	var result := annual_competition_service.resolve_current_year()
-	if result.is_empty() or not bool(result.get("ok", false)):
-		return {}
-	_push_log(String(result.get("log_line", "")))
-	for line in Array(result.get("leaderboard_lines", [])).slice(0, 3):
-		_push_log("年赛榜：%s。" % String(line))
-	return result
+	return runtime_flow_controller.resolve_annual_competition_if_needed(self)
 
 func _annual_competition_result_summary(result: Dictionary) -> String:
 	if result.is_empty():
@@ -4957,18 +3264,7 @@ func _annual_competition_result_summary(result: Dictionary) -> String:
 	return summary
 
 func _resolve_season_boss_reward() -> void:
-	var boss_rule := DataRepository.get_season_boss_rule(GameState.season_id)
-	if boss_rule.is_empty():
-		return
-	if GameState.claimed_season_bosses.has(GameState.season_id):
-		return
-	if _current_boss_node_id() != current_node_id:
-		return
-	var reward_bundle := DataRepository.get_reward_bundle(String(boss_rule.get("reward_bundle_id", "")))
-	var reward_text := _apply_reward_bundle(reward_bundle)
-	GameState.claimed_season_bosses.append(GameState.season_id)
-	if not reward_text.is_empty():
-		_push_log("赛季高潮：%s 被征服，获得 %s。" % [String(boss_rule.get("name", "赛季 Boss")), reward_text])
+	runtime_flow_controller.resolve_season_boss_reward(self)
 
 func _apply_reward_bundle(reward_bundle: Dictionary) -> String:
 	if reward_bundle.is_empty():
@@ -5038,48 +3334,7 @@ func _apply_visit_growth_resonance(bond_gains: Dictionary) -> Array[String]:
 	return lines
 
 func _finish_season() -> void:
-	var annual_competition_result := _resolve_annual_competition_if_needed()
-	season_finished = true
-	turn_flow_controller.mark_run_summary()
-	awaiting_destination = false
-	GameState.clear_run_save(GameState.get_selected_run_slot_id())
-	var run_summary := meta_progression_service.build_run_summary()
-	var reward_result := meta_progression_service.commit_run_rewards(run_summary)
-	var reward_lines := meta_progression_service.format_reward_summary(reward_result)
-	var bonus_appendix := meta_bonus_report_service.build_run_summary_appendix({
-		"points": int(reward_result.get("points", 0)),
-		"total_after": int(reward_result.get("total_after", GameState.exploration_points_total)),
-		"new_tracks": _reward_track_ids(reward_result),
-	})
-	action_hint_label.text = "[b]这一年的收获[/b]\n照料进度 %d ｜ 已安居据点 %d ｜ 图鉴 %d ｜ 徽章 %d ｜ 季节点数 %d\n本局探索点 %d ｜ 累计探索点 %d" % [
-		GameState.get_care_progress(),
-		GameState.get_settled_habitat_count(),
-		GameState.discovered_species.size(),
-		GameState.badge_count,
-		GameState.season_points,
-		int(reward_result.get("points", 0)),
-		GameState.exploration_points_total,
-	]
-	if not reward_lines.is_empty():
-		action_hint_label.text += "\n" + "\n".join(reward_lines)
-	if not bonus_appendix.is_empty():
-		action_hint_label.text += "\n" + "\n".join(bonus_appendix)
-	var annual_summary := _annual_competition_result_summary(annual_competition_result)
-	if not annual_summary.is_empty():
-		action_hint_label.text += "\n这一年的比试：%s" % annual_summary
-	_play_stage_transition(
-		"这一年的日子先告一段落",
-		"本局探索点 +%d\n累计探索点 %d" % [int(reward_result.get("points", 0)), GameState.exploration_points_total],
-		Color(1.0, 0.84, 0.38, 1.0)
-	)
-	_push_log("这一年的日子先告一段落，结算点数 %d。" % int(reward_result.get("points", 0)))
-	for line in reward_lines:
-		_push_log("年度结算：%s。" % line)
-	for line in bonus_appendix:
-		_push_log("元成长来源：%s。" % line)
-	_update_ui()
-	if _should_show_boot_menu():
-		_show_main_menu()
+	runtime_flow_controller.finish_season(self)
 
 func _build_companion_summaries() -> Array:
 	var result: Array = []
@@ -5140,264 +3395,25 @@ func _build_habitat_summaries() -> Array:
 	return result
 
 func _update_ui() -> void:
-	_sync_turn_phase_from_flags()
-	_update_header()
-	_update_action_ui()
-	_apply_casual_exposure_policy()
-	_update_summaries()
-	_update_roster()
-	_update_log()
-	_update_map_hint()
-	board_view.refresh_view(current_node_id, _get_selectable_nodes(), _build_board_markers(), _get_locked_nodes())
-	board_view.set_controller_navigation_enabled(branch_choice_pending)
-	if main_menu_panel.visible:
-		_refresh_main_menu()
+	ui_shell_controller.update_ui(self)
 
 func _update_header() -> void:
-	var objective_name := String(GameState.weekly_objective.get("title", "等待周目标"))
-	var objective_progress := " / ".join(weekly_cycle_service.build_progress_lines(GameState.weekly_objective, GameState.weekly_progress))
-	if objective_progress.is_empty():
-		objective_progress = "本周尚未结算"
-	meta_label.text = "%s · 第 %d 周 · %s" % [
-		_season_name(),
-		GameState.week_index,
-		board_progression_service.get_region_name(),
-	]
-	round_label.text = "回合 %d / %d · 总计 %d / 100" % [
-		GameState.season_turn,
-		GameState.season_length,
-		GameState.global_turn,
-	]
-	weather_label.text = "%s · %s · 饥饿 %d/%d" % [
-		_weather_name(GameState.weather_id),
-		_time_name(GameState.time_of_day),
-		GameState.hunger,
-		GameState.max_hunger,
-	]
-	objective_label.text = "%s ｜ %s" % [
-		objective_name,
-		objective_progress,
-	]
+	ui_shell_controller.update_header(self)
 
 func _update_action_ui() -> void:
-	var phase_name := turn_flow_controller.get_phase_name()
-	var current_node: Dictionary = board_lookup.get(current_node_id, {})
-	var recent_roll: String = "待掷骰" if pending_roll.is_empty() else dice_service.describe_roll(pending_roll)
-	var selectable_nodes: Array[int] = _get_selectable_nodes()
-	var intro_copy := _is_casual_intro_phase()
-	var route_preview := _format_route_choice_preview(selectable_nodes, intro_copy and branch_choice_pending)
-	dice_label.text = "步数：%s" % recent_roll
-	dice_meta_label.tooltip_text = "Turn phase: %s" % phase_name
-	dice_meta_label.text = "修正 %d ｜ 重掷 %d/%d ｜ 锚定 %d" % [
-		GameState.season_adjust_points,
-		GameState.weekly_reroll_count,
-		GameState.weekly_reroll_limit,
-		GameState.anchor_points,
-	]
-	board_status_label.text = "区域：%s ｜ 当前位置：%s ｜ 阶段：%s" % [
-		board_progression_service.get_region_name(),
-		String(current_node.get("name", "营地")),
-		phase_name,
-	]
-	if branch_choice_pending:
-		board_route_label.text = "分叉 %d 选 ｜ %s" % [
-			selectable_nodes.size(),
-			route_preview if not route_preview.is_empty() else "等待方向列表",
-		]
-	elif awaiting_destination:
-		board_route_label.text = "可达 %d 处 ｜ %s" % [
-			selectable_nodes.size(),
-			route_preview if not route_preview.is_empty() else "等待路线计算",
-		]
-	else:
-		board_route_label.text = "先歇一会 ｜ 今日 %s · %s" % [_weather_name(GameState.weather_id), _time_name(GameState.time_of_day)]
-	roll_button.text = "掷骰"
-	support_button.text = "背包"
-	base_button.text = "营地"
-	new_game_button.text = "主菜单"
-	roll_button.disabled = season_finished or _is_modal_open() or awaiting_destination or branch_choice_pending
-	plus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) >= 6
-	minus_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.season_adjust_points <= 0 or int(pending_roll.get("value", 0)) <= 1
-	reroll_button.disabled = season_finished or pending_roll.is_empty() or not awaiting_destination or GameState.weekly_reroll_count >= GameState.weekly_reroll_limit
-	support_button.disabled = _is_modal_open() and not system_panel.visible
-	base_button.disabled = _is_modal_open() and not base_panel.visible
-	new_game_button.disabled = ai_turn_in_progress or battle_panel.visible or decision_panel.visible or base_panel.visible or system_panel.visible or (is_instance_valid(cutscene_panel) and cutscene_panel.visible)
-	if season_finished:
-		if action_hint_label.text.strip_edges().is_empty():
-			action_hint_label.text = "[b]这一年先告一段落[/b]\n回到上面看看这一年的收获，也能顺手开始下一段日子。"
-		return
-	if ai_turn_in_progress:
-		action_hint_label.text = "[b]对手回合[/b]\n%s" % (_active_ai_observation_line if not _active_ai_observation_line.is_empty() else "正在结算其他远征队的掷骰、推进和落点。")
-		return
-	if branch_choice_pending:
-		if intro_copy:
-			action_hint_label.text = "[b]来到分叉口了[/b]\n这一步只选方向：%s。选完后会继续走完剩余步数。" % (route_preview if not route_preview.is_empty() else "稳着推进 / 补给打听 / 冒险深入")
-		else:
-			action_hint_label.text = "[b]来到分叉口了[/b]\n先决定接下来走哪边，剩余步数会继续自动结算。"
-	elif awaiting_destination:
-		if intro_copy:
-			action_hint_label.text = "[b]确认这次步数[/b]\n确认后会自动前进，只有真的遇到分叉才会停下来让你选。"
-		else:
-			action_hint_label.text = "[b]确认这次步数[/b]\n确认后按路线逐步前进，不直接选终点；遇到岔路再做决定。"
-	else:
-		if intro_copy:
-			action_hint_label.text = "[b]先掷骰前进[/b]\n走到岔路时再选方向；先熟悉移动和落点，其他信息会逐步展开。"
-		else:
-			action_hint_label.text = "[b]先掷骰前进[/b]\n确认步数后会沿路前进；只有遇到岔路，才需要你决定方向。"
-	if GameState.is_hunger_low() and not season_finished and not ai_turn_in_progress:
-		action_hint_label.text = "[b]需要补给了[/b]\n路过营地会顺手恢复一点；缺什么资源，直接打开背包查看。"
+	ui_shell_controller.update_action_ui(self)
 
 func _update_summaries() -> void:
-	var synergy_report := synergy_service.build_synergy_report()
-	var facility_bonus := synergy_service.build_facility_bonus()
-	var npc_lines := npc_route_service.build_status_lines(2)
-	var threat_lines := threat_service.build_status_lines(board_lookup, 2)
-	var treasury := GameState.get_treasury_snapshot()
-	var ai_entries: Array = ai_player_service.build_summary_entries(board_lookup)
-	player_summary_label.text = "\n".join([
-		"眼下走到 Lv%d ｜ 照料 %d" % [GameState.get_progression_rank(), GameState.get_care_progress()],
-		"徽章 %d ｜ 这季走开的节点 %d ｜ 探索点 %d" % [GameState.badge_count, GameState.season_points, GameState.exploration_points_total],
-		"资金 %d 金 ｜ 银行 %d 金" % [int(treasury.get("wallet_gold", 0)), int(treasury.get("bank_gold", 0))],
-		"饥饿 %d / %d ｜ 资源和补给翻背包页 / 小本" % [GameState.hunger, GameState.max_hunger],
-	])
-	GameState.set_trait_runtime_bonus(synergy_service.build_runtime_bonus(synergy_report))
-	var season_goal := String(GameState.get_current_season_rule().get("season_goal", "维持推进感。"))
-	var lead_entry: Dictionary = ai_entries[0] if not ai_entries.is_empty() else {}
-	var rival_lines: Array[String] = [
-		"区域：%s" % board_progression_service.get_region_name(),
-		"赛季目标：%s" % season_goal,
-	]
-	if not lead_entry.is_empty():
-		rival_lines.append("领先对手：%s ｜ 威望 %d ｜ 控制 %d" % [
-			String(lead_entry.get("name", "对手")),
-			int(lead_entry.get("prestige", 0)),
-			int(lead_entry.get("control", 0)),
-		])
-		rival_lines.append("下一拍：%s" % String(lead_entry.get("intent", "继续观察")))
-	else:
-		rival_lines.append("暂时没有高压对手情报。")
-		rival_lines.append("今天更适合稳步推进周目标。")
-	ai_summary_label.text = "\n".join(rival_lines)
-	var active_synergies: Array[String] = synergy_service.format_active_lines(synergy_report, 2)
-	var control_lines: Array[String] = [
-		"双打：%s" % " / ".join(_battle_slot_names()),
-		"宠物栏：%d / %d ｜ 伙伴总数 %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity, GameState.get_companions().size()],
-		"访客：%s" % (" / ".join(npc_lines) if not npc_lines.is_empty() else "暂无重点访客"),
-		"威胁：%s" % (" / ".join(threat_lines) if not threat_lines.is_empty() else "暂无游走威胁"),
-	]
-	if not active_synergies.is_empty():
-		control_lines.append("已激活：%s" % " / ".join(active_synergies))
-	elif not facility_bonus.get("lines", []).is_empty():
-		control_lines.append("建筑增益：%s" % " / ".join(facility_bonus.get("lines", []).slice(0, 1)))
-	control_summary_label.text = "\n".join(control_lines.slice(0, 5))
-	_handle_synergy_activation_fx(synergy_report)
+	ui_shell_controller.update_summaries(self)
 
 func _update_roster() -> void:
-	var lines: Array[String] = []
-	lines.append("出战位：%s" % " / ".join(_battle_slot_names()))
-	lines.append("眼下还能照看几只伙伴：%d / %d ｜ 已安居据点 %d" % [GameState.get_reserve_population_used(), GameState.pet_capacity, GameState.get_settled_habitat_count()])
-	lines.append("生存：饥饿 %d / %d ｜ 资源和补给翻背包页 / 小本" % [GameState.hunger, GameState.max_hunger])
-	if not starter_companion_uid.is_empty():
-		lines.append("起始伙伴：%s" % GameState.get_pet_display_name(starter_companion_uid))
-	else:
-		lines.append("调双打 / 背包 / 驻守：路过营地打开营地总览。")
-	roster_label.text = "\n".join(lines)
+	ui_shell_controller.update_roster(self)
 
 func _update_log() -> void:
-	var entries: Array[String] = GameState.journal_entries.duplicate()
-	var visible_entries: Array[String] = entries.slice(maxi(0, entries.size() - CASUAL_INTRO_VISIBLE_LOG_ENTRIES), entries.size())
-	if visible_entries.is_empty():
-		_render_event_log_text("等待新的记录…")
-		_event_log_snapshot = []
-		return
-	if _should_render_event_log_immediately(visible_entries):
-		_render_event_log_text("\n".join(visible_entries))
-		_event_log_snapshot = visible_entries
-		return
-	var history_entries := visible_entries.slice(0, visible_entries.size() - 1)
-	var full_text := "\n".join(visible_entries)
-	var history_text := "\n".join(history_entries)
-	var visible_count := history_text.length()
-	if not history_text.is_empty():
-		visible_count += 1
-	_stop_event_log_typewriter(false)
-	event_log_label.text = full_text
-	event_log_label.visible_characters = visible_count
-	event_log_label.scroll_to_line(event_log_label.get_line_count())
-	_event_log_snapshot = visible_entries
-	var newest_entry := String(visible_entries[visible_entries.size() - 1])
-	var duration := clampf(float(newest_entry.length()) * EVENT_LOG_TYPEWRITER_SPEED, EVENT_LOG_TYPEWRITER_MIN_DURATION, EVENT_LOG_TYPEWRITER_MAX_DURATION)
-	_event_log_typewriter_tween = create_tween()
-	_event_log_typewriter_tween.set_trans(Tween.TRANS_LINEAR)
-	_event_log_typewriter_tween.set_ease(Tween.EASE_OUT)
-	_event_log_typewriter_tween.tween_property(event_log_label, "visible_characters", full_text.length(), duration)
-	_event_log_typewriter_tween.finished.connect(_on_event_log_typewriter_finished)
+	ui_shell_controller.update_log(self)
 
 func _update_map_hint() -> void:
-	_update_node_detail_preview()
-	var npc_markers := npc_route_service.build_node_markers()
-	var threat_markers := threat_service.build_node_markers()
-	var ai_markers := ai_player_service.build_node_markers()
-	var threat_forecast_lines := _build_threat_forecast_preview_lines(2, 4)
-	if branch_choice_pending:
-		var lines: Array[String] = ["[b]当前分叉方向[/b]"]
-		for node_id in pending_route_options.slice(0, 4):
-			var node: Dictionary = board_lookup[node_id]
-			lines.append("%s [%s]" % [
-				String(node.get("name", "未知节点")),
-				_type_name(String(node.get("type", ""))),
-			])
-			lines.append("  下一步：%s" % _format_path_preview([current_node_id, node_id]))
-		map_hint_label.text = "\n".join(lines)
-		return
-	if awaiting_destination:
-		var lines: Array[String] = ["[b]可达节点[/b]"]
-		for node_id in _filter_blocked_selectable_nodes(_reachable_selectable_nodes()).slice(0, 4):
-			var node: Dictionary = board_lookup[node_id]
-			var tags: Array[String] = [String(node.get("reward_hint", "查看详情"))]
-			if board_map_effect_service.has_pending_effect(node, node_id, GameState.board_region_id):
-				tags.append("效果 %s" % board_map_effect_service.preview_title(node))
-			if GameState.get_node_danger(node_id) > 0:
-				tags.append("危险 %d" % GameState.get_node_danger(node_id))
-			if npc_markers.has(node_id):
-				tags.append("访客 %s" % " / ".join(npc_markers.get(node_id, [])))
-			if threat_markers.has(node_id):
-				tags.append("敌群 %s" % " / ".join(threat_markers.get(node_id, [])))
-			if ai_markers.has(node_id):
-				tags.append("对手 %s" % " / ".join(ai_markers.get(node_id, [])))
-			lines.append("%s [%s]" % [
-				node["name"],
-				_type_name(String(node.get("type", ""))),
-			])
-			lines.append("  %s" % " ｜ ".join(tags.slice(0, 3)))
-			lines.append("  路径：%s" % _format_path_preview(reachable_paths.get(node_id, [])))
-		if _get_blocked_reachable_nodes().size() > 0:
-			lines.append("")
-			lines.append("[b]阻塞[/b] %d 个候选点被敌对群占据" % _get_blocked_reachable_nodes().size())
-		var projected_blocked := threat_service.get_projected_blocked_node_ids(1)
-		if not projected_blocked.is_empty():
-			lines.append("[b]下回合封锁[/b] %s" % _format_node_name_list(projected_blocked))
-		var risk_nodes := threat_service.get_high_risk_node_ids(2)
-		if not risk_nodes.is_empty():
-			lines.append("[b]两回合高压[/b] %s" % _format_node_name_list(risk_nodes.slice(0, 4)))
-		if not threat_forecast_lines.is_empty():
-			lines.append("")
-			lines.append("[b]威胁预告[/b]")
-			lines.append_array(threat_forecast_lines)
-		if _get_locked_nodes().size() > 0:
-			lines.append("[b]未开放[/b] %d 个区域待解锁" % _get_locked_nodes().size())
-		map_hint_label.text = "\n".join(lines)
-		return
-	var body := "[b]今日焦点[/b]\n%s\n\n[b]周目标[/b]\n%s\n\n[b]地图动向[/b]\n对手：%s\n访客：%s\n威胁：%s" % [
-		_today_focus_text(),
-		weekly_cycle_service.build_summary(GameState.weekly_objective, GameState.weekly_progress),
-		" / ".join(ai_player_service.build_status_lines(board_lookup, 2)),
-		" / ".join(npc_route_service.build_status_lines(2)),
-		" / ".join(threat_service.build_status_lines(board_lookup, 2)),
-	]
-	if not threat_forecast_lines.is_empty():
-		body += "\n\n[b]威胁预告[/b]\n%s" % "\n".join(threat_forecast_lines)
-	map_hint_label.text = body
+	ui_shell_controller.update_map_hint(self)
 
 func _build_board_markers() -> Dictionary:
 	var markers := {}
@@ -6077,6 +4093,28 @@ func _update_node_detail_preview() -> void:
 	var habitat_id := String(node.get("habitat_id", ""))
 	if habitat_id.is_empty():
 		habitat_id = current_visit_habitat_id
+	var habitat := DataRepository.get_habitat(habitat_id)
+	if habitat.is_empty():
+		node_detail_habitat_actor.call("clear_actor")
+	else:
+		var is_current := String(node.get("habitat_id", "")) == habitat_id or current_visit_habitat_id == habitat_id
+		var unlocked := GameState.is_habitat_unlocked(habitat_id)
+		var status_text := "当前地点" if is_current else ("已开放" if unlocked else _unlock_marker_text(habitat_id))
+		var meta_parts: Array[String] = []
+		var recommended_rank := int(habitat.get("recommended_rank", 0))
+		if recommended_rank > 0:
+			meta_parts.append("推荐 %d 级" % recommended_rank)
+		var visit_actions := Array(habitat.get("visit_actions", []))
+		if not visit_actions.is_empty():
+			meta_parts.append("可做 %d 项" % visit_actions.size())
+		node_detail_habitat_actor.call("apply_definition", habitat)
+		node_detail_habitat_actor.call("apply_runtime", {
+			"status_text": status_text,
+			"meta_text": " ｜ ".join(meta_parts),
+			"hook_text": _seasonal_hook_text(habitat),
+			"current": is_current,
+			"unlocked": unlocked,
+		})
 	var texture := _habitat_background_texture(habitat_id)
 	node_detail_preview_rect.texture = texture
 	node_detail_preview_rect.visible = texture != null

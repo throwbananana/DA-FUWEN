@@ -89,6 +89,35 @@ func build_node_markers() -> Dictionary:
 		markers[node_id].append(String(DataRepository.get_npc(npc_id).get("name", npc_id)))
 	return markers
 
+func build_node_presence_entries() -> Array:
+	var entries: Array = []
+	for npc_id in GameState.get_npc_positions().keys():
+		var habitat_id := String(GameState.get_npc_positions().get(npc_id, ""))
+		var node_id := _node_id_for_habitat(habitat_id)
+		if node_id < 0:
+			continue
+		var npc := DataRepository.get_npc(String(npc_id))
+		if npc.is_empty():
+			continue
+		entries.append({
+			"npc_id": String(npc_id),
+			"node_id": node_id,
+			"definition": npc.duplicate(true),
+			"runtime": {
+				"intent_text": "来访中",
+				"habitat_id": habitat_id,
+				"highlighted": false,
+			},
+		})
+	entries.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var node_a := int(a.get("node_id", -1))
+		var node_b := int(b.get("node_id", -1))
+		if node_a == node_b:
+			return String(Dictionary(a.get("definition", {})).get("name", "")) < String(Dictionary(b.get("definition", {})).get("name", ""))
+		return node_a < node_b
+	)
+	return entries
+
 func build_status_lines(max_lines: int = 3) -> Array[String]:
 	var lines: Array[String] = []
 	for npc_id in GameState.get_npc_positions().keys():

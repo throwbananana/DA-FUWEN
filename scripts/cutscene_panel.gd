@@ -10,13 +10,9 @@ const TYPEWRITER_MIN_DURATION := 0.18
 const TYPEWRITER_MAX_DURATION := 2.80
 const PANEL_FADE_IN_DURATION := 0.18
 const PANEL_FADE_OUT_DURATION := 0.14
+const DecisionChoiceButtonScene := preload("res://scenes/ui/common/DecisionChoiceButton.tscn")
+const DecisionChoiceButtonScript := preload("res://scripts/ui/decision_choice_button.gd")
 
-var _title_label: Label
-var _speaker_label: Label
-var _body_label: RichTextLabel
-var _choice_container: VBoxContainer
-var _continue_button: Button
-var _close_button: Button
 var _body_tween: Tween
 var _panel_tween: Tween
 var _is_typing := false
@@ -25,11 +21,19 @@ var _queued_close_signal := false
 var last_choice_id := ""
 var _choice_buttons: Array[Button] = []
 
+@onready var _title_label: Label = $MarginContainer/VBoxContainer/TitleLabel
+@onready var _speaker_label: Label = $MarginContainer/VBoxContainer/SpeakerLabel
+@onready var _body_label: RichTextLabel = $MarginContainer/VBoxContainer/BodyLabel
+@onready var _choice_container: VBoxContainer = $MarginContainer/VBoxContainer/ChoiceContainer
+@onready var _close_button: Button = $MarginContainer/VBoxContainer/ButtonRow/CloseButton
+@onready var _continue_button: Button = $MarginContainer/VBoxContainer/ButtonRow/ContinueButton
+
 func _ready() -> void:
-	_build_layout()
 	hide()
 	modulate.a = 1.0
 	_apply_responsive_layout()
+	_continue_button.focus_mode = Control.FOCUS_ALL
+	_close_button.focus_mode = Control.FOCUS_ALL
 	_continue_button.pressed.connect(_on_continue_pressed)
 	_close_button.pressed.connect(_on_close_pressed)
 	_body_label.gui_input.connect(_on_body_label_gui_input)
@@ -55,21 +59,16 @@ func open_step(step: Dictionary) -> void:
 		child.queue_free()
 	var choices: Array = Array(step.get("choices", [])).duplicate(true)
 	for choice in choices:
-		var button := Button.new()
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.focus_mode = Control.FOCUS_ALL
+		var button := DecisionChoiceButtonScene.instantiate() as DecisionChoiceButtonScript
 		var label := String(choice.get("label", "继续"))
 		var summary := String(choice.get("summary", ""))
-		button.text = label if summary.is_empty() else "%s\n%s" % [label, summary]
-		button.tooltip_text = summary
+		button.configure(label, summary, summary)
 		button.pressed.connect(_on_choice_pressed.bind(String(choice.get("id", ""))))
 		_choice_container.add_child(button)
 		_choice_buttons.append(button)
 
 	_continue_button.visible = choices.is_empty()
 	_close_button.visible = bool(step.get("allow_close", false))
-	_continue_button.focus_mode = Control.FOCUS_ALL
-	_close_button.focus_mode = Control.FOCUS_ALL
 	_apply_responsive_layout()
 	_wire_focus_neighbors()
 	_refresh_focus_targets()
@@ -113,67 +112,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		_on_close_pressed()
 		get_viewport().set_input_as_handled()
-
-func _build_layout() -> void:
-	if _title_label != null:
-		return
-	custom_minimum_size = Vector2(620, 420)
-	var margin := MarginContainer.new()
-	margin.name = "MarginContainer"
-	margin.add_theme_constant_override("margin_left", 18)
-	margin.add_theme_constant_override("margin_top", 18)
-	margin.add_theme_constant_override("margin_right", 18)
-	margin.add_theme_constant_override("margin_bottom", 18)
-	add_child(margin)
-
-	var vbox := VBoxContainer.new()
-	vbox.name = "VBoxContainer"
-	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_theme_constant_override("separation", 12)
-	margin.add_child(vbox)
-
-	_title_label = Label.new()
-	_title_label.name = "TitleLabel"
-	_title_label.text = "演出"
-	vbox.add_child(_title_label)
-
-	_speaker_label = Label.new()
-	_speaker_label.name = "SpeakerLabel"
-	_speaker_label.visible = false
-	vbox.add_child(_speaker_label)
-
-	_body_label = RichTextLabel.new()
-	_body_label.name = "BodyLabel"
-	_body_label.bbcode_enabled = true
-	_body_label.fit_content = false
-	_body_label.scroll_active = true
-	_body_label.custom_minimum_size = Vector2(0, 150)
-	_body_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(_body_label)
-
-	_choice_container = VBoxContainer.new()
-	_choice_container.name = "ChoiceContainer"
-	_choice_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_choice_container.add_theme_constant_override("separation", 8)
-	vbox.add_child(_choice_container)
-
-	var button_row := HBoxContainer.new()
-	button_row.name = "ButtonRow"
-	button_row.add_theme_constant_override("separation", 8)
-	vbox.add_child(button_row)
-
-	_close_button = Button.new()
-	_close_button.name = "CloseButton"
-	_close_button.text = "收起"
-	_close_button.visible = false
-	button_row.add_child(_close_button)
-
-	_continue_button = Button.new()
-	_continue_button.name = "ContinueButton"
-	_continue_button.text = "继续"
-	_continue_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button_row.add_child(_continue_button)
 
 func _play_open_animation() -> void:
 	_stop_close_animation(false)
@@ -257,7 +195,7 @@ func _stop_typewriter(show_all_text: bool) -> void:
 	_refresh_focus_targets()
 
 func _apply_responsive_layout() -> void:
-	if _title_label == null:
+	if not is_node_ready():
 		return
 	var short_height := size.y < 360.0
 	_title_label.add_theme_font_size_override("font_size", 24 if short_height else 28)

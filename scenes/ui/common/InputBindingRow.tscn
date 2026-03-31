@@ -1,0 +1,40 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/input_binding_row.gd" id="1"]
+
+[node name="InputBindingRow" type="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+script = ExtResource("1")
+
+[node name="ActionLabel" type="Label" parent="."]
+layout_mode = 2
+custom_minimum_size = Vector2(180, 0)
+size_flags_horizontal = 3
+autowrap_mode = 3
+text = "动作"
+
+[node name="SlotButton1" type="Button" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 42)
+text = "未设置"
+
+[node name="SlotButton2" type="Button" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 42)
+text = "未设置"
+
+[node name="SlotButton3" type="Button" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 42)
+text = "未设置"
+
+[node name="SlotButton4" type="Button" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(0, 42)
+text = "未设置"

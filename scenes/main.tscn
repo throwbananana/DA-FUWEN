@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=21 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/board_view.gd" id="2"]
@@ -7,6 +7,19 @@
 [ext_resource type="Script" path="res://scripts/base_panel.gd" id="5"]
 [ext_resource type="Script" path="res://scripts/system_panel.gd" id="6"]
 [ext_resource type="Script" path="res://scripts/dice_roll_panel.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/panels/SaveSlotPanel.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/ui/panels/InputSettingsPanel.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/ui/panels/CutscenePanel.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/ui/overlays/MenuBackgroundLayer.tscn" id="11"]
+[ext_resource type="PackedScene" path="res://scenes/ui/overlays/SynergyBanner.tscn" id="12"]
+[ext_resource type="PackedScene" path="res://scenes/ui/overlays/StageTransitionOverlay.tscn" id="13"]
+[ext_resource type="PackedScene" path="res://scenes/ui/panels/DiceRollPanel.tscn" id="14"]
+[ext_resource type="PackedScene" path="res://scenes/ui/panels/DecisionPanel.tscn" id="15"]
+[ext_resource type="PackedScene" path="res://scenes/ui/panels/MainMenuPanel.tscn" id="16"]
+[ext_resource type="PackedScene" path="res://scenes/ui/panels/SystemPanel.tscn" id="17"]
+[ext_resource type="PackedScene" path="res://scenes/ui/panels/BasePanel.tscn" id="18"]
+[ext_resource type="PackedScene" path="res://scenes/ui/board/BoardView.tscn" id="19"]
+[ext_resource type="PackedScene" path="res://scenes/ui/panels/BattlePanel.tscn" id="20"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -207,13 +220,7 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="BoardView" type="Control" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardStagePanel/MarginContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 520)
-script = ExtResource("2")
+[node name="BoardView" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardStagePanel/MarginContainer" instance=ExtResource("19")]
 
 [node name="NodeDetailCard" type="PanelContainer" parent="RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox"]
 layout_mode = 2
@@ -507,6 +514,9 @@ size_flags_vertical = 3
 bbcode_enabled = true
 scroll_following = true
 
+[node name="AssetImportDialog" type="FileDialog" parent="."]
+visible = false
+
 [node name="Overlay" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -516,90 +526,11 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="DiceRollPanel" type="PanelContainer" parent="Overlay"]
+[node name="DiceRollPanel" parent="Overlay" instance=ExtResource("14")]
 unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(420, 360)
-anchors_preset = 8
-anchor_left = 0.325
-anchor_top = 0.244444
-anchor_right = 0.675
-anchor_bottom = 0.755556
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("7")
 
-[node name="MarginContainer" type="MarginContainer" parent="Overlay/DiceRollPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/DiceRollPanel/MarginContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 12
-
-[node name="TitleLabel" type="Label" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 28
-text = "掷骰"
-
-[node name="SubtitleLabel" type="Label" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "确认本回合步数"
-
-[node name="ValueLabel" type="Label" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 96
-horizontal_alignment = 1
-text = "0"
-
-[node name="DetailLabel" type="RichTextLabel" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 110)
-size_flags_vertical = 3
-bbcode_enabled = true
-scroll_active = true
-
-[node name="ButtonRow" type="BoxContainer" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="MinusButton" type="Button" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer/ButtonRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 48)
-text = "-1"
-
-[node name="PlusButton" type="Button" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer/ButtonRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 48)
-text = "+1"
-
-[node name="RerollButton" type="Button" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer/ButtonRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-custom_minimum_size = Vector2(0, 48)
-text = "重掷"
-
-[node name="ConfirmButton" type="Button" parent="Overlay/DiceRollPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 52)
-text = "查看落点"
-
-[node name="BattlePanel" type="PanelContainer" parent="Overlay"]
+[node name="BattlePanel" parent="Overlay" instance=ExtResource("20")]
 unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(760, 560)
 anchors_preset = 8
 anchor_left = 0.19375
 anchor_top = 0.111111
@@ -611,157 +542,12 @@ offset_right = 0.0
 offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("3")
 
-[node name="MarginContainer" type="MarginContainer" parent="Overlay/BattlePanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/BattlePanel/MarginContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 8
-
-[node name="TitleLabel" type="Label" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 26
-text = "战斗"
-
-[node name="SubtitleLabel" type="Label" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "说明"
-
-[node name="TurnLabel" type="Label" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "第 1 轮"
-
-[node name="TurnOrderBar" type="BoxContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="TeamsRow" type="HBoxContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 12
-
-[node name="AllyList" type="VBoxContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/TeamsRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 6
-
-[node name="EnemyList" type="VBoxContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/TeamsRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 6
-
-[node name="ActionPreviewPanel" type="PanelContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 72)
-
-[node name="MarginContainer" type="MarginContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/ActionPreviewPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/ActionPreviewPanel/MarginContainer"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="ActionPreviewLabel" type="Label" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/ActionPreviewPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "等待行动"
-
-[node name="ActionPreviewDetailLabel" type="Label" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer/ActionPreviewPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-autowrap_mode = 3
-theme_override_font_sizes/font_size = 14
-text = "选择技能后在这里显示动作预览。"
-
-[node name="BattleLog" type="RichTextLabel" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 190)
-size_flags_vertical = 3
-bbcode_enabled = true
-
-[node name="ActionBox" type="VBoxContainer" parent="Overlay/BattlePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="DecisionPanel" type="PanelContainer" parent="Overlay"]
+[node name="DecisionPanel" parent="Overlay" instance=ExtResource("15")]
 unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(420, 320)
-anchors_preset = 8
-anchor_left = 0.325
-anchor_top = 0.255556
-anchor_right = 0.675
-anchor_bottom = 0.744444
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("4")
 
-[node name="MarginContainer" type="MarginContainer" parent="Overlay/DecisionPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/DecisionPanel/MarginContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 12
-
-[node name="TitleLabel" type="Label" parent="Overlay/DecisionPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "选择"
-
-[node name="PreviewRect" type="TextureRect" parent="Overlay/DecisionPanel/MarginContainer/VBoxContainer"]
-visible = false
-layout_mode = 2
-custom_minimum_size = Vector2(0, 180)
-size_flags_horizontal = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="PreviewCaptionLabel" type="Label" parent="Overlay/DecisionPanel/MarginContainer/VBoxContainer"]
-visible = false
-layout_mode = 2
-horizontal_alignment = 1
-
-[node name="BodyLabel" type="RichTextLabel" parent="Overlay/DecisionPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 96)
-bbcode_enabled = true
-scroll_active = true
-
-[node name="ButtonContainer" type="VBoxContainer" parent="Overlay/DecisionPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 8
-
-[node name="CancelButton" type="Button" parent="Overlay/DecisionPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "取消"
-
-[node name="BasePanel" type="PanelContainer" parent="Overlay"]
+[node name="BasePanel" parent="Overlay" instance=ExtResource("18")]
 unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(600, 560)
 anchors_preset = 8
 anchor_left = 0.2625
 anchor_top = 0.1
@@ -773,73 +559,8 @@ offset_right = 0.0
 offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("5")
 
-[node name="MarginContainer" type="MarginContainer" parent="Overlay/BasePanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/BasePanel/MarginContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 10
-
-[node name="HeaderRow" type="BoxContainer" parent="Overlay/BasePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="HeaderLabel" type="Label" parent="Overlay/BasePanel/MarginContainer/VBoxContainer/HeaderRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-text = "营地总览"
-
-[node name="ManageButton" type="Button" parent="Overlay/BasePanel/MarginContainer/VBoxContainer/HeaderRow"]
-layout_mode = 2
-text = "整备队伍"
-
-[node name="CloseButton" type="Button" parent="Overlay/BasePanel/MarginContainer/VBoxContainer/HeaderRow"]
-layout_mode = 2
-text = "关闭"
-
-[node name="SummaryLabel" type="RichTextLabel" parent="Overlay/BasePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 72)
-bbcode_enabled = true
-scroll_active = true
-
-[node name="MonsterTitle" type="Label" parent="Overlay/BasePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "伙伴岗位"
-
-[node name="MonsterScroll" type="ScrollContainer" parent="Overlay/BasePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 240)
-size_flags_vertical = 3
-
-[node name="MonsterList" type="VBoxContainer" parent="Overlay/BasePanel/MarginContainer/VBoxContainer/MonsterScroll"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
-
-[node name="BuildingTitle" type="Label" parent="Overlay/BasePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "建筑升级"
-
-[node name="BuildingScroll" type="ScrollContainer" parent="Overlay/BasePanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 220)
-size_flags_vertical = 3
-
-[node name="BuildingList" type="VBoxContainer" parent="Overlay/BasePanel/MarginContainer/VBoxContainer/BuildingScroll"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 8
+[node name="MenuCustomBackground" parent="Overlay" instance=ExtResource("11")]
 
 [node name="MenuBackdrop" type="ColorRect" parent="Overlay"]
 unique_name_in_owner = true
@@ -853,171 +574,18 @@ grow_vertical = 2
 mouse_filter = 0
 color = Color(0, 0, 0, 0.72)
 
-[node name="MainMenuPanel" type="PanelContainer" parent="Overlay"]
+[node name="MainMenuPanel" parent="Overlay" instance=ExtResource("16")]
 unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(760, 520)
-anchors_preset = 8
-anchor_left = 0.19375
-anchor_top = 0.122222
-anchor_right = 0.80625
-anchor_bottom = 0.877778
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 2
-grow_vertical = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="Overlay/MainMenuPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 22
-theme_override_constants/margin_top = 22
-theme_override_constants/margin_right = 22
-theme_override_constants/margin_bottom = 22
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/MainMenuPanel/MarginContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 16
-
-[node name="MenuTitleLabel" type="Label" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 36
-text = "雾野远征"
-
-[node name="MenuSubtitleLabel" type="Label" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "主界面与旅途积累"
-
-[node name="MenuContentRow" type="BoxContainer" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 16
-
-[node name="ActionColumn" type="VBoxContainer" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow"]
-layout_mode = 2
-custom_minimum_size = Vector2(220, 0)
-size_flags_vertical = 3
-theme_override_constants/separation = 10
-
-[node name="ContinueButton" type="Button" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn"]
+[node name="SystemPanel" parent="Overlay" instance=ExtResource("17")]
 unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(0, 54)
-text = "继续当前远征"
 
-[node name="MenuNewGameButton" type="Button" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn"]
-unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(0, 54)
-text = "开启新远征"
+[node name="CutscenePanel" parent="Overlay" instance=ExtResource("10")]
 
-[node name="SettingsButton" type="Button" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn"]
-unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(0, 54)
-text = "设置"
+[node name="InputSettingsPanel" parent="Overlay" instance=ExtResource("9")]
 
-[node name="MenuActionHintLabel" type="RichTextLabel" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-bbcode_enabled = true
-scroll_active = true
-text = "[b]旅途积累[/b]\n每年结束后都会留下探索点和新的骰子花样。"
+[node name="SaveSlotPanel" parent="Overlay" instance=ExtResource("8")]
 
-[node name="SummaryColumn" type="VBoxContainer" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 12
+[node name="SynergyBannerOverlay" parent="Overlay" instance=ExtResource("12")]
 
-[node name="MenuRunSummaryLabel" type="RichTextLabel" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/SummaryColumn"]
-unique_name_in_owner = true
-layout_mode = 2
-custom_minimum_size = Vector2(0, 200)
-size_flags_horizontal = 3
-bbcode_enabled = true
-scroll_active = true
-
-[node name="MenuMetaSummaryLabel" type="RichTextLabel" parent="Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/SummaryColumn"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-bbcode_enabled = true
-
-[node name="SystemPanel" type="PanelContainer" parent="Overlay"]
-unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(700, 520)
-anchors_preset = 8
-anchor_left = 0.21875
-anchor_top = 0.122222
-anchor_right = 0.78125
-anchor_bottom = 0.877778
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("6")
-
-[node name="MarginContainer" type="MarginContainer" parent="Overlay/SystemPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Overlay/SystemPanel/MarginContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_constants/separation = 12
-
-[node name="HeaderRow" type="HBoxContainer" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="HeaderLabel" type="Label" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer/HeaderRow"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-text = "雾野小本"
-
-[node name="CloseButton" type="Button" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer/HeaderRow"]
-layout_mode = 2
-text = "关闭"
-
-[node name="SectionRow" type="BoxContainer" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="SummaryLabel" type="RichTextLabel" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(0, 84)
-bbcode_enabled = true
-scroll_active = true
-
-[node name="PreviewRect" type="TextureRect" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
-visible = false
-layout_mode = 2
-custom_minimum_size = Vector2(0, 180)
-size_flags_horizontal = 4
-expand_mode = 1
-stretch_mode = 5
-
-[node name="PreviewCaptionLabel" type="Label" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
-visible = false
-layout_mode = 2
-horizontal_alignment = 1
-
-[node name="DetailLabel" type="RichTextLabel" parent="Overlay/SystemPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-bbcode_enabled = true
+[node name="StageTransitionOverlay" parent="Overlay" instance=ExtResource("13")]

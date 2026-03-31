@@ -9,6 +9,8 @@ const TYPEWRITER_MIN_DURATION := 0.18
 const TYPEWRITER_MAX_DURATION := 2.60
 const PANEL_FADE_IN_DURATION := 0.20
 const PANEL_FADE_OUT_DURATION := 0.16
+const DecisionChoiceButtonScene := preload("res://scenes/ui/common/DecisionChoiceButton.tscn")
+const DecisionChoiceButtonScript := preload("res://scripts/ui/decision_choice_button.gd")
 
 @onready var title_label: Label = $MarginContainer/VBoxContainer/TitleLabel
 @onready var preview_rect: TextureRect = $MarginContainer/VBoxContainer/PreviewRect
@@ -58,11 +60,12 @@ func open_panel(title_text: String, body_text: String, choices: Array, cancel_te
 	for child in button_container.get_children():
 		child.queue_free()
 	for choice in current_choices:
-		var button := Button.new()
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.focus_mode = Control.FOCUS_ALL
-		button.text = "%s\n%s" % [String(choice.get("label", "")), String(choice.get("summary", ""))]
-		button.tooltip_text = String(choice.get("tooltip", choice.get("summary", "")))
+		var button := DecisionChoiceButtonScene.instantiate() as DecisionChoiceButtonScript
+		button.configure(
+			String(choice.get("label", "")),
+			String(choice.get("summary", "")),
+			String(choice.get("tooltip", choice.get("summary", "")))
+		)
 		button.disabled = bool(choice.get("disabled", false))
 		button.pressed.connect(_on_choice_pressed.bind(String(choice.get("id", ""))))
 		button_container.add_child(button)

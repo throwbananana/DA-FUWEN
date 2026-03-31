@@ -4,6 +4,8 @@ extends PanelContainer
 ## 一个极简 UI 骨架：用“分步展示”替代把所有信息塞满一屏。
 ## 配合 VisitFlowController 使用。
 
+const VisitActionButtonScene := preload("res://scenes/ui/common/VisitActionButton.tscn")
+
 @onready var title_label: Label = $Margin/VBox/TitleLabel
 @onready var subtitle_label: RichTextLabel = $Margin/VBox/SubtitleLabel
 @onready var actions_box: VBoxContainer = $Margin/VBox/ActionsBox
@@ -48,7 +50,9 @@ func _render_build_select(payload: Dictionary) -> void:
 	subtitle_label.text = "只有抵达地点后才允许升级；这能把“远程经营”改成“到点生活”。"
 
 	for building in payload.get("buildings", []):
-		var button := Button.new()
+		var button := VisitActionButtonScene.instantiate() as Button
+		if button == null:
+			continue
 		button.text = String(building.get("name", "未命名建筑"))
 		button.pressed.connect(controller.build_selected.bind(String(building.get("id", ""))))
 		actions_box.add_child(button)
@@ -109,7 +113,9 @@ func _action_name(action_id: String) -> String:
 		_: return action_id
 
 func _add_action(label: String, callable: Callable) -> void:
-	var button := Button.new()
+	var button := VisitActionButtonScene.instantiate() as Button
+	if button == null:
+		return
 	button.text = label
 	button.pressed.connect(callable)
 	actions_box.add_child(button)

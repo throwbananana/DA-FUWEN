@@ -5,18 +5,13 @@ signal closed
 
 const BINDING_SLOT_COUNT := 4
 const CAPTURE_TIMEOUT_MS := 5000
+const InputBindingSectionScene := preload("res://scenes/ui/common/InputBindingSection.tscn")
+const InputBindingRowScene := preload("res://scenes/ui/common/InputBindingRow.tscn")
+const InputBindingSectionScript := preload("res://scripts/ui/input_binding_section.gd")
+const InputBindingRowScript := preload("res://scripts/ui/input_binding_row.gd")
 
 var localization_service := preload("res://scripts/services/localization_service.gd").new()
 
-var _title_label: Label
-var _subtitle_label: Label
-var _device_label: Label
-var _scroll: ScrollContainer
-var _list_container: VBoxContainer
-var _status_label: Label
-var _reset_current_button: Button
-var _reset_all_button: Button
-var _close_button: Button
 var _binding_buttons := {}
 var _binding_order: Array[String] = []
 var _focused_action_id := ""
@@ -26,10 +21,25 @@ var _capture_slot_index := -1
 var _capture_started_msec := 0
 var _capture_deadline_msec := 0
 
+@onready var _title_label: Label = $MarginContainer/VBoxContainer/TitleLabel
+@onready var _subtitle_label: Label = $MarginContainer/VBoxContainer/SubtitleLabel
+@onready var _device_label: Label = $MarginContainer/VBoxContainer/DeviceLabel
+@onready var _scroll: ScrollContainer = $MarginContainer/VBoxContainer/BindingScroll
+@onready var _list_container: VBoxContainer = $MarginContainer/VBoxContainer/BindingScroll/ListContainer
+@onready var _status_label: Label = $MarginContainer/VBoxContainer/StatusLabel
+@onready var _reset_current_button: Button = $MarginContainer/VBoxContainer/Footer/ResetCurrentButton
+@onready var _reset_all_button: Button = $MarginContainer/VBoxContainer/Footer/ResetAllButton
+@onready var _close_button: Button = $MarginContainer/VBoxContainer/Footer/CloseButton
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	hide()
-	_build_layout()
+	_reset_current_button.focus_mode = Control.FOCUS_ALL
+	_reset_all_button.focus_mode = Control.FOCUS_ALL
+	_close_button.focus_mode = Control.FOCUS_ALL
+	_reset_current_button.pressed.connect(_on_reset_current_pressed)
+	_reset_all_button.pressed.connect(_on_reset_all_pressed)
+	_close_button.pressed.connect(close_panel)
 	_apply_responsive_layout()
 	set_process(true)
 
@@ -78,66 +88,6 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		_apply_responsive_layout()
 
-func _build_layout() -> void:
-	if _title_label != null:
-		return
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 18)
-	margin.add_theme_constant_override("margin_top", 18)
-	margin.add_theme_constant_override("margin_right", 18)
-	margin.add_theme_constant_override("margin_bottom", 18)
-	add_child(margin)
-
-	var root := VBoxContainer.new()
-	root.add_theme_constant_override("separation", 12)
-	margin.add_child(root)
-
-	_title_label = Label.new()
-	root.add_child(_title_label)
-
-	_subtitle_label = Label.new()
-	_subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	root.add_child(_subtitle_label)
-
-	_device_label = Label.new()
-	_device_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	root.add_child(_device_label)
-
-	_scroll = ScrollContainer.new()
-	_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_scroll.custom_minimum_size = Vector2(0, 320)
-	root.add_child(_scroll)
-
-	_list_container = VBoxContainer.new()
-	_list_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_list_container.add_theme_constant_override("separation", 8)
-	_scroll.add_child(_list_container)
-
-	_status_label = Label.new()
-	_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	root.add_child(_status_label)
-
-	var footer := HBoxContainer.new()
-	footer.add_theme_constant_override("separation", 8)
-	root.add_child(footer)
-
-	_reset_current_button = Button.new()
-	_reset_current_button.focus_mode = Control.FOCUS_ALL
-	_reset_current_button.pressed.connect(_on_reset_current_pressed)
-	footer.add_child(_reset_current_button)
-
-	_reset_all_button = Button.new()
-	_reset_all_button.focus_mode = Control.FOCUS_ALL
-	_reset_all_button.pressed.connect(_on_reset_all_pressed)
-	footer.add_child(_reset_all_button)
-
-	_close_button = Button.new()
-	_close_button.focus_mode = Control.FOCUS_ALL
-	_close_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_close_button.pressed.connect(close_panel)
-	footer.add_child(_close_button)
-
 func _refresh_view() -> void:
 	_title_label.text = localization_service.text("settings.input.title")
 	_subtitle_label.text = localization_service.text("settings.input.body")
@@ -157,37 +107,26 @@ func _rebuild_action_rows() -> void:
 		child.queue_free()
 
 	var current_group := ""
+	var current_section: InputBindingSectionScript = null
 	for row in InputManager.get_bindable_actions():
 		var group_key := String(row.get("group_key", ""))
 		if group_key != current_group:
 			current_group = group_key
-			var group_label := Label.new()
-			group_label.text = localization_service.text(group_key)
-			group_label.add_theme_font_size_override("font_size", 16)
-			_list_container.add_child(group_label)
+			current_section = InputBindingSectionScene.instantiate() as InputBindingSectionScript
+			current_section.set_title(localization_service.text(group_key))
+			_list_container.add_child(current_section)
+		if current_section == null:
+			continue
 		var action_id := String(row.get("id", ""))
-		var row_box := HBoxContainer.new()
-		row_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row_box.add_theme_constant_override("separation", 8)
-		_list_container.add_child(row_box)
-
-		var name_label := Label.new()
-		name_label.text = localization_service.text(String(row.get("label_key", action_id)))
-		name_label.custom_minimum_size = Vector2(180, 0)
-		name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		row_box.add_child(name_label)
-
-		var slot_buttons: Array[Button] = []
+		var row_scene := InputBindingRowScene.instantiate() as InputBindingRowScript
+		row_scene.set_action_label(localization_service.text(String(row.get("label_key", action_id))))
+		current_section.rows_container.add_child(row_scene)
+		var slot_buttons := row_scene.get_slot_buttons()
 		for slot_index in range(BINDING_SLOT_COUNT):
-			var button := Button.new()
+			var button := slot_buttons[slot_index]
 			button.focus_mode = Control.FOCUS_ALL
-			button.custom_minimum_size = Vector2(0, 42)
-			button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			button.pressed.connect(_on_binding_slot_pressed.bind(action_id, slot_index))
 			button.focus_entered.connect(_on_binding_slot_focused.bind(action_id, slot_index))
-			row_box.add_child(button)
-			slot_buttons.append(button)
 		_binding_buttons[action_id] = slot_buttons
 		_binding_order.append(action_id)
 	_wire_focus_neighbors()
@@ -297,7 +236,7 @@ func _focus_last_slot() -> void:
 		_close_button.grab_focus()
 
 func _apply_responsive_layout() -> void:
-	if _title_label == null:
+	if not is_node_ready():
 		return
 	var short_height := size.y < 560.0
 	_title_label.add_theme_font_size_override("font_size", 24 if short_height else 28)

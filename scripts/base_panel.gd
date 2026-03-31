@@ -4,6 +4,9 @@ extends PanelContainer
 signal closed
 signal manage_requested
 
+const CompanionCardScene := preload("res://scenes/ui/common/CompanionCard.tscn")
+const HabitatCardScene := preload("res://scenes/ui/common/HabitatCard.tscn")
+
 @onready var header_row: BoxContainer = $MarginContainer/VBoxContainer/HeaderRow
 @onready var header_label: Label = $MarginContainer/VBoxContainer/HeaderRow/HeaderLabel
 @onready var manage_button: Button = $MarginContainer/VBoxContainer/HeaderRow/ManageButton
@@ -184,25 +187,19 @@ func _render_companions(panel_state: Dictionary) -> void:
 	for child in monster_list.get_children():
 		child.queue_free()
 	for companion in panel_state.get("companions", []):
-		var card := VBoxContainer.new()
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-		var title := Label.new()
-		title.text = "%s  ·  %s" % [
+		var card := CompanionCardScene.instantiate()
+		if card == null:
+			continue
+		var title_text := "%s  ·  %s" % [
 			String(companion.get("display_name", "未命名伙伴")),
 			String(companion.get("species_name", "未知种族")),
 		]
-		title.add_theme_font_size_override("font_size", 18)
-		card.add_child(title)
-
-		var detail := Label.new()
-		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		var evolution_text := String(companion.get("evolution_name", companion.get("species_name", "未知种族")))
 		var next_text := "下一阶：%s（还差 %d 只同星个体）" % [
 			String(companion.get("next_evolution_name", "")),
 			int(companion.get("duplicate_need", 0)),
 		] if not String(companion.get("next_evolution_name", "")).is_empty() else "已到当前最高星"
-		detail.text = "星级 ★%d ｜ 人口 %d ｜ 位置：%s ｜ 形态：%s\n属性：%s ｜ 职能：%s\n信赖 %d ｜ 驻守：%s ｜ 偏好：%s\n%s" % [
+		var detail_text := "星级 ★%d ｜ 人口 %d ｜ 位置：%s ｜ 形态：%s\n属性：%s ｜ 职能：%s\n信赖 %d ｜ 驻守：%s ｜ 偏好：%s\n%s" % [
 			int(companion.get("star_level", 1)),
 			int(companion.get("population_cost", 1)),
 			String(companion.get("slot_label", "休息中")),
@@ -214,33 +211,25 @@ func _render_companions(panel_state: Dictionary) -> void:
 			", ".join(companion.get("resident_tags", [])),
 			next_text,
 		]
-		card.add_child(detail)
-
 		monster_list.add_child(card)
-		monster_list.add_child(HSeparator.new())
+		card.call("set_content", title_text, detail_text)
 
 func _render_habitats(panel_state: Dictionary) -> void:
 	for child in building_list.get_children():
 		child.queue_free()
 	for summary in panel_state.get("habitats", []):
-		var card := VBoxContainer.new()
-		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
-		var title := Label.new()
-		title.text = "%s  ·  %s" % [
+		var card := HabitatCardScene.instantiate()
+		if card == null:
+			continue
+		var title_text := "%s  ·  %s" % [
 			String(summary.get("name", "未知地点")),
 			String(summary.get("type_name", "地点")),
 		]
-		title.add_theme_font_size_override("font_size", 18)
-		card.add_child(title)
-
-		var detail := Label.new()
-		detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		var dojo_text := String(summary.get("dojo_text", ""))
 		var dojo_line := "\n试炼：%s" % dojo_text if not dojo_text.is_empty() else ""
 		var nursery_text := String(summary.get("nursery_text", ""))
 		var nursery_line := "\n孵育：%s" % nursery_text if not nursery_text.is_empty() else ""
-		detail.text = "驻守：%s\n建设：%s\n委托：%s\n状态：%s%s%s" % [
+		var detail_text := "驻守：%s\n建设：%s\n委托：%s\n状态：%s%s%s" % [
 			String(summary.get("resident_name", "暂无")),
 			String(summary.get("building_text", "尚未推进")),
 			String(summary.get("quest_text", "暂无")),
@@ -248,10 +237,8 @@ func _render_habitats(panel_state: Dictionary) -> void:
 			nursery_line,
 			dojo_line,
 		]
-		card.add_child(detail)
-
 		building_list.add_child(card)
-		building_list.add_child(HSeparator.new())
+		card.call("set_content", title_text, detail_text)
 
 func _format_inventory(inventory: Dictionary) -> String:
 	var keys: Array[String] = []

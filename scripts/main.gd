@@ -45,6 +45,8 @@ const JrpgTheme = preload("res://scripts/jrpg_theme.gd")
 const GameConstants = preload("res://scripts/game_constants.gd")
 const OnboardingFlowService = preload("res://scripts/services/onboarding_flow_service.gd")
 const TurnRoutePlanningService = preload("res://scripts/services/turn_route_planning_service.gd")
+const SynergyGlowBadgeScene = preload("res://scenes/ui/common/SynergyGlowBadge.tscn")
+const SynergyGlowBadgeScript = preload("res://scripts/ui/synergy_glow_badge.gd")
 const CUSTOM_ASSET_SLOT_ORDER := ["app_icon", "main_menu_bg", "main_menu_logo", "main_menu_bgm", "battle_bgm", "ui_confirm_sfx", "ui_font", "ui_style_config"]
 
 const GAME_TITLE := "雾野市"
@@ -107,26 +109,39 @@ const CASUAL_INTRO_VISIBLE_LOG_ENTRIES := 3
 @onready var support_button: Button = %SupportButton
 @onready var base_button: Button = %BaseButton
 @onready var new_game_button: Button = %NewGameButton
-@onready var board_view: BoardView = %BoardView
+@onready var board_view: BoardView = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardStagePanel/MarginContainer/BoardView
 @onready var battle_panel: BattlePanel = %BattlePanel
-@onready var dice_roll_panel: DiceRollPanel = %DiceRollPanel
-@onready var decision_panel: DecisionPanel = %DecisionPanel
-@onready var base_panel: BasePanel = %BasePanel
-@onready var system_panel: SystemPanel = %SystemPanel
+@onready var dice_roll_panel: DiceRollPanel = $Overlay/DiceRollPanel
+@onready var decision_panel: DecisionPanel = $Overlay/DecisionPanel
+@onready var base_panel: BasePanel = $Overlay/BasePanel
+@onready var system_panel: SystemPanel = $Overlay/SystemPanel
 @onready var menu_backdrop: ColorRect = %MenuBackdrop
-@onready var main_menu_panel: PanelContainer = %MainMenuPanel
+@onready var main_menu_panel: PanelContainer = $Overlay/MainMenuPanel
 @onready var menu_title_label: Label = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuTitleLabel
 @onready var menu_subtitle_label: Label = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuSubtitleLabel
-@onready var continue_button: Button = %ContinueButton
-@onready var menu_new_game_button: Button = %MenuNewGameButton
-@onready var settings_button: Button = %SettingsButton
-@onready var menu_action_hint_label: RichTextLabel = %MenuActionHintLabel
-@onready var menu_run_summary_label: RichTextLabel = %MenuRunSummaryLabel
-@onready var menu_meta_summary_label: RichTextLabel = %MenuMetaSummaryLabel
+@onready var continue_button: Button = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn/ContinueButton
+@onready var menu_new_game_button: Button = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn/MenuNewGameButton
+@onready var settings_button: Button = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn/SettingsButton
+@onready var menu_action_hint_label: RichTextLabel = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn/MenuActionHintLabel
+@onready var menu_run_summary_label: RichTextLabel = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/SummaryColumn/MenuRunSummaryLabel
+@onready var menu_meta_summary_label: RichTextLabel = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/SummaryColumn/MenuMetaSummaryLabel
 @onready var menu_content_row: BoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow
 @onready var menu_action_column: VBoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuContentRow/ActionColumn
-var save_slot_panel: SaveSlotPanel
-var input_settings_panel: InputSettingsPanel
+@onready var save_slot_panel: SaveSlotPanel = $Overlay/SaveSlotPanel
+@onready var input_settings_panel: InputSettingsPanel = $Overlay/InputSettingsPanel
+@onready var cutscene_panel: CutscenePanel = $Overlay/CutscenePanel
+@onready var _menu_custom_background: TextureRect = $Overlay/MenuCustomBackground
+@onready var _menu_logo_rect: TextureRect = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer/MenuLogoRect
+@onready var _synergy_banner: PanelContainer = $Overlay/SynergyBannerOverlay/SynergyBanner
+@onready var _synergy_banner_label: RichTextLabel = $Overlay/SynergyBannerOverlay/SynergyBanner/MarginContainer/SynergyBannerLabel
+@onready var _synergy_unit_glow_host: MarginContainer = $Overlay/SynergyBannerOverlay/SynergyUnitGlowHost
+@onready var _synergy_unit_glow_row: HBoxContainer = $Overlay/SynergyBannerOverlay/SynergyUnitGlowHost/SynergyUnitGlowRow
+@onready var _stage_transition_layer: Control = $Overlay/StageTransitionOverlay
+@onready var _stage_transition_backdrop: ColorRect = $Overlay/StageTransitionOverlay/StageTransitionBackdrop
+@onready var _stage_transition_panel: PanelContainer = $Overlay/StageTransitionOverlay/CenterContainer/StageTransitionPanel
+@onready var _stage_transition_title: Label = $Overlay/StageTransitionOverlay/CenterContainer/StageTransitionPanel/MarginContainer/VBoxContainer/StageTransitionTitle
+@onready var _stage_transition_subtitle: RichTextLabel = $Overlay/StageTransitionOverlay/CenterContainer/StageTransitionPanel/MarginContainer/VBoxContainer/StageTransitionSubtitle
+@onready var _asset_file_dialog: FileDialog = $AssetImportDialog
 @onready var board_panel: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel
 @onready var board_top_strip: PanelContainer = $RootMargin/MainVBox/ContentRow/BoardPanel/BoardVBox/BoardTopStrip
 @onready var board_stage_panel: PanelContainer = %BoardStagePanel
@@ -181,7 +196,6 @@ var onboarding_flow_service := OnboardingFlowService.new()
 var story_service := StoryService.new()
 var story_director = StoryDirector.new()
 var cutscene_service := CutsceneService.new()
-var cutscene_panel: CutscenePanel
 
 var season_finished := false
 var current_node_id := 0
@@ -285,17 +299,8 @@ var pending_tutorial_battle_source := ""
 var pending_tutorial_battle_log := ""
 var _active_synergy_snapshot: Array[String] = []
 var _synergy_fx_ready := false
-var _synergy_banner: PanelContainer
-var _synergy_banner_label: RichTextLabel
-var _synergy_unit_glow_host: MarginContainer
-var _synergy_unit_glow_row: HBoxContainer
 var _synergy_banner_tween: Tween
 var _synergy_unit_glow_tween: Tween
-var _stage_transition_layer: Control
-var _stage_transition_backdrop: ColorRect
-var _stage_transition_panel: PanelContainer
-var _stage_transition_title: Label
-var _stage_transition_subtitle: RichTextLabel
 var _stage_transition_tween: Tween
 var _event_log_typewriter_tween: Tween
 var _event_log_snapshot: Array[String] = []
@@ -304,9 +309,6 @@ var ai_turn_in_progress := false
 var _active_ai_observation_line := ""
 var _last_ai_turn_report := {}
 var _post_travel_resolution_in_progress := false
-var _asset_file_dialog: FileDialog
-var _menu_custom_background: TextureRect
-var _menu_logo_rect: TextureRect
 var _menu_bgm_player: AudioStreamPlayer
 var _battle_bgm_player: AudioStreamPlayer
 var _ui_sfx_player: AudioStreamPlayer
@@ -324,8 +326,6 @@ func _ready() -> void:
 	plus_button.hide()
 	minus_button.hide()
 	reroll_button.hide()
-	_ensure_cutscene_panel()
-	_ensure_input_settings_panel()
 	story_director.configure(
 		story_service,
 		cutscene_service,
@@ -335,22 +335,18 @@ func _ready() -> void:
 		Callable(self, "_should_skip_cutscene_runtime"),
 		Callable(self, "_push_log")
 	)
-	_ensure_save_slot_panel()
 	_connect_signals()
+	_configure_static_ui_nodes()
 	theme = JrpgTheme.build(CustomAssetRepository.get_bound_font("ui_font"))
 	_apply_basic_styles()
 	_prepare_overlay_panels()
 	_configure_safe_ui_bounds()
 	_configure_text_overflow_guards()
 	_queue_responsive_layout()
-	_ensure_menu_custom_background()
-	_ensure_menu_logo_rect()
 	_ensure_menu_bgm_player()
 	_ensure_battle_bgm_player()
 	_ensure_ui_sfx_player()
-	_setup_asset_import_dialog()
-	_ensure_synergy_banner()
-	_ensure_stage_transition_overlay()
+	_configure_asset_import_dialog()
 	_queue_responsive_layout()
 	_refresh_custom_asset_bindings()
 	install_visit_flow()
@@ -423,33 +419,6 @@ func install_camp_flow() -> void:
 	add_child(camp_flow)
 	camp_flow.state_changed.connect(_on_camp_flow_state_changed)
 
-func _ensure_cutscene_panel() -> void:
-	if is_instance_valid(cutscene_panel):
-		return
-	cutscene_panel = CutscenePanel.new()
-	cutscene_panel.name = "CutscenePanel"
-	cutscene_panel.visible = false
-	cutscene_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	overlay.add_child(cutscene_panel)
-
-func _ensure_save_slot_panel() -> void:
-	if is_instance_valid(save_slot_panel):
-		return
-	save_slot_panel = SaveSlotPanel.new()
-	save_slot_panel.name = "SaveSlotPanel"
-	save_slot_panel.visible = false
-	save_slot_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	overlay.add_child(save_slot_panel)
-
-func _ensure_input_settings_panel() -> void:
-	if is_instance_valid(input_settings_panel):
-		return
-	input_settings_panel = InputSettingsPanel.new()
-	input_settings_panel.name = "InputSettingsPanel"
-	input_settings_panel.visible = false
-	input_settings_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	overlay.add_child(input_settings_panel)
-
 func _connect_signals() -> void:
 	roll_button.pressed.connect(_on_start_day_pressed)
 	roll_button.pressed.connect(_play_ui_confirm_sfx)
@@ -486,51 +455,26 @@ func _connect_signals() -> void:
 	base_panel.closed.connect(_on_base_closed)
 	system_panel.closed.connect(_on_system_panel_closed)
 	battle_panel.battle_finished.connect(_on_battle_finished)
-	if is_instance_valid(save_slot_panel):
-		save_slot_panel.slot_selected.connect(_on_save_slot_selected)
-		save_slot_panel.load_requested.connect(_on_save_slot_load_requested)
-		save_slot_panel.new_requested.connect(_on_save_slot_new_requested)
-		save_slot_panel.save_requested.connect(_on_save_slot_save_requested)
-		save_slot_panel.delete_requested.connect(_on_save_slot_delete_requested)
-		save_slot_panel.close_requested.connect(_on_save_slot_closed)
-	if is_instance_valid(input_settings_panel):
-		input_settings_panel.closed.connect(_on_input_settings_panel_closed)
+	save_slot_panel.slot_selected.connect(_on_save_slot_selected)
+	save_slot_panel.load_requested.connect(_on_save_slot_load_requested)
+	save_slot_panel.new_requested.connect(_on_save_slot_new_requested)
+	save_slot_panel.save_requested.connect(_on_save_slot_save_requested)
+	save_slot_panel.delete_requested.connect(_on_save_slot_delete_requested)
+	save_slot_panel.close_requested.connect(_on_save_slot_closed)
+	input_settings_panel.closed.connect(_on_input_settings_panel_closed)
+	_asset_file_dialog.files_selected.connect(_on_asset_files_selected)
+	_asset_file_dialog.canceled.connect(_on_asset_import_canceled)
 
-func _ensure_menu_custom_background() -> void:
-	if is_instance_valid(_menu_custom_background):
-		return
-	_menu_custom_background = TextureRect.new()
-	_menu_custom_background.name = "MenuCustomBackground"
-	_menu_custom_background.visible = false
+func _configure_static_ui_nodes() -> void:
+	cutscene_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	save_slot_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	input_settings_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_menu_custom_background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_menu_custom_background.layout_mode = 1
-	_menu_custom_background.anchors_preset = Control.PRESET_FULL_RECT
-	_menu_custom_background.anchor_right = 1.0
-	_menu_custom_background.anchor_bottom = 1.0
-	_menu_custom_background.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_menu_custom_background.grow_vertical = Control.GROW_DIRECTION_BOTH
 	_menu_custom_background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_menu_custom_background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	_menu_custom_background.modulate = Color(1, 1, 1, 0.78)
-	overlay.add_child(_menu_custom_background)
-	var backdrop_index := overlay.get_children().find(menu_backdrop)
-	if backdrop_index >= 0:
-		overlay.move_child(_menu_custom_background, backdrop_index)
-
-func _ensure_menu_logo_rect() -> void:
-	if is_instance_valid(_menu_logo_rect):
-		return
-	_menu_logo_rect = TextureRect.new()
-	_menu_logo_rect.name = "MenuLogoRect"
-	_menu_logo_rect.visible = false
+	_menu_logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_menu_logo_rect.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
 	_menu_logo_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_menu_logo_rect.custom_minimum_size = Vector2(0, 96)
-	_menu_logo_rect.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_menu_logo_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var menu_vbox: VBoxContainer = $Overlay/MainMenuPanel/MarginContainer/VBoxContainer
-	menu_vbox.add_child(_menu_logo_rect)
-	menu_vbox.move_child(_menu_logo_rect, 0)
 
 func _ensure_menu_bgm_player() -> void:
 	if is_instance_valid(_menu_bgm_player):
@@ -649,16 +593,12 @@ func _start_battle_panel(battle_config: Dictionary) -> void:
 	battle_panel.start_battle(battle_config)
 	_sync_battle_bgm()
 
-func _setup_asset_import_dialog() -> void:
-	_asset_file_dialog = FileDialog.new()
+func _configure_asset_import_dialog() -> void:
 	_asset_file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	_asset_file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILES
 	_asset_file_dialog.use_native_dialog = not OS.has_feature("web")
 	_asset_file_dialog.title = "导入自定义素材文件"
 	_asset_file_dialog.filters = CustomAssetRepository.get_import_dialog_filters()
-	_asset_file_dialog.files_selected.connect(_on_asset_files_selected)
-	_asset_file_dialog.canceled.connect(_on_asset_import_canceled)
-	add_child(_asset_file_dialog)
 
 func _load_custom_ui_style_config() -> Dictionary:
 	var config_text := CustomAssetRepository.get_bound_file_text("ui_style_config")
@@ -1215,125 +1155,6 @@ func _clamp_panel_size(desired_size: Vector2, window_size: Vector2i, padding: in
 	var safe_width := maxf(window_size.x - float(padding), 320.0)
 	var safe_height := maxf(window_size.y - float(padding), 220.0)
 	return Vector2(minf(desired_size.x, safe_width), minf(desired_size.y, safe_height))
-
-func _ensure_synergy_banner() -> void:
-	if _synergy_banner != null:
-		return
-	_synergy_banner = PanelContainer.new()
-	_synergy_banner.name = "SynergyBanner"
-	_synergy_banner.visible = false
-	_synergy_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_synergy_banner.custom_minimum_size = Vector2(520, 120)
-	_synergy_banner.anchors_preset = Control.PRESET_CENTER_TOP
-	_synergy_banner.anchor_left = 0.5
-	_synergy_banner.anchor_top = 0.0
-	_synergy_banner.anchor_right = 0.5
-	_synergy_banner.anchor_bottom = 0.0
-	_synergy_banner.offset_left = -260.0
-	_synergy_banner.offset_top = 28.0
-	_synergy_banner.offset_right = 260.0
-	_synergy_banner.offset_bottom = 148.0
-	_synergy_banner.modulate = Color(1, 1, 1, 0)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.98, 0.62, 0.16, 0.94)
-	style.border_color = Color(1.0, 0.89, 0.62, 1.0)
-	style.border_width_left = 3
-	style.border_width_top = 3
-	style.border_width_right = 3
-	style.border_width_bottom = 3
-	style.corner_radius_top_left = 18
-	style.corner_radius_top_right = 18
-	style.corner_radius_bottom_left = 18
-	style.corner_radius_bottom_right = 18
-	_synergy_banner.add_theme_stylebox_override("panel", style)
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 18)
-	margin.add_theme_constant_override("margin_top", 14)
-	margin.add_theme_constant_override("margin_right", 18)
-	margin.add_theme_constant_override("margin_bottom", 14)
-	margin.anchors_preset = Control.PRESET_FULL_RECT
-	margin.anchor_right = 1.0
-	margin.anchor_bottom = 1.0
-	_synergy_banner.add_child(margin)
-	_synergy_banner_label = RichTextLabel.new()
-	_synergy_banner_label.bbcode_enabled = true
-	_synergy_banner_label.scroll_active = true
-	_synergy_banner_label.fit_content = false
-	_synergy_banner_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_synergy_banner_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	margin.add_child(_synergy_banner_label)
-	overlay.add_child(_synergy_banner)
-	_synergy_unit_glow_host = MarginContainer.new()
-	_synergy_unit_glow_host.name = "SynergyUnitGlowHost"
-	_synergy_unit_glow_host.visible = false
-	_synergy_unit_glow_host.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_synergy_unit_glow_host.anchors_preset = Control.PRESET_CENTER_TOP
-	_synergy_unit_glow_host.anchor_left = 0.5
-	_synergy_unit_glow_host.anchor_top = 0.0
-	_synergy_unit_glow_host.anchor_right = 0.5
-	_synergy_unit_glow_host.anchor_bottom = 0.0
-	_synergy_unit_glow_host.offset_left = -260.0
-	_synergy_unit_glow_host.offset_top = 154.0
-	_synergy_unit_glow_host.offset_right = 260.0
-	_synergy_unit_glow_host.offset_bottom = 246.0
-	_synergy_unit_glow_host.add_theme_constant_override("margin_left", 8)
-	_synergy_unit_glow_host.add_theme_constant_override("margin_right", 8)
-	overlay.add_child(_synergy_unit_glow_host)
-	_synergy_unit_glow_row = HBoxContainer.new()
-	_synergy_unit_glow_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_synergy_unit_glow_row.alignment = BoxContainer.ALIGNMENT_BEGIN
-	_synergy_unit_glow_row.add_theme_constant_override("separation", 16)
-	_synergy_unit_glow_host.add_child(_synergy_unit_glow_row)
-
-func _ensure_stage_transition_overlay() -> void:
-	if _stage_transition_layer != null:
-		return
-	_stage_transition_layer = Control.new()
-	_stage_transition_layer.name = "StageTransitionLayer"
-	_stage_transition_layer.visible = false
-	_stage_transition_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_stage_transition_layer.anchors_preset = Control.PRESET_FULL_RECT
-	_stage_transition_layer.anchor_right = 1.0
-	_stage_transition_layer.anchor_bottom = 1.0
-	overlay.add_child(_stage_transition_layer)
-	_stage_transition_backdrop = ColorRect.new()
-	_stage_transition_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_stage_transition_backdrop.color = Color(0.04, 0.07, 0.12, 0.0)
-	_stage_transition_backdrop.anchors_preset = Control.PRESET_FULL_RECT
-	_stage_transition_backdrop.anchor_right = 1.0
-	_stage_transition_backdrop.anchor_bottom = 1.0
-	_stage_transition_layer.add_child(_stage_transition_backdrop)
-	var center := CenterContainer.new()
-	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	center.anchors_preset = Control.PRESET_FULL_RECT
-	center.anchor_right = 1.0
-	center.anchor_bottom = 1.0
-	_stage_transition_layer.add_child(center)
-	_stage_transition_panel = PanelContainer.new()
-	_stage_transition_panel.custom_minimum_size = Vector2(720, 240)
-	center.add_child(_stage_transition_panel)
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 28)
-	margin.add_theme_constant_override("margin_top", 24)
-	margin.add_theme_constant_override("margin_right", 28)
-	margin.add_theme_constant_override("margin_bottom", 24)
-	_stage_transition_panel.add_child(margin)
-	var box := VBoxContainer.new()
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.add_theme_constant_override("separation", 12)
-	margin.add_child(box)
-	_stage_transition_title = Label.new()
-	_stage_transition_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_stage_transition_title.add_theme_font_size_override("font_size", 34)
-	box.add_child(_stage_transition_title)
-	_stage_transition_subtitle = RichTextLabel.new()
-	_stage_transition_subtitle.bbcode_enabled = true
-	_stage_transition_subtitle.scroll_active = true
-	_stage_transition_subtitle.fit_content = true
-	_stage_transition_subtitle.custom_minimum_size = Vector2(0, 104)
-	_stage_transition_subtitle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_stage_transition_subtitle.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	box.add_child(_stage_transition_subtitle)
 
 func _should_show_boot_menu() -> bool:
 	return DisplayServer.get_name() != "headless"
@@ -6893,33 +6714,12 @@ func _show_synergy_unit_glow(unit_names: Array[String]) -> void:
 	for child in _synergy_unit_glow_row.get_children():
 		child.queue_free()
 	for unit_name in unit_names.slice(0, 2):
-		var badge := PanelContainer.new()
+		var badge := SynergyGlowBadgeScene.instantiate() as SynergyGlowBadgeScript
+		if badge == null:
+			continue
+		badge.set_unit_name(String(unit_name))
 		badge.modulate = Color(1, 1, 1, 0)
 		badge.scale = Vector2(0.88, 0.88)
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.15, 0.11, 0.05, 0.94)
-		style.border_color = Color(1.0, 0.88, 0.52, 1.0)
-		style.border_width_left = 3
-		style.border_width_top = 3
-		style.border_width_right = 3
-		style.border_width_bottom = 3
-		style.corner_radius_top_left = 22
-		style.corner_radius_top_right = 22
-		style.corner_radius_bottom_left = 22
-		style.corner_radius_bottom_right = 22
-		badge.add_theme_stylebox_override("panel", style)
-		var margin := MarginContainer.new()
-		margin.add_theme_constant_override("margin_left", 20)
-		margin.add_theme_constant_override("margin_top", 12)
-		margin.add_theme_constant_override("margin_right", 20)
-		margin.add_theme_constant_override("margin_bottom", 12)
-		badge.add_child(margin)
-		var label := Label.new()
-		label.text = "%s\n共鸣中" % String(unit_name)
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 22)
-		margin.add_child(label)
 		_synergy_unit_glow_row.add_child(badge)
 	_synergy_unit_glow_host.visible = true
 	for index in range(_synergy_unit_glow_row.get_child_count()):
@@ -6959,7 +6759,6 @@ func _pulse_summary_feedback() -> void:
 func _play_stage_transition(title: String, subtitle: String, accent: Color) -> void:
 	if GameState.should_skip_animations():
 		return
-	_ensure_stage_transition_overlay()
 	if _stage_transition_tween != null:
 		_stage_transition_tween.kill()
 	_stage_transition_layer.visible = true

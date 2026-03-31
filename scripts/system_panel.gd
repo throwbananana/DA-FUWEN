@@ -3,6 +3,9 @@ extends PanelContainer
 
 signal closed
 
+const SystemSectionButtonScene := preload("res://scenes/ui/common/SystemSectionButton.tscn")
+const SystemSectionButtonScript := preload("res://scripts/ui/system_section_button.gd")
+
 @onready var header_label: Label = $MarginContainer/VBoxContainer/HeaderRow/HeaderLabel
 @onready var section_row: BoxContainer = $MarginContainer/VBoxContainer/SectionRow
 @onready var summary_label: RichTextLabel = $MarginContainer/VBoxContainer/SummaryLabel
@@ -102,12 +105,8 @@ func _render_section_buttons() -> void:
 		var section_id := String(section.get("id", ""))
 		if section_id.is_empty():
 			continue
-		var button := Button.new()
-		button.toggle_mode = true
-		button.focus_mode = Control.FOCUS_ALL
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.custom_minimum_size = Vector2(0, 42)
-		button.text = String(section.get("label", section_id))
+		var button := SystemSectionButtonScene.instantiate() as SystemSectionButtonScript
+		button.set_label(String(section.get("label", section_id)))
 		button.pressed.connect(_on_section_pressed.bind(section_id))
 		section_row.add_child(button)
 		_section_buttons.append(button)

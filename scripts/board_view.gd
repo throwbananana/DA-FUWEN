@@ -1,6 +1,8 @@
 class_name BoardView
 extends Control
 
+const BoardNodeButtonScene := preload("res://scenes/ui/board/BoardNodeButton.tscn")
+
 signal node_chosen(node_id: int)
 signal travel_finished(node_id: int)
 signal observer_travel_finished(node_id: int)
@@ -55,11 +57,11 @@ var button_size := BASE_BUTTON_SIZE
 var button_scale := 1.0
 var camera_padding := BASE_CAMERA_PADDING
 
-var traveler: ColorRect
+@onready var traveler: ColorRect = $Traveler
 var traveler_node_id := -1
 var is_traveling := false
 var idle_tween: Tween
-var observer_traveler: ColorRect
+@onready var observer_traveler: ColorRect = $ObserverTraveler
 var observer_node_id := -1
 var observer_idle_tween: Tween
 var observer_focus_active := false
@@ -91,8 +93,8 @@ var observer_world_position: Vector2:
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_PASS
 	clip_contents = true
-	_ensure_traveler()
-	_ensure_observer_traveler()
+	traveler.z_index = 30
+	observer_traveler.z_index = 31
 	_refresh_responsive_metrics()
 	set_process(true)
 
@@ -111,32 +113,6 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_RESIZED:
 		_refresh_responsive_metrics()
 		_refresh_camera_target(true)
-
-func _ensure_traveler() -> void:
-	if traveler != null:
-		return
-
-	traveler = ColorRect.new()
-	traveler.name = "Traveler"
-	traveler.size = Vector2(24, 24)
-	traveler.color = Color("fde68a")
-	traveler.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	traveler.z_index = 30
-	traveler.visible = false
-	add_child(traveler)
-
-func _ensure_observer_traveler() -> void:
-	if observer_traveler != null:
-		return
-
-	observer_traveler = ColorRect.new()
-	observer_traveler.name = "ObserverTraveler"
-	observer_traveler.size = Vector2(20, 20)
-	observer_traveler.color = Color("fb7185")
-	observer_traveler.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	observer_traveler.z_index = 31
-	observer_traveler.visible = false
-	add_child(observer_traveler)
 
 func _refresh_responsive_metrics() -> void:
 	var viewport_size := Vector2(maxf(size.x, 1.0), maxf(size.y, 1.0))
@@ -175,9 +151,7 @@ func _refresh_responsive_metrics() -> void:
 func _apply_button_metrics(button: Button) -> void:
 	if button == null:
 		return
-	button.size = button_size
-	button.custom_minimum_size = button_size
-	button.add_theme_font_size_override("font_size", 12 if button_scale <= MIN_BUTTON_SCALE else (13 if button_scale < 1.0 else 14))
+	button.call("apply_metrics", button_size, button_scale)
 
 func setup(nodes: Array) -> void:
 	board_nodes = nodes
@@ -192,19 +166,16 @@ func setup(nodes: Array) -> void:
 	_refresh_responsive_metrics()
 
 	for node in board_nodes:
-		var button := Button.new()
+		var button := BoardNodeButtonScene.instantiate() as Button
+		if button == null:
+			continue
 		var node_id := int(node.get("id", -1))
 		var world_position := Vector2(node.get("position", Vector2.ZERO))
 		node_positions[node_id] = world_position
 		button.name = "Node_%d" % node_id
-		button.focus_mode = Control.FOCUS_NONE
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.clip_text = true
-		button.flat = true
-		button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+		add_child(button)
 		_apply_button_metrics(button)
 		button.pressed.connect(_on_node_pressed.bind(node_id))
-		add_child(button)
 		buttons[node_id] = button
 
 	_rebuild_board_bounds()
@@ -235,7 +206,6 @@ func set_observer_node(node_id: int, immediate := true) -> void:
 
 	observer_focus_active = true
 	observer_node_id = node_id
-	_ensure_observer_traveler()
 
 	if immediate:
 		_snap_observer_to(node_id)
@@ -261,7 +231,6 @@ func play_observer_travel(path: Array[int]) -> void:
 	if path.is_empty():
 		return
 
-	_ensure_observer_traveler()
 	observer_focus_active = true
 	observer_traveler.visible = true
 
@@ -329,7 +298,6 @@ func play_travel(path: Array[int]) -> void:
 		idle_tween.kill()
 		idle_tween = null
 
-	_ensure_traveler()
 	is_traveling = true
 	traveler.visible = true
 
@@ -429,7 +397,7 @@ func refresh_view(current_pos: int, selectable: Array[int], markers: Dictionary,
 
 	for node in board_nodes:
 		var node_id := int(node.get("id", -1))
-		var button: Button = buttons.get(node_id)
+		var button := buttons.get(node_id) as Button
 		if button == null:
 			continue
 
@@ -446,13 +414,18 @@ func refresh_view(current_pos: int, selectable: Array[int], markers: Dictionary,
 				footer += " · "
 			footer += "你在这里"
 
-		button.text = "%s\n%s" % [header, footer]
-		button.tooltip_text = _build_tooltip(node_id, node)
+		button.call("set_content", header, footer, _build_tooltip(node_id, node))
 
 		var is_selectable := selectable_nodes.has(node_id)
 		button.disabled = not is_selectable
 		button.modulate = Color.WHITE
-		_apply_node_button_theme(button, type_id, is_selectable, current_position == node_id, locked_nodes.has(node_id) and not is_selectable)
+		button.call(
+			"apply_visual_state",
+			accent_for_type(type_id),
+			is_selectable,
+			current_position == node_id,
+			locked_nodes.has(node_id) and not is_selectable
+		)
 
 	if controller_navigation_enabled:
 		_sync_controller_cursor()
@@ -614,7 +587,7 @@ func _camera_target_for_focus(focus_world_point: Vector2) -> Vector2:
 
 func _apply_camera_transform() -> void:
 	for node_id in buttons.keys():
-		var button: Button = buttons.get(node_id)
+		var button := buttons.get(node_id) as Button
 		if button == null:
 			continue
 		button.position = Vector2(node_positions.get(node_id, Vector2.ZERO)) - camera_offset
@@ -646,44 +619,8 @@ func _apply_dynamic_node_fx() -> void:
 		else:
 			button.modulate = Color(0.82, 0.82, 0.86)
 
-func _apply_node_button_theme(button: Button, type_id: String, is_selectable: bool, is_current: bool, is_locked: bool) -> void:
-	var accent: Color = TYPE_COLORS.get(type_id, Color(0.70, 0.78, 0.90, 1.0))
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(0.11, 0.16, 0.24, 0.96)
-	normal.border_color = accent.darkened(0.15)
-	normal.border_width_left = 2
-	normal.border_width_top = 2
-	normal.border_width_right = 2
-	normal.border_width_bottom = 2
-	normal.corner_radius_top_left = 18
-	normal.corner_radius_top_right = 18
-	normal.corner_radius_bottom_left = 18
-	normal.corner_radius_bottom_right = 18
-	if is_current:
-		normal.bg_color = Color(0.24, 0.19, 0.10, 0.98)
-		normal.border_color = Color(1.0, 0.84, 0.42, 1.0)
-	elif is_selectable:
-		normal.bg_color = Color(0.14, 0.20, 0.30, 0.98)
-		normal.border_color = accent.lightened(0.25)
-	elif is_locked:
-		normal.bg_color = Color(0.10, 0.11, 0.14, 0.88)
-		normal.border_color = Color(0.33, 0.36, 0.42, 0.88)
-	button.add_theme_stylebox_override("normal", normal)
-	var hover := normal.duplicate()
-	hover.bg_color = Color(normal.bg_color.r + 0.03, normal.bg_color.g + 0.03, normal.bg_color.b + 0.03, normal.bg_color.a)
-	button.add_theme_stylebox_override("hover", hover)
-	var pressed := normal.duplicate()
-	pressed.bg_color = Color(normal.bg_color.r * 0.92, normal.bg_color.g * 0.92, normal.bg_color.b * 0.92, normal.bg_color.a)
-	button.add_theme_stylebox_override("pressed", pressed)
-	var disabled := normal.duplicate()
-	if not is_current:
-		disabled.bg_color = Color(0.10, 0.11, 0.15, 0.68)
-		disabled.border_color = Color(0.29, 0.33, 0.40, 0.70)
-	button.add_theme_stylebox_override("disabled", disabled)
-	button.add_theme_color_override("font_color", Color(0.96, 0.97, 1.0, 1.0))
-	button.add_theme_color_override("font_hover_color", Color(1.0, 1.0, 1.0, 1.0))
-	button.add_theme_color_override("font_pressed_color", Color(1.0, 1.0, 1.0, 1.0))
-	button.add_theme_color_override("font_disabled_color", Color(0.66, 0.70, 0.78, 0.88))
+func accent_for_type(type_id: String) -> Color:
+	return TYPE_COLORS.get(type_id, Color(0.70, 0.78, 0.90, 1.0))
 
 func _sync_controller_cursor() -> void:
 	if selectable_nodes.is_empty():

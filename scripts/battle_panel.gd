@@ -4,6 +4,11 @@ extends PanelContainer
 const GameData = preload("res://scripts/game_data.gd")
 const MonsterInstance = preload("res://scripts/monster_instance.gd")
 const LocalizationService = preload("res://scripts/services/localization_service.gd")
+const BattleActionButtonScene := preload("res://scenes/ui/common/BattleActionButton.tscn")
+const BattleInfoLabelScene := preload("res://scenes/ui/common/BattleInfoLabel.tscn")
+const BattleUnitCardScene := preload("res://scenes/ui/common/BattleUnitCard.tscn")
+const BattleTurnChipScene := preload("res://scenes/ui/common/BattleTurnChip.tscn")
+const BattleFloatLabelScene := preload("res://scenes/ui/common/BattleFloatLabel.tscn")
 const ENEMY_THINK_DELAY := 1.15
 const PLAYER_COMMIT_DELAY := 0.42
 const TURN_ADVANCE_DELAY := 0.62
@@ -25,6 +30,10 @@ signal battle_finished(result: Dictionary)
 @onready var action_preview_detail_label: Label = $MarginContainer/VBoxContainer/ActionPreviewPanel/MarginContainer/VBoxContainer/ActionPreviewDetailLabel
 @onready var battle_log: RichTextLabel = $MarginContainer/VBoxContainer/BattleLog
 @onready var action_box: VBoxContainer = $MarginContainer/VBoxContainer/ActionBox
+@onready var _selection_label: Label = $MarginContainer/VBoxContainer/SelectionLabel
+@onready var _fx_layer: Control = $FxLayer
+@onready var _fx_flash: ColorRect = $FxLayer/FxFlash
+@onready var _fx_banner: Label = $FxLayer/FxBanner
 
 var rng := RandomNumberGenerator.new()
 var battle_config := {}
@@ -48,9 +57,6 @@ var round_order_uids: Array[String] = []
 var acted_actor_uids: Array[String] = []
 var action_locked := false
 var result_sent := false
-var _fx_layer: Control
-var _fx_flash: ColorRect
-var _fx_banner: Label
 var _fx_banner_tween: Tween
 var _fx_panel_tween: Tween
 var _fx_shake_tween: Tween
@@ -59,7 +65,6 @@ var _turn_label_tween: Tween
 var _finish_tween: Tween
 var _battle_log_tween: Tween
 var _base_position := Vector2.ZERO
-var _selection_label: Label
 var _battle_log_lines: Array[String] = []
 var _unit_card_nodes := {}
 var _action_buttons: Array[Button] = []
@@ -74,8 +79,6 @@ func _ready() -> void:
 	modulate.a = 1.0
 	scale = Vector2.ONE
 	_base_position = position
-	_ensure_fx_layer()
-	_ensure_selection_label()
 	_apply_responsive_layout()
 
 func start_battle(config: Dictionary) -> void:
@@ -257,16 +260,16 @@ func _player_menu_intro_text(actor: MonsterInstance) -> String:
 func _add_action_info_label(text: String) -> void:
 	if text.is_empty():
 		return
-	var info := Label.new()
-	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var info := BattleInfoLabelScene.instantiate() as Label
+	if info == null:
+		return
 	info.text = text
 	action_box.add_child(info)
 
 func _add_action_button(text: String, callback: Callable, disabled: bool = false, secondary: bool = false) -> Button:
-	var button := Button.new()
-	button.focus_mode = Control.FOCUS_ALL
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var button := BattleActionButtonScene.instantiate() as Button
+	if button == null:
+		return null
 	button.custom_minimum_size = Vector2(0, _secondary_action_button_height() if secondary else _action_button_height())
 	button.text = text
 	button.disabled = disabled
@@ -554,13 +557,9 @@ func _on_escape_pressed(actor_uid: String) -> void:
 
 func _schedule_enemy_action(actor: MonsterInstance) -> void:
 	_clear_action_buttons()
-	var info := Label.new()
-	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var skill_id := _choose_enemy_skill(actor)
 	if skill_id.is_empty():
-		info.text = _tr("battle.prompt.enemy_thinking", {"actor": actor.display_name})
-		action_box.add_child(info)
+		_add_action_info_label(_tr("battle.prompt.enemy_thinking", {"actor": actor.display_name}))
 		_set_action_preview(actor.uid)
 		_render_rosters()
 		_update_selection_summary(actor)
@@ -572,12 +571,13 @@ func _schedule_enemy_action(actor: MonsterInstance) -> void:
 	var skill_name := _skill_name(skill_id, skill)
 	var target_uid := _choose_target_uid(actor, skill)
 	var target := _get_unit_by_uid(target_uid)
-	info.text = _tr("battle.prompt.enemy_thinking", {"actor": actor.display_name}) if target == null else _tr("battle.prompt.enemy_intent", {
-		"actor": actor.display_name,
-		"target": target.display_name,
-		"skill": skill_name,
-	})
-	action_box.add_child(info)
+	_add_action_info_label(
+		_tr("battle.prompt.enemy_thinking", {"actor": actor.display_name}) if target == null else _tr("battle.prompt.enemy_intent", {
+			"actor": actor.display_name,
+			"target": target.display_name,
+			"skill": skill_name,
+		})
+	)
 	_set_action_preview(actor.uid, skill_id, target_uid)
 	_render_rosters()
 	_update_selection_summary(actor, target, skill_name)
@@ -1070,89 +1070,24 @@ func _render_rosters() -> void:
 	))
 
 	for ally in allies:
-		ally_list.add_child(_make_unit_button(ally, true))
+		var ally_button := _make_unit_button(ally, true)
+		ally_list.add_child(ally_button)
+		_refresh_unit_button(ally_button, ally, true)
 	for enemy in enemies:
-		enemy_list.add_child(_make_unit_button(enemy, false))
+		var enemy_button := _make_unit_button(enemy, false)
+		enemy_list.add_child(enemy_button)
+		_refresh_unit_button(enemy_button, enemy, false)
 
 func _make_roster_header(text: String, accent: Color) -> Label:
-	var label := Label.new()
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var label := BattleInfoLabelScene.instantiate() as Label
 	label.text = text
 	label.add_theme_font_size_override("font_size", 14)
 	label.modulate = accent
 	return label
 
 func _make_unit_button(unit: MonsterInstance, is_ally: bool) -> Button:
-	var button := Button.new()
-	button.custom_minimum_size = Vector2(250, 108)
-	button.focus_mode = Control.FOCUS_ALL
-	button.text = ""
+	var button := BattleUnitCardScene.instantiate() as Button
 	button.disabled = not unit.is_alive() or (_pending_target_selection_active() and not _is_unit_valid_pending_target(unit))
-	button.clip_contents = false
-	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var card_state := _describe_unit_card(unit, is_ally)
-	_apply_unit_button_style(button, card_state)
-	var margin := MarginContainer.new()
-	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	margin.anchors_preset = Control.PRESET_FULL_RECT
-	margin.anchor_right = 1.0
-	margin.anchor_bottom = 1.0
-	margin.offset_left = 12.0
-	margin.offset_top = 10.0
-	margin.offset_right = -12.0
-	margin.offset_bottom = -10.0
-	button.add_child(margin)
-	var root := VBoxContainer.new()
-	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	root.add_theme_constant_override("separation", 6)
-	margin.add_child(root)
-	var top_row := HBoxContainer.new()
-	top_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(top_row)
-	var name_label := Label.new()
-	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	name_label.text = "%s  %s" % [_unit_display_name(unit, is_ally), _unit_type_text(unit, is_ally)]
-	name_label.add_theme_font_size_override("font_size", 16)
-	name_label.modulate = card_state["text_color"]
-	top_row.add_child(name_label)
-	var badge_label := Label.new()
-	badge_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	badge_label.text = String(card_state["badge_text"])
-	badge_label.visible = not badge_label.text.is_empty()
-	badge_label.add_theme_font_size_override("font_size", 12)
-	badge_label.modulate = card_state["badge_color"]
-	top_row.add_child(badge_label)
-	var hp_bar := ProgressBar.new()
-	hp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hp_bar.min_value = 0
-	hp_bar.max_value = maxi(1, unit.max_hp)
-	hp_bar.value = unit.current_hp
-	hp_bar.show_percentage = false
-	hp_bar.custom_minimum_size = Vector2(0, 18)
-	_apply_progressbar_style(hp_bar, card_state)
-	root.add_child(hp_bar)
-	var stat_row := HBoxContainer.new()
-	stat_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stat_row.add_theme_constant_override("separation", 12)
-	root.add_child(stat_row)
-	for stat_text in ["%s %d/%d" % [_tr("battle.stat.hp"), unit.current_hp, unit.max_hp]]:
-		var stat_label := Label.new()
-		stat_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		stat_label.text = stat_text
-		stat_label.add_theme_font_size_override("font_size", 13)
-		stat_label.modulate = card_state["subtle_color"]
-		stat_row.add_child(stat_label)
-	var status_label := Label.new()
-	status_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status_label.text = _status_text(unit.uid)
-	status_label.visible = not status_label.text.is_empty()
-	status_label.add_theme_font_size_override("font_size", 12)
-	status_label.modulate = card_state["badge_color"]
-	root.add_child(status_label)
 	if is_ally:
 		button.pressed.connect(_on_ally_selected.bind(unit.uid))
 		_ally_buttons.append(button)
@@ -1161,6 +1096,24 @@ func _make_unit_button(unit: MonsterInstance, is_ally: bool) -> Button:
 		_enemy_buttons.append(button)
 	_unit_card_nodes[unit.uid] = button
 	return button
+
+func _refresh_unit_button(button: Button, unit: MonsterInstance, is_ally: bool) -> void:
+	if button == null or unit == null:
+		return
+	var card_state := _describe_unit_card(unit, is_ally)
+	var payload := {
+		"name_text": "%s  %s" % [_unit_display_name(unit, is_ally), _unit_type_text(unit, is_ally)],
+		"badge_text": String(card_state["badge_text"]),
+		"hp_value": unit.current_hp,
+		"hp_max": unit.max_hp,
+		"stat_text": "%s %d/%d" % [_tr("battle.stat.hp"), unit.current_hp, unit.max_hp],
+		"status_text": _status_text(unit.uid),
+		"text_color": card_state["text_color"],
+		"subtle_color": card_state["subtle_color"],
+		"badge_color": card_state["badge_color"],
+	}
+	button.call("set_content", payload)
+	button.call("apply_visual_state", card_state)
 
 func _status_text(uid: String) -> String:
 	var statuses: Dictionary = temp_state.get(uid, {}).get("statuses", {})
@@ -1357,32 +1310,17 @@ func _render_turn_order_bar() -> void:
 		var unit := _get_unit_by_uid(uid)
 		if unit == null:
 			continue
-		var chip := PanelContainer.new()
-		chip.custom_minimum_size = Vector2(0, 50)
-		chip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		chip.add_theme_stylebox_override("panel", _turn_order_style(uid))
-		var margin := MarginContainer.new()
-		margin.add_theme_constant_override("margin_left", 10)
-		margin.add_theme_constant_override("margin_top", 6)
-		margin.add_theme_constant_override("margin_right", 10)
-		margin.add_theme_constant_override("margin_bottom", 6)
-		chip.add_child(margin)
-		var column := VBoxContainer.new()
-		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		column.add_theme_constant_override("separation", 1)
-		margin.add_child(column)
-		var name_label := Label.new()
-		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		name_label.text = unit.display_name
-		name_label.add_theme_font_size_override("font_size", 14)
-		column.add_child(name_label)
-		var state_label := Label.new()
-		state_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		state_label.text = _turn_order_state_text(uid)
-		state_label.add_theme_font_size_override("font_size", 11)
-		state_label.modulate = Color(0.82, 0.89, 1.0, 0.82)
-		column.add_child(state_label)
+		var chip := BattleTurnChipScene.instantiate() as PanelContainer
+		if chip == null:
+			continue
 		turn_order_bar.add_child(chip)
+		chip.call("set_content", unit.display_name, _turn_order_state_text(uid))
+		chip.call(
+			"apply_visual_state",
+			uid == active_actor_uid,
+			not turn_queue.is_empty() and uid == turn_queue[0].uid,
+			acted_actor_uids.has(uid)
+		)
 
 func _turn_order_state_text(uid: String) -> String:
 	if uid == active_actor_uid:
@@ -1392,34 +1330,6 @@ func _turn_order_state_text(uid: String) -> String:
 	if acted_actor_uids.has(uid):
 		return _tr("battle.turn_order.done")
 	return _tr("battle.turn_order.ready")
-
-func _turn_order_style(uid: String) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_right = 10
-	style.corner_radius_bottom_left = 10
-	style.border_width_left = 2
-	style.border_width_top = 2
-	style.border_width_right = 2
-	style.border_width_bottom = 2
-	style.content_margin_left = 0.0
-	style.content_margin_top = 0.0
-	style.content_margin_right = 0.0
-	style.content_margin_bottom = 0.0
-	if uid == active_actor_uid:
-		style.bg_color = Color(0.42, 0.28, 0.12, 0.94)
-		style.border_color = Color(0.98, 0.84, 0.40, 1.0)
-	elif not turn_queue.is_empty() and uid == turn_queue[0].uid:
-		style.bg_color = Color(0.14, 0.24, 0.36, 0.94)
-		style.border_color = Color(0.48, 0.84, 1.0, 1.0)
-	elif acted_actor_uids.has(uid):
-		style.bg_color = Color(0.14, 0.16, 0.22, 0.64)
-		style.border_color = Color(0.36, 0.41, 0.52, 0.72)
-	else:
-		style.bg_color = Color(0.12, 0.16, 0.24, 0.88)
-		style.border_color = Color(0.40, 0.50, 0.64, 0.88)
-	return style
 
 func _describe_unit_card(unit: MonsterInstance, is_ally: bool) -> Dictionary:
 	var badge_text := ""
@@ -1486,47 +1396,6 @@ func _unit_is_preview_target(unit: MonsterInstance) -> bool:
 		_:
 			return unit.uid == preview_target_uid
 
-func _apply_unit_button_style(button: Button, card_state: Dictionary) -> void:
-	button.modulate = card_state["modulate_color"]
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = card_state["bg_color"]
-	normal.border_color = card_state["border_color"]
-	normal.border_width_left = 2
-	normal.border_width_top = 2
-	normal.border_width_right = 2
-	normal.border_width_bottom = 2
-	normal.corner_radius_top_left = 14
-	normal.corner_radius_top_right = 14
-	normal.corner_radius_bottom_right = 14
-	normal.corner_radius_bottom_left = 14
-	button.add_theme_stylebox_override("normal", normal)
-	var hover := normal.duplicate()
-	hover.bg_color = Color(normal.bg_color.r + 0.03, normal.bg_color.g + 0.03, normal.bg_color.b + 0.03, normal.bg_color.a)
-	button.add_theme_stylebox_override("hover", hover)
-	var pressed := normal.duplicate()
-	pressed.bg_color = Color(normal.bg_color.r * 0.92, normal.bg_color.g * 0.92, normal.bg_color.b * 0.92, normal.bg_color.a)
-	button.add_theme_stylebox_override("pressed", pressed)
-	var disabled := normal.duplicate()
-	disabled.bg_color = Color(0.14, 0.16, 0.20, 0.64)
-	disabled.border_color = Color(0.34, 0.38, 0.44, 0.60)
-	button.add_theme_stylebox_override("disabled", disabled)
-
-func _apply_progressbar_style(bar: ProgressBar, card_state: Dictionary) -> void:
-	var background := StyleBoxFlat.new()
-	background.bg_color = Color(0.08, 0.10, 0.14, 0.92)
-	background.corner_radius_top_left = 8
-	background.corner_radius_top_right = 8
-	background.corner_radius_bottom_right = 8
-	background.corner_radius_bottom_left = 8
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = card_state["fill_color"]
-	fill.corner_radius_top_left = 8
-	fill.corner_radius_top_right = 8
-	fill.corner_radius_bottom_right = 8
-	fill.corner_radius_bottom_left = 8
-	bar.add_theme_stylebox_override("background", background)
-	bar.add_theme_stylebox_override("fill", fill)
-
 func _show_unit_feedback(unit_uid: String, text: String, color: Color, rise: float = 34.0, duration: float = 0.62, delay: float = 0.0) -> void:
 	if GameState.should_skip_animations() or _fx_layer == null or text.is_empty():
 		return
@@ -1535,15 +1404,12 @@ func _show_unit_feedback(unit_uid: String, text: String, color: Color, rise: flo
 		return
 	var panel_rect := get_global_rect()
 	var card_rect := target_node.get_global_rect()
-	var float_label := Label.new()
-	float_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var float_label := BattleFloatLabelScene.instantiate() as Label
+	if float_label == null:
+		return
 	float_label.text = text
 	float_label.position = card_rect.position + card_rect.size * Vector2(0.5, 0.28) - panel_rect.position
 	float_label.pivot_offset = Vector2(0, 0)
-	float_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	float_label.add_theme_font_size_override("font_size", 24)
-	float_label.add_theme_color_override("font_outline_color", Color(0.05, 0.07, 0.10, 0.95))
-	float_label.add_theme_constant_override("outline_size", 8)
 	float_label.modulate = color
 	_fx_layer.add_child(float_label)
 	var tween := create_tween()
@@ -1583,39 +1449,6 @@ func _log(message: String) -> void:
 	_battle_log_tween.set_ease(Tween.EASE_OUT)
 	_battle_log_tween.tween_property(battle_log, "visible_characters", full_text.length(), duration)
 	_battle_log_tween.finished.connect(_on_battle_log_typewriter_finished)
-
-func _ensure_fx_layer() -> void:
-	if _fx_layer != null:
-		return
-	_fx_layer = Control.new()
-	_fx_layer.name = "FxLayer"
-	_fx_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fx_layer.anchors_preset = Control.PRESET_FULL_RECT
-	_fx_layer.anchor_right = 1.0
-	_fx_layer.anchor_bottom = 1.0
-	add_child(_fx_layer)
-	_fx_flash = ColorRect.new()
-	_fx_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fx_flash.color = Color(1, 1, 1, 0)
-	_fx_flash.anchors_preset = Control.PRESET_FULL_RECT
-	_fx_flash.anchor_right = 1.0
-	_fx_flash.anchor_bottom = 1.0
-	_fx_layer.add_child(_fx_flash)
-	_fx_banner = Label.new()
-	_fx_banner.visible = false
-	_fx_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fx_banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_fx_banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_fx_banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_fx_banner.add_theme_font_size_override("font_size", 28)
-	_fx_banner.add_theme_color_override("font_outline_color", Color(0.05, 0.08, 0.15, 0.95))
-	_fx_banner.add_theme_constant_override("outline_size", 8)
-	_fx_banner.anchors_preset = Control.PRESET_TOP_WIDE
-	_fx_banner.anchor_left = 0.18
-	_fx_banner.anchor_right = 0.82
-	_fx_banner.offset_top = 18.0
-	_fx_banner.offset_bottom = 92.0
-	_fx_layer.add_child(_fx_banner)
 
 func _wire_controller_focus() -> void:
 	var action_anchor := _first_enabled_action_button()
@@ -1870,20 +1703,6 @@ func _build_bonus_log_lines() -> Array[String]:
 		lines.append(_tr("battle.log.bonus.enemy_penalty", {"value": int(battle_config.get("enemy_attack_penalty", 0))}))
 	return lines
 
-func _ensure_selection_label() -> void:
-	if _selection_label != null:
-		return
-	var container := turn_label.get_parent()
-	if container == null:
-		return
-	_selection_label = Label.new()
-	_selection_label.name = "SelectionLabel"
-	_selection_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_selection_label.add_theme_font_size_override("font_size", 14)
-	_selection_label.modulate = Color(0.86, 0.91, 1.0, 0.95)
-	container.add_child(_selection_label)
-	container.move_child(_selection_label, turn_label.get_index() + 1)
-
 func _apply_responsive_layout() -> void:
 	if not is_node_ready():
 		return
@@ -1894,6 +1713,8 @@ func _apply_responsive_layout() -> void:
 	action_preview_label.add_theme_font_size_override("font_size", 16 if compact_width or short_height else 18)
 	action_preview_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	action_preview_detail_label.add_theme_font_size_override("font_size", 13 if compact_width or short_height else 14)
+	_selection_label.add_theme_font_size_override("font_size", 13 if compact_width or short_height else 14)
+	_selection_label.modulate = Color(0.86, 0.91, 1.0, 0.95)
 	subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	turn_order_bar.vertical = size.x < 720.0
 	turn_order_bar.add_theme_constant_override("separation", 6 if compact_width else 8)

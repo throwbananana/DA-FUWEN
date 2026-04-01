@@ -14,6 +14,7 @@ func show_main_menu(host) -> void:
 	if is_instance_valid(host.save_slot_panel):
 		host.save_slot_panel.close_panel()
 	host.menu_backdrop.show()
+	host._sync_menu_backdrop_shader()
 	host.menu_backdrop.move_to_front()
 	host.main_menu_panel.show()
 	host.main_menu_panel.move_to_front()
@@ -500,6 +501,7 @@ func refresh_main_menu_visuals(host) -> void:
 	var background_config := Dictionary(style_config.get("menu_custom_background", {}))
 	host._menu_custom_background.modulate = Color(1, 1, 1, clamp(host._config_float(background_config, "alpha", 0.78), 0.0, 1.0))
 	host._menu_custom_background.visible = texture != null and host.main_menu_panel.visible
+	host._sync_menu_backdrop_shader()
 
 func open_asset_import_dialog(host) -> void:
 	if not is_instance_valid(host._asset_file_dialog):

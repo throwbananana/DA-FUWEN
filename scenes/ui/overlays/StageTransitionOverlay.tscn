@@ -1,4 +1,9 @@
-[gd_scene format=3]
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Shader" path="res://shaders/stage_transition_backdrop.gdshader" id="1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_stage_transition"]
+shader = ExtResource("1")
 
 [node name="StageTransitionOverlay" type="Control"]
 visible = false
@@ -11,6 +16,7 @@ grow_vertical = 2
 mouse_filter = 2
 
 [node name="StageTransitionBackdrop" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_stage_transition")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

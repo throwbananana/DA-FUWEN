@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1"]
 [ext_resource type="Script" path="res://scripts/board_view.gd" id="2"]
@@ -21,6 +21,10 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/board/BoardView.tscn" id="19"]
 [ext_resource type="PackedScene" path="res://scenes/ui/panels/BattlePanel.tscn" id="20"]
 [ext_resource type="PackedScene" path="res://scenes/world/HabitatActor.tscn" id="21"]
+[ext_resource type="Shader" path="res://shaders/menu_backdrop.gdshader" id="22"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_menu_backdrop"]
+shader = ExtResource("22")
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -568,6 +572,7 @@ grow_vertical = 2
 [node name="MenuBackdrop" type="ColorRect" parent="Overlay"]
 unique_name_in_owner = true
 visible = false
+material = SubResource("ShaderMaterial_menu_backdrop")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

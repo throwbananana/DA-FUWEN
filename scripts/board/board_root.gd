@@ -30,6 +30,9 @@ const BASE_TRAVELER_OFFSET := Vector2(0, -42)
 const BASE_OBSERVER_OFFSET := Vector2(30, -42)
 const BASE_CAMERA_PADDING := Vector2(220, 140)
 const CAMERA_LERP_SPEED := 8.0
+const TRAVEL_STEP_DURATION := 0.24
+const TRAVEL_CURVE_MIN_HEIGHT := 18.0
+const TRAVEL_CURVE_MAX_HEIGHT := 42.0
 
 var board_factory := BoardFactoryScript.new()
 var world_actor_factory := WorldActorFactoryScript.new()
@@ -227,12 +230,16 @@ func play_observer_travel(path: Array[int]) -> void:
 		return
 	for i in range(1, path.size()):
 		var next_id := int(path[i])
+		var start_position := observer_world_position
+		var end_position := _observer_world_top_left(next_id)
+		var control_position := _travel_curve_control_point(start_position, end_position)
 		var tween := create_tween()
 		tween.set_parallel(true)
-		tween.tween_property(self, "observer_world_position", _observer_world_top_left(next_id), 0.24).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_method(_set_observer_curve_position.bind(start_position, control_position, end_position), 0.0, 1.0, TRAVEL_STEP_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		tween.tween_property(observer_traveler, "scale", Vector2(1.12, 0.90), 0.12)
 		tween.chain().tween_property(observer_traveler, "scale", Vector2.ONE, 0.12)
 		await tween.finished
+		observer_world_position = end_position
 		observer_node_id = next_id
 		_refresh_camera_target()
 		queue_redraw()
@@ -268,12 +275,16 @@ func play_travel(path: Array[int]) -> void:
 		return
 	for i in range(1, path.size()):
 		var next_id := int(path[i])
+		var start_position := traveler_world_position
+		var end_position := _traveler_world_top_left(next_id)
+		var control_position := _travel_curve_control_point(start_position, end_position)
 		var tween := create_tween()
 		tween.set_parallel(true)
-		tween.tween_property(self, "traveler_world_position", _traveler_world_top_left(next_id), 0.24).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_method(_set_traveler_curve_position.bind(start_position, control_position, end_position), 0.0, 1.0, TRAVEL_STEP_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		tween.tween_property(traveler, "scale", Vector2(1.10, 0.92), 0.12)
 		tween.chain().tween_property(traveler, "scale", Vector2.ONE, 0.12)
 		await tween.finished
+		traveler_world_position = end_position
 		traveler_node_id = next_id
 		current_position = next_id
 		_refresh_camera_target()
@@ -320,6 +331,30 @@ func _traveler_world_top_left(node_id: int) -> Vector2:
 
 func _observer_world_top_left(node_id: int) -> Vector2:
 	return _button_world_center(node_id) - observer_traveler.size * 0.5 + _observer_offset()
+
+func _travel_curve_control_point(start_position: Vector2, end_position: Vector2) -> Vector2:
+	var delta := end_position - start_position
+	var distance := delta.length()
+	if distance <= 0.001:
+		return start_position
+	var upward := Vector2(0, -1)
+	var perpendicular := Vector2(-delta.y, delta.x).normalized()
+	if perpendicular.y > 0.0:
+		perpendicular *= -1.0
+	var arc_direction := (upward * 0.82 + perpendicular * 0.58).normalized()
+	var arc_height := clampf(distance * 0.24, TRAVEL_CURVE_MIN_HEIGHT * button_scale, TRAVEL_CURVE_MAX_HEIGHT * button_scale)
+	return start_position.lerp(end_position, 0.5) + arc_direction * arc_height
+
+func _quadratic_curve_point(start_position: Vector2, control_position: Vector2, end_position: Vector2, progress: float) -> Vector2:
+	var t := clampf(progress, 0.0, 1.0)
+	var inverse := 1.0 - t
+	return inverse * inverse * start_position + 2.0 * inverse * t * control_position + t * t * end_position
+
+func _set_traveler_curve_position(progress: float, start_position: Vector2, control_position: Vector2, end_position: Vector2) -> void:
+	traveler_world_position = _quadratic_curve_point(start_position, control_position, end_position, progress)
+
+func _set_observer_curve_position(progress: float, start_position: Vector2, control_position: Vector2, end_position: Vector2) -> void:
+	observer_world_position = _quadratic_curve_point(start_position, control_position, end_position, progress)
 
 func set_npc_presence(entries: Array) -> void:
 	var normalized_entries := _normalize_npc_entries(entries)
@@ -551,13 +586,13 @@ func _apply_dynamic_node_fx() -> void:
 			continue
 		var pulse := 1.0 if GameState.prefers_reduced_motion() else 0.5 + 0.5 * sin(pulse_time * 4.2 + float(node_id) * 0.35)
 		if current_position == int(node_id):
-			button.modulate = Color(1.0, lerpf(0.88, 0.96, pulse), lerpf(0.68, 0.82, pulse))
+			button.call("apply_highlight_fx", "current", pulse)
 		elif controller_navigation_enabled and int(node_id) == controller_cursor_node_id:
-			button.modulate = Color(0.92, lerpf(0.94, 1.0, pulse), 1.0)
+			button.call("apply_highlight_fx", "cursor", pulse)
 		elif selectable_nodes.has(int(node_id)):
-			button.modulate = Color(1.0, lerpf(0.92, 1.0, pulse), lerpf(0.82, 0.96, pulse))
+			button.call("apply_highlight_fx", "selectable", pulse)
 		else:
-			button.modulate = Color(0.82, 0.82, 0.86)
+			button.call("apply_highlight_fx", "idle", pulse)
 
 func accent_for_type(type_id: String) -> Color:
 	return TYPE_COLORS.get(type_id, Color(0.70, 0.78, 0.90, 1.0))

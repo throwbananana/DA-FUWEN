@@ -15,6 +15,7 @@ const TURN_ADVANCE_DELAY := 0.62
 const BATTLE_LOG_TYPEWRITER_SPEED := 0.020
 const BATTLE_LOG_TYPEWRITER_MIN_DURATION := 0.18
 const BATTLE_LOG_TYPEWRITER_MAX_DURATION := 1.20
+const FLOAT_LABEL_SIDE_SWAY := 18.0
 
 signal battle_finished(result: Dictionary)
 
@@ -1408,7 +1409,10 @@ func _show_unit_feedback(unit_uid: String, text: String, color: Color, rise: flo
 	if float_label == null:
 		return
 	float_label.text = text
-	float_label.position = card_rect.position + card_rect.size * Vector2(0.5, 0.28) - panel_rect.position
+	var start_position := card_rect.position + card_rect.size * Vector2(0.5, 0.28) - panel_rect.position
+	var end_position := start_position + Vector2(_float_label_side_offset(unit_uid), -rise)
+	var control_position := _float_label_curve_control_point(start_position, end_position, rise)
+	float_label.position = start_position
 	float_label.pivot_offset = Vector2(0, 0)
 	float_label.modulate = color
 	_fx_layer.add_child(float_label)
@@ -1416,12 +1420,32 @@ func _show_unit_feedback(unit_uid: String, text: String, color: Color, rise: flo
 	if delay > 0.0:
 		tween.tween_interval(delay)
 	tween.set_parallel(true)
-	tween.tween_property(float_label, "position:y", float_label.position.y - rise, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_method(_set_float_label_curve_position.bind(float_label, start_position, control_position, end_position), 0.0, 1.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(float_label, "modulate:a", 0.0, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.finished.connect(func() -> void:
 		if is_instance_valid(float_label):
 			float_label.queue_free()
 	)
+
+func _float_label_side_offset(unit_uid: String) -> float:
+	var unit := _get_unit_by_uid(unit_uid)
+	var base_offset := FLOAT_LABEL_SIDE_SWAY if unit != null and _is_ally(unit) else -FLOAT_LABEL_SIDE_SWAY
+	var variation := 0.88 + 0.08 * sin(float(unit_uid.hash()) * 0.17)
+	return base_offset * variation
+
+func _float_label_curve_control_point(start_position: Vector2, end_position: Vector2, rise: float) -> Vector2:
+	var midpoint := start_position.lerp(end_position, 0.5)
+	return midpoint + Vector2(0.0, -rise * 0.48)
+
+func _quadratic_curve_point(start_position: Vector2, control_position: Vector2, end_position: Vector2, progress: float) -> Vector2:
+	var t := clampf(progress, 0.0, 1.0)
+	var inverse := 1.0 - t
+	return inverse * inverse * start_position + 2.0 * inverse * t * control_position + t * t * end_position
+
+func _set_float_label_curve_position(progress: float, label: Label, start_position: Vector2, control_position: Vector2, end_position: Vector2) -> void:
+	if not is_instance_valid(label):
+		return
+	label.position = _quadratic_curve_point(start_position, control_position, end_position, progress)
 
 func _clear_action_buttons() -> void:
 	_action_buttons.clear()

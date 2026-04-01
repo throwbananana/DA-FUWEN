@@ -1,6 +1,9 @@
 class_name BoardNodeActor
 extends Button
 
+const BoardNodeHaloShader := preload("res://shaders/board_node_halo.gdshader")
+
+@onready var halo_rect: ColorRect = $Halo
 @onready var selection_ring: PanelContainer = $SelectionRing
 @onready var current_ring: PanelContainer = $CurrentRing
 @onready var background_panel: PanelContainer = $Background
@@ -12,10 +15,15 @@ extends Button
 
 var _node_definition: Dictionary = {}
 var _type_short := "?"
+var _accent_color := Color(0.70, 0.78, 0.90, 1.0)
+var _halo_material: ShaderMaterial
 
 func _ready() -> void:
 	text = ""
 	flat = true
+	modulate = Color.WHITE
+	_ensure_halo_material()
+	_apply_halo_fx("idle", 0.0)
 
 func apply_definition(node_data: Dictionary, type_short_text: String) -> void:
 	_node_definition = node_data.duplicate(true)
@@ -26,6 +34,11 @@ func apply_definition(node_data: Dictionary, type_short_text: String) -> void:
 func apply_metrics(target_size: Vector2, scale_factor: float) -> void:
 	size = target_size
 	custom_minimum_size = target_size
+	var halo_padding := Vector2(18.0, 16.0) * clampf(scale_factor, 0.78, 1.0)
+	halo_rect.offset_left = -halo_padding.x
+	halo_rect.offset_top = -halo_padding.y
+	halo_rect.offset_right = halo_padding.x
+	halo_rect.offset_bottom = halo_padding.y
 	var title_size := 12 if scale_factor <= 0.72 else (13 if scale_factor < 1.0 else 14)
 	var footer_size := 10 if scale_factor <= 0.72 else (11 if scale_factor < 1.0 else 12)
 	var icon_size := 13 if scale_factor <= 0.72 else (14 if scale_factor < 1.0 else 16)
@@ -42,6 +55,7 @@ func apply_runtime_state(runtime_state: Dictionary) -> void:
 	var is_locked := bool(runtime_state.get("is_locked", false))
 	var is_danger := bool(runtime_state.get("is_danger", false))
 	var accent := Color(runtime_state.get("accent_color", Color(0.70, 0.78, 0.90, 1.0)))
+	_accent_color = accent
 	self.tooltip_text = String(runtime_state.get("tooltip_text", ""))
 
 	title_label.text = String(_node_definition.get("name", "节点"))
@@ -69,6 +83,9 @@ func apply_runtime_state(runtime_state: Dictionary) -> void:
 	_apply_background_style(accent, is_selectable, is_current, is_locked)
 	_apply_ring_style(selection_ring, Color(0.96, 0.72, 0.26, 0.92), 2)
 	_apply_ring_style(current_ring, Color(1.0, 0.84, 0.42, 1.0), 3)
+
+func apply_highlight_fx(mode: String, pulse: float) -> void:
+	_apply_halo_fx(mode, pulse)
 
 func set_content(title_text: String, footer_text: String, tooltip_text: String) -> void:
 	title_label.text = title_text
@@ -123,3 +140,33 @@ func _apply_ring_style(target: PanelContainer, color: Color, border_width: int) 
 	style.corner_radius_bottom_left = 22
 	style.corner_radius_bottom_right = 22
 	target.add_theme_stylebox_override("panel", style)
+
+func _ensure_halo_material() -> void:
+	if halo_rect == null:
+		return
+	if _halo_material != null:
+		return
+	_halo_material = ShaderMaterial.new()
+	_halo_material.shader = BoardNodeHaloShader
+	halo_rect.material = _halo_material
+
+func _apply_halo_fx(mode: String, pulse: float) -> void:
+	_ensure_halo_material()
+	if _halo_material == null:
+		return
+	var halo_color := _accent_color.lightened(0.22)
+	var intensity := 0.0
+	match mode:
+		"current":
+			halo_color = Color(1.0, 0.84, 0.42, 1.0)
+			intensity = lerpf(0.46, 0.92, pulse)
+		"cursor":
+			halo_color = Color(0.84, 0.96, 1.0, 1.0)
+			intensity = lerpf(0.34, 0.72, pulse)
+		"selectable":
+			intensity = lerpf(0.20, 0.48, pulse)
+		_:
+			intensity = 0.0
+	_halo_material.set_shader_parameter("halo_color", halo_color)
+	_halo_material.set_shader_parameter("intensity", intensity)
+	_halo_material.set_shader_parameter("pulse", pulse)

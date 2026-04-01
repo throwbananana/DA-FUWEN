@@ -1029,6 +1029,21 @@ func _custom_main_menu_background_label() -> String:
 func _refresh_main_menu_visuals() -> void:
 	menu_controller.refresh_main_menu_visuals(self)
 
+func _set_canvas_shader_parameter(node: CanvasItem, parameter_name: String, value: Variant) -> void:
+	if not is_instance_valid(node):
+		return
+	var shader_material := node.material as ShaderMaterial
+	if shader_material == null:
+		return
+	shader_material.set_shader_parameter(parameter_name, value)
+
+func _sync_menu_backdrop_shader() -> void:
+	_set_canvas_shader_parameter(menu_backdrop, "motion_amount", 0.0 if GameState.prefers_reduced_motion() else 1.0)
+
+func _sync_stage_transition_shader(accent: Color) -> void:
+	_set_canvas_shader_parameter(_stage_transition_backdrop, "accent_color", accent)
+	_set_canvas_shader_parameter(_stage_transition_backdrop, "motion_amount", 0.0 if GameState.prefers_reduced_motion() else 1.0)
+
 func _open_asset_import_dialog() -> void:
 	menu_controller.open_asset_import_dialog(self)
 
@@ -4801,6 +4816,7 @@ func _play_stage_transition(title: String, subtitle: String, accent: Color) -> v
 		_stage_transition_tween.kill()
 	_stage_transition_layer.visible = true
 	_stage_transition_backdrop.color = Color(0.04, 0.07, 0.12, 0.0)
+	_sync_stage_transition_shader(accent)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.10, 0.16, 0.95)
 	style.border_color = accent
